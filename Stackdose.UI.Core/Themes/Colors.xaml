@@ -1,0 +1,12 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <SolidColorBrush x:Key="Cyber.Bg.Dark" Color="#05050A"/>
+    <SolidColorBrush x:Key="Cyber.Bg.Panel" Color="#141420" Opacity="0.95"/>
+    <SolidColorBrush x:Key="Cyber.Border" Color="#334455"/>
+    <SolidColorBrush x:Key="Cyber.NeonBlue" Color="#00E5FF"/>
+
+    <SolidColorBrush x:Key="Cyber.Text.Main" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Cyber.Text.Muted" Color="#8F9BB3"/>
+
+</ResourceDictionary>

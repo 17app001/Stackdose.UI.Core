@@ -1,0 +1,30 @@
+﻿<UserControl x:Class="Stackdose.UI.Core.Controls.PlcStatus"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="80" d:DesignWidth="200">
+
+    <Border BorderBrush="#FF00A8E8" BorderThickness="1" Background="#1A1A1A" CornerRadius="4" Padding="10">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Ellipse x:Name="StatusLight" Width="20" Height="20" Fill="Gray" 
+                     Stroke="White" StrokeThickness="1" Margin="0,0,15,0">
+                <Ellipse.Effect>
+                    <DropShadowEffect Color="White" BlurRadius="5" ShadowDepth="0" Opacity="0.5"/>
+                </Ellipse.Effect>
+            </Ellipse>
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock Text="PLC CONNECTION" Foreground="#888" FontSize="10" FontWeight="Bold"/>
+                <TextBlock x:Name="IpDisplay" Text="0.0.0.0:0000" Foreground="White" FontSize="14" FontFamily="Consolas"/>
+                <TextBlock x:Name="StatusText" Text="Waiting..." Foreground="Gray" FontSize="10"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

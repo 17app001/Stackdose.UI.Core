@@ -1,0 +1,60 @@
+﻿<UserControl x:Class="Stackdose.UI.Core.Controls.CyberFrame"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800"
+             x:Name="Root">
+
+    <!-- 1. 引用共用資源 (修正專案名稱為 Stackdose.UI.Core) -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Stackdose.UI.Core;component/Themes/Colors.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <!-- 2. 主視窗外框 -->
+    <Border Background="{StaticResource Cyber.Bg.Dark}" 
+            BorderBrush="{StaticResource Cyber.Border}" 
+            BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="60"/>
+                <!-- Header 高度 -->
+                <RowDefinition Height="*"/>
+                <!-- 內容區 -->
+            </Grid.RowDefinitions>
+
+            <!-- 3. 上方標題列 -->
+            <Border Grid.Row="0" Background="{StaticResource Cyber.Bg.Panel}" BorderBrush="#333" BorderThickness="0,0,0,1">
+                <Grid Margin="20,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Stackdose" Foreground="{StaticResource Cyber.NeonBlue}" FontSize="24" FontWeight="Bold" FontStyle="Italic" Margin="0,0,10,0"/>
+                        <!-- Logo -->
+                        <TextBlock Text="ModelS" Foreground="{StaticResource Cyber.NeonBlue}" FontSize="24" FontWeight="Bold" FontStyle="Italic" Margin="0,0,10,0"/>
+
+                        <!-- 標題 (綁定 Title 屬性) -->
+                        <TextBlock Text="{Binding Title, ElementName=Root}" 
+                                   Foreground="{StaticResource Cyber.Text.Muted}" 
+                                   FontSize="16" VerticalAlignment="Bottom" Margin="0,0,0,4"/>
+                    </StackPanel>
+
+                    <!-- 右側功能區 -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <!-- 時間 -->
+                        <TextBlock x:Name="TimeText" Text="00:00:00" 
+                                   Foreground="#666" FontSize="16" VerticalAlignment="Center" Margin="0,0,20,0"/>
+                        <!-- 關閉按鈕 -->
+                        <Button Content="✕" Width="40" Height="30" Background="Transparent" Foreground="#888" BorderThickness="0" FontSize="16"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 4. 內容填充區 (挖洞給外部使用) -->
+            <ContentPresenter Grid.Row="1" Margin="10"/>
+        </Grid>
+    </Border>
+</UserControl>

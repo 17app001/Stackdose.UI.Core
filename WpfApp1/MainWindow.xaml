@@ -1,0 +1,26 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp1"
+        xmlns:Controls="clr-namespace:Stackdose.UI.Core.Controls;assembly=Stackdose.UI.Core" x:Class="WpfApp1.MainWindow"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="900" Width="1600">
+    <Grid>
+
+        <Controls:CyberFrame Title="UBI SYSTEM"/>
+        <Controls:PlcStatus x:Name="MainPlc" HorizontalAlignment="Left" Margin="73,89,0,0" VerticalAlignment="Top" IpAddress="192.168.22.39" Port="3000" AutoConnect="False" MonitorAddress="D0,12" MonitorLength="1"/>
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,97,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="X軸位置"
+                           TargetStatus="{Binding ElementName=MainPlc}" Address="D10" DefaultValue="00000" DataType="DWord"
+                           />
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,97,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="X軸位置"
+            TargetStatus="{Binding ElementName=MainPlc}" Address="D10" DefaultValue="00000" DataType="Bit" BitIndex="0"
+                           />
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="484,97,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="X軸位置"
+            TargetStatus="{Binding ElementName=MainPlc}" Address="D10" DefaultValue="00000" BitIndex="-1" DataType="DWord"
+                           />
+
+
+    </Grid>
+</Window>

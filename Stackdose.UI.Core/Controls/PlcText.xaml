@@ -1,0 +1,98 @@
+﻿<UserControl x:Class="Stackdose.UI.Core.Controls.PlcText"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             MinHeight="65" 
+             d:DesignHeight="70" d:DesignWidth="300">
+    <!-- 加入 MinHeight 防止被壓扁 -->
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- 標題區 -->
+            <RowDefinition Height="*"/>
+            <!-- 輸入區 -->
+        </Grid.RowDefinitions>
+
+        <!-- 新增：上方標題 Label -->
+        <TextBlock Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                   Foreground="#AAA" FontSize="12" Margin="2,0,0,4"/>
+
+        <!-- 下方操作區 (外框) -->
+        <Border Grid.Row="1" BorderBrush="#444" BorderThickness="1" Background="#252526" CornerRadius="4" Padding="5">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.2*"/>
+                    <!-- 位址 -->
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="1.5*"/>
+                    <!-- 數值 -->
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <!-- 按鈕 -->
+                </Grid.ColumnDefinitions>
+
+                <!-- 1. 位址輸入 (例如 D100, M0) -->
+                <!-- 加大字體與高度 -->
+                <TextBox x:Name="TxtAddress" 
+                         Grid.Column="0"
+                         Text="{Binding Address, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Background="#111" Foreground="#DDD" BorderBrush="#555"
+                         VerticalContentAlignment="Center" Padding="5,0"
+                         FontFamily="Consolas" FontSize="16" Height="32" 
+                         ToolTip="輸入位址 (Ex: D100, M0)"/>
+
+                <!-- 佔位文字 (Watermark) -->
+                <TextBlock Grid.Column="0" Text="Dev" Foreground="#555" IsHitTestVisible="False" 
+                           VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=TxtAddress}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <!-- 2. 數值輸入 -->
+                <!-- 加大字體與高度 -->
+                <TextBox x:Name="TxtValue" 
+                         Grid.Column="2"
+                         Text="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Background="#111" Foreground="#00A8E8" BorderBrush="#555"
+                         VerticalContentAlignment="Center" Padding="5,0"
+                         FontFamily="Consolas" FontSize="16" FontWeight="Bold" Height="32"
+                         ToolTip="輸入數值 (>32767 自動轉 DWORD)"/>
+
+                <!-- 佔位文字 -->
+                <TextBlock Grid.Column="2" Text="Val" Foreground="#555" IsHitTestVisible="False" 
+                           VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=TxtValue}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <!-- 3. 寫入按鈕 -->
+                <!-- 加大按鈕 -->
+                <Button Grid.Column="4" 
+                        Content="SET" 
+                        Width="50" Height="32"
+                        Background="#333" Foreground="White" BorderThickness="0"
+                        Cursor="Hand" FontWeight="Bold" FontSize="14"
+                        Click="BtnWrite_Click"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

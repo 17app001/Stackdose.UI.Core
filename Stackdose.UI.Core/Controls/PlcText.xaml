@@ -34,15 +34,15 @@
                     <!-- 按鈕 -->
                 </Grid.ColumnDefinitions>
 
-                <!-- 1. 位址輸入 (例如 D100, M0) -->
+                <!-- 1. 位址輸入 (例如 D100, M0, D100.5) -->
                 <!-- 加大字體與高度 -->
                 <TextBox x:Name="TxtAddress" 
                          Grid.Column="0"
-                         Text="{Binding Address, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Text="{Binding Address, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged,FallbackValue=D10}"
                          Background="#111" Foreground="#DDD" BorderBrush="#555"
                          VerticalContentAlignment="Center" Padding="5,0"
                          FontFamily="Consolas" FontSize="16" Height="32" 
-                         ToolTip="輸入位址 (Ex: D100, M0)"/>
+                         ToolTip="輸入位址 (Ex: M0, D100, D100.5)"/>
 
                 <!-- 佔位文字 (Watermark) -->
                 <TextBlock Grid.Column="0" Text="Dev" Foreground="#555" IsHitTestVisible="False" 
@@ -63,11 +63,11 @@
                 <!-- 加大字體與高度 -->
                 <TextBox x:Name="TxtValue" 
                          Grid.Column="2"
-                         Text="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Text="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged,FallbackValue=0}"
                          Background="#111" Foreground="#00A8E8" BorderBrush="#555"
                          VerticalContentAlignment="Center" Padding="5,0"
                          FontFamily="Consolas" FontSize="16" FontWeight="Bold" Height="32"
-                         ToolTip="輸入數值 (>32767 自動轉 DWORD)"/>
+                         ToolTip="輸入數值 (Bit: 0/1)"/>
 
                 <!-- 佔位文字 -->
                 <TextBlock Grid.Column="2" Text="Val" Foreground="#555" IsHitTestVisible="False" 
@@ -88,7 +88,7 @@
                 <!-- 加大按鈕 -->
                 <Button Grid.Column="4" 
                         Content="SET" 
-                        Width="50" Height="32"
+                        Width="60" Height="32"
                         Background="#333" Foreground="White" BorderThickness="0"
                         Cursor="Hand" FontWeight="Bold" FontSize="14"
                         Click="BtnWrite_Click"/>

@@ -10,7 +10,7 @@
     <Grid>
 
         <Controls:CyberFrame Title="UBI SYSTEM"/>
-        <Controls:PlcStatus x:Name="MainPlc" HorizontalAlignment="Left" Margin="73,89,0,0" VerticalAlignment="Top" IpAddress="192.168.22.39" Port="3000" AutoConnect="False" MonitorAddress="D0,12,M1,10,R2000,R2002" MonitorLength="1"/>
+        <Controls:PlcStatus x:Name="MainPlc" HorizontalAlignment="Left" Margin="73,89,0,0" VerticalAlignment="Top" IpAddress="192.168.22.39" Port="3000" AutoConnect="False" MonitorAddress="D0,12,M1,10,R2000,R2002" MonitorLength="1" ScanInterval="120"/>
         <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,97,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="X軸位置"
                             Address="D10" DefaultValue="00000" DataType="Word"
                            />
@@ -23,10 +23,13 @@
         <Controls:PlcLabel HorizontalAlignment="Left" Margin="484,159,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="X軸位置"
             Address="M1" DefaultValue="00000" DataType="Bit" BitIndex="0"
                            />
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,223,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="R2000"
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,222,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="R2000"
             Address="R2000" DefaultValue="00000" DataType="Word" BitIndex="-1"
                            />
-        <Controls:PlcText HorizontalAlignment="Left" Margin="148,325,0,0" VerticalAlignment="Top" Width="216" Label="PLC Input"/>
+        <Controls:PlcText HorizontalAlignment="Left" Margin="148,325,0,0" VerticalAlignment="Top" Width="267" Label="PLC Input"/>
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="484,222,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="溫度"
+            Address="R2002" DefaultValue="00000" DataType="Word" BitIndex="-1" Divisor="10"
+                           />
 
 
     </Grid>

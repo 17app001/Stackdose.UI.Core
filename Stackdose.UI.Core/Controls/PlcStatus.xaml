@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="80" d:DesignWidth="200">
+             d:DesignHeight="80" d:DesignWidth="220">
 
     <Border BorderBrush="#FF00A8E8" BorderThickness="1" Background="#1A1A1A" CornerRadius="4" Padding="10">
         <Grid>
@@ -13,6 +13,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
+            <!-- 狀態燈 -->
             <Ellipse x:Name="StatusLight" Width="20" Height="20" Fill="Gray" 
                      Stroke="White" StrokeThickness="1" Margin="0,0,15,0">
                 <Ellipse.Effect>
@@ -21,7 +22,27 @@
             </Ellipse>
 
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                <TextBlock Text="PLC CONNECTION" Foreground="#888" FontSize="10" FontWeight="Bold"/>
+
+                <!-- 第一行：標題 + ScanInterval 顯示 -->
+                <Grid Margin="0,0,0,2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="PLC CONNECTION" Foreground="#888" FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
+
+                    <!-- 新增：顯示 ScanInterval (例如 "⟳ 100 ms") -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="⟳ " Foreground="#555" FontSize="9" Margin="0,1,0,0"/>
+                        <!-- 重新整理圖示感 -->
+                        <TextBlock Text="{Binding ScanInterval, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                   Foreground="#666" FontSize="10" FontWeight="SemiBold"/>
+                        <TextBlock Text=" ms" Foreground="#666" FontSize="10"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- IP 與 狀態 -->
                 <TextBlock x:Name="IpDisplay" Text="0.0.0.0:0000" Foreground="White" FontSize="14" FontFamily="Consolas"/>
                 <TextBlock x:Name="StatusText" Text="Waiting..." Foreground="Gray" FontSize="10"/>
             </StackPanel>

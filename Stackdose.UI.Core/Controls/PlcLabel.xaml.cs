@@ -6,9 +6,6 @@ using Stackdose.UI.Core.Helpers;       // 引用 Context
 
 namespace Stackdose.UI.Core.Controls
 {
-    /// <summary>
-    /// 定義 PLC 讀取的資料型態
-    /// </summary>
     public enum PlcDataType
     {
         Bit,    // 顯示 ON/OFF
@@ -19,7 +16,6 @@ namespace Stackdose.UI.Core.Controls
 
     public partial class PlcLabel : UserControl
     {
-        // 用來記錄目前綁定的 Status，以便取消訂閱防止記憶體洩漏
         private PlcStatus? _boundStatus;
 
         public PlcLabel()
@@ -49,7 +45,7 @@ namespace Stackdose.UI.Core.Controls
             set { SetValue(AddressProperty, value); }
         }
 
-        // 3. 數值 (Value) - 這是實際顯示在畫面上的值
+        // 3. 數值 (Value)
         public static readonly DependencyProperty ValueProperty =
             DependencyProperty.Register("Value", typeof(string), typeof(PlcLabel), new PropertyMetadata("-"));
         public string Value
@@ -58,7 +54,7 @@ namespace Stackdose.UI.Core.Controls
             set { SetValue(ValueProperty, value); }
         }
 
-        // 4. 預設顯示文字 (DefaultValue)
+        // 4. 預設顯示文字
         public static readonly DependencyProperty DefaultValueProperty =
             DependencyProperty.Register("DefaultValue", typeof(string), typeof(PlcLabel), new PropertyMetadata("0000"));
         public string DefaultValue
@@ -76,7 +72,7 @@ namespace Stackdose.UI.Core.Controls
             set { SetValue(DataTypeProperty, value); }
         }
 
-        // 6. Bit 指定 (0~15) - 當讀取 Word 但只想顯示其中某個 Bit 時使用
+        // 6. Bit 指定
         public static readonly DependencyProperty BitIndexProperty =
             DependencyProperty.Register("BitIndex", typeof(int), typeof(PlcLabel), new PropertyMetadata(-1));
         public int BitIndex
@@ -85,110 +81,86 @@ namespace Stackdose.UI.Core.Controls
             set { SetValue(BitIndexProperty, value); }
         }
 
-        // 7. 綁定目標 PLC (優先權最高)
+        // 7. 綁定目標 PLC
         public static readonly DependencyProperty TargetStatusProperty =
             DependencyProperty.Register("TargetStatus", typeof(PlcStatus), typeof(PlcLabel),
                 new PropertyMetadata(null, OnTargetStatusChanged));
-
         public PlcStatus TargetStatus
         {
             get { return (PlcStatus)GetValue(TargetStatusProperty); }
             set { SetValue(TargetStatusProperty, value); }
         }
 
+        // 🔥 8. 新增：除數 (預設 1)
+        public static readonly DependencyProperty DivisorProperty =
+            DependencyProperty.Register("Divisor", typeof(double), typeof(PlcLabel), new PropertyMetadata(1.0));
+        public double Divisor
+        {
+            get { return (double)GetValue(DivisorProperty); }
+            set { SetValue(DivisorProperty, value); }
+        }
+
+        // 🔥 9. 新增：顯示格式 (預設 "F1" 代表一位小數，如 35.0)
+        // 如果 Divisor 不為 1 或 DataType 為 Float，會套用此格式
+        public static readonly DependencyProperty StringFormatProperty =
+            DependencyProperty.Register("StringFormat", typeof(string), typeof(PlcLabel), new PropertyMetadata("F1"));
+        public string StringFormat
+        {
+            get { return (string)GetValue(StringFormatProperty); }
+            set { SetValue(StringFormatProperty, value); }
+        }
+
         #endregion
 
-        // 當使用者手動綁定 TargetStatus 時觸發
+        // ... (中間的自動綁定與事件邏輯保持不變，為節省篇幅略過，請保留原本的程式碼) ...
+
         private static void OnTargetStatusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is PlcLabel label)
             {
-                if (e.NewValue is PlcStatus newStatus)
-                    label.BindToStatus(newStatus);
-                else
-                    label.TryResolveContextStatus(); // 如果被設為 null，嘗試改用自動繼承
+                if (e.NewValue is PlcStatus newStatus) label.BindToStatus(newStatus);
+                else label.TryResolveContextStatus();
             }
         }
 
         private void PlcLabel_Loaded(object sender, RoutedEventArgs e)
         {
-            // 如果使用者沒有手動設定 TargetStatus，就自動去抓環境設定
-            if (TargetStatus == null)
-            {
-                TryResolveContextStatus();
-            }
+            if (TargetStatus == null) TryResolveContextStatus();
         }
 
-        /// <summary>
-        /// 嘗試解析 PLC 來源 (懶人模式核心邏輯)
-        /// </summary>
         private void TryResolveContextStatus()
         {
-            // 優先順序：
-            // 1. 父容器繼承 (PlcContext.GetStatus)
-            // 2. 全域靜態變數 (PlcContext.GlobalStatus)
             var contextStatus = PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
-
-            if (contextStatus != null)
-            {
-                BindToStatus(contextStatus);
-            }
+            if (contextStatus != null) BindToStatus(contextStatus);
         }
 
         private void BindToStatus(PlcStatus? newStatus)
         {
             if (_boundStatus == newStatus) return;
-
-            // 1. 取消舊的訂閱
-            if (_boundStatus != null)
-            {
-                _boundStatus.ScanUpdated -= OnScanUpdated;
-            }
-
+            if (_boundStatus != null) _boundStatus.ScanUpdated -= OnScanUpdated;
             _boundStatus = newStatus;
-
-            // 2. 建立新的訂閱
             if (_boundStatus != null)
             {
                 _boundStatus.ScanUpdated += OnScanUpdated;
-
-                // 若已連線，立即刷新一次，避免等待下一次掃描週期才顯示
-                if (_boundStatus.CurrentManager != null)
-                {
-                    OnScanUpdated(_boundStatus.CurrentManager);
-                }
+                if (_boundStatus.CurrentManager != null) OnScanUpdated(_boundStatus.CurrentManager);
             }
         }
 
         private void PlcLabel_Unloaded(object sender, RoutedEventArgs e)
         {
-            // 離開畫面時一定要取消訂閱
-            if (_boundStatus != null)
-            {
-                _boundStatus.ScanUpdated -= OnScanUpdated;
-                _boundStatus = null;
-            }
+            if (_boundStatus != null) { _boundStatus.ScanUpdated -= OnScanUpdated; _boundStatus = null; }
         }
 
-        // 這是從背景執行緒呼叫的回呼函式
         private void OnScanUpdated(IPlcManager manager)
         {
             try
             {
                 if (Dispatcher.HasShutdownStarted) return;
-
-                // 切回 UI 執行緒進行更新
-                Dispatcher.Invoke(() =>
-                {
-                    if (!Dispatcher.HasShutdownStarted) RefreshFrom(manager);
-                });
+                Dispatcher.Invoke(() => { if (!Dispatcher.HasShutdownStarted) RefreshFrom(manager); });
             }
             catch { }
         }
 
-        /// <summary>
-        /// 核心讀取邏輯：根據設定從 Manager 撈取數據
-        /// </summary>
         public void RefreshFrom(IPlcManager manager)
         {
             if (manager == null) return;
@@ -197,64 +169,64 @@ namespace Stackdose.UI.Core.Controls
             switch (DataType)
             {
                 case PlcDataType.Bit:
-                    // 如果有指定 BitIndex (0~15)，則讀取 Word 並拆解 Bit
                     if (BitIndex >= 0 && BitIndex <= 15)
                     {
                         var wordVal = manager.ReadWord(Address);
-                        if (wordVal.HasValue)
-                            result = ((wordVal.Value >> BitIndex) & 1) == 1;
+                        if (wordVal.HasValue) result = ((wordVal.Value >> BitIndex) & 1) == 1;
                     }
-                    else
-                    {
-                        // 否則當作一般 Bit 裝置 (如 M0, X0) 直接讀取
-                        result = manager.ReadBit(Address);
-                    }
+                    else result = manager.ReadBit(Address);
                     break;
-
-                case PlcDataType.Word:
-                    result = manager.ReadWord(Address);
-                    break;
-
-                case PlcDataType.DWord:
-                    result = manager.ReadDWord(Address);
-                    break;
-
+                case PlcDataType.Word: result = manager.ReadWord(Address); break;
+                case PlcDataType.DWord: result = manager.ReadDWord(Address); break;
                 case PlcDataType.Float:
                     var dwordVal = manager.ReadDWord(Address);
-                    if (dwordVal.HasValue)
-                        result = BitConverter.ToSingle(BitConverter.GetBytes(dwordVal.Value), 0);
+                    if (dwordVal.HasValue) result = BitConverter.ToSingle(BitConverter.GetBytes(dwordVal.Value), 0);
                     break;
             }
-
-            if (result == null) return;
             UpdateValue(result);
         }
 
         /// <summary>
-        /// 更新 UI 顯示值 (僅當數值改變時才寫入屬性，節省效能)
+        /// 更新 UI 顯示值 (包含除法與格式化邏輯)
         /// </summary>
         public void UpdateValue(object rawValue)
         {
             string newValue = "-";
 
-            // 如果 rawValue 是 null (例如斷線或還沒讀到)，保持為 "-"
-            // 這會觸發 XAML 的 DataTrigger 顯示 DefaultValue
             if (rawValue != null)
             {
-                switch (DataType)
+                // Bit 型態不參與數學運算
+                if (DataType == PlcDataType.Bit)
                 {
-                    case PlcDataType.Bit:
-                        newValue = (rawValue is bool b && b) ? "ON" : "OFF";
-                        break;
+                    if (rawValue is bool b) newValue = b ? "ON" : "OFF";
+                    else newValue = rawValue.ToString() ?? "-";
+                }
+                else
+                {
+                    // 數值型態 (Word, DWord, Float)
+                    // 1. 先統一轉成 double 進行計算
+                    if (double.TryParse(rawValue.ToString(), out double dVal))
+                    {
+                        // 2. 除以設定的 Divisor
+                        double finalVal = dVal / Divisor;
 
-                    case PlcDataType.Float:
-                        newValue = (double.TryParse(rawValue.ToString(), out double d))
-                            ? d.ToString("F2") : rawValue.ToString();
-                        break;
-
-                    default:
-                        newValue = rawValue.ToString();
-                        break;
+                        // 3. 決定格式化方式
+                        // 如果 DataType 是 Float，或者 Divisor 不為 1 (代表有做除法)，則套用小數點格式
+                        if (DataType == PlcDataType.Float || Divisor != 1.0)
+                        {
+                            // 使用設定的 StringFormat (預設 "F1"，即 "35.5")
+                            newValue = finalVal.ToString(StringFormat);
+                        }
+                        else
+                        {
+                            // 否則維持整數顯示 (去除不必要的小數點)
+                            newValue = finalVal.ToString();
+                        }
+                    }
+                    else
+                    {
+                        newValue = rawValue.ToString() ?? "-";
+                    }
                 }
             }
 

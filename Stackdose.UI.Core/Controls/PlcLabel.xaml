@@ -5,8 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="60" d:DesignWidth="200"
-             ToolTip="{Binding Address, RelativeSource={RelativeSource Self}}">
-    <!-- 🔥 新增這行：滑鼠懸停顯示 Address -->
+             ToolTip="{Binding Address, RelativeSource={RelativeSource Self}}"
+             Foreground="#00A8E8">
+    <!-- 1. 將預設藍色設定在這裡 (作為 UserControl 的預設值) -->
 
     <Border BorderBrush="#333" BorderThickness="1" Background="#1E1E1E" CornerRadius="4" Padding="10,5">
         <Grid>
@@ -22,29 +23,30 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- 顯示中文標題 (例如: X軸位置) -->
                 <TextBlock Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                            Foreground="#AAA" FontSize="12"/>
 
-                <!-- 顯示 PLC 位址 (例如: D100) --><!--
                 <TextBlock Text="{Binding Address, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                           Foreground="#555" FontSize="10" VerticalAlignment="Center"/>-->
+                           Foreground="#555" FontSize="10" VerticalAlignment="Center"/>
             </Grid>
 
             <!-- 數值顯示 -->
+            <!-- 2. 這裡原本的 Foreground="#00A8E8" 必須移除！ -->
+            <!-- 3. 改為 Binding，這樣它才會跟著 UserControl 的 Foreground 變化 -->
             <TextBlock Grid.Row="1" 
-                       Foreground="#00A8E8" FontSize="20" FontWeight="Bold" FontFamily="Consolas"
+                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                       FontSize="20" FontWeight="Bold" FontFamily="Consolas"
                        HorizontalAlignment="Right" VerticalAlignment="Center">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
-                        <!-- 預設顯示 Value -->
+                        <!-- 正常顯示數值 -->
                         <Setter Property="Text" Value="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='-'}"/>
+
+                        <!-- 當數值無效時顯示預設文字 (例如 0000) -->
                         <Style.Triggers>
-                            <!-- 當 Value 為初始值 "-" 時，顯示 DefaultValue 以便對齊 -->
                             <DataTrigger Binding="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="-">
                                 <Setter Property="Text" Value="{Binding DefaultValue, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                             </DataTrigger>
-                            <!-- 當 Value 為 null 時，也顯示 DefaultValue -->
                             <DataTrigger Binding="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="{x:Null}">
                                 <Setter Property="Text" Value="{Binding DefaultValue, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                             </DataTrigger>

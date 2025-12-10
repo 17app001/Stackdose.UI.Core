@@ -14,9 +14,33 @@ namespace Stackdose.UI.Core.Controls
         Float   // 32-bit 浮點數
     }
 
+    // 🔥 新增：事件參數，包裝了「處理後的數值」與「顯示文字」
+    public class PlcValueChangedEventArgs : EventArgs
+    {
+        /// <summary>
+        /// 實際數值 (例如 double 的 35.5, 或 bool 的 true)
+        /// </summary>
+        public object? Value { get; }
+
+        /// <summary>
+        /// 顯示的文字 (例如 "35.5", "ON")
+        /// </summary>
+        public string DisplayText { get; }
+
+
+        public PlcValueChangedEventArgs(object? value, string displayText)
+        {
+            Value = value;
+            DisplayText = displayText;
+        }
+    }
+
+
     public partial class PlcLabel : UserControl
     {
         private PlcStatus? _boundStatus;
+        // 🔥 新增：數值變更事件
+        public event EventHandler<PlcValueChangedEventArgs>? ValueChanged;
 
         public PlcLabel()
         {
@@ -187,52 +211,51 @@ namespace Stackdose.UI.Core.Controls
         }
 
         /// <summary>
-        /// 更新 UI 顯示值 (包含除法與格式化邏輯)
+        /// 更新 UI 顯示值並觸發事件
         /// </summary>
         public void UpdateValue(object rawValue)
         {
-            string newValue = "-";
+            string newValueStr = "-";
+            object? actualValue = null; // 這是要傳給事件的「真實數值」(double/bool)
 
             if (rawValue != null)
             {
-                // Bit 型態不參與數學運算
                 if (DataType == PlcDataType.Bit)
                 {
-                    if (rawValue is bool b) newValue = b ? "ON" : "OFF";
-                    else newValue = rawValue.ToString() ?? "-";
+                    bool bVal = false;
+                    if (rawValue is bool b) bVal = b;
+                    else bVal = rawValue.ToString() == "1" || rawValue.ToString().ToLower() == "true";
+
+                    newValueStr = bVal ? "ON" : "OFF";
+                    actualValue = bVal; // 事件拿到的是 bool
                 }
                 else
                 {
-                    // 數值型態 (Word, DWord, Float)
-                    // 1. 先統一轉成 double 進行計算
+                    // 數值處理 (除法)
                     if (double.TryParse(rawValue.ToString(), out double dVal))
                     {
-                        // 2. 除以設定的 Divisor
                         double finalVal = dVal / Divisor;
+                        actualValue = finalVal; // 事件拿到的是 double (已經除過的)
 
-                        // 3. 決定格式化方式
-                        // 如果 DataType 是 Float，或者 Divisor 不為 1 (代表有做除法)，則套用小數點格式
                         if (DataType == PlcDataType.Float || Divisor != 1.0)
-                        {
-                            // 使用設定的 StringFormat (預設 "F1"，即 "35.5")
-                            newValue = finalVal.ToString(StringFormat);
-                        }
+                            newValueStr = finalVal.ToString(StringFormat);
                         else
-                        {
-                            // 否則維持整數顯示 (去除不必要的小數點)
-                            newValue = finalVal.ToString();
-                        }
+                            newValueStr = finalVal.ToString();
                     }
                     else
                     {
-                        newValue = rawValue.ToString() ?? "-";
+                        newValueStr = rawValue.ToString() ?? "-";
+                        actualValue = rawValue;
                     }
                 }
             }
 
-            if (Value != newValue)
+            // 只有數值改變時才更新 UI 並觸發事件
+            if (Value != newValueStr)
             {
-                Value = newValue;
+                Value = newValueStr;
+                // 🔥 觸發事件，把真正的數值傳出去
+                ValueChanged?.Invoke(this, new PlcValueChangedEventArgs(actualValue, newValueStr));
             }
         }
     }

@@ -27,7 +27,7 @@
             Address="R2000" DefaultValue="00000" DataType="Word" BitIndex="-1"
                            />
         <Controls:PlcText HorizontalAlignment="Left" Margin="148,325,0,0" VerticalAlignment="Top" Width="267" Label="PLC Input"/>
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="484,222,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="溫度"
+        <Controls:PlcLabel x:Name="LblTemp" HorizontalAlignment="Left" Margin="484,222,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="溫度"
             Address="R2002" DefaultValue="00000" DataType="Word" BitIndex="-1" Divisor="10"
                            />
 

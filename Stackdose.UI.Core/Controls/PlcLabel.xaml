@@ -7,7 +7,6 @@
              d:DesignHeight="60" d:DesignWidth="200"
              ToolTip="{Binding Address, RelativeSource={RelativeSource Self}}"
              Foreground="#00A8E8">
-    <!-- 1. 將預設藍色設定在這裡 (作為 UserControl 的預設值) -->
 
     <Border BorderBrush="#333" BorderThickness="1" Background="#1E1E1E" CornerRadius="4" Padding="10,5">
         <Grid>
@@ -16,39 +15,61 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- 標題與位址 -->
+            <!-- 標題與位址區塊 -->
             <Grid Grid.Row="0" Margin="0,0,0,2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
+                    <!-- 標題佔用剩餘空間 -->
                     <ColumnDefinition Width="Auto"/>
+                    <!-- 位址根據內容調整寬度 -->
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                           Foreground="#AAA" FontSize="12"/>
+                <!-- 標題 (靠左) -->
+                <!-- 使用 TextTrimming 當文字太長時顯示 ... -->
+                <TextBlock Grid.Column="0"
+                           Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='Label'}" 
+                           Foreground="#AAA" FontSize="12"
+                           TextTrimming="CharacterEllipsis" 
+                           VerticalAlignment="Center"/>
 
-                <TextBlock Text="{Binding Address, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                           Foreground="#555" FontSize="10" VerticalAlignment="Center"/>
+                <!-- 位址 (靠右，並分開顯示) -->
+                <!-- 🔥 修改：加入 Margin 確保與 Label 分開，並設定 MinWidth 保持距離 -->
+                <TextBlock Grid.Column="1"
+                           Text="{Binding Address, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='D0'}" 
+                           Foreground="#555" FontSize="10" 
+                           VerticalAlignment="Center" HorizontalAlignment="Right"
+                           Margin="10,0,0,0"/>
             </Grid>
 
             <!-- 數值顯示 -->
-            <!-- 2. 這裡原本的 Foreground="#00A8E8" 必須移除！ -->
-            <!-- 3. 改為 Binding，這樣它才會跟著 UserControl 的 Foreground 變化 -->
             <TextBlock Grid.Row="1" 
                        Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        FontSize="20" FontWeight="Bold" FontFamily="Consolas"
                        HorizontalAlignment="Right" VerticalAlignment="Center">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
-                        <!-- 正常顯示數值 -->
-                        <Setter Property="Text" Value="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='-'}"/>
+                        <!-- 預設顯示 Value -->
+                        <!-- 注意：FallbackValue 僅在設計時或綁定失敗時顯示，執行時會被 Value 覆蓋 -->
+                        <Setter Property="Text" Value="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='123.4'}"/>
 
-                        <!-- 當數值無效時顯示預設文字 (例如 0000) -->
                         <Style.Triggers>
+                            <!-- 🔥 修正：當數值為 "-" (初始值) 時，顯示 DefaultValue -->
                             <DataTrigger Binding="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="-">
                                 <Setter Property="Text" Value="{Binding DefaultValue, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                <!-- 選用：讓預設值稍微暗一點，區分這是「無效值」 -->
+                                <Setter Property="Opacity" Value="0.5"/>
                             </DataTrigger>
+
+                            <!-- 🔥 修正：增加對空字串 "" 的判斷，防止某些情況下變成空白 -->
+                            <DataTrigger Binding="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="">
+                                <Setter Property="Text" Value="{Binding DefaultValue, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </DataTrigger>
+
+                            <!-- 當數值為 null 時 -->
                             <DataTrigger Binding="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="{x:Null}">
                                 <Setter Property="Text" Value="{Binding DefaultValue, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                <Setter Property="Opacity" Value="0.5"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>

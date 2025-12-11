@@ -80,7 +80,7 @@ namespace Stackdose.UI.Core.Controls
 
         // 4. 預設顯示文字
         public static readonly DependencyProperty DefaultValueProperty =
-            DependencyProperty.Register("DefaultValue", typeof(string), typeof(PlcLabel), new PropertyMetadata("0000"));
+            DependencyProperty.Register("DefaultValue", typeof(string), typeof(PlcLabel), new PropertyMetadata("00000"));
         public string DefaultValue
         {
             get { return (string)GetValue(DefaultValueProperty); }

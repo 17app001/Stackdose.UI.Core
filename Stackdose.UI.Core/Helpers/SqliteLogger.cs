@@ -3,7 +3,6 @@ using System.IO;
 using System.Data.SQLite; // NuGet: System.Data.SQLite.Core
 using Dapper;
 
-
 namespace Stackdose.UI.Core.Helpers
 {
     /// <summary>
@@ -18,8 +17,6 @@ namespace Stackdose.UI.Core.Helpers
 
         /// <summary>
         /// 初始化資料庫
-        /// 1. 檢查檔案是否存在，不存在則建立
-        /// 2. 建立所需的表格 (DataLogs, AuditTrails)
         /// </summary>
         public static void Initialize()
         {
@@ -86,15 +83,17 @@ namespace Stackdose.UI.Core.Helpers
         /// <summary>
         /// 寫入操作紀錄 (給 PlcTextBox 與 ComplianceContext 使用)
         /// </summary>
-        public static void LogAudit(string user, string action, string device, string oldVal, string newVal)
+        // 🔥 修正：新增 Reason 參數
+        public static void LogAudit(string user, string action, string device, string oldVal, string newVal, string reason)
         {
             try
             {
                 using (var conn = new SQLiteConnection(_connectionString))
                 {
+                    // 🔥 修正 SQL：加入 Reason 欄位和 @Reason 參數
                     string sql = @"
-                        INSERT INTO AuditTrails (Timestamp, User, Action, TargetDevice, OldValue, NewValue) 
-                        VALUES (@Timestamp, @User, @Action, @Dev, @Old, @New)";
+                        INSERT INTO AuditTrails (Timestamp, User, Action, TargetDevice, OldValue, NewValue, Reason) 
+                        VALUES (@Timestamp, @User, @Action, @Dev, @Old, @New, @Reason)";
 
                     conn.Execute(sql, new
                     {
@@ -103,7 +102,8 @@ namespace Stackdose.UI.Core.Helpers
                         Action = action,
                         Dev = device,
                         Old = oldVal,
-                        New = newVal
+                        New = newVal,
+                        Reason = reason // 🔥 新增：傳遞 Reason 參數
                     });
                 }
             }

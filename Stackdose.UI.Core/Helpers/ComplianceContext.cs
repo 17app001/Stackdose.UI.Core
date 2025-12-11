@@ -35,9 +35,8 @@ namespace Stackdose.UI.Core.Helpers
         /// <param name="reason">修改原因 (預設為手動操作)</param>
         public static void LogAuditTrail(string deviceName, string address, string oldValue, string newValue, string reason = "Manual Operation")
         {
-            // 這裡未來可以加入「電子簽章」的驗證邏輯
-            // 目前先直接寫入 SQLite
-            SqliteLogger.LogAudit(CurrentUser, "WRITE", $"{deviceName}({address})", oldValue, newValue);
+            // 🔥 修正：必須將 reason 參數傳遞給 LogAudit，確保紀錄完整性
+            SqliteLogger.LogAudit(CurrentUser, "WRITE", $"{deviceName}({address})", oldValue, newValue, reason);
         }
 
         /// <summary>

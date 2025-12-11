@@ -1,51 +1,35 @@
-﻿using System;
+﻿using Dapper;
+using Microsoft.Data.Sqlite;
 using System.IO;
-using System.Data.SQLite; // NuGet: System.Data.SQLite.Core
-using Dapper;
 
 namespace Stackdose.UI.Core.Helpers
 {
-    /// <summary>
-    /// SQLite 資料庫操作輔助類別
-    /// 負責實際將資料寫入本地端的 .db 檔案
-    /// </summary>
     public static class SqliteLogger
     {
-        // 資料庫檔案路徑：放在應用程式執行目錄下
         private static string _dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "StackDoseData.db");
-        private static string _connectionString = $"Data Source={_dbPath};Version=3;";
+        private static string _connectionString = $"Data Source={_dbPath}";
 
-        /// <summary>
-        /// 初始化資料庫
-        /// </summary>
         public static void Initialize()
         {
-            // 如果資料庫檔案不存在，建立一個新的
-            if (!File.Exists(_dbPath))
-            {
-                SQLiteConnection.CreateFile(_dbPath);
-            }
+            //if (!File.Exists(_dbPath)) SqliteConnection.CreateFile(_dbPath);
 
-            using (var conn = new SQLiteConnection(_connectionString))
+            using (var conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
 
-                // 1. 建立生產數據表 (DataLogs)
-                // 用於儲存 PlcLabel 收集到的歷史數據
-                string sqlData = @"
+                // 1. DataLogs (生產數據)
+                conn.Execute(@"
                     CREATE TABLE IF NOT EXISTS DataLogs (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         LabelName TEXT,
                         Address TEXT,
                         Value TEXT
-                    );";
-                // Dapper: Execute 擴充方法
-                conn.Execute(sqlData);
+                    );");
 
-                // 2. 建立審計軌跡表 (AuditTrails)
-                // 符合 FDA 21 CFR Part 11 要求：紀錄誰、何時、改了什麼、原因
-                string sqlAudit = @"
+                // 2. AuditTrails (審計軌跡)
+                // 🔥 重點：確保有 Reason 欄位
+                conn.Execute(@"
                     CREATE TABLE IF NOT EXISTS AuditTrails (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -55,42 +39,30 @@ namespace Stackdose.UI.Core.Helpers
                         OldValue TEXT,
                         NewValue TEXT,
                         Reason TEXT
-                    );";
-                conn.Execute(sqlAudit);
+                    );");
             }
         }
 
-        /// <summary>
-        /// 寫入生產數據 (給 PlcLabel 使用)
-        /// </summary>
         public static void LogData(string labelName, string address, string value)
         {
             try
             {
-                using (var conn = new SQLiteConnection(_connectionString))
+                using (var conn = new SqliteConnection(_connectionString))
                 {
-                    string sql = "INSERT INTO DataLogs (Timestamp, LabelName, Address, Value) VALUES (@Timestamp, @Name, @Addr, @Val)";
-                    // Dapper: 自動將匿名物件對應到 SQL 參數
-                    conn.Execute(sql, new { Timestamp = DateTime.Now, Name = labelName, Addr = address, Val = value });
+                    conn.Execute("INSERT INTO DataLogs (Timestamp, LabelName, Address, Value) VALUES (@Timestamp, @Name, @Addr, @Val)",
+                        new { Timestamp = DateTime.Now, Name = labelName, Addr = address, Val = value });
                 }
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[SqliteLogger] LogData Error: {ex.Message}");
-            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[SqliteLogger] LogData Error: {ex.Message}"); }
         }
 
-        /// <summary>
-        /// 寫入操作紀錄 (給 PlcTextBox 與 ComplianceContext 使用)
-        /// </summary>
-        // 🔥 修正：新增 Reason 參數
+        // 🔥 修正：加入 reason 參數並寫入資料庫
         public static void LogAudit(string user, string action, string device, string oldVal, string newVal, string reason)
         {
             try
             {
-                using (var conn = new SQLiteConnection(_connectionString))
+                using (var conn = new SqliteConnection(_connectionString))
                 {
-                    // 🔥 修正 SQL：加入 Reason 欄位和 @Reason 參數
                     string sql = @"
                         INSERT INTO AuditTrails (Timestamp, User, Action, TargetDevice, OldValue, NewValue, Reason) 
                         VALUES (@Timestamp, @User, @Action, @Dev, @Old, @New, @Reason)";
@@ -103,14 +75,11 @@ namespace Stackdose.UI.Core.Helpers
                         Dev = device,
                         Old = oldVal,
                         New = newVal,
-                        Reason = reason // 🔥 新增：傳遞 Reason 參數
+                        Reason = reason
                     });
                 }
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[SqliteLogger] LogAudit Error: {ex.Message}");
-            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[SqliteLogger] LogAudit Error: {ex.Message}"); }
         }
     }
 }

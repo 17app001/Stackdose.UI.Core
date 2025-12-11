@@ -33,7 +33,7 @@
         <Controls:PlcLabel HorizontalAlignment="Left" Margin="640,97,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="X軸位置"
             Address="D11" DefaultValue="OFF" BitIndex="0" DataType="Bit"
                            />
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="683,214,0,0" VerticalAlignment="Top" Width="153"/>
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="683,214,0,0" VerticalAlignment="Top" Width="153" EnableAuditTrail="True" EnableDataLog="True"/>
 
 
     </Grid>

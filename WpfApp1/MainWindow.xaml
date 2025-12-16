@@ -4,7 +4,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
-        xmlns:Controls="clr-namespace:Stackdose.UI.Core.Controls;assembly=Stackdose.UI.Core" x:Class="WpfApp1.MainWindow"
+        xmlns:Controls="http://schemas.stackdose.com/wpf"
+     
+    
+    x:Class="WpfApp1.MainWindow"
         mc:Ignorable="d"
         Title="MainWindow" Height="900" Width="1600">
     <Grid>
@@ -33,7 +36,9 @@
         <Controls:PlcLabel HorizontalAlignment="Left" Margin="640,97,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="X軸位置"
             Address="D11" DefaultValue="OFF" BitIndex="0" DataType="Bit"
                            />
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="683,214,0,0" VerticalAlignment="Top" Width="153" EnableAuditTrail="True" EnableDataLog="True"/>
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="683,214,0,0" VerticalAlignment="Top" Width="153" DefaultValue="00000" EnableAuditTrail="True" EnableDataLog="True" DataType="Bit" BitIndex="0"/>
+        <Controls:LiveLogViewer HorizontalAlignment="Left" Margin="418,472,0,0" VerticalAlignment="Top" Height="200" Width="418"/>
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="591,375,0,0" VerticalAlignment="Top" Width="245" DefaultValue="00000" EnableAuditTrail="True" EnableDataLog="True" ShowLog="False"/>
 
 
     </Grid>

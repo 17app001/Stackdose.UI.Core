@@ -85,7 +85,11 @@ namespace Stackdose.UI.Core.Controls
         private async void PlcStatus_Loaded(object sender, RoutedEventArgs e)
         {
             // 雙重保險：載入時如果 IsGlobal 為 true，確保 Context 有被設定
-            if (IsGlobal) PlcContext.GlobalStatus = this;
+            if (IsGlobal)
+            {
+                PlcContext.GlobalStatus = this;
+                ComplianceContext.LogSystem("System initialized. Main PLC set.", Stackdose.UI.Core.Models.LogLevel.Info);
+            }
 
             if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(this)) return;
             IpDisplay.Text = $"{IpAddress}:{Port}";
@@ -127,13 +131,25 @@ namespace Stackdose.UI.Core.Controls
                         catch { }
                     };
                 }
+                // 📝 LOG: 開始連線
+                ComplianceContext.LogSystem($"Connecting to PLC ({IpAddress}:{Port})...", Stackdose.UI.Core.Models.LogLevel.Info);
+
+
                 bool success = await _plcManager.InitializeAsync(IpAddress, Port, ScanInterval);
                 if (success)
                 {
                     StatusText.Text = "CONNECTED";
+                    // ✅ LOG: 連線成功 (使用綠色 Success 等級)
+                    ComplianceContext.LogSystem($"PLC Connection Established ({IpAddress})", Stackdose.UI.Core.Models.LogLevel.Success);
                     if (!string.IsNullOrWhiteSpace(MonitorAddress)) RegisterMonitors(MonitorAddress);
                 }
-                else StatusText.Text = "DISCONNECTED";
+                else
+                {
+                    StatusText.Text = "DISCONNECTED";
+                    // ❌ LOG: 連線失敗 (使用紅色 Error 等級)
+                    ComplianceContext.LogSystem($"PLC Connection Failed ({IpAddress})", Stackdose.UI.Core.Models.LogLevel.Error);
+                }
+
                 UpdateUiState(success ? ConnectionState.Connected : ConnectionState.Failed);
             }
             catch (Exception ex)
@@ -148,6 +164,8 @@ namespace Stackdose.UI.Core.Controls
             if (_plcManager != null) await _plcManager.DisconnectAsync();
             UpdateUiState(ConnectionState.Failed);
             StatusText.Text = "Click To Connecting";
+            // ⚠️ LOG: 手動斷線 (使用黃色 Warning 等級)
+            ComplianceContext.LogSystem($"PLC Disconnected by User", Stackdose.UI.Core.Models.LogLevel.Warning);
         }
 
         private void RegisterMonitors(string config)

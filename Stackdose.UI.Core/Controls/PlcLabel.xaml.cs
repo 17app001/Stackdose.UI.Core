@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Stackdose.Abstractions.Hardware;
+using Stackdose.Abstractions.Logging;
+using Stackdose.UI.Core.Helpers; // 引用 Context 與 合規引擎
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using Stackdose.Abstractions.Hardware;
-using Stackdose.UI.Core.Helpers; // 引用 Context 與 合規引擎
 
 namespace Stackdose.UI.Core.Controls
 {
@@ -143,6 +144,16 @@ namespace Stackdose.UI.Core.Controls
             set { SetValue(EnableAuditTrailProperty, value); }
         }
 
+      
+        public static readonly DependencyProperty ShowLogProperty =
+            DependencyProperty.Register("ShowLog", typeof(bool), typeof(PlcLabel), new PropertyMetadata(true));
+
+        public bool ShowLog
+        {
+            get { return (bool)GetValue(ShowLogProperty); }
+            set { SetValue(ShowLogProperty, value); }
+        }
+
         #endregion
 
         // ... (自動綁定與事件邏輯) ...
@@ -270,21 +281,41 @@ namespace Stackdose.UI.Core.Controls
                 // 2. 自動合規紀錄 - Data History (生產履歷)
                 if (EnableDataLog && newValueStr != "-" && !string.IsNullOrEmpty(Label))
                 {
-                    ComplianceContext.LogDataHistory(Label, Address, newValueStr);
+                    //ComplianceContext.LogDataHistory(Label, Address, newValueStr);
+                    // 捕獲變數以避免閉包問題
+                    string logLabel = Label;
+                    string logAddr = Address;
+                    string logVal = newValueStr;
+
+                    Task.Run(() =>
+                    {
+                     
+                        ComplianceContext.LogDataHistory(logLabel, logAddr, logVal);
+                    });
                 }
 
                 // 3. 🔥 自動合規紀錄 - Audit Trail (關鍵狀態變動追蹤)
                 // 只有在 EnableAuditTrail 為 True，且數值真正有意義地改變時才紀錄
                 if (EnableAuditTrail && newValueStr != "-" && oldValueStr != "-" && !string.IsNullOrEmpty(Label) && oldValueStr != newValueStr)
                 {
-                    // 由於這是自動讀取，我們將 Reason 標記為系統自動追蹤
-                    ComplianceContext.LogAuditTrail(
-                        Label,
-                        Address,
-                        oldValueStr,
-                        newValueStr,
-                        "System Auto-Read Change"
+                    string logLabel = Label;
+                    string logAddr = Address;
+                    string oldVal = oldValueStr;
+                    string logVal = newValueStr;
+                    bool showInUi = ShowLog; // 🔥 這裡讀取新的屬性
+                    Task.Run(() =>
+                    {
+                       
+                        // 由於這是自動讀取，我們將 Reason 標記為系統自動追蹤
+                        ComplianceContext.LogAuditTrail(
+                        logLabel,
+                        logAddr,
+                        oldVal,
+                        logVal,
+                        "System Auto-Read Change",
+                        showInUi
                     );
+                    });
                 }
             }
         }

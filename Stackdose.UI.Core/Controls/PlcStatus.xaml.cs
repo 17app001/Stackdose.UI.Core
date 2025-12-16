@@ -1,7 +1,7 @@
 ﻿using Stackdose.Abstractions.Hardware;
 using Stackdose.Hardware.Plc;
 using Stackdose.Mitsubishi.Plc;
-using Stackdose.UI.Core.Helpers; // 引用 Context
+using Stackdose.UI.Core.Helpers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -14,6 +14,9 @@ namespace Stackdose.UI.Core.Controls
     {
         private IPlcManager? _plcManager;
         private bool _isBusy = false;
+
+        // 🔥 新增：用來控制看門狗是否應該繼續運行
+        private CancellationTokenSource? _watchdogCts;
 
         public IPlcManager? CurrentManager => _plcManager;
         public event Action<IPlcManager>? ScanUpdated;
@@ -29,8 +32,9 @@ namespace Stackdose.UI.Core.Controls
 
         #region Dependency Properties
 
+        // ... (原有的屬性保持不變: IpAddress, Port, AutoConnect, etc.) ...
         public static readonly DependencyProperty IpAddressProperty =
-            DependencyProperty.Register("IpAddress", typeof(string), typeof(PlcStatus), new PropertyMetadata("127.0.0.1"));
+             DependencyProperty.Register("IpAddress", typeof(string), typeof(PlcStatus), new PropertyMetadata("127.0.0.1"));
         public string IpAddress { get { return (string)GetValue(IpAddressProperty); } set { SetValue(IpAddressProperty, value); } }
 
         public static readonly DependencyProperty PortProperty =
@@ -53,38 +57,24 @@ namespace Stackdose.UI.Core.Controls
             DependencyProperty.Register("MonitorLength", typeof(int), typeof(PlcStatus), new PropertyMetadata(1));
         public int MonitorLength { get { return (int)GetValue(MonitorLengthProperty); } set { SetValue(MonitorLengthProperty, value); } }
 
-        // 🔥 新增：是否為全域預設 PLC (IsGlobal)
         public static readonly DependencyProperty IsGlobalProperty =
-            DependencyProperty.Register(
-                "IsGlobal",                 // 屬性名稱
-                typeof(bool),               // 類型
-                typeof(PlcStatus),          // 擁有者
-                new PropertyMetadata(
-                    true,                  // 預設值建議為 true，方便大多數情況使用 
-                    OnIsGlobalChanged));    // ⚡ 關鍵：設定變更時的回呼函式
+            DependencyProperty.Register("IsGlobal", typeof(bool), typeof(PlcStatus), new PropertyMetadata(true, OnIsGlobalChanged));
+        public bool IsGlobal { get { return (bool)GetValue(IsGlobalProperty); } set { SetValue(IsGlobalProperty, value); } }
 
-        public bool IsGlobal
-        {
-            get { return (bool)GetValue(IsGlobalProperty); }
-            set { SetValue(IsGlobalProperty, value); }
-        }
+        // 🔥 新增：重試次數設定 (預設 3 次)
+        public static readonly DependencyProperty MaxRetryCountProperty =
+            DependencyProperty.Register("MaxRetryCount", typeof(int), typeof(PlcStatus), new PropertyMetadata(3));
+        public int MaxRetryCount { get { return (int)GetValue(MaxRetryCountProperty); } set { SetValue(MaxRetryCountProperty, value); } }
 
-        // 當 IsGlobal 被設定為 True 時觸發
         private static void OnIsGlobalChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is PlcStatus plcStatus && (bool)e.NewValue)
-            {
-                // 當設定為 True 時，將自己註冊為全域預設值
-                // 這樣 PlcLabel 找不到綁定時，就會來抓這個變數
-                PlcContext.GlobalStatus = plcStatus;
-            }
+            if (d is PlcStatus plcStatus && (bool)e.NewValue) PlcContext.GlobalStatus = plcStatus;
         }
 
         #endregion
 
         private async void PlcStatus_Loaded(object sender, RoutedEventArgs e)
         {
-            // 雙重保險：載入時如果 IsGlobal 為 true，確保 Context 有被設定
             if (IsGlobal)
             {
                 PlcContext.GlobalStatus = this;
@@ -92,7 +82,9 @@ namespace Stackdose.UI.Core.Controls
             }
 
             if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(this)) return;
+
             IpDisplay.Text = $"{IpAddress}:{Port}";
+
             if (AutoConnect) await ConnectAsync();
             else { UpdateUiState(ConnectionState.Failed); StatusText.Text = "Click To Connecting"; }
         }
@@ -105,68 +97,154 @@ namespace Stackdose.UI.Core.Controls
             try
             {
                 _isBusy = true;
-                if (_plcManager != null && _plcManager.IsConnected) await DisconnectAsync();
-                else await ConnectAsync();
+                // 手動點擊時，如果已經連線，則斷線 (並且停止自動重連的看門狗)
+                if (_plcManager != null && _plcManager.IsConnected)
+                {
+                    CancelWatchdog(); // 停止監控
+                    await DisconnectAsync();
+                }
+                else
+                {
+                    await ConnectAsync();
+                }
             }
             finally { _isBusy = false; }
         }
 
+        /// <summary>
+        /// 🔥 修改後的連線邏輯：支援 3 次重試 + 啟動斷線偵測
+        /// </summary>
         private async Task ConnectAsync()
         {
             UpdateUiState(ConnectionState.Connecting);
-            try
+
+            // 初始化 PLC Manager (若尚未建立)
+            if (_plcManager == null)
             {
-                if (_plcManager == null)
+                IPlcClient client = new FX3UPlcClient(null);
+                _plcManager = new PlcManager(client, null);
+                _plcManager.ScanElapsedChanged += (ms) =>
                 {
-                    IPlcClient client = new FX3UPlcClient(null);
-                    _plcManager = new PlcManager(client, null);
-                    _plcManager.ScanElapsedChanged += (ms) =>
+                    try
                     {
-                        try
-                        {
-                            if (Dispatcher.HasShutdownStarted) return;
-                            Dispatcher.Invoke(() => { if (!Dispatcher.HasShutdownStarted) StatusText.Text = $"ONLINE ({ms}ms)"; });
-                            if (_plcManager != null) ScanUpdated?.Invoke(_plcManager);
-                        }
-                        catch { }
-                    };
-                }
-                // 📝 LOG: 開始連線
-                ComplianceContext.LogSystem($"Connecting to PLC ({IpAddress}:{Port})...", Stackdose.UI.Core.Models.LogLevel.Info);
-
-
-                bool success = await _plcManager.InitializeAsync(IpAddress, Port, ScanInterval);
-                if (success)
-                {
-                    StatusText.Text = "CONNECTED";
-                    // ✅ LOG: 連線成功 (使用綠色 Success 等級)
-                    ComplianceContext.LogSystem($"PLC Connection Established ({IpAddress})", Stackdose.UI.Core.Models.LogLevel.Success);
-                    if (!string.IsNullOrWhiteSpace(MonitorAddress)) RegisterMonitors(MonitorAddress);
-                }
-                else
-                {
-                    StatusText.Text = "DISCONNECTED";
-                    // ❌ LOG: 連線失敗 (使用紅色 Error 等級)
-                    ComplianceContext.LogSystem($"PLC Connection Failed ({IpAddress})", Stackdose.UI.Core.Models.LogLevel.Error);
-                }
-
-                UpdateUiState(success ? ConnectionState.Connected : ConnectionState.Failed);
+                        if (Dispatcher.HasShutdownStarted) return;
+                        Dispatcher.Invoke(() => { if (!Dispatcher.HasShutdownStarted) StatusText.Text = $"ONLINE ({ms}ms)"; });
+                        ScanUpdated?.Invoke(_plcManager);
+                    }
+                    catch { }
+                };
             }
-            catch (Exception ex)
+
+            // 🔥 重試迴圈邏輯
+            bool success = false;
+            int attempt = 0;
+
+            while (!success && attempt <= MaxRetryCount)
             {
-                StatusText.Text = "ERR: " + ex.Message;
-                UpdateUiState(ConnectionState.Failed);
+                attempt++;
+                try
+                {
+                    string retryMsg = attempt > 1 ? $" (Attempt {attempt}/{MaxRetryCount})" : "";
+                    ComplianceContext.LogSystem($"Connecting to PLC ({IpAddress}:{Port}){retryMsg}...", Stackdose.UI.Core.Models.LogLevel.Info);
+
+                    if (attempt > 1) StatusText.Text = $"RETRYING ({attempt}/{MaxRetryCount})...";
+
+                    // 嘗試連線
+                    success = await _plcManager.InitializeAsync(IpAddress, Port, ScanInterval);
+
+                    if (success)
+                    {
+                        StatusText.Text = "CONNECTED";
+                        ComplianceContext.LogSystem($"PLC Connection Established ({IpAddress})", Stackdose.UI.Core.Models.LogLevel.Success);
+
+                        if (!string.IsNullOrWhiteSpace(MonitorAddress)) RegisterMonitors(MonitorAddress);
+
+                        // 🔥 連線成功後，啟動「看門狗」來偵測未來是否斷線
+                        StartConnectionWatchdog();
+                    }
+                    else
+                    {
+                        // 連線失敗
+                        if (attempt <= MaxRetryCount)
+                        {
+                            ComplianceContext.LogSystem($"Connection failed. Retrying in 2s... ({attempt}/{MaxRetryCount})", Stackdose.UI.Core.Models.LogLevel.Warning);
+                            // 等待 2 秒後重試
+                            await Task.Delay(2000);
+                        }
+                        else
+                        {
+                            // 超過次數，放棄
+                            StatusText.Text = "DISCONNECTED";
+                            ComplianceContext.LogSystem($"PLC Connection Failed after {MaxRetryCount} attempts.", Stackdose.UI.Core.Models.LogLevel.Error);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ComplianceContext.LogSystem($"PLC Error: {ex.Message}", Stackdose.UI.Core.Models.LogLevel.Error);
+                    if (attempt <= MaxRetryCount) await Task.Delay(2000);
+                }
             }
+
+            UpdateUiState(success ? ConnectionState.Connected : ConnectionState.Failed);
         }
 
         private async Task DisconnectAsync()
         {
+            // 斷線時先取消看門狗，避免它以為斷線了又嘗試重連
+            CancelWatchdog();
+
             if (_plcManager != null) await _plcManager.DisconnectAsync();
             UpdateUiState(ConnectionState.Failed);
             StatusText.Text = "Click To Connecting";
-            // ⚠️ LOG: 手動斷線 (使用黃色 Warning 等級)
             ComplianceContext.LogSystem($"PLC Disconnected by User", Stackdose.UI.Core.Models.LogLevel.Warning);
         }
+
+        // 🔥 新增：斷線偵測看門狗 (Watchdog)
+        private void StartConnectionWatchdog()
+        {
+            // 先清除舊的，確保只有一個在跑
+            CancelWatchdog();
+
+            _watchdogCts = new CancellationTokenSource();
+            var token = _watchdogCts.Token;
+
+            Task.Run(async () =>
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    // 每 3 秒檢查一次狀態
+                    await Task.Delay(3000, token);
+
+                    if (_plcManager != null && !_plcManager.IsConnected)
+                    {
+                        // 😱 發現斷線了！(且不是使用者手動斷的)
+
+                        // 切回 UI 執行緒處理重連
+                        Dispatcher.Invoke(async () =>
+                        {
+                            ComplianceContext.LogSystem("⚠️ Connection lost detected! Attempting to reconnect...", Stackdose.UI.Core.Models.LogLevel.Error);
+
+                            // 停止這個看門狗迴圈 (ConnectAsync 成功後會再起一個新的)
+                            CancelWatchdog();
+
+                            // 觸發重連邏輯 (這裡會再次執行 3 次重試)
+                            await ConnectAsync();
+                        });
+
+                        break; // 跳出迴圈
+                    }
+                }
+            }, token);
+        }
+
+        private void CancelWatchdog()
+        {
+            _watchdogCts?.Cancel();
+            _watchdogCts = null;
+        }
+
+        // ... (RegisterMonitors, Dispose, UpdateUiState 保持不變) ...
 
         private void RegisterMonitors(string config)
         {
@@ -196,6 +274,7 @@ namespace Stackdose.UI.Core.Controls
         private void PlcStatus_Unloaded(object sender, RoutedEventArgs e) => Dispose();
         public void Dispose()
         {
+            CancelWatchdog(); // 記得釋放
             if (_plcManager != null) { _plcManager.Dispose(); _plcManager = null; }
         }
 

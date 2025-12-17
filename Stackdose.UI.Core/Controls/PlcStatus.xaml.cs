@@ -161,7 +161,45 @@ namespace Stackdose.UI.Core.Controls
                         StatusText.Text = "CONNECTED";
                         ComplianceContext.LogSystem($"PLC Connection Established ({IpAddress})", Stackdose.UI.Core.Models.LogLevel.Success);
 
-                        if (!string.IsNullOrWhiteSpace(MonitorAddress)) RegisterMonitors(MonitorAddress);
+                        // 🔥 1. 先註冊手動設定的 MonitorAddress（如果有）
+                        if (!string.IsNullOrWhiteSpace(MonitorAddress)) 
+                            RegisterMonitors(MonitorAddress);
+
+                        // 🔥 2. 自動註冊來自 SensorContext 的監控位址
+                        string sensorAddresses = SensorContext.GenerateMonitorAddresses();
+                        if (!string.IsNullOrWhiteSpace(sensorAddresses))
+                        {
+                            RegisterMonitors(sensorAddresses);
+                            ComplianceContext.LogSystem(
+                                $"[AutoRegister] Sensor: {sensorAddresses}", 
+                                Stackdose.UI.Core.Models.LogLevel.Info,
+                                showInUi: false
+                            );
+                        }
+
+                        // 🔥 3. 自動註冊來自 PlcLabelContext 的監控位址
+                        string labelAddresses = PlcLabelContext.GenerateMonitorAddresses();
+                        if (!string.IsNullOrWhiteSpace(labelAddresses))
+                        {
+                            RegisterMonitors(labelAddresses);
+                            ComplianceContext.LogSystem(
+                                $"[AutoRegister] PlcLabel: {labelAddresses}", 
+                                Stackdose.UI.Core.Models.LogLevel.Info,
+                                showInUi: false
+                            );
+                        }
+
+                        // 🔥 4. 自動註冊來自 PlcEventContext 的監控位址
+                        string eventAddresses = PlcEventContext.GenerateMonitorAddresses();
+                        if (!string.IsNullOrWhiteSpace(eventAddresses))
+                        {
+                            RegisterMonitors(eventAddresses);
+                            ComplianceContext.LogSystem(
+                                $"[AutoRegister] PlcEvent: {eventAddresses}", 
+                                Stackdose.UI.Core.Models.LogLevel.Info,
+                                showInUi: false
+                            );
+                        }
 
                         // 🔥 觸發連線成功事件（讓 SensorViewer 等訂閱者可以註冊 Monitor）
                         ConnectionEstablished?.Invoke(_plcManager);

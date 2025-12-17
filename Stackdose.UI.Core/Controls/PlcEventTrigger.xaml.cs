@@ -107,12 +107,18 @@ namespace Stackdose.UI.Core.Controls
             _cachedEventName = EventName;
             _cachedTriggerCondition = TriggerCondition;
             
+            // 🔥 註冊到 PlcEventContext（用於自動監控）
+            PlcEventContext.Register(this);
+            
             // 自動綁定 PlcStatus
             TryResolveContextStatus();
         }
 
         private void PlcEventTrigger_Unloaded(object sender, RoutedEventArgs e)
         {
+            // 🔥 註銷 PlcEventContext
+            PlcEventContext.Unregister(this);
+            
             // 解除綁定
             BindToStatus(null);
         }
@@ -151,7 +157,7 @@ namespace Stackdose.UI.Core.Controls
             // 🔥 優先使用全域 PlcStatus
             var globalStatus = PlcContext.GlobalStatus;
             if (globalStatus != null)
-            {
+            { 
                 BindToStatus(globalStatus);
                 return;
             }

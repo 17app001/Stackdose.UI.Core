@@ -13,7 +13,7 @@
     <Grid>
 
         <Controls:CyberFrame Title="UBI SYSTEM"/>
-        <Controls:PlcStatus x:Name="MainPlc" HorizontalAlignment="Left" Margin="73,89,0,0" VerticalAlignment="Top" IpAddress="192.168.22.39" Port="3000" AutoConnect="False" MonitorAddress="D0,12,M1,10,D90,11,R2000,R2002,M237,10" MonitorLength="1" ScanInterval="120"/>
+        <Controls:PlcStatus x:Name="MainPlc" HorizontalAlignment="Left" Margin="73,89,0,0" VerticalAlignment="Top" IpAddress="192.168.22.39" Port="3000" AutoConnect="False" MonitorAddress="" MonitorLength="1" ScanInterval="120"/>
         <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,97,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="X軸位置"
                             Address="D10" DefaultValue="00000" DataType="Word"
                            />

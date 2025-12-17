@@ -168,6 +168,9 @@ namespace Stackdose.UI.Core.Controls
 
         private void PlcLabel_Loaded(object sender, RoutedEventArgs e)
         {
+            // 🔥 註冊到 PlcLabelContext（用於自動監控）
+            PlcLabelContext.Register(this);
+            
             if (TargetStatus == null) TryResolveContextStatus();
         }
 
@@ -191,6 +194,9 @@ namespace Stackdose.UI.Core.Controls
 
         private void PlcLabel_Unloaded(object sender, RoutedEventArgs e)
         {
+            // 🔥 註銷 PlcLabelContext
+            PlcLabelContext.Unregister(this);
+            
             if (_boundStatus != null) { _boundStatus.ScanUpdated -= OnScanUpdated; _boundStatus = null; }
         }
 

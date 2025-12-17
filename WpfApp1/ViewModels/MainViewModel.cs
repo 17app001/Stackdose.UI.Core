@@ -37,6 +37,9 @@ namespace WpfApp1.ViewModels
             // 🔥 訂閱 PlcLabel 值變更事件（統一管理）
             PlcLabelContext.ValueChanged += OnPlcLabelValueChanged;
 
+            // 🔥 訂閱 PlcEvent 事件觸發（統一管理）
+            PlcEventContext.EventTriggered += OnPlcEventTriggered;
+
             // 初始化命令
             TestUIThreadMessageBoxCommand = new RelayCommand(TestUIThreadMessageBox);
             TestBackgroundMessageBoxCommand = new RelayCommand(TestBackgroundMessageBox);
@@ -203,6 +206,61 @@ namespace WpfApp1.ViewModels
 
         #endregion
 
+        #region PlcEvent 事件觸發處理
+
+        /// <summary>
+        /// PlcEvent 觸發時的處理（從 PlcEventContext 事件觸發）
+        /// 類似 SensorContext.AlarmTriggered 的使用方式
+        /// </summary>
+        private void OnPlcEventTriggered(object? sender, PlcEventTriggeredEventArgs e)
+        {
+            // 🔥 只使用一種方式：根據 EventName 處理（推薦）
+            switch (e.EventName)
+            {
+                case "Recipe1Selected":
+                    LoadRecipe1();
+                    CyberMessageBox.Show(
+                        $"Recipe 1 已載入\n事件：{e.EventName}",
+                        "✅ 成功",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information
+                    );
+                    break;
+
+                case "Recipe2Selected":
+                    LoadRecipe2();
+                    CyberMessageBox.Show(
+                        $"Recipe 2 已載入\n事件：{e.EventName}",
+                        "✅ 成功",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information
+                    );
+                    break;
+            }
+
+            // 🔥 自動清空已在 PlcEventTrigger 內部完成，不需要手動寫 0
+        }
+
+        /// <summary>
+        /// 載入 Recipe 1
+        /// </summary>
+        private void LoadRecipe1()
+        {
+            ComplianceContext.LogSystem("Recipe 1 載入中...", LogLevel.Info, showInUi: true);
+            // TODO: 實作 Recipe 1 載入邏輯
+        }
+
+        /// <summary>
+        /// 載入 Recipe 2
+        /// </summary>
+        private void LoadRecipe2()
+        {
+            ComplianceContext.LogSystem("Recipe 2 載入中...", LogLevel.Info, showInUi: true);
+            // TODO: 實作 Recipe 2 載入邏輯
+        }
+
+        #endregion
+
         #region 測試方法
 
         /// <summary>
@@ -289,8 +347,11 @@ namespace WpfApp1.ViewModels
             SensorContext.AlarmTriggered -= OnSensorAlarmTriggered;
             SensorContext.AlarmCleared -= OnSensorAlarmCleared;
 
-            // 🔥 新增：取消訂閱 PlcLabel 事件
+            // 🔥 取消訂閱 PlcLabel 事件
             PlcLabelContext.ValueChanged -= OnPlcLabelValueChanged;
+
+            // 🔥 取消訂閱 PlcEvent 事件
+            PlcEventContext.EventTriggered -= OnPlcEventTriggered;
         }
 
         #endregion

@@ -1,14 +1,7 @@
 ﻿using Stackdose.UI.Core.Controls;
-using System.Text;
+using Stackdose.UI.Core.Helpers;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace WpfApp1
 {
@@ -21,7 +14,22 @@ namespace WpfApp1
         {
             InitializeComponent();
 
+            //  訂閱PlcLabel事件
             LblTemp.ValueChanged += LblTemp_ValueChanged;
+            // 訂閱感測器警報事件
+            SensorContext.AlarmTriggered += OnSensorAlarmTriggered;
+            //SensorContext.AlarmCleared += OnSensorAlarmCleared;
+        }
+
+        private void OnSensorAlarmTriggered(object? sender, SensorAlarmEventArgs e)
+        {
+            // e.Sensor 包含觸發的感測器資訊
+            // e.EventTime 包含觸發時間
+            // 方式 1：針對特定感測器執行動作
+            if (e.Sensor.Device == "D90")
+            {
+                MessageBox.Show($"緊急警報！{e.Sensor.OperationDescription} 已觸發！");
+            }
         }
 
         private void LblTemp_ValueChanged(object? sender, PlcValueChangedEventArgs e)

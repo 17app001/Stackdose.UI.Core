@@ -1,4 +1,4 @@
-using Stackdose.UI.Core.Models;
+ï»¿using Stackdose.UI.Core.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -8,15 +8,15 @@ using System.Windows.Data;
 namespace Stackdose.UI.Core.Helpers
 {
     /// <summary>
-    /// ·P´ú¾¹¤W¤U¤åºŞ²z (Sensor Context Manager)
-    /// ¥Î³~¡G²Î¤@ºŞ²z·P´ú¾¹°t¸m¡Bª¬ºAºÊ±±©MÄµ³ø¨Æ¥ó
+    /// æ„Ÿæ¸¬å™¨ä¸Šä¸‹æ–‡ç®¡ç† (Sensor Context Manager)
+    /// ç”¨é€”ï¼šçµ±ä¸€ç®¡ç†æ„Ÿæ¸¬å™¨é…ç½®ã€ç‹€æ…‹ç›£æ§å’Œè­¦å ±äº‹ä»¶
     /// </summary>
     public static class SensorContext
     {
-        #region ÀRºAÄİ©Ê
+        #region éœæ…‹å±¬æ€§
 
         /// <summary>
-        /// ¥ş°ì·P´ú¾¹²M³æ (¥i¸j©w¨ì UI)
+        /// å…¨åŸŸæ„Ÿæ¸¬å™¨æ¸…å–® (å¯ç¶å®šåˆ° UI)
         /// </summary>
         public static ObservableCollection<SensorConfig> Sensors { get; } = new ObservableCollection<SensorConfig>();
 
@@ -24,41 +24,41 @@ namespace Stackdose.UI.Core.Helpers
 
         #endregion
 
-        #region ¨Æ¥ó©w¸q
+        #region äº‹ä»¶å®šç¾©
 
         /// <summary>
-        /// Äµ³øÄ²µo¨Æ¥ó (·í·P´ú¾¹±q¥¿±`ÅÜ¬°²§±`®ÉÄ²µo)
+        /// è­¦å ±è§¸ç™¼äº‹ä»¶ (ç•¶æ„Ÿæ¸¬å™¨å¾æ­£å¸¸è®Šç‚ºç•°å¸¸æ™‚è§¸ç™¼)
         /// </summary>
         public static event EventHandler<SensorAlarmEventArgs>? AlarmTriggered;
 
         /// <summary>
-        /// Äµ³ø®ø¥¢¨Æ¥ó (·í·P´ú¾¹±q²§±`ÅÜ¬°¥¿±`®ÉÄ²µo)
+        /// è­¦å ±æ¶ˆå¤±äº‹ä»¶ (ç•¶æ„Ÿæ¸¬å™¨å¾ç•°å¸¸è®Šç‚ºæ­£å¸¸æ™‚è§¸ç™¼)
         /// </summary>
         public static event EventHandler<SensorAlarmEventArgs>? AlarmCleared;
 
         #endregion
 
-        #region ÀRºA«Øºc¤l
+        #region éœæ…‹å»ºæ§‹å­
 
         static SensorContext()
         {
-            // ±Ò¥Î¸ó°õ¦æºü¶°¦X¦P¨B (¤¹³\±q PLC ºÊ±±°õ¦æºü§ó·s)
+            // å•Ÿç”¨è·¨åŸ·è¡Œç·’é›†åˆåŒæ­¥ (å…è¨±å¾ PLC ç›£æ§åŸ·è¡Œç·’æ›´æ–°)
             BindingOperations.EnableCollectionSynchronization(Sensors, _lock);
         }
 
         #endregion
 
-        #region ¤½¶}¤èªk
+        #region å…¬é–‹æ–¹æ³•
 
         /// <summary>
-        /// ±q JSON ÀÉ®×¸ü¤J·P´ú¾¹°t¸m
+        /// å¾ JSON æª”æ¡ˆè¼‰å…¥æ„Ÿæ¸¬å™¨é…ç½®
         /// </summary>
-        /// <param name="jsonFilePath">JSON ÀÉ®×¸ô®| (¬Û¹ï©Îµ´¹ï¸ô®|)</param>
+        /// <param name="jsonFilePath">JSON æª”æ¡ˆè·¯å¾‘ (ç›¸å°æˆ–çµ•å°è·¯å¾‘)</param>
         public static void LoadFromJson(string jsonFilePath)
         {
             try
             {
-                // ¤ä´©¬Û¹ï¸ô®| (¬Û¹ï©ó°õ¦æÀÉ¥Ø¿ı)
+                // æ”¯æ´ç›¸å°è·¯å¾‘ (ç›¸å°æ–¼åŸ·è¡Œæª”ç›®éŒ„)
                 string fullPath = Path.IsPathRooted(jsonFilePath)
                     ? jsonFilePath
                     : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, jsonFilePath);
@@ -69,13 +69,13 @@ namespace Stackdose.UI.Core.Helpers
                     return;
                 }
 
-                // ?? ­×¥¿¡G±j¨î¨Ï¥Î UTF-8 ½s½XÅª¨ú JSON ÀÉ®×
+                // ğŸ”¥ ä¿®æ­£ï¼šå¼·åˆ¶ä½¿ç”¨ UTF-8 ç·¨ç¢¼è®€å– JSON æª”æ¡ˆ
                 string json = File.ReadAllText(fullPath, System.Text.Encoding.UTF8);
                 var configs = JsonSerializer.Deserialize<SensorConfig[]>(json, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
                     ReadCommentHandling = JsonCommentHandling.Skip,
-                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping  // ?? ¤¹³\¤¤¤å¦r¤¸
+                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping  // ğŸ”¥ å…è¨±ä¸­æ–‡å­—å…ƒ
                 });
 
                 if (configs == null || configs.Length == 0)
@@ -102,10 +102,10 @@ namespace Stackdose.UI.Core.Helpers
         }
 
         /// <summary>
-        /// ?? ·s¼W¡G±q·í«e·P´ú¾¹²M³æ¤¤´¼¼z´£¨úºÊ±±¦ì§}
-        /// ¦Û°Ê¦X¨Ö³sÄò¦ì§}¡]¨Ò¦p D90, D91, D92 ¡÷ D90,3¡^
+        /// ğŸ”¥ æ–°å¢ï¼šå¾ç•¶å‰æ„Ÿæ¸¬å™¨æ¸…å–®ä¸­æ™ºæ…§æå–ç›£æ§ä½å€
+        /// è‡ªå‹•åˆä½µé€£çºŒä½å€ï¼ˆä¾‹å¦‚ D90, D91, D92 â†’ D90,3ï¼‰
         /// </summary>
-        /// <returns>ºÊ±±¦ì§}¦r¦ê¡]¨Ò¦p "D90,3,M100,1,X10,1"¡^</returns>
+        /// <returns>ç›£æ§ä½å€å­—ä¸²ï¼ˆä¾‹å¦‚ "D90,3,M100,1,X10,1"ï¼‰</returns>
         public static string GenerateMonitorAddresses()
         {
             if (Sensors.Count == 0)
@@ -113,12 +113,12 @@ namespace Stackdose.UI.Core.Helpers
 
             var addressGroups = new Dictionary<string, List<int>>();
 
-            // 1. ´£¨ú©Ò¦³¦ì§}
+            // 1. æå–æ‰€æœ‰ä½å€
             foreach (var sensor in Sensors)
             {
                 string device = sensor.Device.Trim().ToUpper();
                 
-                // ¸ÑªR¸Ë¸mÃş«¬©M½s¸¹ (¨Ò¦p D90 ¡÷ Ãş«¬=D, ½s¸¹=90)
+                // è§£æè£ç½®é¡å‹å’Œç·¨è™Ÿ (ä¾‹å¦‚ D90 â†’ é¡å‹=D, ç·¨è™Ÿ=90)
                 if (System.Text.RegularExpressions.Regex.Match(device, @"^([A-Z]+)(\d+)$") is var match && match.Success)
                 {
                     string deviceType = match.Groups[1].Value; // D, M, X, Y, R
@@ -129,7 +129,7 @@ namespace Stackdose.UI.Core.Helpers
                         addressGroups[deviceType] = new List<int>();
                     }
 
-                    // Á×§K­«½Æ
+                    // é¿å…é‡è¤‡
                     if (!addressGroups[deviceType].Contains(deviceNumber))
                     {
                         addressGroups[deviceType].Add(deviceNumber);
@@ -137,7 +137,7 @@ namespace Stackdose.UI.Core.Helpers
                 }
             }
 
-            // 2. ´¼¼z¦X¨Ö³sÄò¦ì§}
+            // 2. æ™ºæ…§åˆä½µé€£çºŒä½å€
             var monitorParts = new List<string>();
 
             foreach (var group in addressGroups.OrderBy(g => g.Key))
@@ -151,7 +151,7 @@ namespace Stackdose.UI.Core.Helpers
                     int start = numbers[i];
                     int end = start;
 
-                    // §ä¥X³sÄò½d³ò
+                    // æ‰¾å‡ºé€£çºŒç¯„åœ
                     while (i + 1 < numbers.Count && numbers[i + 1] == end + 1)
                     {
                         i++;
@@ -160,15 +160,15 @@ namespace Stackdose.UI.Core.Helpers
 
                     int length = end - start + 1;
 
-                    // ?? ­×¥¿¡G³sÄò 2 ­Ó¥H¤W´N§å¦¸¦X¨Ö
+                    // ğŸ”¥ ä¿®æ­£ï¼šé€£çºŒ 2 å€‹ä»¥ä¸Šå°±æ‰¹æ¬¡åˆä½µ
                     if (length >= 2)
                     {
-                        // §å¦¸¼Ò¦¡¡GD90,2 ªí¥Ü D90, D91
+                        // æ‰¹æ¬¡æ¨¡å¼ï¼šD90,2 è¡¨ç¤º D90, D91
                         monitorParts.Add($"{deviceType}{start},{length}");
                     }
                     else
                     {
-                        // ³æ¿W¼Ò¦¡¡GD200,1
+                        // å–®ç¨æ¨¡å¼ï¼šD200,1
                         monitorParts.Add($"{deviceType}{start},1");
                     }
 
@@ -181,28 +181,28 @@ namespace Stackdose.UI.Core.Helpers
             return result;
         }
         /// <summary>
-        /// §ó·s·P´ú¾¹ª¬ºA (¥ÑºÊ±±ªA°È©I¥s)
+        /// æ›´æ–°æ„Ÿæ¸¬å™¨ç‹€æ…‹ (ç”±ç›£æ§æœå‹™å‘¼å«)
         /// </summary>
-        /// <param name="sensor">·P´ú¾¹°t¸m</param>
-        /// <param name="isActive">·sªºª¬ºA (true=²§±`, false=¥¿±`)</param>
-        /// <param name="currentValue">·í«eÅª¨úªº¼Æ­È</param>
+        /// <param name="sensor">æ„Ÿæ¸¬å™¨é…ç½®</param>
+        /// <param name="isActive">æ–°çš„ç‹€æ…‹ (true=ç•°å¸¸, false=æ­£å¸¸)</param>
+        /// <param name="currentValue">ç•¶å‰è®€å–çš„æ•¸å€¼</param>
         public static void UpdateSensorState(SensorConfig sensor, bool isActive, string currentValue)
         {
             bool wasActive = sensor.IsActive;
             sensor.CurrentValue = currentValue;
             sensor.IsActive = isActive;
 
-            // ª¬ºAÅÜ¤Æ®ÉÄ²µo¨Æ¥ó©M¤é»x
+            // ç‹€æ…‹è®ŠåŒ–æ™‚è§¸ç™¼äº‹ä»¶å’Œæ—¥èªŒ
             if (wasActive != isActive)
             {
                 if (isActive)
                 {
-                    // Äµ³øÄ²µo (¥¿±` ¡÷ ²§±`)
+                    // è­¦å ±è§¸ç™¼ (æ­£å¸¸ â†’ ç•°å¸¸)
                     OnAlarmTriggered(sensor);
                 }
                 else
                 {
-                    // Äµ³ø®ø¥¢ (²§±` ¡÷ ¥¿±`)
+                    // è­¦å ±æ¶ˆå¤± (ç•°å¸¸ â†’ æ­£å¸¸)
                     OnAlarmCleared(sensor);
                 }
             }
@@ -210,63 +210,63 @@ namespace Stackdose.UI.Core.Helpers
 
         #endregion
 
-        #region ¨p¦³¤èªk
+        #region ç§æœ‰æ–¹æ³•
 
         /// <summary>
-        /// Ä²µoÄµ³øÄ²µo¨Æ¥ó
+        /// è§¸ç™¼è­¦å ±è§¸ç™¼äº‹ä»¶
         /// </summary>
         private static void OnAlarmTriggered(SensorConfig sensor)
         {
-            // 1. °O¿ı¨ì Compliance ¨t²Î (SQLite + LiveLogViewer)
-            string message = $"? Äµ³øÄ²µo: {sensor.OperationDescription} ({sensor.Device})";
+            // 1. è¨˜éŒ„åˆ° Compliance ç³»çµ± (SQLite + LiveLogViewer)
+            string message = $"è­¦å ±è§¸ç™¼: {sensor.OperationDescription} ({sensor.Device})";
             ComplianceContext.LogSystem(message, LogLevel.Warning, showInUi: true);
 
-            // 2. °O¿ı¨ì Audit Trail (²Å¦Xªk³W­n¨D)
+            // 2. è¨˜éŒ„åˆ° Audit Trail (ç¬¦åˆæ³•è¦è¦æ±‚)
             ComplianceContext.LogAuditTrail(
                 deviceName: sensor.OperationDescription,
                 address: sensor.Device,
-                oldValue: "¥¿±`",
-                newValue: "²§±`",
-                reason: $"·P´ú¾¹Ä²µo±ø¥ó: {sensor.Mode} {sensor.Value}",
-                showInUi: false  // Á×§K­«½ÆÅã¥Ü
+                oldValue: "æ­£å¸¸",
+                newValue: "ç•°å¸¸",
+                reason: $"æ„Ÿæ¸¬å™¨è§¸ç™¼æ¢ä»¶: {sensor.Mode} {sensor.Value}",
+                showInUi: false  // é¿å…é‡è¤‡é¡¯ç¤º
             );
 
-            // 3. Ä²µo¥~³¡¨Æ¥ó (ÅıÀ³¥Îµ{¦¡­q¾\¡A¨Ò¦pµo°e¶l¥ó/Â²°T)
+            // 3. è§¸ç™¼å¤–éƒ¨äº‹ä»¶ (è®“æ‡‰ç”¨ç¨‹å¼è¨‚é–±ï¼Œä¾‹å¦‚ç™¼é€éƒµä»¶/ç°¡è¨Š)
             AlarmTriggered?.Invoke(null, new SensorAlarmEventArgs(sensor, DateTime.Now));
         }
 
         /// <summary>
-        /// Ä²µoÄµ³ø®ø¥¢¨Æ¥ó
+        /// è§¸ç™¼è­¦å ±æ¶ˆå¤±äº‹ä»¶
         /// </summary>
         private static void OnAlarmCleared(SensorConfig sensor)
         {
-            // ­pºâÄµ³ø«ùÄò®É¶¡
+            // è¨ˆç®—è­¦å ±æŒçºŒæ™‚é–“
             TimeSpan duration = TimeSpan.Zero;
             if (sensor.AlarmTriggeredTime.HasValue && sensor.AlarmClearedTime.HasValue)
             {
                 duration = sensor.AlarmClearedTime.Value - sensor.AlarmTriggeredTime.Value;
             }
 
-            // 1. °O¿ı¨ì Compliance ¨t²Î
-            string message = $"? Äµ³ø®ø¥¢: {sensor.OperationDescription} ({sensor.Device}) [«ùÄò {duration.TotalSeconds:F1}s]";
+            // 1. è¨˜éŒ„åˆ° Compliance ç³»çµ±
+            string message = $"è­¦å ±æ¶ˆå¤±: {sensor.OperationDescription} ({sensor.Device}) [æŒçºŒ {duration.TotalSeconds:F1}s]";
             ComplianceContext.LogSystem(message, LogLevel.Info, showInUi: true);
 
-            // 2. °O¿ı¨ì Audit Trail
+            // 2. è¨˜éŒ„åˆ° Audit Trail
             ComplianceContext.LogAuditTrail(
                 deviceName: sensor.OperationDescription,
                 address: sensor.Device,
-                oldValue: "²§±`",
-                newValue: "¥¿±`",
-                reason: $"·P´ú¾¹«ì´_¥¿±` («ùÄò®É¶¡: {duration.TotalSeconds:F1}s)",
+                oldValue: "ç•°å¸¸",
+                newValue: "æ­£å¸¸",
+                reason: $"æ„Ÿæ¸¬å™¨æ¢å¾©æ­£å¸¸ (æŒçºŒæ™‚é–“: {duration.TotalSeconds:F1}s)",
                 showInUi: false
             );
 
-            // 3. Ä²µo¥~³¡¨Æ¥ó
+            // 3. è§¸ç™¼å¤–éƒ¨äº‹ä»¶
             AlarmCleared?.Invoke(null, new SensorAlarmEventArgs(sensor, DateTime.Now, duration));
         }
 
         /// <summary>
-        /// °O¿ı¸ê°T¤é»x
+        /// è¨˜éŒ„è³‡è¨Šæ—¥èªŒ
         /// </summary>
         private static void LogInfo(string message)
         {
@@ -274,7 +274,7 @@ namespace Stackdose.UI.Core.Helpers
         }
 
         /// <summary>
-        /// °O¿ı¿ù»~¤é»x
+        /// è¨˜éŒ„éŒ¯èª¤æ—¥èªŒ
         /// </summary>
         private static void LogError(string message)
         {
@@ -284,10 +284,10 @@ namespace Stackdose.UI.Core.Helpers
         #endregion
     }
 
-    #region ¨Æ¥ó°Ñ¼Æ
+    #region äº‹ä»¶åƒæ•¸
 
     /// <summary>
-    /// ·P´ú¾¹Äµ³ø¨Æ¥ó°Ñ¼Æ
+    /// æ„Ÿæ¸¬å™¨è­¦å ±äº‹ä»¶åƒæ•¸
     /// </summary>
     public class SensorAlarmEventArgs : EventArgs
     {

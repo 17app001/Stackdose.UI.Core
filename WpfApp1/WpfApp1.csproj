@@ -9,6 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Sensors.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Sensors.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Stackdose.UI.Core\Stackdose.UI.Core.csproj" />
   </ItemGroup>
 

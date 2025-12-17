@@ -19,6 +19,10 @@ namespace Stackdose.UI.Core.Controls
         private CancellationTokenSource? _watchdogCts;
 
         public IPlcManager? CurrentManager => _plcManager;
+        
+        // 🔥 新增：當 PLC 連線成功時觸發的事件
+        public event Action<IPlcManager>? ConnectionEstablished;
+        
         public event Action<IPlcManager>? ScanUpdated;
 
         public PlcStatus()
@@ -158,6 +162,9 @@ namespace Stackdose.UI.Core.Controls
                         ComplianceContext.LogSystem($"PLC Connection Established ({IpAddress})", Stackdose.UI.Core.Models.LogLevel.Success);
 
                         if (!string.IsNullOrWhiteSpace(MonitorAddress)) RegisterMonitors(MonitorAddress);
+
+                        // 🔥 觸發連線成功事件（讓 SensorViewer 等訂閱者可以註冊 Monitor）
+                        ConnectionEstablished?.Invoke(_plcManager);
 
                         // 🔥 連線成功後，啟動「看門狗」來偵測未來是否斷線
                         StartConnectionWatchdog();

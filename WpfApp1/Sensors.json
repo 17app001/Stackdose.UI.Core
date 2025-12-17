@@ -1,0 +1,83 @@
+﻿[
+  {
+    "Group": "粉槽狀態",
+    "Device": "D90",
+    "Bit": "0,1",
+    "Value": "0,0",
+    "Mode": "AND",
+    "Invert": true,
+    "OperationDescription": "粉槽_A無粉"
+  },
+  {
+    "Group": "粉槽狀態",
+    "Device": "D90",
+    "Bit": "2,3",
+    "Value": "0,0",
+    "Mode": "AND",
+    "OperationDescription": "粉槽_B無粉"
+  },
+  {
+    "Group": "列印區狀態",
+    "Device": "D91",
+    "Bit": "0,1",
+    "Value": "0,0",
+    "Mode": "AND",
+    "OperationDescription": "列印區_A 治具不在席"
+  },
+  {
+    "Group": "列印區狀態",
+    "Device": "D91",
+    "Bit": "2,3",
+    "Value": "1,1",
+    "Mode": "AND",
+    "OperationDescription": "列印區_B 治具在席"
+  },
+  {
+    "Group": "循環供墨系統狀態",
+    "Device": "D94",
+    "Bit": "0",
+    "Value": "1",
+    "Mode": "AND",
+    "OperationDescription": "第二墨盒液位_A"
+  },
+  {
+    "Group": "循環供墨系統狀態",
+    "Device": "D94",
+    "Bit": "1",
+    "Value": "1",
+    "Mode": "AND",
+    "OperationDescription": "第二墨盒液位_B"
+  },
+  {
+    "Group": "循環供墨系統狀態",
+    "Device": "D94",
+    "Bit": "2",
+    "Value": "1",
+    "Mode": "AND",
+    "OperationDescription": "供墨幫浦_A"
+  },
+  {
+    "Group": "循環供墨系統狀態",
+    "Device": "D94",
+    "Bit": "3",
+    "Value": "1",
+    "Mode": "AND",
+    "OperationDescription": "供墨幫浦_B"
+  },
+  {
+    "Group": "循環供墨系統狀態",
+    "Device": "D94",
+    "Bit": "4",
+    "Value": "1",
+    "Mode": "AND",
+    "OperationDescription": "排墨幫浦_A"
+  },
+  {
+    "Group": "循環供墨系統狀態",
+    "Device": "D94",
+    "Bit": "5",
+    "Value": "1",
+    "Mode": "AND",
+    "OperationDescription": "排墨幫浦_B"
+  }
+]

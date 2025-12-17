@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Stackdose.Abstractions.Hardware;
 using Stackdose.UI.Core.Helpers; // 引用 Context
+using Stackdose.UI.Core.Models; // 引用 LogLevel
 
 namespace Stackdose.UI.Core.Controls
 {
@@ -46,6 +47,24 @@ namespace Stackdose.UI.Core.Controls
             set { SetValue(ValueProperty, value); }
         }
 
+        // 修改原因 (用於審計軌跡)
+        public static readonly DependencyProperty ReasonProperty =
+            DependencyProperty.Register("Reason", typeof(string), typeof(PlcText), new PropertyMetadata("Manual Operation"));
+        public string Reason
+        {
+            get { return (string)GetValue(ReasonProperty); }
+            set { SetValue(ReasonProperty, value); }
+        }
+
+        // 是否啟用審計軌跡 (預設：True)
+        public static readonly DependencyProperty EnableAuditTrailProperty =
+            DependencyProperty.Register("EnableAuditTrail", typeof(bool), typeof(PlcText), new PropertyMetadata(true));
+        public bool EnableAuditTrail
+        {
+            get { return (bool)GetValue(EnableAuditTrailProperty); }
+            set { SetValue(EnableAuditTrailProperty, value); }
+        }
+
         #endregion
 
         private async void BtnWrite_Click(object sender, RoutedEventArgs e)
@@ -65,6 +84,7 @@ namespace Stackdose.UI.Core.Controls
             // 2. 驗證輸入
             string addr = Address?.Trim().ToUpper() ?? "";
             string valStr = Value?.Trim() ?? "";
+            string reason = string.IsNullOrWhiteSpace(Reason) ? "Manual Operation" : Reason.Trim();
 
             if (string.IsNullOrEmpty(addr) || string.IsNullOrEmpty(valStr))
             {
@@ -82,6 +102,9 @@ namespace Stackdose.UI.Core.Controls
 
                 // 判斷是否為純 Bit 裝置 (M, X, Y)
                 bool isPureBit = Regex.IsMatch(addr, @"^[MXY][0-9]+$");
+
+                string oldValue = ""; // 用於記錄舊值
+                bool writeSuccess = false;
 
                 if (wordBitMatch.Success)
                 {
@@ -107,16 +130,33 @@ namespace Stackdose.UI.Core.Controls
 
                     // 執行 Read-Modify-Write
                     int currentWordVal = await manager.ReadAsync(wordAddr);
-                    int newWordVal;
+                    
+                    // 記錄舊值 (該 Bit 的值)
+                    int oldBitVal = (currentWordVal >> bitIndex) & 1;
+                    oldValue = oldBitVal.ToString();
 
+                    int newWordVal;
                     if (writeBitVal == 1)
                         newWordVal = currentWordVal | (1 << bitIndex); // Set bit (OR 運算)
                     else
                         newWordVal = currentWordVal & ~(1 << bitIndex); // Reset bit (AND NOT 運算)
 
                     // 寫入回 PLC
-                    bool ok = await manager.WriteAsync($"{wordAddr},{newWordVal}");
-                    await ShowFeedback(ok);
+                    writeSuccess = await manager.WriteAsync($"{wordAddr},{newWordVal}");
+                    
+                    // 審計軌跡記錄
+                    if (writeSuccess && EnableAuditTrail)
+                    {
+                        ComplianceContext.LogAuditTrail(
+                            deviceName: Label,
+                            address: addr,
+                            oldValue: oldValue,
+                            newValue: writeBitVal.ToString(),
+                            reason: reason
+                        );
+                    }
+
+                    await ShowFeedback(writeSuccess);
                 }
                 else if (isPureBit)
                 {
@@ -128,9 +168,33 @@ namespace Stackdose.UI.Core.Controls
                         return;
                     }
 
+                    // 🔥 新增：先讀取舊值
+                    try
+                    {
+                        int currentBitVal = await manager.ReadAsync(addr);
+                        oldValue = currentBitVal.ToString();
+                    }
+                    catch
+                    {
+                        oldValue = "Unknown"; // 讀取失敗時標記為未知
+                    }
+
                     // 直接寫入 (例如 "M0,1")
-                    bool ok = await manager.WriteAsync($"{addr},{writeBitVal}");
-                    await ShowFeedback(ok);
+                    writeSuccess = await manager.WriteAsync($"{addr},{writeBitVal}");
+                    
+                    // 審計軌跡記錄
+                    if (writeSuccess && EnableAuditTrail)
+                    {
+                        ComplianceContext.LogAuditTrail(
+                            deviceName: Label,
+                            address: addr,
+                            oldValue: oldValue,
+                            newValue: writeBitVal.ToString(),
+                            reason: reason
+                        );
+                    }
+
+                    await ShowFeedback(writeSuccess);
                 }
                 else
                 {
@@ -141,14 +205,43 @@ namespace Stackdose.UI.Core.Controls
                         return;
                     }
 
+                    // 🔥 新增：先讀取舊值
+                    try
+                    {
+                        int currentVal = await manager.ReadAsync(addr);
+                        oldValue = currentVal.ToString();
+                    }
+                    catch
+                    {
+                        oldValue = "Unknown"; // 讀取失敗時標記為未知
+                    }
+
                     // 直接寫入 (例如 "D100,1234")
-                    bool ok = await manager.WriteAsync($"{addr},{valStr}");
-                    await ShowFeedback(ok);
+                    writeSuccess = await manager.WriteAsync($"{addr},{valStr}");
+                    
+                    // 審計軌跡記錄
+                    if (writeSuccess && EnableAuditTrail)
+                    {
+                        ComplianceContext.LogAuditTrail(
+                            deviceName: Label,
+                            address: addr,
+                            oldValue: oldValue,
+                            newValue: valStr,
+                            reason: reason
+                        );
+                    }
+
+                    await ShowFeedback(writeSuccess);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // 發生任何異常 (如通訊逾時、格式錯誤)，一律閃紅框，不彈出視窗
+                // 🔥 新增：記錄異常到 Compliance 系統
+                if (EnableAuditTrail)
+                {
+                    ComplianceContext.LogSystem($"[ERROR] Write failed: {Label}({addr}) - {ex.Message}", LogLevel.Error);
+                }
                 await ShowFeedback(false);
             }
         }

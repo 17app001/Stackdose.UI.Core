@@ -4,9 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             MinHeight="65" 
-             d:DesignHeight="70" d:DesignWidth="300">
-    <!-- 加入 MinHeight 防止被壓扁 -->
+             MinHeight="100" 
+             d:DesignHeight="105" d:DesignWidth="300">
+    <!-- 加入 MinHeight 防止被壓扁，調整高度以容納 Reason 欄位 -->
 
     <Grid>
         <Grid.RowDefinitions>
@@ -14,6 +14,10 @@
             <!-- 標題區 -->
             <RowDefinition Height="*"/>
             <!-- 輸入區 -->
+            <RowDefinition Height="5"/>
+            <!-- 間距 -->
+            <RowDefinition Height="Auto"/>
+            <!-- Reason 輸入區 -->
         </Grid.RowDefinitions>
 
         <!-- 新增：上方標題 Label -->
@@ -92,6 +96,33 @@
                         Background="#333" Foreground="White" BorderThickness="0"
                         Cursor="Hand" FontWeight="Bold" FontSize="14"
                         Click="BtnWrite_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- 4. 修改原因輸入框 (Reason) -->
+        <Border Grid.Row="3" BorderBrush="#444" BorderThickness="1" Background="#252526" CornerRadius="4" Padding="5">
+            <Grid>
+                <TextBox x:Name="TxtReason"
+                         Text="{Binding Reason, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Background="#111" Foreground="#DDD" BorderBrush="#555"
+                         VerticalContentAlignment="Center" Padding="5,0"
+                         FontFamily="Consolas" FontSize="12" Height="28"
+                         ToolTip="修改原因 (用於審計軌跡)"/>
+                
+                <!-- Watermark for Reason -->
+                <TextBlock Text="Reason (Optional)" Foreground="#555" IsHitTestVisible="False" 
+                           VerticalAlignment="Center" HorizontalAlignment="Left" Margin="8,0,0,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=TxtReason}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
             </Grid>
         </Border>
     </Grid>

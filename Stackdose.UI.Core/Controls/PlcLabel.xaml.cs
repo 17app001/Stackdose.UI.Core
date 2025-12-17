@@ -278,6 +278,9 @@ namespace Stackdose.UI.Core.Controls
                 // 1. 觸發事件
                 ValueChanged?.Invoke(this, new PlcValueChangedEventArgs(actualValue, newValueStr));
 
+                // 🔥 1.5. 自動通知 PlcLabelContext（統一管理中心）
+                PlcLabelContext.NotifyValueChanged(this, actualValue ?? newValueStr);
+
                 // 2. 自動合規紀錄 - Data History (生產履歷)
                 if (EnableDataLog && newValueStr != "-" && !string.IsNullOrEmpty(Label))
                 {

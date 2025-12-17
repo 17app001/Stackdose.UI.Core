@@ -1,5 +1,4 @@
 ﻿using Stackdose.UI.Core.Models;
-using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
@@ -231,8 +230,14 @@ namespace Stackdose.UI.Core.Helpers
                 showInUi: false  // 避免重複顯示
             );
 
-            // 3. 觸發外部事件 (讓應用程式訂閱，例如發送郵件/簡訊)
-            AlarmTriggered?.Invoke(null, new SensorAlarmEventArgs(sensor, DateTime.Now));
+            // 3. 🔥 修正：在 UI 執行緒上觸發外部事件（避免 MessageBox 當機）
+            if (AlarmTriggered != null)
+            {
+                System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
+                {
+                    AlarmTriggered?.Invoke(null, new SensorAlarmEventArgs(sensor, DateTime.Now));
+                });
+            }
         }
 
         /// <summary>
@@ -261,8 +266,14 @@ namespace Stackdose.UI.Core.Helpers
                 showInUi: false
             );
 
-            // 3. 觸發外部事件
-            AlarmCleared?.Invoke(null, new SensorAlarmEventArgs(sensor, DateTime.Now, duration));
+            // 3. 🔥 修正：在 UI 執行緒上觸發外部事件
+            if (AlarmCleared != null)
+            {
+                System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
+                {
+                    AlarmCleared?.Invoke(null, new SensorAlarmEventArgs(sensor, DateTime.Now, duration));
+                });
+            }
         }
 
         /// <summary>

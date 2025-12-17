@@ -35,9 +35,18 @@
                           Value="0" 
                           Reason="Manual Test"
                           EnableAuditTrail="True"/>
-        <Controls:PlcLabel x:Name="LblTemp" HorizontalAlignment="Left" Margin="484,222,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="溫度"
-            Address="R2002" DefaultValue="00000" DataType="Word" BitIndex="-1" Divisor="10"
-                           />
+        
+        <!-- 🔥 移除附加行為，PlcLabelContext 會自動處理 -->
+        <Controls:PlcLabel x:Name="LblTemp" 
+                           HorizontalAlignment="Left" Margin="484,222,0,0" VerticalAlignment="Top" 
+                           Width="130" Height="45" 
+                           Label="溫度"
+                           Address="R2002" 
+                           DefaultValue="00000" 
+                           DataType="Word" 
+                           BitIndex="-1" 
+                           Divisor="10"/>
+        
         <Controls:PlcLabel HorizontalAlignment="Left" Margin="640,97,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="X軸位置"
             Address="D11" DefaultValue="OFF" BitIndex="0" DataType="Bit"
                            />
@@ -53,6 +62,19 @@
                                EnableGrouping="True"
                                AutoStart="True"
                                RefreshInterval="499"/>
+
+        <!-- 測試按鈕：驗證 CyberMessageBox 執行緒安全性 -->
+        <StackPanel HorizontalAlignment="Left" Margin="73,472,0,0" VerticalAlignment="Top" Width="300">
+            <Button Content="測試 UI 執行緒 MessageBox" 
+                    Command="{Binding TestUIThreadMessageBoxCommand}"
+                    Height="35" Margin="0,5" Background="#1E1E2E" Foreground="White" BorderBrush="#00E5FF"/>
+            <Button Content="測試背景執行緒 MessageBox" 
+                    Command="{Binding TestBackgroundMessageBoxCommand}"
+                    Height="35" Margin="0,5" Background="#1E1E2E" Foreground="White" BorderBrush="#FFA726"/>
+            <Button Content="測試連續多個 MessageBox" 
+                    Command="{Binding TestMultipleMessageBoxCommand}"
+                    Height="35" Margin="0,5" Background="#1E1E2E" Foreground="White" BorderBrush="#4CAF50"/>
+        </StackPanel>
 
     </Grid>
 

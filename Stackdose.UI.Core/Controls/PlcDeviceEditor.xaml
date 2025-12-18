@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Stackdose.UI.Core.Controls.PlcText"
+<UserControl x:Class="Stackdose.UI.Core.Controls.PlcDeviceEditor"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -22,7 +22,7 @@
                        Foreground="#AAA" 
                        FontSize="12"/>
             <!-- Permission Lock Icon -->
-            <TextBlock Text="🔒" 
+            <TextBlock Text="??" 
                        Foreground="Orange" 
                        FontSize="12" 
                        Margin="5,0,0,0"

@@ -62,7 +62,7 @@
                            DataType="Word" 
                            BitIndex="-1"/>
 
-        <Controls:PlcText HorizontalAlignment="Left" Margin="73,334,0,0" VerticalAlignment="Top" 
+        <Controls:PlcDeviceEditor HorizontalAlignment="Left" Margin="73,334,0,0" VerticalAlignment="Top" 
                           Width="267" 
                           Label="PLC Input" 
                           Address="D100" 

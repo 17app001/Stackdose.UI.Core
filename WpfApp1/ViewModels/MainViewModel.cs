@@ -1,101 +1,244 @@
-ï»¿using Stackdose.UI.Core.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Media;
 
 namespace WpfApp1.ViewModels
 {
     /// <summary>
-    /// MainWindow çš„ ViewModel
-    /// å¯¦ç¾ MVVM æ¨¡å¼ï¼Œå°‡æ‰€æœ‰æ¥­å‹™é‚è¼¯å¾ CodeBehind ç§»è‡³æ­¤è™•
+    /// MainWindow ªº ViewModel
+    /// ¨Ï¥Î CommunityToolkit.Mvvm ¹ê²{²{¥N¤Æ MVVM ¼Ò¦¡
     /// </summary>
-    public class MainViewModel : INotifyPropertyChanged
+    public partial class MainViewModel : ObservableObject
     {
-        #region INotifyPropertyChanged
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        #endregion
-
-        #region å»ºæ§‹å­
+        #region «Øºc¤l
 
         public MainViewModel()
         {
-            // è¨‚é–±æ„Ÿæ¸¬å™¨è­¦å ±äº‹ä»¶
+            // ­q¾\·P´ú¾¹Äµ³ø¨Æ¥ó
             SensorContext.AlarmTriggered += OnSensorAlarmTriggered;
             SensorContext.AlarmCleared += OnSensorAlarmCleared;
 
-            // ğŸ”¥ è¨‚é–± PlcLabel å€¼è®Šæ›´äº‹ä»¶ï¼ˆçµ±ä¸€ç®¡ç†ï¼‰
+            // ­q¾\ PlcLabel ­ÈÅÜ§ó¨Æ¥ó
             PlcLabelContext.ValueChanged += OnPlcLabelValueChanged;
 
-            // ğŸ”¥ è¨‚é–± PlcEvent äº‹ä»¶è§¸ç™¼ï¼ˆçµ±ä¸€ç®¡ç†ï¼‰
+            // ­q¾\ PlcEvent ¨Æ¥óÄ²µo
             PlcEventContext.EventTriggered += OnPlcEventTriggered;
-
-            // åˆå§‹åŒ–å‘½ä»¤
-            TestUIThreadMessageBoxCommand = new RelayCommand(TestUIThreadMessageBox);
-            TestBackgroundMessageBoxCommand = new RelayCommand(TestBackgroundMessageBox);
-            TestMultipleMessageBoxCommand = new RelayCommand(TestMultipleMessageBox);
         }
 
         #endregion
 
-        #region å‘½ä»¤ (Commands)
+        #region ©R¥O (¨Ï¥Î RelayCommand ¦Û°Ê¥Í¦¨)
 
-        public ICommand TestUIThreadMessageBoxCommand { get; }
-        public ICommand TestBackgroundMessageBoxCommand { get; }
-        public ICommand TestMultipleMessageBoxCommand { get; }
+        /// <summary>
+        /// ´ú¸Õ UI °õ¦æºü MessageBox
+        /// </summary>
+        [RelayCommand]
+        private void TestUIThreadMessageBox()
+        {
+            CyberMessageBox.Show(
+                "³o¬O±q UI °õ¦æºü©I¥sªº°T®§",
+                "? UI °õ¦æºü´ú¸Õ",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information
+            );
+        }
+
+        /// <summary>
+        /// ´ú¸Õ­I´º°õ¦æºü MessageBox
+        /// </summary>
+        [RelayCommand]
+        private void TestBackgroundMessageBox()
+        {
+            Task.Run(() =>
+            {
+                System.Threading.Thread.Sleep(500);
+
+                var result = CyberMessageBox.Show(
+                    "³o¬O±q­I´º°õ¦æºü©I¥sªº°T®§¡I\n\n" +
+                    "¦pªG¨S¦³·í¾÷¡Aªí¥Ü­×¥¿¦¨¥\¡I",
+                    "? ­I´º°õ¦æºü´ú¸Õ",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning
+                );
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    CyberMessageBox.Show(
+                        "±z¿ï¾Ü¤F¡u¬O¡v",
+                        "? ´ú¸Õµ²ªG",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information
+                    );
+                }
+            });
+        }
+
+        /// <summary>
+        /// ´ú¸Õ³sÄò¦h­Ó MessageBox
+        /// </summary>
+        [RelayCommand]
+        private void TestMultipleMessageBox()
+        {
+            CyberMessageBox.Show(
+                "³o¬O²Ä 1 ­Ó°T®§",
+                "1/3",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information
+            );
+
+            var result = CyberMessageBox.Show(
+                "³o¬O²Ä 2 ­Ó°T®§¡A¬O§_Ä~Äò¡H",
+                "2/3",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question
+            );
+
+            if (result == MessageBoxResult.Yes)
+            {
+                CyberMessageBox.Show(
+                    "³o¬O²Ä 3 ­Ó°T®§\n\n´ú¸Õ§¹¦¨¡I?",
+                    "3/3 - §¹¦¨",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.None
+                );
+            }
+        }
+
+        /// <summary>
+        /// »sµ{¶}©l©R¥O
+        /// </summary>
+        [RelayCommand]
+        private void StartProcess()
+        {
+            // 1. ÀË¬d PLC ³s½uª¬ºA
+            var plcManager = PlcContext.GlobalStatus?.CurrentManager;
+            if (plcManager == null || !plcManager.IsConnected)
+            {
+                CyberMessageBox.Show(
+                    "?? PLC ¥¼³s½u\nµLªk±Ò°Ê»sµ{",
+                    "Äµ§i",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                return;
+            }
+
+            // 2. Åã¥Ü½T»{¹ï¸Ü®Ø
+            var result = CyberMessageBox.Show(
+                "½T©w­n±Ò°Ê»sµ{¶Ü¡H\n\n½Ğ½T»{¡G\n" +
+                "? ³]³Æ¤w´Nºü\n" +
+                "? ¦w¥ş¨¾Å@¤w½T»{\n" +
+                "? ­ì®Æ¤w³Æ§´",
+                "?? »sµ{±Ò°Ê½T»{",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question
+            );
+
+            if (result != MessageBoxResult.Yes)
+            {
+                ComplianceContext.LogSystem(
+                    "»sµ{±Ò°Ê¤w¨ú®ø",
+                    LogLevel.Info,
+                    showInUi: true
+                );
+                return;
+            }
+
+            // 3. ¼g¤J PLC ±Ò°Ê«H¸¹
+            try
+            {
+                // ¼g¤J±Ò°Ê«H¸¹¨ì M100
+                _ = plcManager.WriteAsync("M100,1");
+
+                // 4. °O¿ı¨ì Audit Trail
+                ComplianceContext.LogAuditTrail(
+                    deviceName: "»sµ{±±¨î",
+                    address: "M100",
+                    oldValue: "0",
+                    newValue: "1",
+                    reason: $"»sµ{±Ò°Ê by {SecurityContext.CurrentSession.CurrentUserName}",
+                    showInUi: true
+                );
+
+                // 5. °O¿ı¨ì¨t²Î¤é»x
+                ComplianceContext.LogSystem(
+                    $"?? »sµ{¤w±Ò°Ê by {SecurityContext.CurrentSession.CurrentUserName}",
+                    LogLevel.Success,
+                    showInUi: true
+                );
+
+                // 6. Åã¥Ü¦¨¥\°T®§
+                CyberMessageBox.Show(
+                    "? »sµ{¤w¦¨¥\±Ò°Ê¡I\n\n½ĞºÊ±±³]³Æ¹B¦æª¬ºA",
+                    "»sµ{±Ò°Ê",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
+            }
+            catch (Exception ex)
+            {
+                // 7. ¿ù»~³B²z
+                ComplianceContext.LogSystem(
+                    $"? »sµ{±Ò°Ê¥¢±Ñ: {ex.Message}",
+                    LogLevel.Error,
+                    showInUi: true
+                );
+
+                CyberMessageBox.Show(
+                    $"? »sµ{±Ò°Ê¥¢±Ñ\n\n¿ù»~°T®§¡G{ex.Message}",
+                    "¿ù»~",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+            }
+        }
 
         #endregion
 
-        #region æ„Ÿæ¸¬å™¨è­¦å ±è™•ç†
+        #region ·P´ú¾¹Äµ³ø³B²z
 
         /// <summary>
-        /// æ„Ÿæ¸¬å™¨è­¦å ±è§¸ç™¼æ™‚çš„è™•ç†
+        /// ·P´ú¾¹Äµ³øÄ²µo®Éªº³B²z
         /// </summary>
         private void OnSensorAlarmTriggered(object? sender, SensorAlarmEventArgs e)
         {
-            // æ–¹å¼ 1ï¼šé‡å°ç‰¹å®šæ„Ÿæ¸¬å™¨åŸ·è¡Œå‹•ä½œ
+            // °w¹ï¯S©w·P´ú¾¹°õ¦æ°Ê§@
             if (e.Sensor.Device == "D90")
             {
                 CyberMessageBox.Show(
-                    $"ç·Šæ€¥è­¦å ±ï¼{e.Sensor.OperationDescription} å·²è§¸ç™¼ï¼\n\n" +
-                    $"è£ç½®ï¼š{e.Sensor.Device}\n" +
-                    $"æ™‚é–“ï¼š{e.EventTime:HH:mm:ss}\n" +
-                    $"ç•¶å‰å€¼ï¼š{e.Sensor.CurrentValue}",
-                    "ğŸš¨ ç·Šæ€¥è­¦å ±",
+                    $"ºò«æÄµ³ø¡I{e.Sensor.OperationDescription} ¤wÄ²µo¡I\n\n" +
+                    $"¸Ë¸m¡G{e.Sensor.Device}\n" +
+                    $"®É¶¡¡G{e.EventTime:HH:mm:ss}\n" +
+                    $"·í«e­È¡G{e.Sensor.CurrentValue}",
+                    "?? ºò«æÄµ³ø",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error
                 );
             }
 
-            // æ–¹å¼ 2ï¼šæ ¹æ“šæ„Ÿæ¸¬å™¨åˆ†çµ„åŸ·è¡Œå‹•ä½œ
-            if (e.Sensor.Group == "å®‰å…¨é–€æª¢æ¸¬")
+            // ®Ú¾Ú·P´ú¾¹¤À²Õ°õ¦æ°Ê§@
+            if (e.Sensor.Group == "¦w¥şªùÀË´ú")
             {
                 PlayAlarmSound();
 
                 CyberMessageBox.Show(
-                    $"{e.Sensor.OperationDescription} åµæ¸¬åˆ°ç•°å¸¸ï¼\nè«‹ç«‹å³æª¢æŸ¥å®‰å…¨é–€ç‹€æ…‹ã€‚",
-                    "âš ï¸ å®‰å…¨è­¦å‘Š",
+                    $"{e.Sensor.OperationDescription} °»´ú¨ì²§±`¡I\n½Ğ¥ß§YÀË¬d¦w¥şªùª¬ºA¡C",
+                    "?? ¦w¥şÄµ§i",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning
                 );
             }
 
-            // æ–¹å¼ 3ï¼šæ ¹æ“šæ“ä½œæè¿°åŸ·è¡Œå‹•ä½œ
-            if (e.Sensor.OperationDescription.Contains("ç·Šæ€¥åœæ­¢"))
+            // ®Ú¾Ú¾Ş§@´y­z°õ¦æ°Ê§@
+            if (e.Sensor.OperationDescription.Contains("ºò«æ°±¤î"))
             {
                 var result = CyberMessageBox.Show(
-                    "åµæ¸¬åˆ°ç·Šæ€¥åœæ­¢ä¿¡è™Ÿï¼\næ˜¯å¦è¦åœæ­¢æ‰€æœ‰æ“ä½œï¼Ÿ",
-                    "â“ ç·Šæ€¥åœæ­¢ç¢ºèª",
+                    "°»´ú¨ìºò«æ°±¤î«H¸¹¡I\n¬O§_­n°±¤î©Ò¦³¾Ş§@¡H",
+                    "? ºò«æ°±¤î½T»{",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question
                 );
@@ -108,16 +251,16 @@ namespace WpfApp1.ViewModels
         }
 
         /// <summary>
-        /// æ„Ÿæ¸¬å™¨è­¦å ±æ¶ˆå¤±æ™‚çš„è™•ç†
+        /// ·P´ú¾¹Äµ³ø®ø¥¢®Éªº³B²z
         /// </summary>
         private void OnSensorAlarmCleared(object? sender, SensorAlarmEventArgs e)
         {
             if (e.Sensor.Device == "D90")
             {
                 CyberMessageBox.Show(
-                    $"{e.Sensor.OperationDescription} å·²æ¢å¾©æ­£å¸¸\n\n" +
-                    $"è­¦å ±æŒçºŒæ™‚é–“ï¼š{e.Duration.TotalSeconds:F1} ç§’",
-                    "âœ… ç³»çµ±æ¢å¾©",
+                    $"{e.Sensor.OperationDescription} ¤w«ì´_¥¿±`\n\n" +
+                    $"Äµ³ø«ùÄò®É¶¡¡G{e.Duration.TotalSeconds:F1} ¬í",
+                    "? ¨t²Î«ì´_",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information
                 );
@@ -125,76 +268,86 @@ namespace WpfApp1.ViewModels
         }
 
         /// <summary>
-        /// æ’­æ”¾è­¦å ±éŸ³æ•ˆ
+        /// ¼½©ñÄµ³ø­µ®Ä
         /// </summary>
-        private void PlayAlarmSound()
+        private static void PlayAlarmSound()
         {
             System.Media.SystemSounds.Beep.Play();
         }
 
         /// <summary>
-        /// åœæ­¢æ‰€æœ‰æ“ä½œ
+        /// °±¤î©Ò¦³¾Ş§@
         /// </summary>
-        private void StopAllOperations()
+        private static void StopAllOperations()
         {
-            ComplianceContext.LogSystem("æ‰€æœ‰æ“ä½œå·²åœæ­¢ï¼ˆç·Šæ€¥åœæ­¢è§¸ç™¼ï¼‰", LogLevel.Error, showInUi: true);
+            ComplianceContext.LogSystem("©Ò¦³¾Ş§@¤w°±¤î¡]ºò«æ°±¤îÄ²µo¡^", LogLevel.Error, showInUi: true);
         }
 
         #endregion
 
-        #region PlcLabel æ•¸å€¼è®Šæ›´è™•ç†
+        #region PlcLabel ¼Æ­ÈÅÜ§ó³B²z
 
         /// <summary>
-        /// PlcLabel å€¼è®Šæ›´æ™‚çš„è™•ç†ï¼ˆå¾ PlcLabelContext äº‹ä»¶è§¸ç™¼ï¼‰
-        /// é¡ä¼¼ SensorContext.AlarmTriggered çš„ä½¿ç”¨æ–¹å¼
+        /// PlcLabel ­ÈÅÜ§ó®Éªº³B²z
         /// </summary>
         private void OnPlcLabelValueChanged(object? sender, PlcLabelValueChangedEventArgs e)
         {
-            // æ–¹å¼ 1ï¼šæ ¹æ“š Address è™•ç†ä¸åŒçš„ PlcLabel
+            // ®Ú¾Ú Address ³B²z¤£¦Pªº PlcLabel
             switch (e.Address)
             {
-                case "R2002": // æº«åº¦
+                case "R2002": // ·Å«×
                     UpdateTemperatureColor(e.PlcLabel, e.Value);
                     break;
 
-                case "D100": // å…¶ä»–è£ç½®ï¼ˆç¯„ä¾‹ï¼‰
-                    // è™•ç†å…¶ä»–é‚è¼¯
+                case "D100":
+                    // ³B²z¨ä¥LÅŞ¿è
                     break;
             }
 
-            if (e.Label == "Xè»¸ä½ç½®")
+            // ®Ú¾Ú Label ³B²z
+            if (e.Label == "X¶b¦ì¸m")
             {
                 if (!double.TryParse(e.Value.ToString(), out double currentPosX) || currentPosX < 43800)
                     return;
-                CyberMessageBox.Show($"Xè»¸ä½ç½®ç•°å¸¸ï¼š{currentPosX}", "âš ï¸ è­¦å‘Š", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    
+                CyberMessageBox.Show(
+                    $"X¶b¦ì¸m²§±`¡G{currentPosX}",
+                    "?? Äµ§i",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
             }
 
-            // æ–¹å¼ 2ï¼šæ ¹æ“š Label è™•ç†
-            if (e.Label == "æº«åº¦")
+            if (e.Label == "·Å«×")
             {
                 UpdateTemperatureColor(e.PlcLabel, e.Value);
             }
 
-            // æ–¹å¼ 3ï¼šæ ¹æ“šæ¢ä»¶è™•ç†ï¼ˆç¯„ä¾‹ï¼‰
-            if (e.Label.Contains("å£“åŠ›") && double.TryParse(e.Value.ToString(), out double pressure))
+            // ®Ú¾Ú±ø¥ó³B²z
+            if (e.Label.Contains("À£¤O") && double.TryParse(e.Value.ToString(), out double pressure))
             {
                 if (pressure > 100)
                 {
                     e.PlcLabel.Foreground = Brushes.Red;
-                    CyberMessageBox.Show($"å£“åŠ›ç•°å¸¸ï¼š{pressure} bar", "âš ï¸ è­¦å‘Š", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    CyberMessageBox.Show(
+                        $"À£¤O²§±`¡G{pressure} bar",
+                        "?? Äµ§i",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
                 }
             }
         }
 
         /// <summary>
-        /// æ›´æ–°æº«åº¦é¡è‰²
+        /// §ó·s·Å«×ÃC¦â
         /// </summary>
-        private void UpdateTemperatureColor(PlcLabel label, object value)
+        private static void UpdateTemperatureColor(PlcLabel label, object value)
         {
             if (!double.TryParse(value.ToString(), out double currentTemp))
                 return;
 
-            // æ ¹æ“šæº«åº¦è¨­å®šé¡è‰²
+            // ®Ú¾Ú·Å«×³]©wÃC¦â
             label.Foreground = currentTemp switch
             {
                 >= 100 => Brushes.Red,
@@ -206,22 +359,21 @@ namespace WpfApp1.ViewModels
 
         #endregion
 
-        #region PlcEvent äº‹ä»¶è§¸ç™¼è™•ç†
+        #region PlcEvent ¨Æ¥óÄ²µo³B²z
 
         /// <summary>
-        /// PlcEvent è§¸ç™¼æ™‚çš„è™•ç†ï¼ˆå¾ PlcEventContext äº‹ä»¶è§¸ç™¼ï¼‰
-        /// é¡ä¼¼ SensorContext.AlarmTriggered çš„ä½¿ç”¨æ–¹å¼
+        /// PlcEvent Ä²µo®Éªº³B²z
         /// </summary>
         private void OnPlcEventTriggered(object? sender, PlcEventTriggeredEventArgs e)
         {
-            // ğŸ”¥ åªä½¿ç”¨ä¸€ç¨®æ–¹å¼ï¼šæ ¹æ“š EventName è™•ç†ï¼ˆæ¨è–¦ï¼‰
+            // ®Ú¾Ú EventName ³B²z
             switch (e.EventName)
             {
                 case "Recipe1Selected":
                     LoadRecipe1();
                     CyberMessageBox.Show(
-                        $"Recipe 1 å·²è¼‰å…¥\näº‹ä»¶ï¼š{e.EventName}",
-                        "âœ… æˆåŠŸ",
+                        $"Recipe 1 ¤w¸ü¤J\n¨Æ¥ó¡G{e.EventName}",
+                        "? ¦¨¥\",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information
                     );
@@ -230,203 +382,48 @@ namespace WpfApp1.ViewModels
                 case "Recipe2Selected":
                     LoadRecipe2();
                     CyberMessageBox.Show(
-                        $"Recipe 2 å·²è¼‰å…¥\näº‹ä»¶ï¼š{e.EventName}",
-                        "âœ… æˆåŠŸ",
+                        $"Recipe 2 ¤w¸ü¤J\n¨Æ¥ó¡G{e.EventName}",
+                        "? ¦¨¥\",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information
                     );
                     break;
             }
-
-            // ğŸ”¥ è‡ªå‹•æ¸…ç©ºå·²åœ¨ PlcEventTrigger å…§éƒ¨å®Œæˆï¼Œä¸éœ€è¦æ‰‹å‹•å¯« 0
         }
 
         /// <summary>
-        /// è¼‰å…¥ Recipe 1
+        /// ¸ü¤J Recipe 1
         /// </summary>
-        private void LoadRecipe1()
+        private static void LoadRecipe1()
         {
-            ComplianceContext.LogSystem("Recipe 1 è¼‰å…¥ä¸­...", LogLevel.Info, showInUi: true);
-            // TODO: å¯¦ä½œ Recipe 1 è¼‰å…¥é‚è¼¯
+            ComplianceContext.LogSystem("Recipe 1 ¸ü¤J¤¤...", LogLevel.Info, showInUi: true);
+            // TODO: ¹ê§@ Recipe 1 ¸ü¤JÅŞ¿è
         }
 
         /// <summary>
-        /// è¼‰å…¥ Recipe 2
+        /// ¸ü¤J Recipe 2
         /// </summary>
-        private void LoadRecipe2()
+        private static void LoadRecipe2()
         {
-            ComplianceContext.LogSystem("Recipe 2 è¼‰å…¥ä¸­...", LogLevel.Info, showInUi: true);
-            // TODO: å¯¦ä½œ Recipe 2 è¼‰å…¥é‚è¼¯
+            ComplianceContext.LogSystem("Recipe 2 ¸ü¤J¤¤...", LogLevel.Info, showInUi: true);
+            // TODO: ¹ê§@ Recipe 2 ¸ü¤JÅŞ¿è
         }
 
         #endregion
 
-        #region æ¸¬è©¦æ–¹æ³•
+        #region ²M²z¸ê·½
 
         /// <summary>
-        /// æ¸¬è©¦ 1ï¼šå¾ UI åŸ·è¡Œç·’å‘¼å« MessageBox
-        /// </summary>
-        private void TestUIThreadMessageBox()
-        {
-            CyberMessageBox.Show(
-                "é€™æ˜¯å¾ UI åŸ·è¡Œç·’å‘¼å«çš„è¨Šæ¯",
-                "âœ… UI åŸ·è¡Œç·’æ¸¬è©¦",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information
-            );
-        }
-
-        /// <summary>
-        /// æ¸¬è©¦ 2ï¼šå¾èƒŒæ™¯åŸ·è¡Œç·’å‘¼å« MessageBoxï¼ˆæ¨¡æ“¬æ„Ÿæ¸¬å™¨è­¦å ±ï¼‰
-        /// </summary>
-        private void TestBackgroundMessageBox()
-        {
-            Task.Run(() =>
-            {
-                System.Threading.Thread.Sleep(500);
-
-                var result = CyberMessageBox.Show(
-                    "é€™æ˜¯å¾èƒŒæ™¯åŸ·è¡Œç·’å‘¼å«çš„è¨Šæ¯ï¼\n\n" +
-                    "å¦‚æœæ²’æœ‰ç•¶æ©Ÿï¼Œè¡¨ç¤ºä¿®æ­£æˆåŠŸï¼",
-                    "âš¡ èƒŒæ™¯åŸ·è¡Œç·’æ¸¬è©¦",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning
-                );
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    CyberMessageBox.Show(
-                        "æ‚¨é¸æ“‡äº†ã€Œæ˜¯ã€",
-                        "âœ… æ¸¬è©¦çµæœ",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information
-                    );
-                }
-            });
-        }
-
-        /// <summary>
-        /// æ¸¬è©¦ 3ï¼šé€£çºŒé¡¯ç¤ºå¤šå€‹ MessageBox
-        /// </summary>
-        private void TestMultipleMessageBox()
-        {
-            CyberMessageBox.Show(
-                "é€™æ˜¯ç¬¬ 1 å€‹è¨Šæ¯",
-                "1/3",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information
-            );
-
-            var result = CyberMessageBox.Show(
-                "é€™æ˜¯ç¬¬ 2 å€‹è¨Šæ¯ï¼Œæ˜¯å¦ç¹¼çºŒï¼Ÿ",
-                "2/3",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question
-            );
-
-            if (result == MessageBoxResult.Yes)
-            {
-                CyberMessageBox.Show(
-                    "é€™æ˜¯ç¬¬ 3 å€‹è¨Šæ¯\n\næ¸¬è©¦å®Œæˆï¼âœ¨",
-                    "3/3 - å®Œæˆ",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.None
-                );
-            }
-        }
-
-        #endregion
-
-        #region æ¸…ç†è³‡æº
-
-        /// <summary>
-        /// æ¸…ç†è³‡æºï¼ˆå–æ¶ˆè¨‚é–±äº‹ä»¶ï¼‰
+        /// ²M²z¸ê·½¡]¨ú®ø­q¾\¨Æ¥ó¡^
         /// </summary>
         public void Cleanup()
         {
             SensorContext.AlarmTriggered -= OnSensorAlarmTriggered;
             SensorContext.AlarmCleared -= OnSensorAlarmCleared;
-
-            // ğŸ”¥ å–æ¶ˆè¨‚é–± PlcLabel äº‹ä»¶
             PlcLabelContext.ValueChanged -= OnPlcLabelValueChanged;
-
-            // ğŸ”¥ å–æ¶ˆè¨‚é–± PlcEvent äº‹ä»¶
             PlcEventContext.EventTriggered -= OnPlcEventTriggered;
         }
 
         #endregion
     }
-
-    #region RelayCommand è¼”åŠ©é¡åˆ¥
-
-    /// <summary>
-    /// ç°¡å–®çš„ ICommand å¯¦ä½œ
-    /// </summary>
-    public class RelayCommand : ICommand
-    {
-        private readonly Action _execute;
-        private readonly Func<bool>? _canExecute;
-
-        public RelayCommand(Action execute, Func<bool>? canExecute = null)
-        {
-            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-            _canExecute = canExecute;
-        }
-
-        public event EventHandler? CanExecuteChanged
-        {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
-        }
-
-        public bool CanExecute(object? parameter)
-        {
-            return _canExecute == null || _canExecute();
-        }
-
-        public void Execute(object? parameter)
-        {
-            _execute();
-        }
-    }
-
-    /// <summary>
-    /// æ³›å‹ ICommand å¯¦ä½œï¼ˆæ”¯æ´åƒæ•¸ï¼‰
-    /// </summary>
-    public class RelayCommand<T> : ICommand
-    {
-        private readonly Action<T> _execute;
-        private readonly Func<T, bool>? _canExecute;
-
-        public RelayCommand(Action<T> execute, Func<T, bool>? canExecute = null)
-        {
-            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-            _canExecute = canExecute;
-        }
-
-        public event EventHandler? CanExecuteChanged
-        {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
-        }
-
-        public bool CanExecute(object? parameter)
-        {
-            if (parameter is T typedParameter)
-            {
-                return _canExecute == null || _canExecute(typedParameter);
-            }
-            return false;
-        }
-
-        public void Execute(object? parameter)
-        {
-            if (parameter is T typedParameter)
-            {
-                _execute(typedParameter);
-            }
-        }
-    }
-
-    #endregion
 }

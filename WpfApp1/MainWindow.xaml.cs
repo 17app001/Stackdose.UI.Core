@@ -26,7 +26,7 @@ namespace WpfApp1
             //}
 
             // 🔥 預設以 Engineer 身份登入（測試用）
-            SecurityContext.QuickLogin(Stackdose.UI.Core.Models.AccessLevel.Supervisor);
+            SecurityContext.QuickLogin(Stackdose.UI.Core.Models.AccessLevel.Engineer);
 
             // 🔥 設定 DataContext 為 ViewModel
             _viewModel = new MainViewModel();
@@ -172,6 +172,55 @@ namespace WpfApp1
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
             SecurityContext.Logout();
+        }
+
+        private void StartProcess_Click(object sender, RoutedEventArgs e)
+        {
+            // 🔥 製程開始邏輯
+            
+            // 1. 記錄到系統日誌
+            ComplianceContext.LogSystem(
+                "🚀 製程開始",
+                Stackdose.UI.Core.Models.LogLevel.Info,
+                showInUi: true
+            );
+
+            // 2. 寫入 PLC 啟動信號（例如：M100 = 1）
+            var plcManager = PlcContext.GlobalStatus?.CurrentManager;
+            if (plcManager != null && plcManager.IsConnected)
+            {
+                // 寫入啟動信號
+                _ = plcManager.WriteAsync("M100,1");
+                
+                // 記錄到 Audit Trail
+                ComplianceContext.LogAuditTrail(
+                    deviceName: "製程控制",
+                    address: "M100",
+                    oldValue: "0",
+                    newValue: "1",
+                    reason: $"製程開始 by {SecurityContext.CurrentSession.CurrentUserName}",
+                    showInUi: true
+                );
+            }
+            else
+            {
+                // PLC 未連線警告
+                CyberMessageBox.Show(
+                    "⚠️ PLC 未連線\n無法啟動製程",
+                    "警告",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                return;
+            }
+
+            // 3. 顯示確認訊息
+            CyberMessageBox.Show(
+                "✅ 製程已啟動\n\n請確認設備運行狀態",
+                "製程開始",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information
+            );
         }
 
         #endregion

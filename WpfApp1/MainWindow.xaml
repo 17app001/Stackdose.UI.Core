@@ -89,6 +89,7 @@
                           Address="D100" 
                           Value="0" 
                           Reason="Manual Test"
+                          RequiredLevel="Supervisor"
                           EnableAuditTrail="True"/>
 
         <Controls:PlcLabel x:Name="LblTemp" 
@@ -262,7 +263,8 @@
                                         Margin="0,3"/>
             </StackPanel>
         </Border>
-        <Controls:SecuredButton HorizontalAlignment="Left" Margin="168,774,0,0" VerticalAlignment="Top" Height="51" Width="172"/>
+        <Controls:SecuredButton HorizontalAlignment="Left" Margin="73,721,0,0" VerticalAlignment="Top" Height="51" Width="172" RequiredLevel="Guest"/>
+        <Controls:SecuredButton HorizontalAlignment="Left" Margin="73,640,0,0" VerticalAlignment="Top" Theme="Success" Height="60" Width="190" Content="製程開始" FontSize="16" RequiredLevel="Operator" OperationName="製程開始" Click="StartProcess_Click"/>
 
     </Grid>
 </Window>

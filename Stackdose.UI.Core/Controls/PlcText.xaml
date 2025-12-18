@@ -3,54 +3,81 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
+             x:Name="root"
              MinHeight="100" 
              d:DesignHeight="105" d:DesignWidth="300">
-    <!-- 加入 MinHeight 防止被壓扁，調整高度以容納 Reason 欄位 -->
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- 標題區 -->
             <RowDefinition Height="*"/>
-            <!-- 輸入區 -->
             <RowDefinition Height="5"/>
-            <!-- 間距 -->
             <RowDefinition Height="Auto"/>
-            <!-- Reason 輸入區 -->
         </Grid.RowDefinitions>
 
-        <!-- 新增：上方標題 Label -->
-        <TextBlock Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                   Foreground="#AAA" FontSize="12" Margin="2,0,0,4"/>
+        <!-- Title Label with Permission Indicator -->
+        <StackPanel Orientation="Horizontal" Margin="2,0,0,4">
+            <TextBlock Text="{Binding Label, ElementName=root}" 
+                       Foreground="#AAA" 
+                       FontSize="12"/>
+            <!-- Permission Lock Icon -->
+            <TextBlock Text="🔒" 
+                       Foreground="Orange" 
+                       FontSize="12" 
+                       Margin="5,0,0,0"
+                       ToolTip="Requires Supervisor or Higher">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsAuthorized, ElementName=root}" Value="False">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </StackPanel>
 
-        <!-- 下方操作區 (外框) -->
-        <Border Grid.Row="1" BorderBrush="#444" BorderThickness="1" Background="#252526" CornerRadius="4" Padding="5">
+        <!-- Input Area (Border) -->
+        <Border Grid.Row="1" 
+                BorderBrush="#444" 
+                BorderThickness="1" 
+                Background="#252526" 
+                CornerRadius="4" 
+                Padding="5">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.2*"/>
-                    <!-- 位址 -->
                     <ColumnDefinition Width="5"/>
                     <ColumnDefinition Width="1.5*"/>
-                    <!-- 數值 -->
                     <ColumnDefinition Width="5"/>
                     <ColumnDefinition Width="Auto"/>
-                    <!-- 按鈕 -->
                 </Grid.ColumnDefinitions>
 
-                <!-- 1. 位址輸入 (例如 D100, M0, D100.5) -->
-                <!-- 加大字體與高度 -->
+                <!-- 1. Address Input -->
                 <TextBox x:Name="TxtAddress" 
                          Grid.Column="0"
-                         Text="{Binding Address, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged,FallbackValue=D10}"
-                         Background="#111" Foreground="#DDD" BorderBrush="#555"
-                         VerticalContentAlignment="Center" Padding="5,0"
-                         FontFamily="Consolas" FontSize="16" Height="32" 
-                         ToolTip="輸入位址 (Ex: M0, D100, D100.5)"/>
+                         Text="{Binding Address, ElementName=root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=D10}"
+                         Background="#111" 
+                         Foreground="#DDD" 
+                         BorderBrush="#555"
+                         VerticalContentAlignment="Center" 
+                         Padding="5,0"
+                         FontFamily="Consolas" 
+                         FontSize="16" 
+                         Height="32"
+                         IsEnabled="{Binding IsAuthorized, ElementName=root}"
+                         ToolTip="PLC Address (Ex: M0, D100, D100.5)"/>
 
-                <!-- 佔位文字 (Watermark) -->
-                <TextBlock Grid.Column="0" Text="Dev" Foreground="#555" IsHitTestVisible="False" 
-                           VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,0">
+                <TextBlock Grid.Column="0" 
+                           Text="Dev" 
+                           Foreground="#555" 
+                           IsHitTestVisible="False" 
+                           VerticalAlignment="Center" 
+                           HorizontalAlignment="Right" 
+                           Margin="0,0,8,0">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -63,19 +90,29 @@
                     </TextBlock.Style>
                 </TextBlock>
 
-                <!-- 2. 數值輸入 -->
-                <!-- 加大字體與高度 -->
+                <!-- 2. Value Input -->
                 <TextBox x:Name="TxtValue" 
                          Grid.Column="2"
-                         Text="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged,FallbackValue=0}"
-                         Background="#111" Foreground="#00A8E8" BorderBrush="#555"
-                         VerticalContentAlignment="Center" Padding="5,0"
-                         FontFamily="Consolas" FontSize="16" FontWeight="Bold" Height="32"
-                         ToolTip="輸入數值 (Bit: 0/1)"/>
+                         Text="{Binding Value, ElementName=root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=0}"
+                         Background="#111" 
+                         Foreground="#00A8E8" 
+                         BorderBrush="#555"
+                         VerticalContentAlignment="Center" 
+                         Padding="5,0"
+                         FontFamily="Consolas" 
+                         FontSize="16" 
+                         FontWeight="Bold" 
+                         Height="32"
+                         IsEnabled="{Binding IsAuthorized, ElementName=root}"
+                         ToolTip="Value (Bit: 0/1, Word: number)"/>
 
-                <!-- 佔位文字 -->
-                <TextBlock Grid.Column="2" Text="Val" Foreground="#555" IsHitTestVisible="False" 
-                           VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,0">
+                <TextBlock Grid.Column="2" 
+                           Text="Val" 
+                           Foreground="#555" 
+                           IsHitTestVisible="False" 
+                           VerticalAlignment="Center" 
+                           HorizontalAlignment="Right" 
+                           Margin="0,0,8,0">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -88,42 +125,63 @@
                     </TextBlock.Style>
                 </TextBlock>
 
-                <!-- 3. 寫入按鈕 -->
-                <!-- 加大按鈕 -->
-                <Button Grid.Column="4" 
-                        Content="SET" 
-                        Width="60" Height="32"
-                        Background="#333" Foreground="White" BorderThickness="0"
-                        Cursor="Hand" FontWeight="Bold" FontSize="14"
-                        Click="BtnWrite_Click"/>
+                <!-- 3. Write Button -->
+                <Button x:Name="BtnWrite" 
+                        Grid.Column="4"
+                        Width="45" 
+                        Height="32"
+                        Click="BtnWrite_Click"
+                        Cursor="Hand"
+                        IsEnabled="{Binding IsAuthorized, ElementName=root}"
+                        ToolTip="Write to PLC">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#007ACC"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" 
+                                                CornerRadius="3">
+                                            <ContentPresenter HorizontalAlignment="Center" 
+                                                            VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#0066B3"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Background" Value="#424242"/>
+                                    <Setter Property="Foreground" Value="#757575"/>
+                                    <Setter Property="Opacity" Value="0.6"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <TextBlock>
+                        <Run Text="✓" FontSize="18"/>
+                    </TextBlock>
+                </Button>
             </Grid>
         </Border>
 
-        <!-- 4. 修改原因輸入框 (Reason) -->
-        <Border Grid.Row="3" BorderBrush="#444" BorderThickness="1" Background="#252526" CornerRadius="4" Padding="5">
-            <Grid>
-                <TextBox x:Name="TxtReason"
-                         Text="{Binding Reason, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         Background="#111" Foreground="#DDD" BorderBrush="#555"
-                         VerticalContentAlignment="Center" Padding="5,0"
-                         FontFamily="Consolas" FontSize="12" Height="28"
-                         ToolTip="修改原因 (用於審計軌跡)"/>
-                
-                <!-- Watermark for Reason -->
-                <TextBlock Text="Reason (Optional)" Foreground="#555" IsHitTestVisible="False" 
-                           VerticalAlignment="Center" HorizontalAlignment="Left" Margin="8,0,0,0">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Text, ElementName=TxtReason}" Value="">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-            </Grid>
-        </Border>
+        <!-- Reason Input (Row 3) -->
+        <TextBox x:Name="TxtReason" 
+                 Grid.Row="3"
+                 Text="{Binding Reason, ElementName=root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 Background="#1E1E1E" 
+                 Foreground="#AAA" 
+                 BorderBrush="#444" 
+                 BorderThickness="1"
+                 Padding="5,2"
+                 FontSize="11" 
+                 Height="22"
+                 IsEnabled="{Binding IsAuthorized, ElementName=root}"
+                 ToolTip="Reason for change (for Audit Trail)"/>
     </Grid>
 </UserControl>

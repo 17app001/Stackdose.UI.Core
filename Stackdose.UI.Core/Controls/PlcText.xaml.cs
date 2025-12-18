@@ -16,6 +16,15 @@ namespace Stackdose.UI.Core.Controls
         public PlcText()
         {
             InitializeComponent();
+            
+            // 🔥 訂閱權限變更事件
+            SecurityContext.AccessLevelChanged += OnAccessLevelChanged;
+            
+            // 🔥 初始化權限狀態
+            UpdateAuthorization();
+            
+            // 🔥 當控制項卸載時取消訂閱
+            this.Unloaded += (s, e) => SecurityContext.AccessLevelChanged -= OnAccessLevelChanged;
         }
 
         #region Dependency Properties
@@ -65,11 +74,107 @@ namespace Stackdose.UI.Core.Controls
             set { SetValue(EnableAuditTrailProperty, value); }
         }
 
+        // 🔥 新增：所需權限等級（預設：Supervisor）
+        public static readonly DependencyProperty RequiredLevelProperty =
+            DependencyProperty.Register("RequiredLevel", typeof(AccessLevel), typeof(PlcText),
+                new PropertyMetadata(AccessLevel.Supervisor, OnRequiredLevelChanged));
+        public AccessLevel RequiredLevel
+        {
+            get { return (AccessLevel)GetValue(RequiredLevelProperty); }
+            set { SetValue(RequiredLevelProperty, value); }
+        }
+
+        // 🔥 新增：是否已授權（自動計算）
+        public static readonly DependencyProperty IsAuthorizedProperty =
+            DependencyProperty.Register("IsAuthorized", typeof(bool), typeof(PlcText),
+                new PropertyMetadata(false));
+        public bool IsAuthorized
+        {
+            get { return (bool)GetValue(IsAuthorizedProperty); }
+            private set { SetValue(IsAuthorizedProperty, value); }
+        }
+
+        #endregion
+
+        #region 權限控制
+
+        /// <summary>
+        /// 當權限等級變更時觸發
+        /// </summary>
+        private void OnAccessLevelChanged(object? sender, EventArgs e)
+        {
+            Dispatcher.BeginInvoke(UpdateAuthorization);
+        }
+
+        /// <summary>
+        /// 當所需權限等級變更時觸發
+        /// </summary>
+        private static void OnRequiredLevelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is PlcText plcText)
+            {
+                // 🔥 只在執行時更新權限
+                bool isDesignMode = System.ComponentModel.DesignerProperties.GetIsInDesignMode(plcText);
+                if (!isDesignMode)
+                {
+                    plcText.UpdateAuthorization();
+                }
+                else
+                {
+                    // 設計時：強制啟用
+                    plcText.IsAuthorized = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 更新授權狀態
+        /// </summary>
+        private void UpdateAuthorization()
+        {
+            // 🔥 檢查設計模式
+            bool isDesignMode = System.ComponentModel.DesignerProperties.GetIsInDesignMode(this);
+            
+            if (isDesignMode)
+            {
+                // 設計時：強制設定為已授權（讓控制項可見）
+                IsAuthorized = true;
+            }
+            else
+            {
+                // 執行時：實際檢查權限
+                IsAuthorized = SecurityContext.HasAccess(RequiredLevel);
+            }
+
+            // 🔥 更新 UI 狀態（啟用/禁用）
+            UpdateUIState();
+        }
+
+        /// <summary>
+        /// 更新 UI 狀態
+        /// </summary>
+        private void UpdateUIState()
+        {
+            // 在 XAML 中透過綁定控制 IsEnabled
+            // 這裡只需要確保 IsAuthorized 屬性正確更新
+        }
+
         #endregion
 
         private async void BtnWrite_Click(object sender, RoutedEventArgs e)
         {
-            // 1. 取得 PLC Manager (懶人模式：自動抓 Context 或 Global)
+            // 🔥 1. 先檢查權限
+            if (!IsAuthorized)
+            {
+                string opName = !string.IsNullOrEmpty(Label) ? $"寫入 {Label}" : "寫入 PLC";
+                SecurityContext.CheckAccess(RequiredLevel, opName);
+                
+                // 閃紅框提示
+                await ShowFeedback(false);
+                return;
+            }
+
+            // 2. 取得 PLC Manager (懶人模式：自動抓 Context 或 Global)
             // 優先順序：父容器繼承 > 全域變數
             var status = PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
             var manager = status?.CurrentManager;

@@ -31,15 +31,24 @@ namespace Stackdose.UI.Core.Controls
             }
             else
             {
-                // 設計時：強制設定為已授權（讓所有按鈕都可見）
+                // ?? 設計時：強制設定為已授權（讓所有按鈕都可見）
                 IsAuthorized = true;
             }
             
-            // ?? 無論設計時或執行時，都要初始化主題顏色
+            // ?? 初始化主題顏色
             UpdateThemeColors();
             
-            // ?? 訂閱 Loaded 事件，確保在 XAML 屬性設定後再次更新
-            this.Loaded += (s, e) => UpdateThemeColors();
+            // ?? 訂閱 Loaded 事件（設計時跳過權限檢查）
+            this.Loaded += (s, e) =>
+            {
+                UpdateThemeColors();
+                
+                // 執行時才更新權限
+                if (!isDesignMode)
+                {
+                    UpdateAuthorization();
+                }
+            };
         }
 
         #region Dependency Properties
@@ -207,7 +216,19 @@ namespace Stackdose.UI.Core.Controls
         private static void OnRequiredLevelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is SecuredButton button)
-                button.UpdateAuthorization();
+            {
+                // ?? 只在執行時更新權限
+                bool isDesignMode = System.ComponentModel.DesignerProperties.GetIsInDesignMode(button);
+                if (!isDesignMode)
+                {
+                    button.UpdateAuthorization();
+                }
+                else
+                {
+                    // 設計時：強制啟用
+                    button.IsAuthorized = true;
+                }
+            }
         }
 
         /// <summary>
@@ -227,18 +248,30 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         private void UpdateAuthorization()
         {
+            // ?? 檢查設計模式
+            bool isDesignMode = System.ComponentModel.DesignerProperties.GetIsInDesignMode(this);
+            
+            if (isDesignMode)
+            {
+                // ?? 設計時：強制設定為已授權
+                IsAuthorized = true;
+                TooltipText = $"Design Mode - {RequiredLevel}";
+                return;
+            }
+
+            // 執行時：實際檢查權限
             bool hasAccess = SecurityContext.HasAccess(RequiredLevel);
             IsAuthorized = hasAccess;
 
             // 更新工具提示
             if (hasAccess)
             {
-                TooltipText = $"權限等級: {RequiredLevel} ?";
+                TooltipText = $"Permission: {RequiredLevel} ?";
             }
             else
             {
                 string currentLevel = SecurityContext.CurrentSession.CurrentLevel.ToString();
-                TooltipText = $"需要權限: {RequiredLevel}\n當前權限: {currentLevel} ?";
+                TooltipText = $"Required: {RequiredLevel}\nCurrent: {currentLevel} ?";
             }
         }
 

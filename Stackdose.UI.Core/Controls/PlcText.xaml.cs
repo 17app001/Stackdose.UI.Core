@@ -161,6 +161,122 @@ namespace Stackdose.UI.Core.Controls
 
         #endregion
 
+        private async void BtnRead_Click(object sender, RoutedEventArgs e)
+        {
+            // 🔥 1. 先檢查權限
+            if (!IsAuthorized)
+            {
+                string opName = !string.IsNullOrEmpty(Label) ? $"讀取 {Label}" : "讀取 PLC";
+                SecurityContext.CheckAccess(RequiredLevel, opName);
+                
+                // 閃紅框提示
+                await ShowFeedback(false);
+                return;
+            }
+
+            // 2. 取得 PLC Manager
+            var status = PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
+            var manager = status?.CurrentManager;
+
+            if (manager == null || !manager.IsConnected)
+            {
+                // PLC 未連線時，閃爍紅框提示
+                await ShowFeedback(false);
+                return;
+            }
+
+            // 3. 驗證輸入
+            string addr = Address?.Trim().ToUpper() ?? "";
+            string reason = string.IsNullOrWhiteSpace(Reason) ? "Manual Read" : Reason.Trim();
+
+            if (string.IsNullOrEmpty(addr))
+            {
+                await ShowFeedback(false); // 空地址視為錯誤
+                return;
+            }
+
+            try
+            {
+                // 4. 智慧判斷邏輯並讀取
+
+                // 🔥 支援兩種格式：D100.5 (點號) 或 D100,5 (逗號)
+                var wordBitMatch = Regex.Match(addr, @"^([DRW][0-9]+)[.,]([0-9A-Fa-f]+)$");
+
+                // 判斷是否為純 Bit 裝置 (M, X, Y)
+                bool isPureBit = Regex.IsMatch(addr, @"^[MXY][0-9]+$");
+
+                int readValue;
+                bool readSuccess = false;
+
+                if (wordBitMatch.Success)
+                {
+                    // === Word Bit 模式 (讀取 Word → 提取 Bit) ===
+                    string wordAddr = wordBitMatch.Groups[1].Value; // D100 or R2002
+                    string bitIndexStr = wordBitMatch.Groups[2].Value; // 5 or A
+
+                    // 解析 Bit Index (支援 Hex，例如 A=10)
+                    int bitIndex = Convert.ToInt32(bitIndexStr, 16);
+                    if (bitIndex < 0 || bitIndex > 15)
+                    {
+                        await ShowFeedback(false); // 格式錯誤，閃紅框
+                        return;
+                    }
+
+                    // 讀取 Word 並提取 Bit
+                    int wordValue = await manager.ReadAsync(wordAddr);
+                    readValue = (wordValue >> bitIndex) & 1;
+                    readSuccess = true;
+                }
+                else if (isPureBit)
+                {
+                    // === 純 Bit 裝置模式 (M0, X10) ===
+                    readValue = await manager.ReadAsync(addr);
+                    readSuccess = true;
+                }
+                else
+                {
+                    // === 一般 Word/DWord 模式 (D100) ===
+                    readValue = await manager.ReadAsync(addr);
+                    readSuccess = true;
+                }
+
+                // 5. 更新 Value TextBox
+                if (readSuccess)
+                {
+                    Value = readValue.ToString();
+                    
+                    // 6. 審計軌跡記錄 (可選)
+                    if (EnableAuditTrail)
+                    {
+                        ComplianceContext.LogAuditTrail(
+                            deviceName: Label,
+                            address: addr,
+                            oldValue: "N/A",
+                            newValue: readValue.ToString(),
+                            reason: $"{reason} (Read)",
+                            showInUi: false // 讀取操作不顯示在 UI，避免太多訊息
+                        );
+                    }
+
+                    // 7. 顯示成功回饋
+                    await ShowFeedback(true);
+                }
+                else
+                {
+                    await ShowFeedback(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                // 發生任何異常 (如通訊逾時、地址無效)，一律閃紅框
+                if (EnableAuditTrail)
+                {
+                    ComplianceContext.LogSystem($"[ERROR] Read failed: {Label}({addr}) - {ex.Message}", LogLevel.Error);
+                }
+                await ShowFeedback(false);
+            }
+        }
+
         private async void BtnWrite_Click(object sender, RoutedEventArgs e)
         {
             // 🔥 1. 先檢查權限
@@ -201,9 +317,9 @@ namespace Stackdose.UI.Core.Controls
             {
                 // 3. 智慧判斷邏輯
 
-                // 判斷是否為 Word Bit 模式 (例如 D100.5 或 D100.A)
-                // Regex 說明: [DRW]開頭 + 數字 + 小數點 + 數字(或A-F代表hex)
-                var wordBitMatch = Regex.Match(addr, @"^([DRW][0-9]+)\.([0-9A-Fa-f]+)$");
+                // 🔥 支援兩種格式：D100.5 (點號) 或 D100,5 (逗號)
+                // Regex 說明: [DRW]開頭 + 數字 + (點號或逗號) + 數字(或A-F代表hex)
+                var wordBitMatch = Regex.Match(addr, @"^([DRW][0-9]+)[.,]([0-9A-Fa-f]+)$");
 
                 // 判斷是否為純 Bit 裝置 (M, X, Y)
                 bool isPureBit = Regex.IsMatch(addr, @"^[MXY][0-9]+$");
@@ -214,7 +330,7 @@ namespace Stackdose.UI.Core.Controls
                 if (wordBitMatch.Success)
                 {
                     // === Word Bit 模式 (讀取 -> 修改 -> 寫入) ===
-                    string wordAddr = wordBitMatch.Groups[1].Value; // D100
+                    string wordAddr = wordBitMatch.Groups[1].Value; // D100 or R2002
                     string bitIndexStr = wordBitMatch.Groups[2].Value; // 5 or A
 
                     // 解析 Bit Index (支援 Hex，例如 A=10)

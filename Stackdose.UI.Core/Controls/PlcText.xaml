@@ -6,7 +6,7 @@
              mc:Ignorable="d"
              x:Name="root"
              MinHeight="100" 
-             d:DesignHeight="105" d:DesignWidth="300">
+             d:DesignHeight="105" d:DesignWidth="320">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -54,6 +54,8 @@
                     <ColumnDefinition Width="1.5*"/>
                     <ColumnDefinition Width="5"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="3"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- 1. Address Input -->
@@ -69,7 +71,7 @@
                          FontSize="16" 
                          Height="32"
                          IsEnabled="{Binding IsAuthorized, ElementName=root}"
-                         ToolTip="PLC Address (Ex: M0, D100, D100.5)"/>
+                         ToolTip="PLC Address (Ex: M0, D100, D100.5, R2002,0)"/>
 
                 <TextBlock Grid.Column="0" 
                            Text="Dev" 
@@ -125,9 +127,52 @@
                     </TextBlock.Style>
                 </TextBlock>
 
-                <!-- 3. Write Button -->
-                <Button x:Name="BtnWrite" 
+                <!-- 3. Read Button -->
+                <Button x:Name="BtnRead" 
                         Grid.Column="4"
+                        Width="45" 
+                        Height="32"
+                        Click="BtnRead_Click"
+                        Cursor="Hand"
+                        IsEnabled="{Binding IsAuthorized, ElementName=root}"
+                        ToolTip="Read from PLC">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#00A868"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" 
+                                                CornerRadius="3">
+                                            <ContentPresenter HorizontalAlignment="Center" 
+                                                            VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#009157"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Background" Value="#424242"/>
+                                    <Setter Property="Foreground" Value="#757575"/>
+                                    <Setter Property="Opacity" Value="0.6"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <TextBlock>
+                        <Run Text="R" FontSize="12"/>
+                    </TextBlock>
+                </Button>
+
+                <!-- 4. Write Button -->
+                <Button x:Name="BtnWrite" 
+                        Grid.Column="6"
                         Width="45" 
                         Height="32"
                         Click="BtnWrite_Click"
@@ -164,7 +209,7 @@
                         </Style>
                     </Button.Style>
                     <TextBlock>
-                        <Run Text="✓" FontSize="18"/>
+                        <Run Text="W" FontSize="12"/>
                     </TextBlock>
                 </Button>
             </Grid>

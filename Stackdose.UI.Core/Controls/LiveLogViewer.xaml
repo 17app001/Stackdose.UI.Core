@@ -6,19 +6,32 @@
              mc:Ignorable="d" 
              d:DesignHeight="200" d:DesignWidth="400">
 
-    <Border Background="#111" BorderBrush="#333" BorderThickness="1" CornerRadius="4">
+    <Border Background="{DynamicResource Log.Bg.Main}" 
+            BorderBrush="{DynamicResource Log.Border}" 
+            BorderThickness="1" 
+            CornerRadius="4">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Border Background="#222" Padding="5" CornerRadius="4,4,0,0">
-                <TextBlock Text="SYSTEM LOG / AUDIT TRAIL" Foreground="#888" 
-                           FontSize="10" FontWeight="Bold" FontFamily="Consolas"/>
+            <Border Background="{DynamicResource Log.Bg.Header}" 
+                    BorderBrush="{DynamicResource Log.Border}"
+                    BorderThickness="0,0,0,1"
+                    Padding="8,6" 
+                    CornerRadius="4,4,0,0">
+                <TextBlock Text="SYSTEM LOG / AUDIT TRAIL" 
+                           Foreground="{DynamicResource Plc.Text.Label}" 
+                           FontSize="10" 
+                           FontWeight="Bold" 
+                           FontFamily="Consolas"/>
             </Border>
 
-            <ListView x:Name="LogList" Grid.Row="1" Background="Transparent" BorderThickness="0"
+            <ListView x:Name="LogList" 
+                      Grid.Row="1" 
+                      Background="Transparent" 
+                      BorderThickness="0"
                       ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                 <ListView.ItemTemplate>
                     <DataTemplate>
@@ -28,12 +41,18 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Text="{Binding TimeStr}" Foreground="#555" 
-                                       FontFamily="Consolas" FontSize="11" VerticalAlignment="Top"/>
+                            <TextBlock Text="{Binding TimeStr}" 
+                                       Foreground="{DynamicResource Log.Text.Time}" 
+                                       FontFamily="Consolas" 
+                                       FontSize="11" 
+                                       VerticalAlignment="Top"/>
 
-                            <TextBlock Grid.Column="1" Text="{Binding Message}" 
+                            <TextBlock Grid.Column="1" 
+                                       Text="{Binding Message}" 
                                        Foreground="{Binding Color}" 
-                                       FontFamily="Segoe UI" FontSize="12" TextWrapping="Wrap"/>
+                                       FontFamily="Segoe UI" 
+                                       FontSize="12" 
+                                       TextWrapping="Wrap"/>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>

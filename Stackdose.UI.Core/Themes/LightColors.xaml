@@ -1,0 +1,56 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Light Theme Colors -->
+    
+    <!-- ========== CyberFrame Colors ========== -->
+    <SolidColorBrush x:Key="Cyber.Bg.Dark" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="Cyber.Bg.Panel" Color="#FFFFFF" Opacity="1.0"/>
+    <SolidColorBrush x:Key="Cyber.Border" Color="#BDBDBD"/>
+    <SolidColorBrush x:Key="Cyber.Border.Strong" Color="#757575"/>
+    <SolidColorBrush x:Key="Cyber.NeonBlue" Color="#0091EA"/>
+    <SolidColorBrush x:Key="Cyber.Text.Main" Color="#212121"/>
+    <SolidColorBrush x:Key="Cyber.Text.Muted" Color="#616161"/>
+    <SolidColorBrush x:Key="Cyber.Text.Bright" Color="#000000"/>
+    <SolidColorBrush x:Key="Cyber.Bg.Card" Color="#FAFAFA"/>
+
+    <!-- ========== PlcLabel / PlcStatus Colors ========== -->
+    <SolidColorBrush x:Key="Plc.Bg.Main" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Plc.Bg.Dark" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="Plc.Border" Color="#BDBDBD"/>
+    <SolidColorBrush x:Key="Plc.Text.Label" Color="#616161"/>
+    <SolidColorBrush x:Key="Plc.Text.Value" Color="#0091EA"/>
+    <SolidColorBrush x:Key="Plc.Text.Default" Color="#9E9E9E"/>
+
+    <!-- ========== SensorViewer Colors ========== -->
+    <SolidColorBrush x:Key="Sensor.Bg.Main" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Sensor.Bg.Header" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="Sensor.Border" Color="#BDBDBD"/>
+    <SolidColorBrush x:Key="Sensor.Text.Title" Color="#212121"/>
+    <SolidColorBrush x:Key="Sensor.Text.Group" Color="#0091EA"/>
+    <SolidColorBrush x:Key="Sensor.Text.Label" Color="#424242"/>
+    <SolidColorBrush x:Key="Sensor.Text.Value" Color="#1976D2"/>
+
+    <!-- ========== LiveLogViewer Colors ========== -->
+    <SolidColorBrush x:Key="Log.Bg.Main" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Log.Bg.Header" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="Log.Border" Color="#BDBDBD"/>
+    <SolidColorBrush x:Key="Log.Text.Normal" Color="#424242"/>
+    <SolidColorBrush x:Key="Log.Text.Time" Color="#757575"/>
+
+    <!-- ========== SecuredButton Colors ========== -->
+    <SolidColorBrush x:Key="Button.Bg.Primary" Color="#2196F3"/>
+    <SolidColorBrush x:Key="Button.Bg.Success" Color="#4CAF50"/>
+    <SolidColorBrush x:Key="Button.Bg.Warning" Color="#FF9800"/>
+    <SolidColorBrush x:Key="Button.Bg.Error" Color="#F44336"/>
+    <SolidColorBrush x:Key="Button.Bg.Info" Color="#00BCD4"/>
+    <SolidColorBrush x:Key="Button.Text" Color="#FFFFFF"/>
+
+    <!-- ========== Status Colors (Universal) ========== -->
+    <SolidColorBrush x:Key="Status.Success" Color="#4CAF50"/>
+    <SolidColorBrush x:Key="Status.Warning" Color="#FF9800"/>
+    <SolidColorBrush x:Key="Status.Error" Color="#F44336"/>
+    <SolidColorBrush x:Key="Status.Info" Color="#2196F3"/>
+    <SolidColorBrush x:Key="Status.Offline" Color="#9E9E9E"/>
+
+</ResourceDictionary>

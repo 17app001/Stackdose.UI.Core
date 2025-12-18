@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Stackdose.UI.Core.Controls.CyberFrame"
+<UserControl x:Class="Stackdose.UI.Core.Controls.CyberFrame"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -7,32 +7,21 @@
              d:DesignHeight="600" d:DesignWidth="800"
              x:Name="Root">
 
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Stackdose.UI.Core;component/Themes/Colors.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
-
     <!-- Main Window Frame -->
-    <Border Background="{StaticResource Cyber.Bg.Dark}" 
-            BorderBrush="{StaticResource Cyber.Border}" 
+    <Border Background="{DynamicResource Cyber.Bg.Dark}" 
+            BorderBrush="{DynamicResource Cyber.Border}" 
             BorderThickness="1">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
-                <!-- Reduced Header Height: 70 -> 50 -->
                 <RowDefinition Height="*"/>
-                <!-- Content Area -->
             </Grid.RowDefinitions>
 
             <!-- Header Bar -->
             <Border Grid.Row="0" 
-                    Background="{StaticResource Cyber.Bg.Panel}" 
-                    BorderBrush="{StaticResource Cyber.Border.Strong}" 
+                    Background="{DynamicResource Cyber.Bg.Panel}" 
+                    BorderBrush="{DynamicResource Cyber.Border.Strong}" 
                     BorderThickness="0,0,0,2">
-                <!-- 邊框加粗從 1 -> 2，使用更明顯的顏色 -->
                 <Grid Margin="15,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -40,64 +29,94 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- ========== LEFT SECTION: Logo + Title ========== -->
+                    <!-- LEFT SECTION: Logo + Title + Theme Button -->
                     <StackPanel Grid.Column="0" 
                                 Orientation="Horizontal" 
                                 VerticalAlignment="Center">
                         <TextBlock Text="Stackdose" 
-                                   Foreground="{StaticResource Cyber.NeonBlue}" 
+                                   Foreground="{DynamicResource Cyber.NeonBlue}" 
                                    FontSize="20" 
                                    FontWeight="Bold" 
                                    FontStyle="Italic" 
                                    Margin="0,0,8,0"/>
-                        <!-- 增加字體大小 18->20 -->
                         <TextBlock Text="ModelS" 
-                                   Foreground="{StaticResource Cyber.NeonBlue}" 
+                                   Foreground="{DynamicResource Cyber.NeonBlue}" 
                                    FontSize="20" 
                                    FontWeight="Bold" 
                                    FontStyle="Italic" 
                                    Margin="0,0,8,0"/>
-                        <!-- 增加字體大小 18->20 -->
                         <TextBlock Text="{Binding Title, ElementName=Root}" 
-                                   Foreground="{StaticResource Cyber.Text.Bright}" 
+                                   Foreground="{DynamicResource Cyber.Text.Bright}" 
                                    FontSize="14" 
                                    FontWeight="Medium"
                                    VerticalAlignment="Center" 
-                                   Margin="0,0,0,0"/>
-                        <!-- 使用更亮的文字顏色，增加字體大小 13->14，加粗 -->
+                                   Margin="0,0,15,0"/>
+                        
+                        <!-- Theme Toggle Button -->
+                        <Button x:Name="ThemeToggleButton" 
+                                Click="ThemeToggleButton_Click"
+                                Width="32" 
+                                Height="32" 
+                                Background="Transparent" 
+                                BorderBrush="{DynamicResource Cyber.Border.Strong}"
+                                BorderThickness="1"
+                                Cursor="Hand"
+                                ToolTip="Toggle Theme">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="4">
+                                                    <TextBlock Text="[T]" 
+                                                               Foreground="{DynamicResource Cyber.NeonBlue}" 
+                                                               FontSize="12" 
+                                                               FontWeight="Bold"
+                                                               HorizontalAlignment="Center" 
+                                                               VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource Cyber.Bg.Card}"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
                     </StackPanel>
 
-                    <!-- ========== CENTER SECTION: Status Indicators (Optional) ========== -->
+                    <!-- CENTER SECTION: Status Indicators -->
                     <StackPanel x:Name="StatusIndicatorsPanel"
                                 Grid.Column="1" 
                                 Orientation="Horizontal" 
                                 HorizontalAlignment="Center" 
                                 VerticalAlignment="Center"
                                 Visibility="Collapsed">
-                        <!-- Alarm Indicator -->
                         <Border Background="#F44336" 
                                 CornerRadius="4" 
                                 Padding="8,4" 
                                 Margin="5"
                                 BorderBrush="#FFFFFF"
                                 BorderThickness="1">
-                            <!-- 加上白色邊框，增加視覺辨識 -->
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="[!]" 
                                            Foreground="White" 
                                            FontSize="12" 
                                            FontWeight="Bold"
                                            Margin="0,0,5,0"/>
-                                <!-- 增加字體大小和粗細 -->
                                 <TextBlock Text="Alarm: 0" 
                                            Foreground="White" 
                                            FontSize="11" 
                                            FontWeight="Medium"/>
-                                <!-- 增加字體大小 -->
                             </StackPanel>
                         </Border>
-
-                        <!-- Total Indicator -->
                         <Border Background="#4CAF50" 
                                 CornerRadius="4" 
                                 Padding="8,4" 
@@ -118,7 +137,7 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- ========== RIGHT SECTION: User Info + Time + Logout ========== -->
+                    <!-- RIGHT SECTION: Time + User + Logout -->
                     <StackPanel Grid.Column="2" 
                                 Orientation="Horizontal" 
                                 HorizontalAlignment="Right" 
@@ -127,7 +146,7 @@
                         <!-- Time Display -->
                         <TextBlock x:Name="TimeText" 
                                    Text="00:00:00" 
-                                   Foreground="{StaticResource Cyber.NeonBlue}" 
+                                   Foreground="{DynamicResource Cyber.NeonBlue}" 
                                    FontSize="14" 
                                    FontWeight="Bold" 
                                    FontFamily="Consolas"
@@ -136,7 +155,7 @@
 
                         <!-- Separator -->
                         <TextBlock Text="|" 
-                                   Foreground="{StaticResource Cyber.Border.Strong}" 
+                                   Foreground="{DynamicResource Cyber.Border.Strong}" 
                                    FontSize="14" 
                                    FontWeight="Bold"
                                    VerticalAlignment="Center"
@@ -149,12 +168,12 @@
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock x:Name="UserNameText" 
                                            Text="Engineer" 
-                                           Foreground="{StaticResource Cyber.Text.Bright}" 
+                                           Foreground="{DynamicResource Cyber.Text.Bright}" 
                                            FontSize="13" 
                                            FontWeight="SemiBold"/>
                                 <TextBlock x:Name="UserLevelText" 
                                            Text="Engineer" 
-                                           Foreground="{StaticResource Cyber.NeonBlue}" 
+                                           Foreground="{DynamicResource Cyber.NeonBlue}" 
                                            FontSize="10"
                                            FontWeight="Medium"/>
                             </StackPanel>
@@ -178,9 +197,10 @@
                                             <ControlTemplate TargetType="Button">
                                                 <Border Background="{TemplateBinding Background}" 
                                                         CornerRadius="4">
-                                                    <TextBlock Text="⏻" 
+                                                    <TextBlock Text="[X]" 
                                                                Foreground="White" 
-                                                               FontSize="16" 
+                                                               FontSize="14" 
+                                                               FontWeight="Bold"
                                                                HorizontalAlignment="Center" 
                                                                VerticalAlignment="Center"/>
                                                 </Border>

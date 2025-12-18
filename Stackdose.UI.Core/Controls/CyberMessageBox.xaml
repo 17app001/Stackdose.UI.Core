@@ -17,9 +17,9 @@
     <Window.Resources>
         <!-- Button Style -->
         <Style x:Key="CyberButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#1E1E2E"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#00E5FF"/>
+            <Setter Property="Background" Value="{DynamicResource Cyber.Bg.Panel}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Cyber.Text.Bright}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Cyber.NeonBlue}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="20,8"/>
             <Setter Property="FontSize" Value="13"/>
@@ -40,8 +40,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#00E5FF"/>
-                                <Setter Property="Foreground" Value="#000000"/>
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource Cyber.NeonBlue}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource Cyber.Bg.Dark}"/>
                                 <Setter TargetName="Border" Property="Effect">
                                     <Setter.Value>
                                         <DropShadowEffect Color="#00E5FF" BlurRadius="15" ShadowDepth="0" Opacity="0.8"/>
@@ -49,7 +49,7 @@
                                 </Setter>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#00B8CC"/>
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource Status.Info}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -59,20 +59,20 @@
 
         <!-- Cancel Button Style -->
         <Style x:Key="CancelButtonStyle" TargetType="Button" BasedOn="{StaticResource CyberButtonStyle}">
-            <Setter Property="BorderBrush" Value="#666"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Cyber.Border}"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#FF5252"/>
-                    <Setter Property="BorderBrush" Value="#FF5252"/>
+                    <Setter Property="Background" Value="{DynamicResource Status.Error}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Status.Error}"/>
                     <Setter Property="Foreground" Value="#FFFFFF"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
     </Window.Resources>
 
-    <!-- Shadow Effect -->
-    <Border Background="#05050A" 
-            BorderBrush="#00E5FF" 
+    <!-- Main Container -->
+    <Border Background="{DynamicResource Cyber.Bg.Dark}" 
+            BorderBrush="{DynamicResource Cyber.NeonBlue}" 
             BorderThickness="1" 
             CornerRadius="8"
             Opacity="0.98">
@@ -89,10 +89,10 @@
 
             <!-- Title Bar -->
             <Border Grid.Row="0" 
-                    Background="#141420" 
+                    Background="{DynamicResource Cyber.Bg.Panel}" 
                     CornerRadius="8,8,0,0"
-                    BorderBrush="#334455" 
-                    BorderThickness="0,0,0,1">
+                    BorderBrush="{DynamicResource Cyber.Border.Strong}" 
+                    BorderThickness="0,0,0,2">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -103,8 +103,10 @@
                     <!-- Icon -->
                     <TextBlock x:Name="TitleIcon" 
                                Grid.Column="0"
-                               Text="&#x2139;&#xFE0F;" 
-                               FontSize="24" 
+                               Text="INFO" 
+                               Foreground="{DynamicResource Cyber.NeonBlue}"
+                               FontSize="12" 
+                               FontWeight="Bold"
                                VerticalAlignment="Center"
                                Margin="15,0,10,0"/>
 
@@ -112,19 +114,20 @@
                     <TextBlock x:Name="TitleText" 
                                Grid.Column="1"
                                Text="Message" 
-                               Foreground="#00E5FF" 
+                               Foreground="{DynamicResource Cyber.NeonBlue}" 
                                FontSize="16" 
                                FontWeight="Bold"
                                VerticalAlignment="Center"/>
 
                     <!-- Close Button -->
                     <Button Grid.Column="2" 
-                            Content="&#x2715;" 
+                            Content="X" 
                             Width="40" Height="40"
                             Background="Transparent"
                             BorderThickness="0"
-                            Foreground="#8F9BB3"
-                            FontSize="20"
+                            Foreground="{DynamicResource Cyber.Text.Muted}"
+                            FontSize="16"
+                            FontWeight="Bold"
                             Click="CloseButton_Click"
                             Cursor="Hand">
                         <Button.Style>
@@ -140,7 +143,7 @@
                                 </Setter>
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#FF5252"/>
+                                        <Setter Property="Background" Value="{DynamicResource Status.Error}"/>
                                         <Setter Property="Foreground" Value="White"/>
                                     </Trigger>
                                 </Style.Triggers>
@@ -151,7 +154,9 @@
             </Border>
 
             <!-- Content Area -->
-            <Grid Grid.Row="1" Margin="20">
+            <Grid Grid.Row="1" 
+                  Background="{DynamicResource Cyber.Bg.Dark}"
+                  Margin="20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -160,8 +165,10 @@
                 <!-- Large Icon -->
                 <TextBlock x:Name="MessageIcon" 
                            Grid.Column="0"
-                           Text="&#x2139;&#xFE0F;" 
+                           Text="i" 
+                           Foreground="{DynamicResource Cyber.NeonBlue}"
                            FontSize="48" 
+                           FontWeight="Bold"
                            VerticalAlignment="Top"
                            Margin="0,10,20,0"/>
 
@@ -171,7 +178,7 @@
                               HorizontalScrollBarVisibility="Disabled">
                     <TextBlock x:Name="MessageText" 
                                Text="This is message content" 
-                               Foreground="#FFFFFF" 
+                               Foreground="{DynamicResource Cyber.Text.Bright}" 
                                FontSize="14" 
                                TextWrapping="Wrap"
                                VerticalAlignment="Center"
@@ -181,9 +188,9 @@
 
             <!-- Button Area -->
             <Border Grid.Row="2" 
-                    Background="#0F0F1A" 
-                    BorderBrush="#334455" 
-                    BorderThickness="0,1,0,0"
+                    Background="{DynamicResource Cyber.Bg.Panel}" 
+                    BorderBrush="{DynamicResource Cyber.Border.Strong}" 
+                    BorderThickness="0,2,0,0"
                     CornerRadius="0,0,8,8">
                 <StackPanel x:Name="ButtonPanel" 
                             Orientation="Horizontal" 

@@ -1,27 +1,56 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- 背景顏色：提高亮度，避免在差面板上過暗 -->
+    <!-- Dark Theme Colors -->
+    
+    <!-- ========== CyberFrame Colors ========== -->
     <SolidColorBrush x:Key="Cyber.Bg.Dark" Color="#0F0F1A"/><!-- 從 #05050A 提高到 #0F0F1A -->
     <SolidColorBrush x:Key="Cyber.Bg.Panel" Color="#1A1A2E" Opacity="1.0"/><!-- 從 #141420/0.95 改為 #1A1A2E/1.0，移除透明度 -->
-    
-    <!-- 邊框顏色：更明顯的邊框 -->
     <SolidColorBrush x:Key="Cyber.Border" Color="#4A5F7F"/><!-- 從 #334455 提高到 #4A5F7F -->
-    
-    <!-- 主題色：保持鮮明 -->
+    <SolidColorBrush x:Key="Cyber.Border.Strong" Color="#5A7FA0"/>
     <SolidColorBrush x:Key="Cyber.NeonBlue" Color="#00E5FF"/>
-
-    <!-- 文字顏色：提高對比度 -->
     <SolidColorBrush x:Key="Cyber.Text.Main" Color="#FFFFFF"/><!-- 保持純白 -->
     <SolidColorBrush x:Key="Cyber.Text.Muted" Color="#B0BEC5"/><!-- 從 #8F9BB3 提高到 #B0BEC5 -->
-    
-    <!-- 新增：高對比度文字（用於重要資訊） -->
     <SolidColorBrush x:Key="Cyber.Text.Bright" Color="#FFFFFF"/>
-    
-    <!-- 新增：次要背景色（用於卡片、區塊） -->
-    <SolidColorBrush x:Key="Cyber.Bg.Card" Color="#252540"/>
-    
-    <!-- 新增：強調邊框色 -->
-    <SolidColorBrush x:Key="Cyber.Border.Strong" Color="#5A7FA0"/>
+    <SolidColorBrush x:Key="Cyber.Bg.Card" Color="#252540"/><!-- 新增：次要背景色（用於卡片、區塊） -->
+
+    <!-- ========== PlcLabel / PlcStatus Colors ========== -->
+    <SolidColorBrush x:Key="Plc.Bg.Main" Color="#1E1E2E"/>
+    <SolidColorBrush x:Key="Plc.Bg.Dark" Color="#141420"/>
+    <SolidColorBrush x:Key="Plc.Border" Color="#334455"/>
+    <SolidColorBrush x:Key="Plc.Text.Label" Color="#8F9BB3"/>
+    <SolidColorBrush x:Key="Plc.Text.Value" Color="#00E5FF"/>
+    <SolidColorBrush x:Key="Plc.Text.Default" Color="#555"/>
+
+    <!-- ========== SensorViewer Colors ========== -->
+    <SolidColorBrush x:Key="Sensor.Bg.Main" Color="#1E1E2E"/>
+    <SolidColorBrush x:Key="Sensor.Bg.Header" Color="#252540"/>
+    <SolidColorBrush x:Key="Sensor.Border" Color="#334455"/>
+    <SolidColorBrush x:Key="Sensor.Text.Title" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Sensor.Text.Group" Color="#00E5FF"/>
+    <SolidColorBrush x:Key="Sensor.Text.Label" Color="#B0BEC5"/>
+    <SolidColorBrush x:Key="Sensor.Text.Value" Color="#00BCD4"/>
+
+    <!-- ========== LiveLogViewer Colors ========== -->
+    <SolidColorBrush x:Key="Log.Bg.Main" Color="#1E1E2E"/>
+    <SolidColorBrush x:Key="Log.Bg.Header" Color="#252540"/>
+    <SolidColorBrush x:Key="Log.Border" Color="#334455"/>
+    <SolidColorBrush x:Key="Log.Text.Normal" Color="#BDBDBD"/>
+    <SolidColorBrush x:Key="Log.Text.Time" Color="#757575"/>
+
+    <!-- ========== SecuredButton Colors ========== -->
+    <SolidColorBrush x:Key="Button.Bg.Primary" Color="#007ACC"/>
+    <SolidColorBrush x:Key="Button.Bg.Success" Color="#00A868"/>
+    <SolidColorBrush x:Key="Button.Bg.Warning" Color="#FFA726"/>
+    <SolidColorBrush x:Key="Button.Bg.Error" Color="#FF5252"/>
+    <SolidColorBrush x:Key="Button.Bg.Info" Color="#00BCD4"/>
+    <SolidColorBrush x:Key="Button.Text" Color="#FFFFFF"/>
+
+    <!-- ========== Status Colors (Universal) ========== -->
+    <SolidColorBrush x:Key="Status.Success" Color="#4CAF50"/>
+    <SolidColorBrush x:Key="Status.Warning" Color="#FFA726"/>
+    <SolidColorBrush x:Key="Status.Error" Color="#FF5252"/>
+    <SolidColorBrush x:Key="Status.Info" Color="#00BCD4"/>
+    <SolidColorBrush x:Key="Status.Offline" Color="#757575"/>
 
 </ResourceDictionary>

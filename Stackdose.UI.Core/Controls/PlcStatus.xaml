@@ -6,7 +6,11 @@
              mc:Ignorable="d" 
              d:DesignHeight="80" d:DesignWidth="220">
 
-    <Border BorderBrush="#FF00A8E8" BorderThickness="1" Background="#1A1A1A" CornerRadius="4" Padding="10">
+    <Border BorderBrush="{DynamicResource Plc.Text.Value}" 
+            BorderThickness="1" 
+            Background="{DynamicResource Plc.Bg.Main}" 
+            CornerRadius="4" 
+            Padding="10">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -14,8 +18,13 @@
             </Grid.ColumnDefinitions>
 
             <!-- 狀態燈 -->
-            <Ellipse x:Name="StatusLight" Width="20" Height="20" Fill="Gray" 
-                     Stroke="White" StrokeThickness="1" Margin="0,0,15,0">
+            <Ellipse x:Name="StatusLight" 
+                     Width="20" 
+                     Height="20" 
+                     Fill="{DynamicResource Status.Offline}" 
+                     Stroke="White" 
+                     StrokeThickness="1" 
+                     Margin="0,0,15,0">
                 <Ellipse.Effect>
                     <DropShadowEffect Color="White" BlurRadius="5" ShadowDepth="0" Opacity="0.5"/>
                 </Ellipse.Effect>
@@ -30,21 +39,38 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="PLC CONNECTION" Foreground="#888" FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="PLC CONNECTION" 
+                               Foreground="{DynamicResource Plc.Text.Label}" 
+                               FontSize="10" 
+                               FontWeight="Bold" 
+                               VerticalAlignment="Center"/>
 
                     <!-- 新增：顯示 ScanInterval (例如 "⟳ 100 ms") -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="⟳ " Foreground="#555" FontSize="9" Margin="0,1,0,0"/>
-                        <!-- 重新整理圖示感 -->
+                        <TextBlock Text="[R] " 
+                                   Foreground="{DynamicResource Plc.Text.Default}" 
+                                   FontSize="9" 
+                                   Margin="0,1,0,0"/>
                         <TextBlock Text="{Binding ScanInterval, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                   Foreground="#666" FontSize="10" FontWeight="SemiBold"/>
-                        <TextBlock Text=" ms" Foreground="#666" FontSize="10"/>
+                                   Foreground="{DynamicResource Plc.Text.Default}" 
+                                   FontSize="10" 
+                                   FontWeight="SemiBold"/>
+                        <TextBlock Text=" ms" 
+                                   Foreground="{DynamicResource Plc.Text.Default}" 
+                                   FontSize="10"/>
                     </StackPanel>
                 </Grid>
 
                 <!-- IP 與 狀態 -->
-                <TextBlock x:Name="IpDisplay" Text="0.0.0.0:0000" Foreground="White" FontSize="14" FontFamily="Consolas"/>
-                <TextBlock x:Name="StatusText" Text="Waiting..." Foreground="Gray" FontSize="10"/>
+                <TextBlock x:Name="IpDisplay" 
+                           Text="0.0.0.0:0000" 
+                           Foreground="{DynamicResource Cyber.Text.Bright}" 
+                           FontSize="14" 
+                           FontFamily="Consolas"/>
+                <TextBlock x:Name="StatusText" 
+                           Text="Waiting..." 
+                           Foreground="{DynamicResource Plc.Text.Default}" 
+                           FontSize="10"/>
             </StackPanel>
         </Grid>
     </Border>

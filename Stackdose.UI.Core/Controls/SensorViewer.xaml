@@ -10,27 +10,26 @@
     
     <UserControl.Resources>
         <DataTemplate x:Key="SensorItemTemplate">
-            <Border BorderBrush="#444" BorderThickness="1" 
-                    Background="#2A2A2A" CornerRadius="6" 
-                    Margin="6,3" Padding="12,10">
+            <Border BorderBrush="{DynamicResource Sensor.Border}" 
+                    BorderThickness="1" 
+                    Background="{DynamicResource Sensor.Bg.Main}" 
+                    CornerRadius="6" 
+                    Margin="6,3" 
+                    Padding="12,10">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
-                        <!-- 指示燈 -->
                         <ColumnDefinition Width="*"/>
-                        <!-- 描述 -->
                         <ColumnDefinition Width="Auto"/>
-                        <!-- 位址 -->
                         <ColumnDefinition Width="Auto"/>
-                        <!-- 時間 -->
                     </Grid.ColumnDefinitions>
 
-                    <!-- 狀態指示燈 (加大) -->
+                    <!-- Status Indicator -->
                     <Ellipse Grid.Column="0" Width="14" Height="14" 
                              Margin="0,0,12,0" VerticalAlignment="Center">
                         <Ellipse.Style>
                             <Style TargetType="Ellipse">
-                                <Setter Property="Fill" Value="#4CAF50"/>
+                                <Setter Property="Fill" Value="{DynamicResource Status.Success}"/>
                                 <Setter Property="Effect">
                                     <Setter.Value>
                                         <DropShadowEffect Color="#4CAF50" BlurRadius="8" ShadowDepth="0" Opacity="0.6"/>
@@ -38,7 +37,7 @@
                                 </Setter>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                        <Setter Property="Fill" Value="#FF5252"/>
+                                        <Setter Property="Fill" Value="{DynamicResource Status.Error}"/>
                                         <Setter Property="Effect">
                                             <Setter.Value>
                                                 <DropShadowEffect Color="#FF5252" BlurRadius="10" ShadowDepth="0" Opacity="0.8"/>
@@ -50,38 +49,40 @@
                         </Ellipse.Style>
                     </Ellipse>
 
-                    <!-- 操作描述 (加大字體) -->
+                    <!-- Operation Description -->
                     <TextBlock Grid.Column="1" 
                                Text="{Binding OperationDescription}" 
-                               Foreground="#EEEEEE" 
+                               Foreground="{DynamicResource Sensor.Text.Label}" 
                                FontSize="14" 
                                FontWeight="Medium"
                                FontFamily="Microsoft JhengHei, Segoe UI, Arial"
                                VerticalAlignment="Center"
                                TextTrimming="CharacterEllipsis"/>
 
-                    <!-- PLC 位址 (優化顯示) -->
+                    <!-- PLC Address -->
                     <Border Grid.Column="2" 
-                            Background="#1A1A1A" 
+                            Background="{DynamicResource Plc.Bg.Dark}" 
+                            BorderBrush="{DynamicResource Plc.Border}"
+                            BorderThickness="1"
                             CornerRadius="3" 
                             Padding="8,4"
                             Margin="12,0,0,0"
                             VerticalAlignment="Center">
-                        <TextBlock Foreground="#888" 
+                        <TextBlock Foreground="{DynamicResource Plc.Text.Label}" 
                                    FontSize="11" 
                                    FontFamily="Consolas"
                                    VerticalAlignment="Center">
                             <Run Text="("/>
-                            <Run Text="{Binding Device}" Foreground="#00A8E8"/>
-                            <Run Text="{Binding Bit, StringFormat='.{0}', Mode=OneWay}" Foreground="#FFA726"/>
+                            <Run Text="{Binding Device}" Foreground="{DynamicResource Plc.Text.Value}"/>
+                            <Run Text="{Binding Bit, StringFormat='.{0}', Mode=OneWay}" Foreground="{DynamicResource Status.Warning}"/>
                             <Run Text=")"/>
                         </TextBlock>
                     </Border>
 
-                    <!-- 最後更新時間 -->
+                    <!-- Last Update Time -->
                     <TextBlock Grid.Column="3" 
                                Text="{Binding LastUpdate, StringFormat='HH:mm:ss'}" 
-                               Foreground="#666" 
+                               Foreground="{DynamicResource Plc.Text.Default}" 
                                FontSize="10" 
                                FontFamily="Consolas"
                                VerticalAlignment="Center"
@@ -91,7 +92,7 @@
         </DataTemplate>
 
         <Style x:Key="GroupHeaderStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#00A8E8"/>
+            <Setter Property="Foreground" Value="{DynamicResource Sensor.Text.Group}"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontFamily" Value="Microsoft JhengHei, Segoe UI, Arial"/>
@@ -104,14 +105,18 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Background="#1E1E1E">
+    <Grid Background="{DynamicResource Sensor.Bg.Main}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- 標題列 (優化) -->
-        <Border Grid.Row="0" Background="#2D2D2D" Padding="12,10">
+        <!-- Header Bar -->
+        <Border Grid.Row="0" 
+                Background="{DynamicResource Sensor.Bg.Header}" 
+                BorderBrush="{DynamicResource Sensor.Border}"
+                BorderThickness="0,0,0,1"
+                Padding="12,10">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -119,20 +124,20 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- 標題 (加大) -->
+                <!-- Title -->
                 <TextBlock Grid.Column="0" 
                            Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                           Foreground="#EEEEEE" 
+                           Foreground="{DynamicResource Sensor.Text.Title}" 
                            FontSize="16" 
                            FontWeight="Bold"
                            FontFamily="Microsoft JhengHei, Segoe UI, Arial"
                            VerticalAlignment="Center"/>
 
-                <!-- 僅顯示異常 Checkbox (優化樣式) -->
+                <!-- Show Alarms Only Checkbox -->
                 <CheckBox Grid.Column="1" 
                           x:Name="ChkShowAlarmsOnly"
                           Content="Only Sensor ON" 
-                          Foreground="#DDD" 
+                          Foreground="{DynamicResource Sensor.Text.Label}" 
                           FontSize="12"
                           FontFamily="Microsoft JhengHei, Segoe UI, Arial"
                           VerticalAlignment="Center"
@@ -146,39 +151,67 @@
                     </CheckBox.Style>
                 </CheckBox>
 
-                <!-- 統計資訊 (優化顯示) -->
+                <!-- Statistics -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="#FF5252" CornerRadius="3" Padding="6,3" Margin="0,0,4,0">
+                    <Border Background="{DynamicResource Status.Error}" 
+                            CornerRadius="3" 
+                            Padding="6,3" 
+                            Margin="0,0,4,0">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Alarm: " Foreground="White" FontSize="11" FontWeight="Bold"/>
-                            <TextBlock x:Name="TxtAlarmCount" Text="0" Foreground="White" FontSize="11" FontWeight="Bold"/>
+                            <TextBlock Text="Alarm: " 
+                                       Foreground="White" 
+                                       FontSize="11" 
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="TxtAlarmCount" 
+                                       Text="0" 
+                                       Foreground="White" 
+                                       FontSize="11" 
+                                       FontWeight="Bold"/>
                         </StackPanel>
                     </Border>
                     
-                    <TextBlock Text=" / " Foreground="#666" FontSize="12" Margin="4,0"/>
+                    <TextBlock Text=" / " 
+                               Foreground="{DynamicResource Plc.Text.Default}" 
+                               FontSize="12" 
+                               Margin="4,0"/>
                     
-                    <Border Background="#4CAF50" CornerRadius="3" Padding="6,3" Margin="4,0,0,0">
+                    <Border Background="{DynamicResource Status.Success}" 
+                            CornerRadius="3" 
+                            Padding="6,3" 
+                            Margin="4,0,0,0">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Total: " Foreground="White" FontSize="11" FontWeight="Bold"/>
-                            <TextBlock x:Name="TxtTotalCount" Text="0" Foreground="White" FontSize="11" FontWeight="Bold"/>
+                            <TextBlock Text="Total: " 
+                                       Foreground="White" 
+                                       FontSize="11" 
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="TxtTotalCount" 
+                                       Text="0" 
+                                       Foreground="White" 
+                                       FontSize="11" 
+                                       FontWeight="Bold"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- 感測器列表 (優化 ScrollViewer) -->
+        <!-- Sensor List -->
         <ScrollViewer Grid.Row="1" 
                       VerticalScrollBarVisibility="Auto" 
                       HorizontalScrollBarVisibility="Disabled"
-                      Background="#1A1A1A"
+                      Background="{DynamicResource Sensor.Bg.Main}"
                       Padding="4">
             <ItemsControl x:Name="SensorList" ItemTemplate="{StaticResource SensorItemTemplate}">
                 <ItemsControl.GroupStyle>
                     <GroupStyle>
                         <GroupStyle.HeaderTemplate>
                             <DataTemplate>
-                                <Border Background="#252525" CornerRadius="4" Padding="8,4" Margin="4,8,4,2">
+                                <Border Background="{DynamicResource Sensor.Bg.Header}" 
+                                        BorderBrush="{DynamicResource Sensor.Border}"
+                                        BorderThickness="1"
+                                        CornerRadius="4" 
+                                        Padding="8,4" 
+                                        Margin="4,8,4,2">
                                     <TextBlock Text="{Binding Name}" Style="{StaticResource GroupHeaderStyle}"/>
                                 </Border>
                             </DataTemplate>
@@ -188,21 +221,25 @@
             </ItemsControl>
         </ScrollViewer>
 
-        <!-- 無資料提示 (優化顯示) -->
+        <!-- No Data Hint -->
         <Border Grid.Row="1" 
-                Background="#1A1A1A"
+                Background="{DynamicResource Sensor.Bg.Main}"
                 Visibility="Collapsed" 
                 x:Name="NoDataHint">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="📭" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                <TextBlock Text="[NO DATA]" 
+                           FontSize="48" 
+                           Foreground="{DynamicResource Plc.Text.Default}"
+                           HorizontalAlignment="Center" 
+                           Margin="0,0,0,12"/>
                 <TextBlock Text="No sensors configured" 
-                           Foreground="#888" 
+                           Foreground="{DynamicResource Sensor.Text.Label}" 
                            FontSize="16" 
                            FontWeight="SemiBold"
                            FontFamily="Microsoft JhengHei, Segoe UI, Arial"
                            HorizontalAlignment="Center"/>
                 <TextBlock Text="Please set ConfigFile property" 
-                           Foreground="#666" 
+                           Foreground="{DynamicResource Plc.Text.Default}" 
                            FontSize="12" 
                            FontStyle="Italic"
                            HorizontalAlignment="Center"

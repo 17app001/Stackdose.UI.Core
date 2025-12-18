@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -76,6 +77,27 @@ namespace Stackdose.UI.Core.Controls
             }
         }
 
+        /// <summary>
+        /// 是否使用淺色主題 (Light Theme)
+        /// </summary>
+        public static readonly DependencyProperty UseLightThemeProperty =
+            DependencyProperty.Register("UseLightTheme", typeof(bool), typeof(CyberFrame),
+                new PropertyMetadata(false, OnUseLightThemeChanged));
+
+        public bool UseLightTheme
+        {
+            get => (bool)GetValue(UseLightThemeProperty);
+            set => SetValue(UseLightThemeProperty, value);
+        }
+
+        private static void OnUseLightThemeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is CyberFrame frame)
+            {
+                frame.ApplyTheme((bool)e.NewValue);
+            }
+        }
+
         #endregion
 
         #region Event Handlers
@@ -122,6 +144,41 @@ namespace Stackdose.UI.Core.Controls
             }
         }
 
+        /// <summary>
+        /// 主題切換按鈕點擊事件
+        /// </summary>
+        private void ThemeToggleButton_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("========== Theme Toggle START ==========");
+            System.Diagnostics.Debug.WriteLine($"Current UseLightTheme: {UseLightTheme}");
+            
+            // 輸出當前資源字典狀態
+            var appResources = Application.Current.Resources;
+            System.Diagnostics.Debug.WriteLine($"Total MergedDictionaries Before: {appResources.MergedDictionaries.Count}");
+            foreach (var dict in appResources.MergedDictionaries)
+            {
+                if (dict.Source != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"  - {dict.Source}");
+                }
+            }
+            
+            // 切換主題
+            ToggleTheme();
+            
+            System.Diagnostics.Debug.WriteLine($"New UseLightTheme: {UseLightTheme}");
+            System.Diagnostics.Debug.WriteLine($"Total MergedDictionaries After: {appResources.MergedDictionaries.Count}");
+            foreach (var dict in appResources.MergedDictionaries)
+            {
+                if (dict.Source != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"  - {dict.Source}");
+                }
+            }
+            
+            System.Diagnostics.Debug.WriteLine("========== Theme Toggle END ==========");
+        }
+
         #endregion
 
         #region Helper Methods
@@ -150,6 +207,87 @@ namespace Stackdose.UI.Core.Controls
                     userLevelText.Text = "Not Logged In";
                 }
             }
+        }
+
+        /// <summary>
+        /// 套用主題
+        /// </summary>
+        /// <param name="useLightTheme">是否使用淺色主題</param>
+        private void ApplyTheme(bool useLightTheme)
+        {
+            System.Diagnostics.Debug.WriteLine($"Applying Theme: {(useLightTheme ? "Light" : "Dark")}");
+            
+            try
+            {
+                // 取得應用程式層級的資源字典
+                var appResources = Application.Current.Resources;
+                
+                // 載入對應的主題檔案
+                var themeUri = new Uri(
+                    useLightTheme 
+                        ? "/Stackdose.UI.Core;component/Themes/LightColors.xaml" 
+                        : "/Stackdose.UI.Core;component/Themes/Colors.xaml",
+                    UriKind.Relative);
+
+                var newThemeDict = new ResourceDictionary { Source = themeUri };
+                
+                // 找到並移除所有包含 Colors.xaml 或 LightColors.xaml 的字典
+                var toRemove = appResources.MergedDictionaries
+                    .Where(d => d.Source != null && 
+                               (d.Source.ToString().Contains("Colors.xaml") || 
+                                d.Source.ToString().Contains("LightColors.xaml")))
+                    .ToList();
+
+                foreach (var dict in toRemove)
+                {
+                    appResources.MergedDictionaries.Remove(dict);
+                    System.Diagnostics.Debug.WriteLine($"Removed: {dict.Source}");
+                }
+
+                // 加入新的主題字典
+                appResources.MergedDictionaries.Add(newThemeDict);
+                
+                System.Diagnostics.Debug.WriteLine($"Theme Applied Successfully: {themeUri}");
+                System.Diagnostics.Debug.WriteLine($"Total MergedDictionaries: {appResources.MergedDictionaries.Count}");
+                
+                // 強制刷新 UI
+                Application.Current.Dispatcher.Invoke(() => 
+                {
+                    // 觸發視覺樹重繪
+                    foreach (Window window in Application.Current.Windows)
+                    {
+                        window.InvalidateVisual();
+                        window.UpdateLayout();
+                    }
+                }, System.Windows.Threading.DispatcherPriority.Render);
+                
+                // 顯示通知
+                CyberMessageBox.Show(
+                    $"Theme changed to {(useLightTheme ? "Light" : "Dark")} mode",
+                    "Theme Switch",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Theme Apply Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
+                CyberMessageBox.Show(
+                    $"Theme switch failed: {ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+            }
+        }
+
+        /// <summary>
+        /// 切換主題（公開方法，可從外部呼叫）
+        /// </summary>
+        public void ToggleTheme()
+        {
+            UseLightTheme = !UseLightTheme;
         }
 
         #endregion

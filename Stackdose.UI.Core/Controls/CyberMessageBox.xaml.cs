@@ -102,35 +102,35 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         private void SetIcon(MessageBoxImage icon)
         {
-            string emoji = "??";
+            string iconText = "INFO";
             string color = "#00E5FF"; // 預設藍色
 
             switch (icon)
             {
                 case MessageBoxImage.Information:
-                    emoji = "??";
+                    iconText = "INFO";
                     color = "#00E5FF";
                     break;
                 case MessageBoxImage.Warning:
-                    emoji = "??";
+                    iconText = "WARN";
                     color = "#FFA726";
                     break;
                 case MessageBoxImage.Error:
-                    emoji = "?";
+                    iconText = "ERR";
                     color = "#FF5252";
                     break;
                 case MessageBoxImage.Question:
-                    emoji = "?";
+                    iconText = "ASK";
                     color = "#AB47BC";
                     break;
                 default:
-                    emoji = "?";
+                    iconText = "OK";
                     color = "#4CAF50";
                     break;
             }
 
-            TitleIcon.Text = emoji;
-            MessageIcon.Text = emoji;
+            TitleIcon.Text = iconText;
+            MessageIcon.Text = iconText.Substring(0, 1); // Use first letter for large icon
 
             // 更新邊框顏色
             var border = (Border)Content;

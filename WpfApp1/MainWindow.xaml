@@ -5,57 +5,130 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
         xmlns:Controls="http://schemas.stackdose.com/wpf"
-     
-    
-    x:Class="WpfApp1.MainWindow"
+        x:Class="WpfApp1.MainWindow"
         mc:Ignorable="d"
         Title="MainWindow" Height="900" Width="1600">
     <Grid>
 
         <Controls:CyberFrame Title="UBI SYSTEM"/>
-        <Controls:PlcStatus x:Name="MainPlc" HorizontalAlignment="Left" Margin="73,89,0,0" VerticalAlignment="Top" IpAddress="192.168.22.39" Port="3000" AutoConnect="False" MonitorAddress="" MonitorLength="1" ScanInterval="120"/>
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,97,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="X軸位置"
-                            Address="D10" DefaultValue="00000" DataType="Word"
-                           />
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,159,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="事件偵測"
-             Address="M237" DefaultValue="OFF" DataType="Bit" BitIndex="-1"
-                           />
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="484,97,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="X軸位置"
-             Address="D10" DefaultValue="00000" BitIndex="-1" DataType="DWord"
-                           />
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="484,159,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="X軸位置"
-            Address="M1" DefaultValue="00000" DataType="Bit" BitIndex="0"
-                           />
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,222,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="R2000"
-            Address="R2000" DefaultValue="00000" DataType="Word" BitIndex="-1"
-                           />
-        <Controls:PlcText HorizontalAlignment="Left" Margin="73,334,0,0" VerticalAlignment="Top" Width="267" 
+
+        <!-- User Info Display -->
+        <Border HorizontalAlignment="Right" VerticalAlignment="Top" 
+                Margin="0,89,20,0" 
+                Background="#1E1E2E" 
+                BorderBrush="#00BCD4" 
+                BorderThickness="1" 
+                CornerRadius="5" 
+                Padding="15,10">
+            <StackPanel>
+                <TextBlock Text="👤 Current User" 
+                           Foreground="#00BCD4" 
+                           FontWeight="Bold" 
+                           FontSize="12" 
+                           Margin="0,0,0,5"/>
+                <TextBlock x:Name="UserInfoText" 
+                           Text="Engineer" 
+                           Foreground="White" 
+                           FontSize="14"/>
+            </StackPanel>
+        </Border>
+
+        <Controls:PlcStatus x:Name="MainPlc" 
+                            HorizontalAlignment="Left" 
+                            Margin="73,89,0,0" 
+                            VerticalAlignment="Top" 
+                            IpAddress="192.168.22.39" 
+                            Port="3000" 
+                            AutoConnect="False" 
+                            MonitorAddress="" 
+                            MonitorLength="1" 
+                            ScanInterval="120"/>
+
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,97,0,0" VerticalAlignment="Top" 
+                           Width="130" Height="45" 
+                           Label="X Position"
+                           Address="D10" 
+                           DefaultValue="00000" 
+                           DataType="Word"/>
+
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,159,0,0" VerticalAlignment="Top" 
+                           Width="130" Height="45" 
+                           Label="Event Detect"
+                           Address="M237" 
+                           DefaultValue="OFF" 
+                           DataType="Bit" 
+                           BitIndex="-1"/>
+
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="484,97,0,0" VerticalAlignment="Top" 
+                           Width="130" Height="45" 
+                           Label="X Position"
+                           Address="D10" 
+                           DefaultValue="00000" 
+                           BitIndex="-1" 
+                           DataType="DWord"/>
+
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="484,159,0,0" VerticalAlignment="Top" 
+                           Width="130" Height="45" 
+                           Label="X Position"
+                           Address="M1" 
+                           DefaultValue="00000" 
+                           DataType="Bit" 
+                           BitIndex="0"/>
+
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,222,0,0" VerticalAlignment="Top" 
+                           Width="130" Height="45" 
+                           Label="R2000"
+                           Address="R2000" 
+                           DefaultValue="00000" 
+                           DataType="Word" 
+                           BitIndex="-1"/>
+
+        <Controls:PlcText HorizontalAlignment="Left" Margin="73,334,0,0" VerticalAlignment="Top" 
+                          Width="267" 
                           Label="PLC Input" 
                           Address="D100" 
                           Value="0" 
                           Reason="Manual Test"
                           EnableAuditTrail="True"/>
 
-        <!-- 🔥 移除附加行為，PlcLabelContext 會自動處理 -->
         <Controls:PlcLabel x:Name="LblTemp" 
                            HorizontalAlignment="Left" Margin="484,222,0,0" VerticalAlignment="Top" 
                            Width="130" Height="45" 
-                           Label="溫度"
+                           Label="Temperature"
                            Address="R2002" 
                            DefaultValue="00000" 
                            DataType="Word" 
                            BitIndex="-1" 
                            Divisor="10"/>
 
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="640,97,0,0" VerticalAlignment="Top" Width="130" Height="45" Label="X軸位置"
-            Address="D11" DefaultValue="OFF" BitIndex="0" DataType="Bit"
-                           />
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="683,214,0,0" VerticalAlignment="Top" Width="153" DefaultValue="00000" EnableAuditTrail="True" EnableDataLog="True" DataType="Bit" BitIndex="0"/>
-        <Controls:LiveLogViewer HorizontalAlignment="Left" Margin="418,472,0,0" VerticalAlignment="Top" Height="200" Width="418"/>
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="591,285,0,0" VerticalAlignment="Top" Width="245" DefaultValue="00000" EnableAuditTrail="True" EnableDataLog="True" ShowLog="False"/>
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="640,97,0,0" VerticalAlignment="Top" 
+                           Width="130" Height="45" 
+                           Label="X Position"
+                           Address="D11" 
+                           DefaultValue="OFF" 
+                           BitIndex="0" 
+                           DataType="Bit"/>
 
-        <!-- 新增：SensorViewer 感測器監控 -->
-        <Controls:SensorViewer HorizontalAlignment="Left" Margin="1076,89,0,0" VerticalAlignment="Top" 
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="683,214,0,0" VerticalAlignment="Top" 
+                           Width="153" 
+                           DefaultValue="00000" 
+                           EnableAuditTrail="True" 
+                           EnableDataLog="True" 
+                           DataType="Bit" 
+                           BitIndex="0"/>
+
+        <Controls:LiveLogViewer HorizontalAlignment="Left" Margin="418,472,0,0" VerticalAlignment="Top" 
+                                Height="200" Width="418"/>
+
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="591,285,0,0" VerticalAlignment="Top" 
+                           Width="245" 
+                           DefaultValue="00000" 
+                           EnableAuditTrail="True" 
+                           EnableDataLog="True" 
+                           ShowLog="False"/>
+
+        <!-- SensorViewer -->
+        <Controls:SensorViewer HorizontalAlignment="Left" Margin="970,92,0,0" VerticalAlignment="Top" 
                                Width="458" Height="367"
                                Title="SENSOR Viewer"
                                ConfigFile="Sensors.json"
@@ -63,8 +136,7 @@
                                AutoStart="True"
                                RefreshInterval="499"/>
 
-        <!-- 🔥 新增：PlcEventTrigger 隱藏的事件觸發器 -->
-        <!-- 偵測 M237 觸發 Recipe 1 選擇事件 -->
+        <!-- PlcEventTrigger -->
         <Controls:PlcEventTrigger Address="M237" 
                                   EventName="Recipe1Selected"
                                   AutoClear="True"
@@ -72,7 +144,6 @@
                                   TriggerCondition="OnRising"
                                   TargetStatus="{Binding ElementName=MainPlc}"/>
 
-        <!-- 偵測 M238 觸發 Recipe 2 選擇事件 -->
         <Controls:PlcEventTrigger Address="M238" 
                                   EventName="Recipe2Selected"
                                   AutoClear="True"
@@ -80,20 +151,118 @@
                                   TriggerCondition="OnRising"
                                   TargetStatus="{Binding ElementName=MainPlc}"/>
 
-        <!-- 測試按鈕：驗證 CyberMessageBox 執行緒安全性 -->
+        <!-- Test Buttons: CyberMessageBox Thread Safety -->
         <StackPanel HorizontalAlignment="Left" Margin="73,472,0,0" VerticalAlignment="Top" Width="300">
-            <Button Content="測試 UI 執行緒 MessageBox" 
+            <Button Content="Test UI Thread MessageBox" 
                     Command="{Binding TestUIThreadMessageBoxCommand}"
-                    Height="35" Margin="0,5" Background="#1E1E2E" Foreground="White" BorderBrush="#00E5FF"/>
-            <Button Content="測試背景執行緒 MessageBox" 
+                    Height="35" Margin="0,5" 
+                    Background="#1E1E2E" 
+                    Foreground="White" 
+                    BorderBrush="#00E5FF"/>
+            <Button Content="Test Background Thread MessageBox" 
                     Command="{Binding TestBackgroundMessageBoxCommand}"
-                    Height="35" Margin="0,5" Background="#1E1E2E" Foreground="White" BorderBrush="#FFA726"/>
-            <Button Content="測試連續多個 MessageBox" 
+                    Height="35" Margin="0,5" 
+                    Background="#1E1E2E" 
+                    Foreground="White" 
+                    BorderBrush="#FFA726"/>
+            <Button Content="Test Multiple MessageBox" 
                     Command="{Binding TestMultipleMessageBoxCommand}"
-                    Height="35" Margin="0,5" Background="#1E1E2E" Foreground="White" BorderBrush="#4CAF50"/>
+                    Height="35" Margin="0,5" 
+                    Background="#1E1E2E" 
+                    Foreground="White" 
+                    BorderBrush="#4CAF50"/>
         </StackPanel>
-     
+
+        <!-- Permission Test Buttons -->
+        <Border HorizontalAlignment="Left" Margin="870,472,0,0" VerticalAlignment="Top" 
+                Width="200" Background="#1A1A2E" Padding="10" CornerRadius="5">
+            <StackPanel>
+                <TextBlock Text="Permission Test" 
+                           Foreground="#00BCD4" 
+                           FontWeight="Bold" 
+                           FontSize="14" 
+                           Margin="0,0,0,10"
+                           HorizontalAlignment="Center"/>
+
+                <Controls:SecuredButton Content="Start Process (L1)" 
+                                        RequiredLevel="Operator"
+                                        OperationName="Start Process"
+                                        Theme="Success"
+                                        Click="OperatorButton_Click"
+                                        Margin="0,3"/>
+
+                <Controls:SecuredButton Content="View Logs (L2)" 
+                                        RequiredLevel="Instructor"
+                                        OperationName="View Logs"
+                                        Theme="Info"
+                                        Click="InstructorButton_Click"
+                                        Margin="0,3"/>
+
+                <Controls:SecuredButton Content="Manage Users (L3)" 
+                                        RequiredLevel="Supervisor"
+                                        OperationName="Manage Users"
+                                        Theme="Warning"
+                                        Click="SupervisorButton_Click"
+                                        Margin="0,3"/>
+
+                <Controls:SecuredButton Content="Modify Params (L4)" 
+                                        RequiredLevel="Engineer"
+                                        OperationName="Modify Parameters"
+                                        Theme="Primary"
+                                        Click="EngineerButton_Click"
+                                        Margin="0,3"/>
+
+                <Controls:SecuredButton Content="Logout" 
+                                        RequiredLevel="Guest"
+                                        Theme="Error"
+                                        Click="LogoutButton_Click"
+                                        Margin="0,10,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Theme Showcase -->
+        <Border HorizontalAlignment="Left" Margin="1090,472,0,0" VerticalAlignment="Top" 
+                Width="200" Background="#1A1A2E" Padding="10" CornerRadius="5">
+            <StackPanel>
+                <TextBlock Text="Theme Showcase" 
+                           Foreground="#00BCD4" 
+                           FontWeight="Bold" 
+                           FontSize="14" 
+                           Margin="0,0,0,10"
+                           HorizontalAlignment="Center"/>
+
+                <Controls:SecuredButton Content="Normal Theme" 
+                                        RequiredLevel="Guest"
+                                        Theme="Normal"
+                                        Margin="0,3"/>
+
+                <Controls:SecuredButton Content="Primary Theme" 
+                                        RequiredLevel="Guest"
+                                        Theme="Primary"
+                                        Margin="0,3"/>
+
+                <Controls:SecuredButton Content="Success Theme" 
+                                        RequiredLevel="Guest"
+                                        Theme="Success"
+                                        Margin="0,3"/>
+
+                <Controls:SecuredButton Content="Warning Theme" 
+                                        RequiredLevel="Guest"
+                                        Theme="Warning"
+                                        Margin="0,3"/>
+
+                <Controls:SecuredButton Content="Error Theme" 
+                                        RequiredLevel="Guest"
+                                        Theme="Error"
+                                        Margin="0,3"/>
+
+                <Controls:SecuredButton Content="Info Theme" 
+                                        RequiredLevel="Guest"
+                                        Theme="Info"
+                                        Margin="0,3"/>
+            </StackPanel>
+        </Border>
+        <Controls:SecuredButton HorizontalAlignment="Left" Margin="168,774,0,0" VerticalAlignment="Top" Height="51" Width="172"/>
 
     </Grid>
-
 </Window>

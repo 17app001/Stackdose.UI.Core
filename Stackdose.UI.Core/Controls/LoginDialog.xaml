@@ -1,0 +1,176 @@
+<Window x:Class="Stackdose.UI.Core.Controls.LoginDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="User Login"
+        Height="350" Width="450"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize">
+    
+    <Border Background="#1E1E1E" 
+            BorderBrush="#00BCD4" 
+            BorderThickness="2" 
+            CornerRadius="10"
+            Padding="30">
+        <Border.Effect>
+            <DropShadowEffect Color="#00BCD4" BlurRadius="20" ShadowDepth="0" Opacity="0.5"/>
+        </Border.Effect>
+        
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,30">
+                <TextBlock Text="User Login" 
+                           FontSize="24" 
+                           FontWeight="Bold" 
+                           Foreground="#00BCD4"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="User Authentication" 
+                           FontSize="12" 
+                           Foreground="#9E9E9E"
+                           HorizontalAlignment="Center"
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                <TextBlock Text="User ID" 
+                           Foreground="#BDBDBD" 
+                           FontSize="12" 
+                           Margin="0,0,0,5"/>
+                <TextBox x:Name="UserIdTextBox"
+                         Height="40"
+                         Padding="10"
+                         FontSize="14"
+                         Background="#2C2C2C"
+                         Foreground="White"
+                         BorderBrush="#424242"
+                         BorderThickness="1"
+                         Margin="0,0,0,20"
+                         Text="engineer">
+                    <TextBox.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </TextBox.Resources>
+                </TextBox>
+
+                <TextBlock Text="Password" 
+                           Foreground="#BDBDBD" 
+                           FontSize="12" 
+                           Margin="0,0,0,5"/>
+                <PasswordBox x:Name="PasswordBox"
+                             Height="40"
+                             Padding="10"
+                             FontSize="14"
+                             Background="#2C2C2C"
+                             Foreground="White"
+                             BorderBrush="#424242"
+                             BorderThickness="1"
+                             Margin="0,0,0,10">
+                    <PasswordBox.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </PasswordBox.Resources>
+                </PasswordBox>
+
+                <TextBlock x:Name="ErrorText"
+                           Foreground="#FF5252"
+                           FontSize="12"
+                           Margin="0,10,0,0"
+                           Visibility="Collapsed"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <Grid Grid.Row="2" Margin="0,30,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                        Content="Login"
+                        Height="45"
+                        Background="#00BCD4"
+                        Foreground="White"
+                        BorderThickness="0"
+                        FontSize="14"
+                        FontWeight="Medium"
+                        Cursor="Hand"
+                        Click="LoginButton_Click">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#00BCD4"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="5"
+                                                BorderThickness="0">
+                                            <ContentPresenter HorizontalAlignment="Center" 
+                                                            VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#00ACC1"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button Grid.Column="2"
+                        Content="Cancel"
+                        Height="45"
+                        Background="#424242"
+                        Foreground="White"
+                        BorderThickness="0"
+                        FontSize="14"
+                        FontWeight="Medium"
+                        Cursor="Hand"
+                        Click="CancelButton_Click">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#424242"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="5"
+                                                BorderThickness="0">
+                                            <ContentPresenter HorizontalAlignment="Center" 
+                                                            VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#616161"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

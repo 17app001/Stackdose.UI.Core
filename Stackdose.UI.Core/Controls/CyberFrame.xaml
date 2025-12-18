@@ -7,7 +7,6 @@
              d:DesignHeight="600" d:DesignWidth="800"
              x:Name="Root">
 
-    <!-- 1. 引用共用資源 (修正專案名稱為 Stackdose.UI.Core) -->
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -16,44 +15,201 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <!-- 2. 主視窗外框 -->
+    <!-- Main Window Frame -->
     <Border Background="{StaticResource Cyber.Bg.Dark}" 
             BorderBrush="{StaticResource Cyber.Border}" 
             BorderThickness="1">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="60"/>
-                <!-- Header 高度 -->
+                <RowDefinition Height="50"/>
+                <!-- Reduced Header Height: 70 -> 50 -->
                 <RowDefinition Height="*"/>
-                <!-- 內容區 -->
+                <!-- Content Area -->
             </Grid.RowDefinitions>
 
-            <!-- 3. 上方標題列 -->
-            <Border Grid.Row="0" Background="{StaticResource Cyber.Bg.Panel}" BorderBrush="#333" BorderThickness="0,0,0,1">
-                <Grid Margin="20,0">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Stackdose" Foreground="{StaticResource Cyber.NeonBlue}" FontSize="24" FontWeight="Bold" FontStyle="Italic" Margin="0,0,10,0"/>
-                        <!-- Logo -->
-                        <TextBlock Text="ModelS" Foreground="{StaticResource Cyber.NeonBlue}" FontSize="24" FontWeight="Bold" FontStyle="Italic" Margin="0,0,10,0"/>
+            <!-- Header Bar -->
+            <Border Grid.Row="0" 
+                    Background="{StaticResource Cyber.Bg.Panel}" 
+                    BorderBrush="#333" 
+                    BorderThickness="0,0,0,1">
+                <Grid Margin="15,0">
+                    <!-- Reduced Margin: 20 -> 15 -->
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <!-- Left: Logo + Title -->
+                        <ColumnDefinition Width="*"/>
+                        <!-- Center: Status Indicators -->
+                        <ColumnDefinition Width="Auto"/>
+                        <!-- Right: User Info + Time -->
+                    </Grid.ColumnDefinitions>
 
-                        <!-- 標題 (綁定 Title 屬性) -->
+                    <!-- ========== LEFT SECTION: Logo + Title ========== -->
+                    <StackPanel Grid.Column="0" 
+                                Orientation="Horizontal" 
+                                VerticalAlignment="Center">
+                        <TextBlock Text="Stackdose" 
+                                   Foreground="{StaticResource Cyber.NeonBlue}" 
+                                   FontSize="18" 
+                                   FontWeight="Bold" 
+                                   FontStyle="Italic" 
+                                   Margin="0,0,8,0"/>
+                        <!-- Reduced: 24->18, Margin 10->8 -->
+                        <TextBlock Text="ModelS" 
+                                   Foreground="{StaticResource Cyber.NeonBlue}" 
+                                   FontSize="18" 
+                                   FontWeight="Bold" 
+                                   FontStyle="Italic" 
+                                   Margin="0,0,8,0"/>
+                        <!-- Reduced: 24->18, Margin 10->8 -->
                         <TextBlock Text="{Binding Title, ElementName=Root}" 
                                    Foreground="{StaticResource Cyber.Text.Muted}" 
-                                   FontSize="16" VerticalAlignment="Bottom" Margin="0,0,0,4"/>
+                                   FontSize="13" 
+                                   VerticalAlignment="Center" 
+                                   Margin="0,0,0,0"/>
+                        <!-- Reduced: 16->13 -->
                     </StackPanel>
 
-                    <!-- 右側功能區 -->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <!-- 時間 -->
-                        <TextBlock x:Name="TimeText" Text="00:00:00" 
-                                   Foreground="#666" FontSize="16" VerticalAlignment="Center" Margin="0,0,20,0"/>
-                        <!-- 關閉按鈕 -->
-                        <Button Content="✕" Width="40" Height="30" Background="Transparent" Foreground="#888" BorderThickness="0" FontSize="16"/>
+                    <!-- ========== CENTER SECTION: Status Indicators (Optional) ========== -->
+                    <StackPanel x:Name="StatusIndicatorsPanel"
+                                Grid.Column="1" 
+                                Orientation="Horizontal" 
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="Center"
+                                Visibility="Collapsed">
+                        <!-- Alarm Indicator -->
+                        <Border Background="#FF5252" 
+                                CornerRadius="3" 
+                                Padding="6,3" 
+                                Margin="4">
+                            <!-- Reduced Padding: 8,4 -> 6,3, Margin: 5->4 -->
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="⚠️" 
+                                           Foreground="White" 
+                                           FontSize="11" 
+                                           Margin="0,0,4,0"/>
+                                <!-- Reduced: 14->11, Margin 5->4 -->
+                                <TextBlock Text="Alarm: 0" 
+                                           Foreground="White" 
+                                           FontSize="10" 
+                                           FontWeight="Medium"/>
+                                <!-- Reduced: 12->10 -->
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Total Indicator -->
+                        <Border Background="#4CAF50" 
+                                CornerRadius="3" 
+                                Padding="6,3" 
+                                Margin="4">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="✓" 
+                                           Foreground="White" 
+                                           FontSize="11" 
+                                           Margin="0,0,4,0"/>
+                                <TextBlock Text="Total: 10" 
+                                           Foreground="White" 
+                                           FontSize="10" 
+                                           FontWeight="Medium"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ========== RIGHT SECTION: User Info + Time + Logout ========== -->
+                    <StackPanel Grid.Column="2" 
+                                Orientation="Horizontal" 
+                                HorizontalAlignment="Right" 
+                                VerticalAlignment="Center">
+                        
+                        <!-- Time Display -->
+                        <Border Background="#1E1E2E" 
+                                BorderBrush="#333" 
+                                BorderThickness="1" 
+                                CornerRadius="4" 
+                                Padding="10,5" 
+                                Margin="0,0,10,0">
+                            <!-- Reduced: CornerRadius 5->4, Padding 12,8->10,5, Margin 15->10 -->
+                            <TextBlock x:Name="TimeText" 
+                                       Text="00:00:00" 
+                                       Foreground="#00BCD4" 
+                                       FontSize="13" 
+                                       FontWeight="Medium" 
+                                       FontFamily="Consolas"/>
+                            <!-- Reduced: 16->13 -->
+                        </Border>
+
+                        <!-- User Info Display -->
+                        <Border Background="#1E1E2E" 
+                                BorderBrush="#00BCD4" 
+                                BorderThickness="1" 
+                                CornerRadius="4" 
+                                Padding="10,5" 
+                                Margin="0,0,8,0">
+                            <!-- Reduced: CornerRadius 5->4, Padding 15,8->10,5, Margin 10->8 -->
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="👤" 
+                                           Foreground="#00BCD4" 
+                                           FontSize="13" 
+                                           Margin="0,0,6,0" 
+                                           VerticalAlignment="Center"/>
+                                <!-- Reduced: 16->13, Margin 8->6 -->
+                                <StackPanel>
+                                    <TextBlock x:Name="UserNameText" 
+                                               Text="Engineer" 
+                                               Foreground="White" 
+                                               FontSize="12" 
+                                               FontWeight="Medium"/>
+                                    <!-- Reduced: 14->12 -->
+                                    <TextBlock x:Name="UserLevelText" 
+                                               Text="Engineer" 
+                                               Foreground="#00BCD4" 
+                                               FontSize="9"/>
+                                    <!-- Reduced: 11->9 -->
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Logout Button -->
+                        <Button x:Name="LogoutButton" 
+                                Click="LogoutButton_Click"
+                                Width="32" 
+                                Height="32" 
+                                Background="#FF5252" 
+                                BorderThickness="0" 
+                                Cursor="Hand"
+                                ToolTip="Logout">
+                            <!-- Reduced: 40x40 -> 32x32 -->
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="#FF5252"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        CornerRadius="4">
+                                                    <!-- Reduced: 5->4 -->
+                                                    <TextBlock Text="⏻" 
+                                                               Foreground="White" 
+                                                               FontSize="16" 
+                                                               HorizontalAlignment="Center" 
+                                                               VerticalAlignment="Center"/>
+                                                    <!-- Reduced: 20->16 -->
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#E53935"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- 4. 內容填充區 (挖洞給外部使用) -->
+            <!-- Content Area -->
             <ContentPresenter Grid.Row="1" Margin="10"/>
         </Grid>
     </Border>

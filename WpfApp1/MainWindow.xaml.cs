@@ -36,9 +36,8 @@ namespace WpfApp1
             SecurityContext.LoginSuccess += OnLoginSuccess;
             SecurityContext.LogoutOccurred += OnLogoutOccurred;
 
-            // 🔥 更新視窗標題顯示當前使用者
+            // 🔥 更新視窗標題
             UpdateWindowTitle();
-            UpdateUserInfo();
         }
 
         private void OnLoginSuccess(object? sender, Stackdose.UI.Core.Models.UserAccount user)
@@ -46,7 +45,6 @@ namespace WpfApp1
             Dispatcher.BeginInvoke(() =>
             {
                 UpdateWindowTitle();
-                UpdateUserInfo();
             });
         }
 
@@ -55,7 +53,6 @@ namespace WpfApp1
             Dispatcher.BeginInvoke(() =>
             {
                 UpdateWindowTitle();
-                UpdateUserInfo();
                 
                 // 登出後顯示登入對話框
                 bool loginSuccess = LoginDialog.ShowLoginDialog();
@@ -77,19 +74,6 @@ namespace WpfApp1
             else
             {
                 this.Title = "Stackdose Control System - Not Logged In";
-            }
-        }
-
-        private void UpdateUserInfo()
-        {
-            var session = SecurityContext.CurrentSession;
-            if (session.IsLoggedIn)
-            {
-                UserInfoText.Text = $"{session.CurrentUserName}\n{session.CurrentLevel}";
-            }
-            else
-            {
-                UserInfoText.Text = "未登入\nGuest";
             }
         }
 

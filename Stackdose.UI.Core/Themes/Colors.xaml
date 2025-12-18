@@ -17,10 +17,12 @@
     <!-- ========== PlcLabel / PlcStatus Colors ========== -->
     <SolidColorBrush x:Key="Plc.Bg.Main" Color="#1E1E2E"/>
     <SolidColorBrush x:Key="Plc.Bg.Dark" Color="#141420"/>
+    <SolidColorBrush x:Key="Plc.Bg" Color="#1A1A2E"/>
     <SolidColorBrush x:Key="Plc.Border" Color="#334455"/>
     <SolidColorBrush x:Key="Plc.Text.Label" Color="#8F9BB3"/>
     <SolidColorBrush x:Key="Plc.Text.Value" Color="#00E5FF"/>
-    <SolidColorBrush x:Key="Plc.Text.Default" Color="#555"/>
+    <SolidColorBrush x:Key="Plc.Text.Default" Color="#9E9E9E"/>
+    <SolidColorBrush x:Key="Plc.Text.Gray" Color="#757575"/>
 
     <!-- ========== SensorViewer Colors ========== -->
     <SolidColorBrush x:Key="Sensor.Bg.Main" Color="#1E1E2E"/>

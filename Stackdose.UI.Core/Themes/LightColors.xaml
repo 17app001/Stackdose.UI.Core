@@ -5,7 +5,7 @@
     
     <!-- ========== CyberFrame Colors ========== -->
     <SolidColorBrush x:Key="Cyber.Bg.Dark" Color="#F5F5F5"/>
-    <SolidColorBrush x:Key="Cyber.Bg.Panel" Color="#FFFFFF" Opacity="1.0"/>
+    <SolidColorBrush x:Key="Cyber.Bg.Panel" Color="#E8E8E8" Opacity="1.0"/>
     <SolidColorBrush x:Key="Cyber.Border" Color="#BDBDBD"/>
     <SolidColorBrush x:Key="Cyber.Border.Strong" Color="#757575"/>
     <SolidColorBrush x:Key="Cyber.NeonBlue" Color="#0091EA"/>
@@ -17,10 +17,12 @@
     <!-- ========== PlcLabel / PlcStatus Colors ========== -->
     <SolidColorBrush x:Key="Plc.Bg.Main" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="Plc.Bg.Dark" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="Plc.Bg" Color="#FAFAFA"/>
     <SolidColorBrush x:Key="Plc.Border" Color="#BDBDBD"/>
     <SolidColorBrush x:Key="Plc.Text.Label" Color="#616161"/>
     <SolidColorBrush x:Key="Plc.Text.Value" Color="#0091EA"/>
     <SolidColorBrush x:Key="Plc.Text.Default" Color="#9E9E9E"/>
+    <SolidColorBrush x:Key="Plc.Text.Gray" Color="#757575"/>
 
     <!-- ========== SensorViewer Colors ========== -->
     <SolidColorBrush x:Key="Sensor.Bg.Main" Color="#FFFFFF"/>
@@ -35,8 +37,8 @@
     <SolidColorBrush x:Key="Log.Bg.Main" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="Log.Bg.Header" Color="#F5F5F5"/>
     <SolidColorBrush x:Key="Log.Border" Color="#BDBDBD"/>
-    <SolidColorBrush x:Key="Log.Text.Normal" Color="#424242"/>
-    <SolidColorBrush x:Key="Log.Text.Time" Color="#757575"/>
+    <SolidColorBrush x:Key="Log.Text.Normal" Color="#212121"/>
+    <SolidColorBrush x:Key="Log.Text.Time" Color="#616161"/>
 
     <!-- ========== SecuredButton Colors ========== -->
     <SolidColorBrush x:Key="Button.Bg.Primary" Color="#2196F3"/>

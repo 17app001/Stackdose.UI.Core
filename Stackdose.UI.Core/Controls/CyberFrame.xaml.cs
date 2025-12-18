@@ -261,13 +261,13 @@ namespace Stackdose.UI.Core.Controls
                     }
                 }, System.Windows.Threading.DispatcherPriority.Render);
                 
-                // 顯示通知
-                CyberMessageBox.Show(
-                    $"Theme changed to {(useLightTheme ? "Light" : "Dark")} mode",
-                    "Theme Switch",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information
-                );
+                //// 顯示通知
+                //CyberMessageBox.Show(
+                //    $"Theme changed to {(useLightTheme ? "Light" : "Dark")} mode",
+                //    "Theme Switch",
+                //    MessageBoxButton.OK,
+                //    MessageBoxImage.Information
+                //);
             }
             catch (Exception ex)
             {

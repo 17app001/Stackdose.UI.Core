@@ -16,7 +16,7 @@ namespace WpfApp1
         {
             InitializeComponent();
 
-            //// 🔥 顯示登入對話框（不使用快速登入）
+            // 顯示登入對話框（不使用快速登入）
             //bool loginSuccess = LoginDialog.ShowLoginDialog();
 
             //if (!loginSuccess)
@@ -25,18 +25,18 @@ namespace WpfApp1
             //    SecurityContext.QuickLogin(Stackdose.UI.Core.Models.AccessLevel.Guest);
             //}
 
-            // 🔥 預設以 Engineer 身份登入（測試用）
+            // 預設以 Engineer 身份登入（測試用）
             SecurityContext.QuickLogin(Stackdose.UI.Core.Models.AccessLevel.Engineer);
 
-            // 🔥 設定 DataContext 為 ViewModel
+            // 設定 DataContext 為 ViewModel
             _viewModel = new MainViewModel();
             DataContext = _viewModel;
 
-            // 🔥 訂閱登入/登出事件（更新 UI 標題）
+            // 訂閱登入/登出事件（更新 UI 標題）
             SecurityContext.LoginSuccess += OnLoginSuccess;
             SecurityContext.LogoutOccurred += OnLogoutOccurred;
 
-            // 🔥 更新視窗標題
+            // 更新視窗標題
             UpdateWindowTitle();
         }
 
@@ -82,13 +82,13 @@ namespace WpfApp1
         private void OperatorButton_Click(object sender, RoutedEventArgs e)
         {
             ComplianceContext.LogSystem(
-                "✅ 操作員功能：啟動製程",
+                "[OK] 操作員功能：啟動製程",
                 Stackdose.UI.Core.Models.LogLevel.Success,
                 showInUi: true
             );
             
             CyberMessageBox.Show(
-                "✅ 啟動製程成功！\n\n這是 Level 1 (Operator) 權限功能",
+                "[OK] 啟動製程成功！\n\n這是 Level 1 (Operator) 權限功能",
                 "操作成功",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information
@@ -98,13 +98,13 @@ namespace WpfApp1
         private void InstructorButton_Click(object sender, RoutedEventArgs e)
         {
             ComplianceContext.LogSystem(
-                "✅ 指導員功能：查看日誌",
+                "[OK] 指導員功能：查看日誌",
                 Stackdose.UI.Core.Models.LogLevel.Info,
                 showInUi: true
             );
             
             CyberMessageBox.Show(
-                "📊 日誌查看功能\n\n這是 Level 2 (Instructor) 權限功能",
+                "[LOG] 日誌查看功能\n\n這是 Level 2 (Instructor) 權限功能",
                 "查看日誌",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information
@@ -114,13 +114,13 @@ namespace WpfApp1
         private void SupervisorButton_Click(object sender, RoutedEventArgs e)
         {
             ComplianceContext.LogSystem(
-                "✅ 主管功能：管理使用者",
+                "[OK] 主管功能：管理使用者",
                 Stackdose.UI.Core.Models.LogLevel.Info,
                 showInUi: true
             );
             
             CyberMessageBox.Show(
-                "👥 使用者管理功能\n\n這是 Level 3 (Supervisor) 權限功能\n可以管理 Level 1-2 的帳號",
+                "[USER] 使用者管理功能\n\n這是 Level 3 (Supervisor) 權限功能\n可以管理 Level 1-2 的帳號",
                 "使用者管理",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information
@@ -130,7 +130,7 @@ namespace WpfApp1
         private void EngineerButton_Click(object sender, RoutedEventArgs e)
         {
             ComplianceContext.LogSystem(
-                "✅ 工程師功能：修改參數",
+                "[OK] 工程師功能：修改參數",
                 Stackdose.UI.Core.Models.LogLevel.Warning,
                 showInUi: true
             );
@@ -146,7 +146,7 @@ namespace WpfApp1
             );
             
             CyberMessageBox.Show(
-                "⚙️ 參數修改功能\n\n這是 Level 4 (Engineer) 最高權限功能\n已記錄到 Audit Trail",
+                "[CONFIG] 參數修改功能\n\n這是 Level 4 (Engineer) 最高權限功能\n已記錄到 Audit Trail",
                 "修改參數",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning
@@ -160,11 +160,11 @@ namespace WpfApp1
 
         private void StartProcess_Click(object sender, RoutedEventArgs e)
         {
-            // 🔥 製程開始邏輯
+            // 製程開始邏輯
             
             // 1. 記錄到系統日誌
             ComplianceContext.LogSystem(
-                "🚀 製程開始",
+                "[START] 製程開始",
                 Stackdose.UI.Core.Models.LogLevel.Info,
                 showInUi: true
             );
@@ -190,7 +190,7 @@ namespace WpfApp1
             {
                 // PLC 未連線警告
                 CyberMessageBox.Show(
-                    "⚠️ PLC 未連線\n無法啟動製程",
+                    "[WARNING] PLC 未連線\n無法啟動製程",
                     "警告",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning

@@ -41,7 +41,7 @@ namespace WpfApp1.ViewModels
         {
             CyberMessageBox.Show(
                 "這是從 UI 執行緒呼叫的訊息",
-                "? UI 執行緒測試",
+                "[OK] UI 執行緒測試",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information
             );
@@ -60,7 +60,7 @@ namespace WpfApp1.ViewModels
                 var result = CyberMessageBox.Show(
                     "這是從背景執行緒呼叫的訊息！\n\n" +
                     "如果沒有當機，表示修正成功！",
-                    "? 背景執行緒測試",
+                    "[INFO] 背景執行緒測試",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Warning
                 );
@@ -69,7 +69,7 @@ namespace WpfApp1.ViewModels
                 {
                     CyberMessageBox.Show(
                         "您選擇了「是」",
-                        "? 測試結果",
+                        "[OK] 測試結果",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information
                     );
@@ -100,7 +100,7 @@ namespace WpfApp1.ViewModels
             if (result == MessageBoxResult.Yes)
             {
                 CyberMessageBox.Show(
-                    "這是第 3 個訊息\n\n測試完成！?",
+                    "這是第 3 個訊息\n\n測試完成！",
                     "3/3 - 完成",
                     MessageBoxButton.OK,
                     MessageBoxImage.None
@@ -119,7 +119,7 @@ namespace WpfApp1.ViewModels
             if (plcManager == null || !plcManager.IsConnected)
             {
                 CyberMessageBox.Show(
-                    "?? PLC 未連線\n無法啟動製程",
+                    "[WARNING] PLC 未連線\n無法啟動製程",
                     "警告",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning
@@ -130,10 +130,10 @@ namespace WpfApp1.ViewModels
             // 2. 顯示確認對話框
             var result = CyberMessageBox.Show(
                 "確定要啟動製程嗎？\n\n請確認：\n" +
-                "? 設備已就緒\n" +
-                "? 安全防護已確認\n" +
-                "? 原料已備妥",
-                "?? 製程啟動確認",
+                "- 設備已就緒\n" +
+                "- 安全防護已確認\n" +
+                "- 原料已備妥",
+                "[START] 製程啟動確認",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question
             );
@@ -166,14 +166,14 @@ namespace WpfApp1.ViewModels
 
                 // 5. 記錄到系統日誌
                 ComplianceContext.LogSystem(
-                    $"?? 製程已啟動 by {SecurityContext.CurrentSession.CurrentUserName}",
+                    $"[START] 製程已啟動 by {SecurityContext.CurrentSession.CurrentUserName}",
                     LogLevel.Success,
                     showInUi: true
                 );
 
                 // 6. 顯示成功訊息
                 CyberMessageBox.Show(
-                    "? 製程已成功啟動！\n\n請監控設備運行狀態",
+                    "[OK] 製程已成功啟動！\n\n請監控設備運行狀態",
                     "製程啟動",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information
@@ -183,13 +183,13 @@ namespace WpfApp1.ViewModels
             {
                 // 7. 錯誤處理
                 ComplianceContext.LogSystem(
-                    $"? 製程啟動失敗: {ex.Message}",
+                    $"[ERROR] 製程啟動失敗: {ex.Message}",
                     LogLevel.Error,
                     showInUi: true
                 );
 
                 CyberMessageBox.Show(
-                    $"? 製程啟動失敗\n\n錯誤訊息：{ex.Message}",
+                    $"[ERROR] 製程啟動失敗\n\n錯誤訊息：{ex.Message}",
                     "錯誤",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error
@@ -214,7 +214,7 @@ namespace WpfApp1.ViewModels
                     $"裝置：{e.Sensor.Device}\n" +
                     $"時間：{e.EventTime:HH:mm:ss}\n" +
                     $"當前值：{e.Sensor.CurrentValue}",
-                    "?? 緊急警報",
+                    "[ALARM] 緊急警報",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error
                 );
@@ -227,7 +227,7 @@ namespace WpfApp1.ViewModels
 
                 CyberMessageBox.Show(
                     $"{e.Sensor.OperationDescription} 偵測到異常！\n請立即檢查安全門狀態。",
-                    "?? 安全警告",
+                    "[WARNING] 安全警告",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning
                 );
@@ -238,7 +238,7 @@ namespace WpfApp1.ViewModels
             {
                 var result = CyberMessageBox.Show(
                     "偵測到緊急停止信號！\n是否要停止所有操作？",
-                    "? 緊急停止確認",
+                    "[QUESTION] 緊急停止確認",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question
                 );
@@ -260,7 +260,7 @@ namespace WpfApp1.ViewModels
                 CyberMessageBox.Show(
                     $"{e.Sensor.OperationDescription} 已恢復正常\n\n" +
                     $"警報持續時間：{e.Duration.TotalSeconds:F1} 秒",
-                    "? 系統恢復",
+                    "[OK] 系統恢復",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information
                 );
@@ -312,7 +312,7 @@ namespace WpfApp1.ViewModels
                     
                 CyberMessageBox.Show(
                     $"X軸位置異常：{currentPosX}",
-                    "?? 警告",
+                    "[WARNING] 警告",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning
                 );
@@ -331,7 +331,7 @@ namespace WpfApp1.ViewModels
                     e.PlcLabel.Foreground = Brushes.Red;
                     CyberMessageBox.Show(
                         $"壓力異常：{pressure} bar",
-                        "?? 警告",
+                        "[WARNING] 警告",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning
                     );
@@ -373,7 +373,7 @@ namespace WpfApp1.ViewModels
                     LoadRecipe1();
                     CyberMessageBox.Show(
                         $"Recipe 1 已載入\n事件：{e.EventName}",
-                        "? 成功",
+                        "[OK] 成功",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information
                     );
@@ -383,7 +383,7 @@ namespace WpfApp1.ViewModels
                     LoadRecipe2();
                     CyberMessageBox.Show(
                         $"Recipe 2 已載入\n事件：{e.EventName}",
-                        "? 成功",
+                        "[OK] 成功",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information
                     );

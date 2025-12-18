@@ -111,7 +111,7 @@ namespace Stackdose.UI.Core.Helpers
             );
 
             ComplianceContext.LogSystem(
-                $"? Login Success: {user.DisplayName} ({user.AccessLevel})",
+                $"[OK] Login Success: {user.DisplayName} ({user.AccessLevel})",
                 LogLevel.Success,
                 showInUi: true
             );
@@ -130,7 +130,7 @@ namespace Stackdose.UI.Core.Helpers
         }
 
         /// <summary>
-        /// ?? 快速登入（預設帳號，用於測試或初始化）
+        /// 快速登入（預設帳號，用於測試或初始化）
         /// </summary>
         /// <param name="level">權限等級</param>
         public static void QuickLogin(AccessLevel level = AccessLevel.Engineer)
@@ -151,7 +151,7 @@ namespace Stackdose.UI.Core.Helpers
             CurrentSession.LastActivityTime = DateTime.Now;
 
             ComplianceContext.LogSystem(
-                $"?? Quick Login: {user.DisplayName} ({user.AccessLevel})",
+                $"[QUICK] Quick Login: {user.DisplayName} ({user.AccessLevel})",
                 LogLevel.Info,
                 showInUi: true
             );
@@ -190,7 +190,7 @@ namespace Stackdose.UI.Core.Helpers
             );
 
             ComplianceContext.LogSystem(
-                $"?? Logout: {user.DisplayName} ({reason})",
+                $"[LOGOUT] Logout: {user.DisplayName} ({reason})",
                 LogLevel.Warning,
                 showInUi: true
             );
@@ -242,7 +242,7 @@ namespace Stackdose.UI.Core.Helpers
             if (HasAccess(requiredLevel))
                 return true;
 
-            string message = $"? 權限不足\n\n{operationName} 需要 {GetLevelDisplayName(requiredLevel)} 以上權限\n\n當前權限: {GetLevelDisplayName(CurrentSession.CurrentLevel)}";
+            string message = $"[ERROR] 權限不足\n\n{operationName} 需要 {GetLevelDisplayName(requiredLevel)} 以上權限\n\n當前權限: {GetLevelDisplayName(CurrentSession.CurrentLevel)}";
             
             ComplianceContext.LogSystem(
                 $"Access Denied: {operationName} requires {requiredLevel} (Current: {CurrentSession.CurrentLevel})",

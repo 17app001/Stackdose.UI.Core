@@ -154,7 +154,7 @@
         </StackPanel>
 
         <!-- Permission Test Buttons -->
-        <Border HorizontalAlignment="Left" Margin="870,472,0,0" VerticalAlignment="Top" 
+        <Border HorizontalAlignment="Left" Margin="1228,487,0,0" VerticalAlignment="Top" 
                 Width="200" Background="#1A1A2E" Padding="10" CornerRadius="5">
             <StackPanel>
                 <TextBlock Text="Permission Test" 
@@ -201,48 +201,6 @@
         </Border>
 
         <!-- Theme Showcase -->
-        <Border HorizontalAlignment="Left" Margin="1090,472,0,0" VerticalAlignment="Top" 
-                Width="200" Background="#1A1A2E" Padding="10" CornerRadius="5">
-            <StackPanel>
-                <TextBlock Text="Theme Showcase" 
-                           Foreground="#00BCD4" 
-                           FontWeight="Bold" 
-                           FontSize="14" 
-                           Margin="0,0,0,10"
-                           HorizontalAlignment="Center"/>
-
-                <Controls:SecuredButton Content="Normal Theme" 
-                                        RequiredLevel="Guest"
-                                        Theme="Normal"
-                                        Margin="0,3"/>
-
-                <Controls:SecuredButton Content="Primary Theme" 
-                                        RequiredLevel="Guest"
-                                        Theme="Primary"
-                                        Margin="0,3"/>
-
-                <Controls:SecuredButton Content="Success Theme" 
-                                        RequiredLevel="Guest"
-                                        Theme="Success"
-                                        Margin="0,3"/>
-
-                <Controls:SecuredButton Content="Warning Theme" 
-                                        RequiredLevel="Guest"
-                                        Theme="Warning"
-                                        Margin="0,3"/>
-
-                <Controls:SecuredButton Content="Error Theme" 
-                                        RequiredLevel="Guest"
-                                        Theme="Error"
-                                        Margin="0,3"/>
-
-                <Controls:SecuredButton Content="Info Theme" 
-                                        RequiredLevel="Guest"
-                                        Theme="Info"
-                                        Margin="0,3"/>
-            </StackPanel>
-        </Border>
-        <Controls:SecuredButton HorizontalAlignment="Left" Margin="73,721,0,0" VerticalAlignment="Top" Height="51" Width="172" RequiredLevel="Guest"/>
         <Controls:SecuredButton HorizontalAlignment="Left" Margin="73,640,0,0" VerticalAlignment="Top" Theme="Success" Height="60" Width="190" Content="製程開始" FontSize="16" RequiredLevel="Operator" OperationName="製程開始" Click="StartProcess_Click"/>
 
     </Grid>

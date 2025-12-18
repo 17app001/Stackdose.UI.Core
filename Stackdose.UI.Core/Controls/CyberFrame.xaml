@@ -30,17 +30,14 @@
             <!-- Header Bar -->
             <Border Grid.Row="0" 
                     Background="{StaticResource Cyber.Bg.Panel}" 
-                    BorderBrush="#333" 
-                    BorderThickness="0,0,0,1">
+                    BorderBrush="{StaticResource Cyber.Border.Strong}" 
+                    BorderThickness="0,0,0,2">
+                <!-- 邊框加粗從 1 -> 2，使用更明顯的顏色 -->
                 <Grid Margin="15,0">
-                    <!-- Reduced Margin: 20 -> 15 -->
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
-                        <!-- Left: Logo + Title -->
                         <ColumnDefinition Width="*"/>
-                        <!-- Center: Status Indicators -->
                         <ColumnDefinition Width="Auto"/>
-                        <!-- Right: User Info + Time -->
                     </Grid.ColumnDefinitions>
 
                     <!-- ========== LEFT SECTION: Logo + Title ========== -->
@@ -49,24 +46,25 @@
                                 VerticalAlignment="Center">
                         <TextBlock Text="Stackdose" 
                                    Foreground="{StaticResource Cyber.NeonBlue}" 
-                                   FontSize="18" 
+                                   FontSize="20" 
                                    FontWeight="Bold" 
                                    FontStyle="Italic" 
                                    Margin="0,0,8,0"/>
-                        <!-- Reduced: 24->18, Margin 10->8 -->
+                        <!-- 增加字體大小 18->20 -->
                         <TextBlock Text="ModelS" 
                                    Foreground="{StaticResource Cyber.NeonBlue}" 
-                                   FontSize="18" 
+                                   FontSize="20" 
                                    FontWeight="Bold" 
                                    FontStyle="Italic" 
                                    Margin="0,0,8,0"/>
-                        <!-- Reduced: 24->18, Margin 10->8 -->
+                        <!-- 增加字體大小 18->20 -->
                         <TextBlock Text="{Binding Title, ElementName=Root}" 
-                                   Foreground="{StaticResource Cyber.Text.Muted}" 
-                                   FontSize="13" 
+                                   Foreground="{StaticResource Cyber.Text.Bright}" 
+                                   FontSize="14" 
+                                   FontWeight="Medium"
                                    VerticalAlignment="Center" 
                                    Margin="0,0,0,0"/>
-                        <!-- Reduced: 16->13 -->
+                        <!-- 使用更亮的文字顏色，增加字體大小 13->14，加粗 -->
                     </StackPanel>
 
                     <!-- ========== CENTER SECTION: Status Indicators (Optional) ========== -->
@@ -77,38 +75,44 @@
                                 VerticalAlignment="Center"
                                 Visibility="Collapsed">
                         <!-- Alarm Indicator -->
-                        <Border Background="#FF5252" 
-                                CornerRadius="3" 
-                                Padding="6,3" 
-                                Margin="4">
-                            <!-- Reduced Padding: 8,4 -> 6,3, Margin: 5->4 -->
+                        <Border Background="#F44336" 
+                                CornerRadius="4" 
+                                Padding="8,4" 
+                                Margin="5"
+                                BorderBrush="#FFFFFF"
+                                BorderThickness="1">
+                            <!-- 加上白色邊框，增加視覺辨識 -->
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="⚠️" 
+                                <TextBlock Text="[!]" 
                                            Foreground="White" 
-                                           FontSize="11" 
-                                           Margin="0,0,4,0"/>
-                                <!-- Reduced: 14->11, Margin 5->4 -->
+                                           FontSize="12" 
+                                           FontWeight="Bold"
+                                           Margin="0,0,5,0"/>
+                                <!-- 增加字體大小和粗細 -->
                                 <TextBlock Text="Alarm: 0" 
                                            Foreground="White" 
-                                           FontSize="10" 
+                                           FontSize="11" 
                                            FontWeight="Medium"/>
-                                <!-- Reduced: 12->10 -->
+                                <!-- 增加字體大小 -->
                             </StackPanel>
                         </Border>
 
                         <!-- Total Indicator -->
                         <Border Background="#4CAF50" 
-                                CornerRadius="3" 
-                                Padding="6,3" 
-                                Margin="4">
+                                CornerRadius="4" 
+                                Padding="8,4" 
+                                Margin="5"
+                                BorderBrush="#FFFFFF"
+                                BorderThickness="1">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="✓" 
+                                <TextBlock Text="[v]" 
                                            Foreground="White" 
-                                           FontSize="11" 
-                                           Margin="0,0,4,0"/>
+                                           FontSize="12" 
+                                           FontWeight="Bold"
+                                           Margin="0,0,5,0"/>
                                 <TextBlock Text="Total: 10" 
                                            Foreground="White" 
-                                           FontSize="10" 
+                                           FontSize="11" 
                                            FontWeight="Medium"/>
                             </StackPanel>
                         </Border>
@@ -121,63 +125,51 @@
                                 VerticalAlignment="Center">
                         
                         <!-- Time Display -->
-                        <Border Background="#1E1E2E" 
-                                BorderBrush="#333" 
-                                BorderThickness="1" 
-                                CornerRadius="4" 
-                                Padding="10,5" 
-                                Margin="0,0,10,0">
-                            <!-- Reduced: CornerRadius 5->4, Padding 12,8->10,5, Margin 15->10 -->
-                            <TextBlock x:Name="TimeText" 
-                                       Text="00:00:00" 
-                                       Foreground="#00BCD4" 
-                                       FontSize="13" 
-                                       FontWeight="Medium" 
-                                       FontFamily="Consolas"/>
-                            <!-- Reduced: 16->13 -->
-                        </Border>
+                        <TextBlock x:Name="TimeText" 
+                                   Text="00:00:00" 
+                                   Foreground="{StaticResource Cyber.NeonBlue}" 
+                                   FontSize="14" 
+                                   FontWeight="Bold" 
+                                   FontFamily="Consolas"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0"/>
+
+                        <!-- Separator -->
+                        <TextBlock Text="|" 
+                                   Foreground="{StaticResource Cyber.Border.Strong}" 
+                                   FontSize="14" 
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0"/>
 
                         <!-- User Info Display -->
-                        <Border Background="#1E1E2E" 
-                                BorderBrush="#00BCD4" 
-                                BorderThickness="1" 
-                                CornerRadius="4" 
-                                Padding="10,5" 
-                                Margin="0,0,8,0">
-                            <!-- Reduced: CornerRadius 5->4, Padding 15,8->10,5, Margin 10->8 -->
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="👤" 
-                                           Foreground="#00BCD4" 
+                        <StackPanel Orientation="Horizontal" 
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,15,0">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="UserNameText" 
+                                           Text="Engineer" 
+                                           Foreground="{StaticResource Cyber.Text.Bright}" 
                                            FontSize="13" 
-                                           Margin="0,0,6,0" 
-                                           VerticalAlignment="Center"/>
-                                <!-- Reduced: 16->13, Margin 8->6 -->
-                                <StackPanel>
-                                    <TextBlock x:Name="UserNameText" 
-                                               Text="Engineer" 
-                                               Foreground="White" 
-                                               FontSize="12" 
-                                               FontWeight="Medium"/>
-                                    <!-- Reduced: 14->12 -->
-                                    <TextBlock x:Name="UserLevelText" 
-                                               Text="Engineer" 
-                                               Foreground="#00BCD4" 
-                                               FontSize="9"/>
-                                    <!-- Reduced: 11->9 -->
-                                </StackPanel>
+                                           FontWeight="SemiBold"/>
+                                <TextBlock x:Name="UserLevelText" 
+                                           Text="Engineer" 
+                                           Foreground="{StaticResource Cyber.NeonBlue}" 
+                                           FontSize="10"
+                                           FontWeight="Medium"/>
                             </StackPanel>
-                        </Border>
+                        </StackPanel>
 
                         <!-- Logout Button -->
                         <Button x:Name="LogoutButton" 
                                 Click="LogoutButton_Click"
-                                Width="32" 
-                                Height="32" 
+                                Width="36" 
+                                Height="36" 
                                 Background="#FF5252" 
-                                BorderThickness="0" 
+                                BorderBrush="#FFFFFF"
+                                BorderThickness="2"
                                 Cursor="Hand"
                                 ToolTip="Logout">
-                            <!-- Reduced: 40x40 -> 32x32 -->
                             <Button.Style>
                                 <Style TargetType="Button">
                                     <Setter Property="Background" Value="#FF5252"/>
@@ -186,13 +178,11 @@
                                             <ControlTemplate TargetType="Button">
                                                 <Border Background="{TemplateBinding Background}" 
                                                         CornerRadius="4">
-                                                    <!-- Reduced: 5->4 -->
                                                     <TextBlock Text="⏻" 
                                                                Foreground="White" 
                                                                FontSize="16" 
                                                                HorizontalAlignment="Center" 
                                                                VerticalAlignment="Center"/>
-                                                    <!-- Reduced: 20->16 -->
                                                 </Border>
                                             </ControlTemplate>
                                         </Setter.Value>

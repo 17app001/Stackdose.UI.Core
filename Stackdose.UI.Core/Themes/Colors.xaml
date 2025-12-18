@@ -1,12 +1,27 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <SolidColorBrush x:Key="Cyber.Bg.Dark" Color="#05050A"/>
-    <SolidColorBrush x:Key="Cyber.Bg.Panel" Color="#141420" Opacity="0.95"/>
-    <SolidColorBrush x:Key="Cyber.Border" Color="#334455"/>
+    <!-- 背景顏色：提高亮度，避免在差面板上過暗 -->
+    <SolidColorBrush x:Key="Cyber.Bg.Dark" Color="#0F0F1A"/><!-- 從 #05050A 提高到 #0F0F1A -->
+    <SolidColorBrush x:Key="Cyber.Bg.Panel" Color="#1A1A2E" Opacity="1.0"/><!-- 從 #141420/0.95 改為 #1A1A2E/1.0，移除透明度 -->
+    
+    <!-- 邊框顏色：更明顯的邊框 -->
+    <SolidColorBrush x:Key="Cyber.Border" Color="#4A5F7F"/><!-- 從 #334455 提高到 #4A5F7F -->
+    
+    <!-- 主題色：保持鮮明 -->
     <SolidColorBrush x:Key="Cyber.NeonBlue" Color="#00E5FF"/>
 
-    <SolidColorBrush x:Key="Cyber.Text.Main" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="Cyber.Text.Muted" Color="#8F9BB3"/>
+    <!-- 文字顏色：提高對比度 -->
+    <SolidColorBrush x:Key="Cyber.Text.Main" Color="#FFFFFF"/><!-- 保持純白 -->
+    <SolidColorBrush x:Key="Cyber.Text.Muted" Color="#B0BEC5"/><!-- 從 #8F9BB3 提高到 #B0BEC5 -->
+    
+    <!-- 新增：高對比度文字（用於重要資訊） -->
+    <SolidColorBrush x:Key="Cyber.Text.Bright" Color="#FFFFFF"/>
+    
+    <!-- 新增：次要背景色（用於卡片、區塊） -->
+    <SolidColorBrush x:Key="Cyber.Bg.Card" Color="#252540"/>
+    
+    <!-- 新增：強調邊框色 -->
+    <SolidColorBrush x:Key="Cyber.Border.Strong" Color="#5A7FA0"/>
 
 </ResourceDictionary>

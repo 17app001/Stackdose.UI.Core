@@ -235,6 +235,26 @@ namespace Stackdose.UI.Core.Controls
             set { SetValue(ShowAddressProperty, value); }
         }
 
+        // 🔥 20. 新增：底框形狀
+        public static readonly DependencyProperty FrameShapeProperty =
+            DependencyProperty.Register("FrameShape", typeof(PlcLabelFrameShape), typeof(PlcLabel), new PropertyMetadata(PlcLabelFrameShape.Rectangle));
+
+        public PlcLabelFrameShape FrameShape
+        {
+            get { return (PlcLabelFrameShape)GetValue(FrameShapeProperty); }
+            set { SetValue(FrameShapeProperty, value); }
+        }
+
+        // 🔥 21. 新增：底框背景顏色主題
+        public static readonly DependencyProperty FrameBackgroundProperty =
+            DependencyProperty.Register("FrameBackground", typeof(PlcLabelColorTheme), typeof(PlcLabel), new PropertyMetadata(PlcLabelColorTheme.DarkBlue));
+
+        public PlcLabelColorTheme FrameBackground
+        {
+            get { return (PlcLabelColorTheme)GetValue(FrameBackgroundProperty); }
+            set { SetValue(FrameBackgroundProperty, value); }
+        }
+
         #endregion
 
         // ... (自動綁定與事件邏輯) ...

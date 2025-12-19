@@ -13,6 +13,7 @@ namespace Stackdose.UI.Core.Models
         Info,       // 青色
         NeonBlue,   // 霓虹藍
         White,      // 白色
-        Gray        // 灰色
+        Gray,       // 灰色
+        DarkBlue    // 深藍色（類似 #1E1E2E）
     }
 }

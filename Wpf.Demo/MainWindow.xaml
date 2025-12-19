@@ -304,6 +304,302 @@
                             ShowAddress="False"/>
         </StackPanel>
 
+        <!-- PlcLabel 形狀展示 -->
+        <StackPanel HorizontalAlignment="Left" 
+                   VerticalAlignment="Top" 
+                   Margin="305,66,0,0"
+                   Width="280">
+            
+            <TextBlock Text="PlcLabel 形狀展示" 
+                      Foreground="{DynamicResource Cyber.NeonBlue}" 
+                      FontSize="14" 
+                      FontWeight="Bold" 
+                      Margin="0,0,0,10"/>
+            
+            <!-- 矩形 PlcLabel -->
+            <Custom:PlcLabel Label="矩形（預設）" 
+                            Address="D100" 
+                            FrameShape="Rectangle"
+                            Width="200"
+                            Margin="0,0,0,10"/>
+            
+            <!-- 圓形 PlcLabel 展示 -->
+            <WrapPanel Orientation="Horizontal">
+                <!-- 1. 基本圓形 -->
+                <Custom:PlcLabel Label="圓形" 
+                                Address="D200" 
+                                FrameShape="Circle"
+                                Width="120"
+                                Height="120"
+                                Margin="0,0,10,10"/>
+                
+                <!-- 2. 圓形+成功色 -->
+                <Custom:PlcLabel Label="正常" 
+                                Address="D300" 
+                                FrameShape="Circle"
+                                Width="120"
+                                Height="120"
+                                LabelForeground="Success"
+                                ValueForeground="Success"
+                                ShowAddress="False"
+                                Margin="0,0,10,10"/>
+                
+                <!-- 3. 圓形+警告色 -->
+                <Custom:PlcLabel Label="警告" 
+                                Address="D400" 
+                                FrameShape="Circle"
+                                Width="120"
+                                Height="120"
+                                LabelForeground="Warning"
+                                ValueForeground="Warning"
+                                ShowAddress="False"
+                                Margin="0,0,10,10"/>
+                
+                <!-- 4. 圓形+錯誤色 -->
+                <Custom:PlcLabel Label="異常" 
+                                Address="D500" 
+                                FrameShape="Circle"
+                                Width="120"
+                                Height="120"
+                                LabelForeground="Error"
+                                ValueForeground="Error"
+                                ShowAddress="False"
+                                Margin="0,0,10,10" LabelAlignment="Center"/>
+                
+                <!-- 5. 小圓形 -->
+                <Custom:PlcLabel Label="溫度" 
+                                Address="D600" 
+                                FrameShape="Circle"
+                                Width="80"
+                                Height="80"
+                                LabelFontSize="10"
+                                ValueFontSize="16"
+                                LabelForeground="Info"
+                                ValueForeground="Info"
+                                ShowAddress="False"
+                                Margin="0,0,10,10"/>
+                
+                <!-- 6. 大圓形 -->
+                <Custom:PlcLabel Label="產量" 
+                                Address="D700" 
+                                FrameShape="Circle"
+                                Width="150"
+                                Height="150"
+                                LabelFontSize="14"
+                                ValueFontSize="28"
+                                LabelForeground="NeonBlue"
+                                ValueForeground="NeonBlue"
+                                ShowAddress="False"
+                                Margin="0,0,10,10"/>
+                
+                <!-- 7. 圓形 Bit 狀態 -->
+                <Custom:PlcLabel Label="運行" 
+                                Address="M100" 
+                                DataType="Bit"
+                                FrameShape="Circle"
+                                Width="100"
+                                Height="100"
+                                LabelFontSize="12"
+                                ValueFontSize="18"
+                                LabelForeground="Success"
+                                ValueForeground="Success"
+                                ShowAddress="False"
+                                Margin="0,0,10,10"/>
+                
+                <!-- 8. 無框圓形（只有圓形輪廓）-->
+                <Custom:PlcLabel Label="速度" 
+                                Address="D800" 
+                                FrameShape="Circle"
+                                ShowFrame="True"
+                                Width="100"
+                                Height="100"
+                                LabelFontSize="11"
+                                ValueFontSize="20"
+                                LabelForeground="Primary"
+                                ValueForeground="Primary"
+                                ShowAddress="False"
+                                Margin="0,0,10,10"/>
+            </WrapPanel>
+        </StackPanel>
+
+        <!-- PlcLabel 完整樣式展示 -->
+        <StackPanel HorizontalAlignment="Left" 
+                   VerticalAlignment="Top" 
+                   Margin="305,66,0,0"
+                   Width="350">
+            
+            <TextBlock Text="PlcLabel 底框顏色展示" 
+                      Foreground="{DynamicResource Cyber.NeonBlue}" 
+                      FontSize="14" 
+                      FontWeight="Bold" 
+                      Margin="0,0,0,10"/>
+            
+            <!-- 矩形底框顏色展示 -->
+            <TextBlock Text="矩形底框" 
+                      Foreground="{DynamicResource Cyber.Text.Main}" 
+                      FontSize="12" 
+                      Margin="0,0,0,5"/>
+            
+            <WrapPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <!-- 1. 深藍色底（預設）-->
+                <Custom:PlcLabel Label="預設" 
+                                Address="D100" 
+                                FrameBackground="DarkBlue"
+                                LabelForeground="NeonBlue"
+                                ValueForeground="NeonBlue"
+                                Width="100"
+                                Margin="0,0,5,5"/>
+                
+                <!-- 2. 深藍色底（不指定，使用預設）-->
+                <Custom:PlcLabel Label="深藍底" 
+                                Address="D150" 
+                                LabelForeground="White"
+                                ValueForeground="NeonBlue"
+                                Width="100"
+                                Margin="0,0,5,5"/>
+                
+                <!-- 3. 成功色底 -->
+                <Custom:PlcLabel Label="成功" 
+                                Address="D200" 
+                                FrameBackground="Success"
+                                LabelForeground="White"
+                                ValueForeground="White"
+                                Width="100"
+                                Margin="0,0,5,5"/>
+                
+                <!-- 4. 警告色底 -->
+                <Custom:PlcLabel Label="警告" 
+                                Address="D300" 
+                                FrameBackground="Warning"
+                                LabelForeground="White"
+                                ValueForeground="White"
+                                Width="100"
+                                Margin="0,0,5,5"/>
+                
+                <!-- 5. 錯誤色底 -->
+                <Custom:PlcLabel Label="錯誤" 
+                                Address="D400" 
+                                FrameBackground="Error"
+                                LabelForeground="White"
+                                ValueForeground="White"
+                                Width="100"
+                                Margin="0,0,5,5"/>
+                
+                <!-- 6. 資訊色底 -->
+                <Custom:PlcLabel Label="資訊" 
+                                Address="D500" 
+                                FrameBackground="Info"
+                                LabelForeground="White"
+                                ValueForeground="White"
+                                Width="100"
+                                Margin="0,0,5,5"/>
+                
+                <!-- 7. 主要色底 -->
+                <Custom:PlcLabel Label="主要" 
+                                Address="D600" 
+                                FrameBackground="Primary"
+                                LabelForeground="White"
+                                ValueForeground="White"
+                                Width="100"
+                                Margin="0,0,5,5"/>
+            </WrapPanel>
+            
+            <!-- 圓形底框顏色展示 -->
+            <TextBlock Text="圓形底框" 
+                      Foreground="{DynamicResource Cyber.Text.Main}" 
+                      FontSize="12" 
+                      Margin="0,0,0,5"/>
+            
+            <WrapPanel Orientation="Horizontal">
+                <!-- 1. 深藍色圓形底（預設）-->
+                <Custom:PlcLabel Label="預設" 
+                                Address="D50" 
+                                FrameShape="Circle"
+                                FrameBackground="DarkBlue"
+                                LabelForeground="NeonBlue"
+                                ValueForeground="NeonBlue"
+                                Width="100"
+                                Height="100"
+                                ShowAddress="False"
+                                Margin="0,0,10,10"/>
+                
+                <!-- 2. 成功色圓形底 -->
+                <Custom:PlcLabel Label="正常" 
+                                Address="M100" 
+                                DataType="Bit"
+                                FrameShape="Circle"
+                                FrameBackground="Success"
+                                LabelForeground="White"
+                                ValueForeground="White"
+                                Width="100"
+                                Height="100"
+                                ShowAddress="False"
+                                Margin="0,0,10,10"/>
+                
+                <!-- 3. 警告色圓形底 -->
+                <Custom:PlcLabel Label="注意" 
+                                Address="D700" 
+                                FrameShape="Circle"
+                                FrameBackground="Warning"
+                                LabelForeground="White"
+                                ValueForeground="White"
+                                Width="100"
+                                Height="100"
+                                ShowAddress="False"
+                                Margin="0,0,10,10"/>
+                
+                <!-- 4. 錯誤色圓形底 -->
+                <Custom:PlcLabel Label="異常" 
+                                Address="D800" 
+                                FrameShape="Circle"
+                                FrameBackground="Error"
+                                LabelForeground="White"
+                                ValueForeground="White"
+                                Width="100"
+                                Height="100"
+                                ShowAddress="False"
+                                Margin="0,0,10,10"/>
+                
+                <!-- 5. 資訊色圓形底 -->
+                <Custom:PlcLabel Label="資訊" 
+                                Address="D900" 
+                                FrameShape="Circle"
+                                FrameBackground="Info"
+                                LabelForeground="White"
+                                ValueForeground="White"
+                                Width="100"
+                                Height="100"
+                                ShowAddress="False"
+                                Margin="0,0,10,10"/>
+                
+                <!-- 6. 霓虹藍圓形底 -->
+                <Custom:PlcLabel Label="產量" 
+                                Address="D1000" 
+                                FrameShape="Circle"
+                                FrameBackground="NeonBlue"
+                                LabelForeground="White"
+                                ValueForeground="White"
+                                LabelFontSize="12"
+                                ValueFontSize="20"
+                                Width="120"
+                                Height="120"
+                                ShowAddress="False"
+                                Margin="0,0,10,10"/>
+                
+                <!-- 7. 灰色圓形底 -->
+                <Custom:PlcLabel Label="離線" 
+                                Address="D1100" 
+                                FrameShape="Circle"
+                                FrameBackground="Gray"
+                                LabelForeground="White"
+                                ValueForeground="White"
+                                Width="100"
+                                Height="100"
+                                ShowAddress="False"
+                                Margin="0,0,10,10"/>
+            </WrapPanel>
+        </StackPanel>
+
         <Custom:PlcDeviceEditor HorizontalAlignment="Left" Margin="21,173,0,0" VerticalAlignment="Top" Width="372"/>
         <Custom:LiveLogViewer HorizontalAlignment="Left" Margin="21,296,0,0" VerticalAlignment="Top" Height="243" Width="372"/>
         <Custom:PlcLabel HorizontalAlignment="Left" Margin="58,591,0,0" VerticalAlignment="Top" Height="164" Width="167" ValueAlignment="Center" LabelAlignment="Center" LabelFontSize="44" LabelForeground="Warning" Label="溫度" ValueFontSize="33" DefaultValue="000" Divisor="10" ShowAddress="False" ShowFrame="False"/>

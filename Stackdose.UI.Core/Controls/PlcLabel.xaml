@@ -14,28 +14,51 @@
         <converters:PlcLabelColorThemeToBrushConverter x:Key="ColorThemeConverter"/>
     </UserControl.Resources>
 
-    <Border x:Name="FrameBorder">
+    <Border x:Name="FrameBorder"
+            Background="{Binding FrameBackground, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ColorThemeConverter}}">
         <Border.Style>
             <Style TargetType="Border">
-                <!-- 預設樣式（有框）-->
+                <!-- 預設樣式（矩形有框）-->
                 <Setter Property="BorderBrush" Value="{DynamicResource Plc.Border}"/>
                 <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="Background" Value="{DynamicResource Plc.Bg.Main}"/>
                 <Setter Property="CornerRadius" Value="4"/>
                 <Setter Property="Padding" Value="10,5"/>
                 
                 <Style.Triggers>
+                    <!-- 🔥 當 FrameBackground = Default 時使用預設背景 -->
+                    <DataTrigger Binding="{Binding FrameBackground, ElementName=Root}" Value="Default">
+                        <Setter Property="Background" Value="{DynamicResource Plc.Bg.Main}"/>
+                    </DataTrigger>
+                    
                     <!-- 當 ShowFrame = False 時，移除邊框和背景 -->
                     <DataTrigger Binding="{Binding ShowFrame, ElementName=Root}" Value="False">
                         <Setter Property="BorderThickness" Value="0"/>
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="Padding" Value="0"/>
                     </DataTrigger>
+                    
+                    <!-- 🔥 當 FrameShape = Circle 時，調整為圓形 -->
+                    <DataTrigger Binding="{Binding FrameShape, ElementName=Root}" Value="Circle">
+                        <Setter Property="CornerRadius" Value="500"/>
+                        <Setter Property="Padding" Value="15"/>
+                    </DataTrigger>
                 </Style.Triggers>
             </Style>
         </Border.Style>
         
-        <Grid>
+        <!-- 使用 Viewbox 確保圓形時內容自適應 -->
+        <Grid x:Name="ContentGrid">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <!-- 圓形時強制寬高相等 -->
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding FrameShape, ElementName=Root}" Value="Circle">
+                            <Setter Property="Width" Value="{Binding ActualHeight, RelativeSource={RelativeSource Self}}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+            
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -50,7 +73,18 @@
                        HorizontalAlignment="{Binding LabelAlignment, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        TextTrimming="CharacterEllipsis" 
                        VerticalAlignment="Center"
-                       Margin="0,0,0,2"/>
+                       Margin="0,0,0,2">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <!-- 圓形時自動置中 -->
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding FrameShape, ElementName=Root}" Value="Circle">
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
 
             <!-- 數值顯示 (第二行) -->
             <TextBlock Grid.Row="1" 
@@ -66,6 +100,11 @@
                         <Setter Property="Text" Value="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='123.4'}"/>
 
                         <Style.Triggers>
+                            <!-- 圓形時自動置中 -->
+                            <DataTrigger Binding="{Binding FrameShape, ElementName=Root}" Value="Circle">
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                            </DataTrigger>
+                            
                             <!-- 當數值為 "-" (初始值) 時，顯示 DefaultValue -->
                             <DataTrigger Binding="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="-">
                                 <Setter Property="Text" Value="{Binding DefaultValue, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
@@ -97,6 +136,17 @@
                        HorizontalAlignment="Left"
                        Margin="0,2,0,0"
                        Opacity="0.7">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <!-- 圓形時自動置中並縮小 -->
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding FrameShape, ElementName=Root}" Value="Circle">
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                <Setter Property="FontSize" Value="8"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
                 <TextBlock.Visibility>
                     <Binding Path="ShowAddress" RelativeSource="{RelativeSource AncestorType=UserControl}">
                         <Binding.Converter>

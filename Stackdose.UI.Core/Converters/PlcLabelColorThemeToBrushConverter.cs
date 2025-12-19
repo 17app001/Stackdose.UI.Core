@@ -27,6 +27,7 @@ namespace Stackdose.UI.Core.Converters
                     PlcLabelColorTheme.NeonBlue => Application.Current.TryFindResource("Cyber.NeonBlue") as Brush ?? Brushes.Cyan,
                     PlcLabelColorTheme.White => Application.Current.TryFindResource("Cyber.Text.Bright") as Brush ?? Brushes.White,
                     PlcLabelColorTheme.Gray => Application.Current.TryFindResource("Plc.Text.Gray") as Brush ?? Brushes.Gray,
+                    PlcLabelColorTheme.DarkBlue => new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x2E)), // #1E1E2E
                     _ => Application.Current.TryFindResource("Plc.Text.Label") as Brush ?? Brushes.Gray
                 };
             }

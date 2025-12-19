@@ -12,14 +12,300 @@
         <Custom:CyberFrame Title="MODEL-S"/>
 
         <!-- PlcStatus 放在左上角 -->
-        <Custom:PlcStatus  HorizontalAlignment="Left"                    
+        <Custom:PlcStatus HorizontalAlignment="Left"                    
                          VerticalAlignment="Top" 
                          Margin="21,66,0,0" 
                          IpAddress="192.168.22.39" 
                          Port="3000" Width="261" Height="76" AutoConnect="False"/>
-        <Custom:PlcLabel HorizontalAlignment="Left"                        
-                         Margin="305,89,0,0" VerticalAlignment="Top" Width="145"/>
+
+        <!-- PlcLabel 完整樣式展示 -->
+        <StackPanel HorizontalAlignment="Left" 
+                   VerticalAlignment="Top" 
+                   Margin="582,90,0,0"
+                   Width="250">
+
+            <TextBlock Text="PlcLabel 樣式展示" 
+                      Foreground="{DynamicResource Cyber.NeonBlue}" 
+                      FontSize="14" 
+                      FontWeight="Bold" 
+                      Margin="0,0,0,10"/>
+
+            <!-- 1. 預設樣式 -->
+            <Custom:PlcLabel Label="預設樣式" 
+                            Address="D100" 
+                            Margin="0,0,0,5"/>
+
+            <!-- 2. 標籤置中 -->
+            <Custom:PlcLabel Label="標籤置中" 
+                            Address="D200" 
+                            LabelAlignment="Center"
+                            Margin="0,0,0,5"/>
+
+            <!-- 3. 標籤靠右 -->
+            <Custom:PlcLabel Label="標籤靠右" 
+                            Address="D300" 
+                            LabelAlignment="Right"
+                            Margin="0,0,0,5"/>
+
+            <!-- 4. 成功色（綠色）-->
+            <Custom:PlcLabel Label="成功狀態" 
+                            Address="D400" 
+                            LabelForeground="Success"
+                            ValueForeground="Success"
+                            Margin="0,0,0,5"/>
+
+            <!-- 5. 警告色（橙色）-->
+            <Custom:PlcLabel Label="警告狀態" 
+                            Address="D500" 
+                            LabelForeground="Warning"
+                            ValueForeground="Warning"
+                            Margin="0,0,0,5"/>
+
+            <!-- 6. 錯誤色（紅色）-->
+            <Custom:PlcLabel Label="錯誤狀態" 
+                            Address="D600" 
+                            LabelForeground="Error"
+                            ValueForeground="Error"
+                            Margin="0,0,0,5"/>
+
+            <!-- 7. 資訊色（青色）-->
+            <Custom:PlcLabel Label="資訊顯示" 
+                            Address="D700" 
+                            LabelForeground="Info"
+                            ValueForeground="Info"
+                            Margin="0,0,0,5"/>
+
+            <!-- 8. 組合應用：大字+置中+白色 -->
+            <Custom:PlcLabel Label="重要數值" 
+                            Address="D800" 
+                            LabelAlignment="Center"
+                            LabelFontSize="16"
+                            ValueFontSize="28"
+                            LabelForeground="White"
+                            ValueForeground="NeonBlue"
+                            Margin="0,0,0,5"/>
+
+            <!-- 9. 無框+自訂顏色 -->
+            <Custom:PlcLabel Label="簡潔模式" 
+                            Address="D900" 
+                            ShowFrame="False"
+                            LabelAlignment="Right"
+                            LabelForeground="Gray"
+                            ValueForeground="Primary"/>
+        </StackPanel>
+
+        <!-- PlcLabel 對齊方式展示 -->
+        <StackPanel HorizontalAlignment="Left" 
+                   VerticalAlignment="Top" 
+                   Margin="305,66,0,0"
+                   Width="280">
+
+            <TextBlock Text="PlcLabel 對齊方式展示" 
+                      Foreground="{DynamicResource Cyber.NeonBlue}" 
+                      FontSize="14" 
+                      FontWeight="Bold" 
+                      Margin="0,0,0,10"/>
+
+            <!-- 1. 預設（標籤左/數值右）-->
+            <Custom:PlcLabel Label="預設對齊" 
+                            Address="D100" 
+                            Margin="0,0,0,5"/>
+
+            <!-- 2. 標籤置中/數值置中 -->
+            <Custom:PlcLabel Label="全部置中" 
+                            Address="D200" 
+                            LabelAlignment="Center"
+                            ValueAlignment="Center"
+                            Margin="0,0,0,5"/>
+
+            <!-- 3. 標籤靠右/數值靠左 -->
+            <Custom:PlcLabel Label="反向對齊" 
+                            Address="D300" 
+                            LabelAlignment="Right"
+                            ValueAlignment="Left"
+                            Margin="0,0,0,5"/>
+
+            <!-- 4. 全部靠左 -->
+            <Custom:PlcLabel Label="全部靠左" 
+                            Address="D400" 
+                            LabelAlignment="Left"
+                            ValueAlignment="Left"
+                            Margin="0,0,0,5"/>
+
+            <!-- 5. 全部靠右 -->
+            <Custom:PlcLabel Label="全部靠右" 
+                            Address="D500" 
+                            LabelAlignment="Right"
+                            ValueAlignment="Right"
+                            Margin="0,0,0,5"/>
+
+            <!-- 分隔線 -->
+            <Separator Margin="0,10,0,10"/>
+
+            <TextBlock Text="顏色主題展示" 
+                      Foreground="{DynamicResource Cyber.NeonBlue}" 
+                      FontSize="14" 
+                      FontWeight="Bold" 
+                      Margin="0,0,0,10"/>
+
+            <!-- 6. 成功色（綠色）-->
+            <Custom:PlcLabel Label="正常運行" 
+                            Address="D600" 
+                            LabelForeground="Success"
+                            ValueForeground="Success"
+                            ValueAlignment="Center"
+                            Margin="0,0,0,5"/>
+
+            <!-- 7. 警告色（橙色）-->
+            <Custom:PlcLabel Label="注意事項" 
+                            Address="D700" 
+                            LabelForeground="Warning"
+                            ValueForeground="Warning"
+                            ValueAlignment="Center"
+                            Margin="0,0,0,5"/>
+
+            <!-- 8. 錯誤色（紅色）-->
+            <Custom:PlcLabel Label="異常狀態" 
+                            Address="D800" 
+                            LabelForeground="Error"
+                            ValueForeground="Error"
+                            ValueAlignment="Center"
+                            Margin="0,0,0,5"/>
+
+            <!-- 9. 組合：大字+置中+霓虹藍 -->
+            <Custom:PlcLabel Label="重要數值" 
+                            Address="D900" 
+                            LabelAlignment="Center"
+                            ValueAlignment="Center"
+                            LabelFontSize="16"
+                            ValueFontSize="32"
+                            LabelForeground="White"
+                            ValueForeground="NeonBlue"
+                            Margin="0,0,0,5"/>
+
+            <!-- 10. 無框樣式 -->
+            <Custom:PlcLabel Label="簡潔模式" 
+                            Address="D1000" 
+                            ShowFrame="False"
+                            LabelAlignment="Center"
+                            ValueAlignment="Center"
+                            LabelFontSize="14"
+                            ValueFontSize="24"
+                            LabelForeground="Info"
+                            ValueForeground="Info"/>
+        </StackPanel>
+
+        <!-- PlcLabel 顯示位址範例 -->
+        <StackPanel HorizontalAlignment="Left" 
+                   VerticalAlignment="Top" 
+                   Margin="921,90,0,0"
+                   Width="250">
+
+            <TextBlock Text="PlcLabel 顯示位址範例" 
+                      Foreground="{DynamicResource Cyber.NeonBlue}" 
+                      FontSize="14" 
+                      FontWeight="Bold" 
+                      Margin="0,0,0,10"/>
+
+            <!-- 1. 預設（標籤左/數值右/顯示位址）-->
+            <Custom:PlcLabel Label="顯示位址" 
+                            Address="D100" 
+                            ShowAddress="True"
+                            Margin="0,0,0,5"/>
+
+            <!-- 2. 隱藏位址 -->
+            <Custom:PlcLabel Label="隱藏位址" 
+                            Address="D200" 
+                            ShowAddress="False"
+                            Margin="0,0,0,5"/>
+
+            <!-- 3. 置中對齊（顯示位址）-->
+            <Custom:PlcLabel Label="全部置中" 
+                            Address="D300" 
+                            LabelAlignment="Center"
+                            ValueAlignment="Center"
+                            ShowAddress="True"
+                            Margin="0,0,0,5"/>
+
+            <!-- 4. 置中對齊（隱藏位址）-->
+            <Custom:PlcLabel Label="置中無位址" 
+                            Address="D400" 
+                            LabelAlignment="Center"
+                            ValueAlignment="Center"
+                            ShowAddress="False"
+                            Margin="0,0,0,5"/>
+
+            <!-- 5. 全部靠左（顯示位址）-->
+            <Custom:PlcLabel Label="全部靠左" 
+                            Address="D500" 
+                            LabelAlignment="Left"
+                            ValueAlignment="Left"
+                            ShowAddress="True"
+                            Margin="0,0,0,5"/>
+
+            <!-- 分隔線 -->
+            <Separator Margin="0,10,0,10"/>
+
+            <TextBlock Text="顏色主題展示" 
+                      Foreground="{DynamicResource Cyber.NeonBlue}" 
+                      FontSize="14" 
+                      FontWeight="Bold" 
+                      Margin="0,0,0,10"/>
+
+            <!-- 6. 成功色（綠色）+ 隱藏位址 -->
+            <Custom:PlcLabel Label="正常運行" 
+                            Address="D600" 
+                            LabelForeground="Success"
+                            ValueForeground="Success"
+                            ValueAlignment="Center"
+                            ShowAddress="False"
+                            Margin="0,0,0,5"/>
+
+            <!-- 7. 警告色（橙色）-->
+            <Custom:PlcLabel Label="注意事項" 
+                            Address="D700" 
+                            LabelForeground="Warning"
+                            ValueForeground="Warning"
+                            ValueAlignment="Center"
+                            ShowAddress="True"
+                            Margin="0,0,0,5"/>
+
+            <!-- 8. 錯誤色（紅色）+ 隱藏位址 -->
+            <Custom:PlcLabel Label="異常狀態" 
+                            Address="D800" 
+                            LabelForeground="Error"
+                            ValueForeground="Error"
+                            ValueAlignment="Center"
+                            ShowAddress="False"
+                            Margin="0,0,0,5"/>
+
+            <!-- 9. 組合：大字+置中+霓虹藍+無位址 -->
+            <Custom:PlcLabel Label="重要數值" 
+                            Address="D900" 
+                            LabelAlignment="Center"
+                            ValueAlignment="Center"
+                            LabelFontSize="16"
+                            ValueFontSize="32"
+                            LabelForeground="White"
+                            ValueForeground="NeonBlue"
+                            ShowAddress="False"
+                            Margin="0,0,0,5"/>
+
+            <!-- 10. 無框樣式+無位址 -->
+            <Custom:PlcLabel Label="簡潔模式" 
+                            Address="D1000" 
+                            ShowFrame="False"
+                            LabelAlignment="Center"
+                            ValueAlignment="Center"
+                            LabelFontSize="14"
+                            ValueFontSize="24"
+                            LabelForeground="Info"
+                            ValueForeground="Info"
+                            ShowAddress="False"/>
+        </StackPanel>
+
         <Custom:PlcDeviceEditor HorizontalAlignment="Left" Margin="21,173,0,0" VerticalAlignment="Top" Width="372"/>
         <Custom:LiveLogViewer HorizontalAlignment="Left" Margin="21,296,0,0" VerticalAlignment="Top" Height="243" Width="372"/>
+        <Custom:PlcLabel HorizontalAlignment="Left" Margin="58,591,0,0" VerticalAlignment="Top" Height="164" Width="167" ValueAlignment="Center" LabelAlignment="Center" LabelFontSize="44" LabelForeground="Warning" Label="溫度" ValueFontSize="33" DefaultValue="000" Divisor="10" ShowAddress="False" ShowFrame="False"/>
     </Grid>
 </Window>

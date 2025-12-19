@@ -261,6 +261,11 @@ var globalManager = PlcContext.GlobalStatus?.CurrentManager;
                 Address="D100" 
                 DataType="Bit"
                 BitIndex="5"/>
+
+<!-- 無邊框樣式（簡潔模式）-->
+<Custom:PlcLabel Label="流量" 
+                Address="D300" 
+                ShowFrame="False"/>
 ```
 
 #### 屬性
@@ -278,6 +283,14 @@ var globalManager = PlcContext.GlobalStatus?.CurrentManager;
 | `EnableDataLog` | `bool` | 啟用數據記錄 | `false` |
 | `EnableAuditTrail` | `bool` | 啟用審計追蹤 | `false` |
 | `ShowLog` | `bool` | 顯示日誌到 UI | `true` |
+| `ShowFrame` | `bool` | 顯示邊框和背景 | `true` |
+| `LabelFontSize` | `double` | 標籤文字大小 | `12.0` |
+| `ValueFontSize` | `double` | 數值文字大小 | `20.0` |
+| `LabelAlignment` | `HorizontalAlignment` | 標籤對齊方式 | `Left` |
+| `ValueAlignment` | `HorizontalAlignment` | 數值對齊方式 | `Right` |
+| `LabelForeground` | `PlcLabelColorTheme` | 標籤顏色主題 | `Default` |
+| `ValueForeground` | `PlcLabelColorTheme` | 數值顏色主題 | `NeonBlue` |
+| `ShowAddress` | `bool` | 顯示位址文字 | `true` |
 
 #### 數據類型
 
@@ -290,6 +303,279 @@ public enum PlcDataType
     Float   // 32-bit 浮點數
 }
 ```
+
+#### 外觀樣式
+
+```xml
+<!-- 預設樣式（有邊框和背景）-->
+<Custom:PlcLabel Label="溫度" 
+                Address="D100" 
+                ShowFrame="True"/>
+
+<!-- 簡潔樣式（無邊框和背景）-->
+<Custom:PlcLabel Label="壓力" 
+                Address="D200" 
+                ShowFrame="False"/>
+
+<!-- 放大標籤文字 -->
+<Custom:PlcLabel Label="重要參數" 
+                Address="D300" 
+                LabelFontSize="16"/>
+
+<!-- 放大數值文字 -->
+<Custom:PlcLabel Label="關鍵數值" 
+                Address="D400" 
+                ValueFontSize="28"/>
+
+<!-- 自訂標籤和數值大小 -->
+<Custom:PlcLabel Label="儀表顯示" 
+                Address="D500" 
+                LabelFontSize="14"
+                ValueFontSize="32"/>
+
+<!-- 組合應用：大字無框 -->
+<Custom:PlcLabel Label="大型顯示" 
+                Address="D600" 
+                ShowFrame="False"
+                LabelFontSize="18"
+                ValueFontSize="36"/>
+```
+
+**ShowFrame="False" 效果：**
+- ? 無邊框（BorderThickness="0"）
+- ? 無背景（Background="Transparent"）
+- ? 無內距（Padding="0"）
+- ? 適合嵌入到其他容器或重疊顯示
+
+**ShowAddress="False" 效果：**
+- ? 隱藏左下角的位址文字
+- ? 減少視覺干擾
+- ? 適合簡潔儀表板或已知位址的場景
+
+**字體大小調整：**
+- ? `LabelFontSize`：控制標籤文字大小（預設 12）
+- ? `ValueFontSize`：控制數值文字大小（預設 20）
+- ? 適合大型儀表板或觸控螢幕應用
+
+```xml
+<!-- 隱藏位址文字 -->
+<Custom:PlcLabel Label="溫度" 
+                Address="D100" 
+                ShowAddress="False"/>
+
+<!-- 顯示位址文字（預設）-->
+<Custom:PlcLabel Label="壓力" 
+                Address="D200" 
+                ShowAddress="True"/>
+```
+
+#### 對齊方式
+
+**新布局結構：**
+```
+┌────────────────────────┐
+│ Label (可左/中/右)      │  ← 第一行：標籤
+│ 123.45 (可左/中/右)     │  ← 第二行：數值
+│ D100 (可顯示/隱藏)      │  ← 第三行：位址（ShowAddress 控制）
+└────────────────────────┘
+```
+
+**標籤對齊：**
+```xml
+<!-- 左對齊（預設）-->
+<Custom:PlcLabel Label="溫度" 
+                Address="D100" 
+                LabelAlignment="Left"/>
+
+<!-- 置中對齊 -->
+<Custom:PlcLabel Label="壓力" 
+                Address="D200" 
+                LabelAlignment="Center"/>
+
+<!-- 右對齊 -->
+<Custom:PlcLabel Label="流量" 
+                Address="D300" 
+                LabelAlignment="Right"/>
+```
+
+**數值對齊：**
+```xml
+<!-- 數值靠右（預設）-->
+<Custom:PlcLabel Label="溫度" 
+                Address="D100" 
+                ValueAlignment="Right"/>
+
+<!-- 數值置中 -->
+<Custom:PlcLabel Label="壓力" 
+                Address="D200" 
+                ValueAlignment="Center"/>
+
+<!-- 數值靠左 -->
+<Custom:PlcLabel Label="流量" 
+                Address="D300" 
+                ValueAlignment="Left"/>
+```
+
+**組合應用：**
+```xml
+<!-- 全部置中 -->
+<Custom:PlcLabel Label="當前狀態" 
+                Address="M100" 
+                LabelAlignment="Center"
+                ValueAlignment="Center"/>
+
+<!-- 反向對齊（標籤右/數值左）-->
+<Custom:PlcLabel Label="特殊顯示" 
+                Address="D400" 
+                LabelAlignment="Right"
+                ValueAlignment="Left"/>
+
+<!-- 全部靠左 -->
+<Custom:PlcLabel Label="詳細資訊" 
+                Address="D500" 
+                LabelAlignment="Left"
+                ValueAlignment="Left"/>
+```
+
+#### 顏色主題
+
+```xml
+<!-- 預設顏色 -->
+<Custom:PlcLabel Label="預設" 
+                Address="D100" 
+                LabelForeground="Default"
+                ValueForeground="NeonBlue"/>
+
+<!-- 成功色（綠色）-->
+<Custom:PlcLabel Label="正常運行" 
+                Address="D200" 
+                LabelForeground="Success"
+                ValueForeground="Success"/>
+
+<!-- 警告色（橙色）-->
+<Custom:PlcLabel Label="注意事項" 
+                Address="D300" 
+                LabelForeground="Warning"
+                ValueForeground="Warning"/>
+
+<!-- 錯誤色（紅色）-->
+<Custom:PlcLabel Label="異常狀態" 
+                Address="D400" 
+                LabelForeground="Error"
+                ValueForeground="Error"/>
+
+<!-- 資訊色（青色）-->
+<Custom:PlcLabel Label="資訊顯示" 
+                Address="D500" 
+                LabelForeground="Info"
+                ValueForeground="Info"/>
+
+<!-- 主要色（藍色）-->
+<Custom:PlcLabel Label="主要參數" 
+                Address="D600" 
+                LabelForeground="Primary"
+                ValueForeground="Primary"/>
+
+<!-- 霓虹藜 -->
+<Custom:PlcLabel Label="特殊效果" 
+                Address="D700" 
+                LabelForeground="NeonBlue"
+                ValueForeground="NeonBlue"/>
+
+<!-- 白色 -->
+<Custom:PlcLabel Label="高對比" 
+                Address="D800" 
+                LabelForeground="White"
+                ValueForeground="White"/>
+
+<!-- 灰色 -->
+<Custom:PlcLabel Label="次要資訊" 
+                Address="D900" 
+                LabelForeground="Gray"
+                ValueForeground="Gray"/>
+```
+
+**PlcLabelColorTheme 可用值：**
+- `Default` - 預設顏色（依照主題）
+- `Primary` - 藍色
+- `Success` - 綠色
+- `Warning` - 橙色
+- `Error` - 紅色
+- `Info` - 青色
+- `NeonBlue` - 霓虹藜
+- `White` - 白色
+- `Gray` - 灰色
+
+#### 組合應用範例
+
+```xml
+<!-- 重要警示：大字+全部置中+紅色 -->
+<Custom:PlcLabel Label="緊急溫度" 
+                Address="D100" 
+                LabelAlignment="Center"
+                ValueAlignment="Center"
+                LabelFontSize="18"
+                ValueFontSize="36"
+                LabelForeground="Error"
+                ValueForeground="Error"
+                ShowFrame="True"/>
+
+<!-- 簡潔儀表：無框+全部置中+自訂顏色 -->
+<Custom:PlcLabel Label="當前速度" 
+                Address="D200" 
+                LabelAlignment="Center"
+                ValueAlignment="Center"
+                LabelFontSize="14"
+                ValueFontSize="28"
+                LabelForeground="White"
+                ValueForeground="NeonBlue"
+                ShowFrame="False"/>
+
+<!-- 狀態指示：全部置中+成功色 -->
+<Custom:PlcLabel Label="系統狀態" 
+                Address="M100" 
+                DataType="Bit"
+                LabelAlignment="Center"
+                ValueAlignment="Center"
+                LabelForeground="Success"
+                ValueForeground="Success"/>
+
+<!-- 左對齊儀表：標籤左+數值左 -->
+<Custom:PlcLabel Label="詳細資訊" 
+                Address="D300" 
+                LabelAlignment="Left"
+                ValueAlignment="Left"
+                LabelFontSize="12"
+                ValueFontSize="20"
+                LabelForeground="Default"
+                ValueForeground="Info"/>
+
+<!-- 大型顯示：無框+全部置中+超大字+無位址 -->
+<Custom:PlcLabel Label="當前產量" 
+                Address="D400" 
+                LabelAlignment="Center"
+                ValueAlignment="Center"
+                LabelFontSize="20"
+                ValueFontSize="48"
+                LabelForeground="White"
+                ValueForeground="NeonBlue"
+                ShowFrame="False"
+                ShowAddress="False"/>
+
+<!-- 簡潔卡片：置中+無位址 -->
+<Custom:PlcLabel Label="系統狀態" 
+                Address="M100" 
+                DataType="Bit"
+                LabelAlignment="Center"
+                ValueAlignment="Center"
+                LabelForeground="Success"
+                ValueForeground="Success"
+                ShowAddress="False"/>
+```
+
+**ShowAddress 應用場景：**
+- `ShowAddress="True"`（預設）：適合除錯、開發階段或需要明確知道位址的場景
+- `ShowAddress="False"`：適合正式產品、簡潔儀表板、使用者介面
 
 #### 多 PLC 配置
 
@@ -601,7 +887,7 @@ ComplianceContext.LogAuditTrail(
 |------|------|------|--------|
 | `Content` | `string` | 按鈕文字 | `""` |
 | `RequiredLevel` | `AccessLevel` | 所需權限等級 | `Guest` |
-| `Theme` | `ButtonTheme` | 按鈕主題 | `Primary` |
+| `Theme` | `ButtonTheme` | 按?主題 | `Primary` |
 
 #### 按鈕主題
 
@@ -652,8 +938,8 @@ else
 
 #### 預設測試帳號
 
-| 帳號 | 密碼 | 權限等級 |
-|------|------|----------|
+| 帳號 | 密碼 | 標籤 |
+|------|------|------|
 | `admin` | `1234` | Engineer |
 | `engineer` | `1234` | Engineer |
 | `supervisor` | `1234` | Supervisor |

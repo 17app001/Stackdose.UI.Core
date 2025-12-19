@@ -3,72 +3,76 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:converters="clr-namespace:Stackdose.UI.Core.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="60" d:DesignWidth="200"
+             x:Name="Root"
              ToolTip="{Binding Address, RelativeSource={RelativeSource Self}}"
              Foreground="{DynamicResource Plc.Text.Value}">
 
-    <Border BorderBrush="{DynamicResource Plc.Border}" 
-            BorderThickness="1" 
-            Background="{DynamicResource Plc.Bg.Main}" 
-            CornerRadius="4" 
-            Padding="10,5">
+    <UserControl.Resources>
+        <converters:PlcLabelColorThemeToBrushConverter x:Key="ColorThemeConverter"/>
+    </UserControl.Resources>
+
+    <Border x:Name="FrameBorder">
+        <Border.Style>
+            <Style TargetType="Border">
+                <!-- 預設樣式（有框）-->
+                <Setter Property="BorderBrush" Value="{DynamicResource Plc.Border}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Background" Value="{DynamicResource Plc.Bg.Main}"/>
+                <Setter Property="CornerRadius" Value="4"/>
+                <Setter Property="Padding" Value="10,5"/>
+                
+                <Style.Triggers>
+                    <!-- 當 ShowFrame = False 時，移除邊框和背景 -->
+                    <DataTrigger Binding="{Binding ShowFrame, ElementName=Root}" Value="False">
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Padding" Value="0"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+        
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- 標題與位址區塊 -->
-            <Grid Grid.Row="0" Margin="0,0,0,2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <!-- 標籤 (第一行) -->
+            <TextBlock Grid.Row="0"
+                       Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='Label'}" 
+                       Foreground="{Binding LabelForeground, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ColorThemeConverter}}"
+                       FontSize="{Binding LabelFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                       HorizontalAlignment="{Binding LabelAlignment, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                       TextTrimming="CharacterEllipsis" 
+                       VerticalAlignment="Center"
+                       Margin="0,0,0,2"/>
 
-                <!-- 標題 (靠左) -->
-                <!-- 使用 TextTrimming 當文字太長時顯示 ... -->
-                <TextBlock Grid.Column="0"
-                           Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='Label'}" 
-                           Foreground="{DynamicResource Plc.Text.Label}" 
-                           FontSize="12"
-                           TextTrimming="CharacterEllipsis" 
-                           VerticalAlignment="Center"/>
-
-                <!-- 位址 (靠右，並分開顯示) -->
-                <!-- 🔥 修改：加入 Margin 確保與 Label 分開，並設定 MinWidth 保持距離 -->
-                <TextBlock Grid.Column="1"
-                           Text="{Binding Address, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='D0'}" 
-                           Foreground="{DynamicResource Plc.Text.Default}" 
-                           FontSize="10" 
-                           VerticalAlignment="Center" 
-                           HorizontalAlignment="Right"
-                           Margin="10,0,0,0"/>
-            </Grid>
-
-            <!-- 數值顯示 -->
+            <!-- 數值顯示 (第二行) -->
             <TextBlock Grid.Row="1" 
-                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                       FontSize="20" 
+                       Foreground="{Binding ValueForeground, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ColorThemeConverter}}"
+                       FontSize="{Binding ValueFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                        FontWeight="Bold" 
                        FontFamily="Consolas"
-                       HorizontalAlignment="Right" 
+                       HorizontalAlignment="{Binding ValueAlignment, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                        VerticalAlignment="Center">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
                         <!-- 預設顯示 Value -->
-                        <!-- 注意：FallbackValue 僅在設計時或綁定失敗時顯示，執行時會被 Value 覆蓋 -->
                         <Setter Property="Text" Value="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='123.4'}"/>
 
                         <Style.Triggers>
-                            <!-- 🔥 修正：當數值為 "-" (初始值) 時，顯示 DefaultValue -->
+                            <!-- 當數值為 "-" (初始值) 時，顯示 DefaultValue -->
                             <DataTrigger Binding="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="-">
                                 <Setter Property="Text" Value="{Binding DefaultValue, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                <!-- 選用：讓預設值稍微暗一點，區分這是「無效值」 -->
                                 <Setter Property="Opacity" Value="0.5"/>
                             </DataTrigger>
 
-                            <!-- 🔥 修正：增加對空字串 "" 的判斷，防止某些情況下變成空白 -->
+                            <!-- 當數值為空字串時 -->
                             <DataTrigger Binding="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="">
                                 <Setter Property="Text" Value="{Binding DefaultValue, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                 <Setter Property="Opacity" Value="0.5"/>
@@ -82,6 +86,24 @@
                         </Style.Triggers>
                     </Style>
                 </TextBlock.Style>
+            </TextBlock>
+
+            <!-- 位址 (左下角) -->
+            <TextBlock Grid.Row="2"
+                       Text="{Binding Address, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='D0'}" 
+                       Foreground="{DynamicResource Plc.Text.Default}" 
+                       FontSize="9" 
+                       VerticalAlignment="Center" 
+                       HorizontalAlignment="Left"
+                       Margin="0,2,0,0"
+                       Opacity="0.7">
+                <TextBlock.Visibility>
+                    <Binding Path="ShowAddress" RelativeSource="{RelativeSource AncestorType=UserControl}">
+                        <Binding.Converter>
+                            <BooleanToVisibilityConverter/>
+                        </Binding.Converter>
+                    </Binding>
+                </TextBlock.Visibility>
             </TextBlock>
         </Grid>
     </Border>

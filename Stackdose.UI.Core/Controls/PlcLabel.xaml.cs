@@ -1,6 +1,7 @@
 ﻿using Stackdose.Abstractions.Hardware;
 using Stackdose.Abstractions.Logging;
 using Stackdose.UI.Core.Helpers; // 引用 Context 與 合規引擎
+using Stackdose.UI.Core.Models; // 引用 PlcLabelColorTheme
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -154,6 +155,86 @@ namespace Stackdose.UI.Core.Controls
             set { SetValue(ShowLogProperty, value); }
         }
 
+        // 🔥 12. 新增：是否顯示邊框和背景
+        public static readonly DependencyProperty ShowFrameProperty =
+            DependencyProperty.Register("ShowFrame", typeof(bool), typeof(PlcLabel), new PropertyMetadata(true));
+
+        public bool ShowFrame
+        {
+            get { return (bool)GetValue(ShowFrameProperty); }
+            set { SetValue(ShowFrameProperty, value); }
+        }
+
+        // 🔥 13. 新增：標籤文字大小
+        public static readonly DependencyProperty LabelFontSizeProperty =
+            DependencyProperty.Register("LabelFontSize", typeof(double), typeof(PlcLabel), new PropertyMetadata(12.0));
+
+        public double LabelFontSize
+        {
+            get { return (double)GetValue(LabelFontSizeProperty); }
+            set { SetValue(LabelFontSizeProperty, value); }
+        }
+
+        // 🔥 14. 新增：數值文字大小
+        public static readonly DependencyProperty ValueFontSizeProperty =
+            DependencyProperty.Register("ValueFontSize", typeof(double), typeof(PlcLabel), new PropertyMetadata(20.0));
+
+        public double ValueFontSize
+        {
+            get { return (double)GetValue(ValueFontSizeProperty); }
+            set { SetValue(ValueFontSizeProperty, value); }
+        }
+
+        // 🔥 15. 新增：標籤對齊方式
+        public static readonly DependencyProperty LabelAlignmentProperty =
+            DependencyProperty.Register("LabelAlignment", typeof(HorizontalAlignment), typeof(PlcLabel), new PropertyMetadata(HorizontalAlignment.Left));
+
+        public HorizontalAlignment LabelAlignment
+        {
+            get { return (HorizontalAlignment)GetValue(LabelAlignmentProperty); }
+            set { SetValue(LabelAlignmentProperty, value); }
+        }
+
+        // 🔥 16. 新增：標籤顏色主題
+        public static readonly DependencyProperty LabelForegroundProperty =
+            DependencyProperty.Register("LabelForeground", typeof(PlcLabelColorTheme), typeof(PlcLabel), new PropertyMetadata(PlcLabelColorTheme.Default));
+
+        public PlcLabelColorTheme LabelForeground
+        {
+            get { return (PlcLabelColorTheme)GetValue(LabelForegroundProperty); }
+            set { SetValue(LabelForegroundProperty, value); }
+        }
+
+        // 🔥 17. 新增：數值顏色主題
+        public static readonly DependencyProperty ValueForegroundProperty =
+            DependencyProperty.Register("ValueForeground", typeof(PlcLabelColorTheme), typeof(PlcLabel), new PropertyMetadata(PlcLabelColorTheme.NeonBlue));
+
+        public PlcLabelColorTheme ValueForeground
+        {
+            get { return (PlcLabelColorTheme)GetValue(ValueForegroundProperty); }
+            set { SetValue(ValueForegroundProperty, value); }
+        }
+
+        // 🔥 18. 新增：數值對齊方式
+        public static readonly DependencyProperty ValueAlignmentProperty =
+            DependencyProperty.Register("ValueAlignment", typeof(HorizontalAlignment), typeof(PlcLabel), new PropertyMetadata(HorizontalAlignment.Right));
+
+        public HorizontalAlignment ValueAlignment
+        {
+            get { return (HorizontalAlignment)GetValue(ValueAlignmentProperty); }
+            set { SetValue(ValueAlignmentProperty, value); }
+        }
+
+        // 🔥 19. 新增：是否顯示位址
+        public static readonly DependencyProperty ShowAddressProperty =
+            DependencyProperty.Register("ShowAddress", typeof(bool), typeof(PlcLabel), new PropertyMetadata(true));
+
+        public bool ShowAddress
+        {
+            get { return (bool)GetValue(ShowAddressProperty); }
+            set { SetValue(ShowAddressProperty, value); }
+        }
+
         #endregion
 
         // ... (自動綁定與事件邏輯) ...
@@ -281,7 +362,7 @@ namespace Stackdose.UI.Core.Controls
                 string oldValueStr = Value; // 紀錄舊值
                 Value = newValueStr;
 
-                // 1. 觸發事件
+                // 1. 觕發事件
                 ValueChanged?.Invoke(this, new PlcValueChangedEventArgs(actualValue, newValueStr));
 
                 // 🔥 1.5. 自動通知 PlcLabelContext（統一管理中心）

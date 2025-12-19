@@ -5,14 +5,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d"
              x:Name="root"
-             MinHeight="100" 
-             d:DesignHeight="105" d:DesignWidth="320">
+             MinHeight="150" 
+             d:DesignHeight="155" d:DesignWidth="320">
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="5"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -71,7 +71,7 @@
                          FontSize="16" 
                          Height="32"
                          IsEnabled="{Binding IsAuthorized, ElementName=root}"
-                         ToolTip="PLC Address (Ex: M0, D100, D100.5, R2002,0)"/>
+                         ToolTip="PLC Address (Ex: M0, D100, R2002)"/>
 
                 <TextBlock Grid.Column="0" 
                            Text="Dev" 
@@ -106,7 +106,7 @@
                          FontWeight="Bold" 
                          Height="32"
                          IsEnabled="{Binding IsAuthorized, ElementName=root}"
-                         ToolTip="Value (Bit: 0/1, Word: number)"/>
+                         ToolTip="Value (Word: 0-65535, DWord: 0-4294967295)"/>
 
                 <TextBlock Grid.Column="2" 
                            Text="Val" 
@@ -215,7 +215,29 @@
             </Grid>
         </Border>
 
-        <!-- Reason Input (Row 3) -->
+        <!-- ?? Data Type Selection (Row 2) -->
+        <StackPanel Grid.Row="2" 
+                    Orientation="Horizontal" 
+                    Margin="5,5,0,0"
+                    HorizontalAlignment="Left">
+            <CheckBox x:Name="ChkDWord" 
+                      Content="DWord (32-bit)" 
+                      IsChecked="False"
+                      Checked="ChkDWord_Checked"
+                      Unchecked="ChkDWord_Unchecked"
+                      Foreground="{DynamicResource Cyber.NeonBlue}" 
+                      FontSize="11"
+                      VerticalAlignment="Center"
+                      ToolTip="Read/Write DWord (32-bit) instead of Word (16-bit)"/>
+            
+            <TextBlock Text="(Word: 0-65535, DWord: 0-4294967295)" 
+                       Foreground="{DynamicResource Plc.Text.Gray}" 
+                       FontSize="10" 
+                       VerticalAlignment="Center"
+                       Margin="10,0,0,0"
+                       Opacity="0.7"/>
+        </StackPanel>
+
         <TextBox x:Name="TxtReason" 
                  Grid.Row="3"
                  Text="{Binding Reason, ElementName=root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -226,6 +248,7 @@
                  Padding="5,2"
                  FontSize="11" 
                  Height="22"
+                 Margin="0,5,0,0"
                  IsEnabled="{Binding IsAuthorized, ElementName=root}"
                  ToolTip="Reason for change (for Audit Trail)"/>
     </Grid>

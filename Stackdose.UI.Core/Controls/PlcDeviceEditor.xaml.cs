@@ -136,6 +136,35 @@ namespace Stackdose.UI.Core.Controls
 
         #endregion
 
+        #region DataType Selection
+
+        /// <summary>
+        /// DWord CheckBox 勾選事件
+        /// </summary>
+        private void ChkDWord_Checked(object sender, RoutedEventArgs e)
+        {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine("[PlcDeviceEditor] DataType: DWord (32-bit)");
+            #endif
+        }
+
+        /// <summary>
+        /// DWord CheckBox 取消勾選事件
+        /// </summary>
+        private void ChkDWord_Unchecked(object sender, RoutedEventArgs e)
+        {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine("[PlcDeviceEditor] DataType: Word (16-bit)");
+            #endif
+        }
+
+        /// <summary>
+        /// 判斷當前是否為 DWord 模式
+        /// </summary>
+        private bool IsDWordMode => ChkDWord?.IsChecked == true;
+
+        #endregion
+
         #region Read/Write 操作
 
         private async void BtnRead_Click(object sender, RoutedEventArgs e)
@@ -171,10 +200,30 @@ namespace Stackdose.UI.Core.Controls
                 var wordBitMatch = Regex.Match(addr, @"^([DRW][0-9]+)[.,]([0-9A-Fa-f]+)$");
                 bool isPureBit = Regex.IsMatch(addr, @"^[MXY][0-9]+$");
 
-                int readValue;
+                long readValue;  // 改為 long 以支援 DWord
                 bool readSuccess = false;
 
-                if (wordBitMatch.Success)
+                // ?? DWord 讀取模式
+                if (IsDWordMode && !isPureBit && !wordBitMatch.Success)
+                {
+                    var dwordValue = manager.ReadDWord(addr);
+                    if (dwordValue.HasValue)
+                    {
+                        readValue = dwordValue.Value;
+                        readSuccess = true;
+                        
+                        #if DEBUG
+                        System.Diagnostics.Debug.WriteLine($"[PlcDeviceEditor] DWord Read: {addr} = {readValue}");
+                        #endif
+                    }
+                    else
+                    {
+                        await ShowFeedback(false);
+                        return;
+                    }
+                }
+                // Word Bit 模式
+                else if (wordBitMatch.Success)
                 {
                     string wordAddr = wordBitMatch.Groups[1].Value;
                     string bitIndexStr = wordBitMatch.Groups[2].Value;
@@ -190,11 +239,13 @@ namespace Stackdose.UI.Core.Controls
                     readValue = (wordValue >> bitIndex) & 1;
                     readSuccess = true;
                 }
+                // Pure Bit 模式
                 else if (isPureBit)
                 {
                     readValue = await manager.ReadAsync(addr);
                     readSuccess = true;
                 }
+                // Word 模式（預設）
                 else
                 {
                     readValue = await manager.ReadAsync(addr);
@@ -271,7 +322,74 @@ namespace Stackdose.UI.Core.Controls
                 string oldValue = "";
                 bool writeSuccess = false;
 
-                if (wordBitMatch.Success)
+                // ?? DWord 寫入模式
+                if (IsDWordMode && !isPureBit && !wordBitMatch.Success)
+                {
+                    if (!uint.TryParse(valStr, out uint numVal))
+                    {
+                        await ShowFeedback(false);
+                        return;
+                    }
+
+                    // 讀取當前值
+                    try
+                    {
+                        var currentDWord = manager.ReadDWord(addr);
+                        oldValue = currentDWord.HasValue ? currentDWord.Value.ToString() : "Unknown";
+                    }
+                    catch
+                    {
+                        oldValue = "Unknown";
+                    }
+
+                    // ?? DWord 寫入需要分成兩個 Word
+                    // Low Word (D65) = numVal & 0xFFFF
+                    // High Word (D66) = (numVal >> 16) & 0xFFFF
+                    
+                    ushort lowWord = (ushort)(numVal & 0xFFFF);
+                    ushort highWord = (ushort)((numVal >> 16) & 0xFFFF);
+                    
+                    // 解析位址（例如 D65 → D65, D66）
+                    var match = Regex.Match(addr, @"^([A-Z]+)(\d+)$");
+                    if (!match.Success)
+                    {
+                        await ShowFeedback(false);
+                        return;
+                    }
+                    
+                    string deviceType = match.Groups[1].Value;
+                    int baseAddr = int.Parse(match.Groups[2].Value);
+                    
+                    // 寫入低位 Word
+                    bool writeLowSuccess = await manager.WriteAsync($"{deviceType}{baseAddr},{lowWord}");
+                    if (!writeLowSuccess)
+                    {
+                        await ShowFeedback(false);
+                        return;
+                    }
+                    
+                    // 寫入高位 Word
+                    bool writeHighSuccess = await manager.WriteAsync($"{deviceType}{baseAddr + 1},{highWord}");
+                    writeSuccess = writeLowSuccess && writeHighSuccess;
+                    
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[PlcDeviceEditor] DWord Write: {addr} = {numVal} (Low:{lowWord}, High:{highWord})");
+                    #endif
+                    
+                    if (writeSuccess && EnableAuditTrail)
+                    {
+                        ComplianceContext.LogAuditTrail(
+                            deviceName: Label,
+                            address: addr,
+                            oldValue: oldValue,
+                            newValue: numVal.ToString(),
+                            reason: reason
+                        );
+                    }
+
+                    await ShowFeedback(writeSuccess);
+                }
+                else if (wordBitMatch.Success)
                 {
                     string wordAddr = wordBitMatch.Groups[1].Value;
                     string bitIndexStr = wordBitMatch.Groups[2].Value;

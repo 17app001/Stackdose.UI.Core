@@ -1,41 +1,61 @@
 using System;
-using System.Windows;
-using Stackdose.UI.Core.Controls;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
+using Stackdose.UI.Core.Controls;
 
 namespace Stackdose.UI.Core.Helpers
 {
     /// <summary>
-    /// PlcLabel 上下文管理 (PlcLabel Context Manager)
-    /// 用途：統一管理所有 PlcLabel 的值變更事件，類似 SensorContext
+    /// PlcLabel 上下文管理器
     /// </summary>
+    /// <remarks>
+    /// <para>提供全域 PlcLabel 控制項管理功能：</para>
+    /// <list type="bullet">
+    /// <item>自動註冊與註銷 PlcLabel 實例</item>
+    /// <item>主題變化時統一通知所有 PlcLabel 更新</item>
+    /// <item>智慧合併連續 PLC 位址以優化監控效率</item>
+    /// <item>使用 WeakReference 避免記憶體洩漏</item>
+    /// <item>執行緒安全的註冊與通知機制</item>
+    /// </list>
+    /// </remarks>
     public static class PlcLabelContext
     {
-        #region 靜態屬性
+        #region Private Fields
 
-        /// <summary>
-        /// 已註冊的 PlcLabel 清單（用於自動監控）
-        /// </summary>
-        private static readonly HashSet<WeakReference<PlcLabel>> _registeredLabels = new HashSet<WeakReference<PlcLabel>>();
-        private static readonly object _lock = new object();
+        /// <summary>已註冊的 PlcLabel 弱引用集合</summary>
+        /// <remarks>使用 WeakReference 避免阻止 GC 回收已不使用的控制項</remarks>
+        private static readonly HashSet<WeakReference<PlcLabel>> _registeredLabels = new();
+        
+        /// <summary>執行緒鎖定物件</summary>
+        private static readonly object _lock = new();
 
         #endregion
 
-        #region 事件定義
+        #region Events
 
         /// <summary>
-        /// PlcLabel 值變更事件 (當任何 PlcLabel 的值變更時觸發)
+        /// PlcLabel 值變更事件
         /// </summary>
+        /// <remarks>
+        /// 當任何註冊的 PlcLabel 的值發生變更時觸發
+        /// 可用於全域監控或記錄所有 PLC 數據變化
+        /// </remarks>
         public static event EventHandler<PlcLabelValueChangedEventArgs>? ValueChanged;
 
         #endregion
 
-        #region 註冊管理
+        #region Registration Management
 
         /// <summary>
-        /// 註冊 PlcLabel 到上下文（由 PlcLabel 控制項呼叫）
+        /// 註冊 PlcLabel 到上下文
         /// </summary>
+        /// <param name="label">要註冊的 PlcLabel 實例</param>
+        /// <remarks>
+        /// <para>由 PlcLabel 的 Loaded 事件自動呼叫</para>
+        /// <para>使用 WeakReference 儲存，不影響 GC 回收</para>
+        /// <para>執行緒安全</para>
+        /// </remarks>
         public static void Register(PlcLabel label)
         {
             if (label == null || string.IsNullOrWhiteSpace(label.Address))
@@ -43,24 +63,28 @@ namespace Stackdose.UI.Core.Helpers
 
             lock (_lock)
             {
-                // 清理已回收的弱引用
-                _registeredLabels.RemoveWhere(wr => !wr.TryGetTarget(out _));
+                // 清理已被 GC 回收的引用
+                CleanupDeadReferences();
 
-                // 避免重複註冊
-                if (!_registeredLabels.Any(wr => wr.TryGetTarget(out var l) && ReferenceEquals(l, label)))
+                // 避免重複註冊相同實例
+                if (!IsAlreadyRegistered(label))
                 {
                     _registeredLabels.Add(new WeakReference<PlcLabel>(label));
                     
                     #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[PlcLabelContext] Registered: {label.Address}");
+                    System.Diagnostics.Debug.WriteLine($"[PlcLabelContext] ? Registered: {label.Address} (Total: {_registeredLabels.Count})");
                     #endif
                 }
             }
         }
 
         /// <summary>
-        /// 註銷 PlcLabel（由 PlcLabel 控制項呼叫）
+        /// 註銷 PlcLabel
         /// </summary>
+        /// <param name="label">要註銷的 PlcLabel 實例</param>
+        /// <remarks>
+        /// 由 PlcLabel 的 Unloaded 事件自動呼叫
+        /// </remarks>
         public static void Unregister(PlcLabel label)
         {
             if (label == null)
@@ -68,74 +92,116 @@ namespace Stackdose.UI.Core.Helpers
 
             lock (_lock)
             {
-                _registeredLabels.RemoveWhere(wr => 
+                int removed = _registeredLabels.RemoveWhere(wr => 
                 {
                     if (wr.TryGetTarget(out var l))
                         return ReferenceEquals(l, label);
-                    return true; // 清理已回收的引用
+                    return true; // 同時清理已回收的引用
                 });
 
                 #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[PlcLabelContext] Unregistered: {label.Address}");
+                if (removed > 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[PlcLabelContext] ? Unregistered: {label.Address} (Remaining: {_registeredLabels.Count})");
+                }
                 #endif
             }
         }
 
         /// <summary>
-        /// ?? 從已註冊的 PlcLabel 中智慧提取監控位址
-        /// 自動合併連續位址（例如 D90, D91, D92 → D90,3）
+        /// 檢查指定 PlcLabel 是否已註冊
         /// </summary>
-        /// <returns>監控位址字串（例如 "D90,3,M100,1,X10,1"）</returns>
+        private static bool IsAlreadyRegistered(PlcLabel label)
+        {
+            return _registeredLabels.Any(wr => wr.TryGetTarget(out var l) && ReferenceEquals(l, label));
+        }
+
+        /// <summary>
+        /// 清理已被 GC 回收的弱引用
+        /// </summary>
+        private static void CleanupDeadReferences()
+        {
+            _registeredLabels.RemoveWhere(wr => !wr.TryGetTarget(out _));
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// 通知 PlcLabel 值已變更
+        /// </summary>
+        /// <param name="label">觸發的 PlcLabel</param>
+        /// <param name="value">新的值</param>
+        /// <remarks>
+        /// 由 PlcLabel 控制項內部在數值更新時呼叫
+        /// 在 UI 執行緒上觸發事件確保執行緒安全
+        /// </remarks>
+        public static void NotifyValueChanged(PlcLabel label, object value)
+        {
+            if (label == null || value == null)
+                return;
+
+            // 在 UI 執行緒上觸發事件
+            Application.Current?.Dispatcher.BeginInvoke(() =>
+            {
+                ValueChanged?.Invoke(null, new PlcLabelValueChangedEventArgs(label, value));
+            });
+
+            LogValueChange(label, value);
+        }
+
+        /// <summary>
+        /// 從已註冊的 PlcLabel 中智慧提取監控位址
+        /// </summary>
+        /// <returns>優化後的監控位址字串（例如 "D90,3,M100,1,X10,1"）</returns>
+        /// <remarks>
+        /// <para>自動合併連續位址以優化監控效率</para>
+        /// <para>例如：D90, D91, D92 會合併為 D90,3</para>
+        /// <para>DWord 類型會自動註冊兩個連續 Word（例如 D65 → D65, D66）</para>
+        /// </remarks>
         public static string GenerateMonitorAddresses()
         {
             lock (_lock)
             {
                 // 清理已回收的弱引用
-                _registeredLabels.RemoveWhere(wr => !wr.TryGetTarget(out _));
+                CleanupDeadReferences();
 
                 var addresses = new List<string>();
                 foreach (var weakRef in _registeredLabels)
                 {
                     if (weakRef.TryGetTarget(out var label) && !string.IsNullOrWhiteSpace(label.Address))
                     {
-                        addresses.Add(label.Address.Trim().ToUpper());
+                        string baseAddr = label.Address.Trim().ToUpper();
+                        addresses.Add(baseAddr);
+                        
+                        // ?? 如果是 DWord 類型，自動加入下一個位址
+                        if (label.DataType == Controls.PlcDataType.DWord)
+                        {
+                            // 解析位址（例如 D65 → D66）
+                            var match = System.Text.RegularExpressions.Regex.Match(baseAddr, @"^([A-Z]+)(\d+)$");
+                            if (match.Success)
+                            {
+                                string deviceType = match.Groups[1].Value;  // D, M, R 等
+                                int deviceNumber = int.Parse(match.Groups[2].Value);
+                                string nextAddr = $"{deviceType}{deviceNumber + 1}";
+                                addresses.Add(nextAddr);
+                                
+                                #if DEBUG
+                                System.Diagnostics.Debug.WriteLine($"[PlcLabelContext] DWord 自動註冊: {baseAddr} + {nextAddr}");
+                                #endif
+                            }
+                        }
                     }
                 }
 
-                if (addresses.Count == 0)
-                    return string.Empty;
-
-                return GenerateOptimizedAddresses(addresses);
+                return addresses.Count == 0 ? string.Empty : GenerateOptimizedAddresses(addresses);
             }
         }
 
         #endregion
 
-        #region 公開方法
-
-        /// <summary>
-        /// 通知 PlcLabel 值已變更（由 PlcLabel 控制項內部呼叫）
-        /// </summary>
-        /// <param name="label">觸發的 PlcLabel</param>
-        /// <param name="value">新的值</param>
-        public static void NotifyValueChanged(PlcLabel label, object value)
-        {
-            if (label == null || value == null)
-                return;
-
-            // ?? 在 UI 執行緒上觸發事件（確保執行緒安全，類似 SensorContext）
-            Application.Current?.Dispatcher.BeginInvoke(() =>
-            {
-                ValueChanged?.Invoke(null, new PlcLabelValueChangedEventArgs(label, value));
-            });
-
-            // 記錄日誌（可選，用於除錯）
-            LogValueChange(label, value);
-        }
-
-        #endregion
-
-        #region 私有方法
+        #region Private Methods
 
         /// <summary>
         /// 智慧合併連續位址（類似 SensorContext）

@@ -1,28 +1,51 @@
 ﻿using Stackdose.Abstractions.Hardware;
 using Stackdose.Abstractions.Logging;
-using Stackdose.UI.Core.Helpers; // 引用 Context 與 合規引擎
-using Stackdose.UI.Core.Models; // 引用 PlcLabelColorTheme
+using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Models;
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace Stackdose.UI.Core.Controls
 {
+    /// <summary>
+    /// PLC 數據類型枚舉
+    /// </summary>
+    /// <remarks>
+    /// 定義 PlcLabel 支援的 PLC 數據類型
+    /// </remarks>
     public enum PlcDataType
     {
-        Bit,    // 顯示 ON/OFF
-        Word,   // 16-bit 整數
-        DWord,  // 32-bit 整數
-        Float   // 32-bit 浮點數
+        /// <summary>位元（顯示 ON/OFF）</summary>
+        Bit,
+        /// <summary>16-bit 整數</summary>
+        Word,
+        /// <summary>32-bit 整數</summary>
+        DWord,
+        /// <summary>32-bit 浮點數</summary>
+        Float
     }
 
     /// <summary>
-    /// 數值變更事件參數
+    /// PLC 數值變更事件參數
     /// </summary>
+    /// <remarks>
+    /// 當 PlcLabel 的值發生變化時，會透過此事件參數傳遞新值和顯示文字
+    /// </remarks>
     public class PlcValueChangedEventArgs : EventArgs
     {
+        /// <summary>原始數值</summary>
         public object? Value { get; }
+        
+        /// <summary>格式化後的顯示文字</summary>
         public string DisplayText { get; }
+        
+        /// <summary>
+        /// 建構函數
+        /// </summary>
+        /// <param name="value">原始數值</param>
+        /// <param name="displayText">顯示文字</param>
         public PlcValueChangedEventArgs(object? value, string displayText)
         {
             Value = value;
@@ -30,12 +53,64 @@ namespace Stackdose.UI.Core.Controls
         }
     }
 
+    /// <summary>
+    /// PLC 數據顯示標籤控制項
+    /// </summary>
+    /// <remarks>
+    /// <para>提供工業級 PLC 數據顯示功能，支援：</para>
+    /// <list type="bullet">
+    /// <item>自動連接 PLC 並即時更新數據</item>
+    /// <item>多種數據類型支援（Bit/Word/DWord/Float）</item>
+    /// <item>可自訂顏色主題（Dark/Light 自動適應）</item>
+    /// <item>支援數值格式化（小數點、除數）</item>
+    /// <item>提供矩形/圓形底框樣式</item>
+    /// </list>
+    /// </remarks>
+    /// <example>
+    /// 基本用法：
+    /// <code>
+    /// &lt;Custom:PlcLabel Label="溫度" Address="D100" /&gt;
+    /// </code>
+    /// 進階用法：
+    /// <code>
+    /// &lt;Custom:PlcLabel 
+    ///     Label="溫度" 
+    ///     Address="D100" 
+    ///     Divisor="10"
+    ///     StringFormat="F1"
+    ///     LabelForeground="Warning"
+    ///     FrameShape="Circle" /&gt;
+    /// </code>
+    /// </example>
     public partial class PlcLabel : UserControl
     {
+        #region Private Fields
+
+        /// <summary>已綁定的 PlcStatus 實例</summary>
         private PlcStatus? _boundStatus;
 
+        /// <summary>快取的主題檢測結果（避免重複檢查）</summary>
+        private bool? _cachedLightThemeResult;
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// 數值變更事件
+        /// </summary>
+        /// <remarks>
+        /// 當 PLC 數據更新時觸發，可用於自訂邏輯處理
+        /// </remarks>
         public event EventHandler<PlcValueChangedEventArgs>? ValueChanged;
 
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// 建構函數
+        /// </summary>
         public PlcLabel()
         {
             InitializeComponent();
@@ -43,70 +118,98 @@ namespace Stackdose.UI.Core.Controls
             this.Unloaded += PlcLabel_Unloaded;
         }
 
+        #endregion
+
+        #region Theme Management
+
         /// <summary>
-        /// 主題資源變化時重新應用底框顏色（由外部觸發）
+        /// 主題變化時重新應用底框顏色
         /// </summary>
+        /// <remarks>
+        /// 由 PlcLabelContext 透過 CyberFrame 的主題切換事件觸發
+        /// </remarks>
         public void OnThemeChanged()
         {
+            // 清除快取，強制重新檢測主題
+            _cachedLightThemeResult = null;
+            
+            #if DEBUG
             System.Diagnostics.Debug.WriteLine("[PlcLabel] 主題已變化，重新應用顏色");
+            #endif
+            
             UpdateFrameBackground();
         }
 
         /// <summary>
         /// 更新底框背景顏色
         /// </summary>
+        /// <remarks>
+        /// 僅當 FrameBackground 設為 DarkBlue 時才會進行主題適應
+        /// </remarks>
         private void UpdateFrameBackground()
         {
             if (FrameBorder == null) return;
 
-            System.Diagnostics.Debug.WriteLine($"[PlcLabel] UpdateFrameBackground - FrameBackground={FrameBackground}");
-
-            // 🔥 根據 FrameBackground 屬性設定底框顏色
+            // 只有 DarkBlue 主題才需要動態切換
             if (FrameBackground == PlcLabelColorTheme.DarkBlue)
             {
-                // 判斷當前主題
                 bool isLightMode = IsLightTheme();
-                if (isLightMode)
-                {
-                    FrameBorder.Background = new System.Windows.Media.SolidColorBrush(
-                        System.Windows.Media.Color.FromRgb(0xF5, 0xF5, 0xF5)); // #F5F5F5 淺灰
-                    System.Diagnostics.Debug.WriteLine("[PlcLabel] ✓ 設定為 Light 模式底框（#F5F5F5）");
-                }
-                else
-                {
-                    FrameBorder.Background = new System.Windows.Media.SolidColorBrush(
-                        System.Windows.Media.Color.FromRgb(0x1E, 0x1E, 0x2E)); // #1E1E2E 深藍
-                    System.Diagnostics.Debug.WriteLine("[PlcLabel] ✓ 設定為 Dark 模式底框（#1E1E2E）");
-                }
+                
+                FrameBorder.Background = new SolidColorBrush(
+                    isLightMode 
+                        ? Color.FromRgb(0xF5, 0xF5, 0xF5)  // Light: #F5F5F5 淺灰
+                        : Color.FromRgb(0x1E, 0x1E, 0x2E)); // Dark: #1E1E2E 深藍
+                
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[PlcLabel] 底框顏色已更新為 {(isLightMode ? "Light" : "Dark")} 模式");
+                #endif
             }
         }
 
         /// <summary>
         /// 判斷當前是否為 Light 主題
         /// </summary>
+        /// <returns>true 為 Light 模式，false 為 Dark 模式</returns>
+        /// <remarks>
+        /// 透過檢查 Plc.Bg.Main 資源的顏色來判斷主題
+        /// 結果會被快取以提升效能
+        /// </remarks>
         private bool IsLightTheme()
         {
+            // 使用快取避免重複檢查（主題切換時會清除快取）
+            if (_cachedLightThemeResult.HasValue)
+            {
+                return _cachedLightThemeResult.Value;
+            }
+
+            bool isLight = false;
+            
             try
             {
-                var plcBgBrush = Application.Current.TryFindResource("Plc.Bg.Main") as System.Windows.Media.SolidColorBrush;
-                if (plcBgBrush != null)
+                if (Application.Current?.TryFindResource("Plc.Bg.Main") is SolidColorBrush bgBrush)
                 {
-                    var bgColor = plcBgBrush.Color;
-                    System.Diagnostics.Debug.WriteLine($"[PlcLabel] Plc.Bg.Main = {bgColor} (R:{bgColor.R}, G:{bgColor.G}, B:{bgColor.B})");
-                    if (bgColor.R > 200 && bgColor.G > 200 && bgColor.B > 200)
-                    {
-                        System.Diagnostics.Debug.WriteLine("[PlcLabel] → Light 模式");
-                        return true;
-                    }
+                    var bgColor = bgBrush.Color;
+                    // RGB 值都大於 200 判定為淺色主題
+                    isLight = bgColor.R > 200 && bgColor.G > 200 && bgColor.B > 200;
+                    
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[PlcLabel] 主題檢測: {(isLight ? "Light" : "Dark")}, RGB({bgColor.R}, {bgColor.G}, {bgColor.B})");
+                    #endif
                 }
-                System.Diagnostics.Debug.WriteLine("[PlcLabel] → Dark 模式");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PlcLabel] 檢測錯誤: {ex.Message}");
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[PlcLabel] 主題檢測失敗: {ex.Message}");
+                #endif
             }
-            return false;
+
+            // 快取結果
+            _cachedLightThemeResult = isLight;
+            return isLight;
         }
+
+        #endregion
 
         #region Dependency Properties
 
@@ -394,8 +497,15 @@ namespace Stackdose.UI.Core.Controls
                     }
                     else result = manager.ReadBit(Address);
                     break;
-                case PlcDataType.Word: result = manager.ReadWord(Address); break;
-                case PlcDataType.DWord: result = manager.ReadDWord(Address); break;
+                case PlcDataType.Word: 
+                    result = manager.ReadWord(Address); 
+                    break;
+                case PlcDataType.DWord: 
+                    result = manager.ReadDWord(Address);
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[PlcLabel] DWord Read: {Label} ({Address}) = {result}");
+                    #endif
+                    break;
                 case PlcDataType.Float:
                     var dwordVal = manager.ReadDWord(Address);
                     if (dwordVal.HasValue) result = BitConverter.ToSingle(BitConverter.GetBytes(dwordVal.Value), 0);
@@ -411,6 +521,13 @@ namespace Stackdose.UI.Core.Controls
         {
             string newValueStr = "-";
             object? actualValue = null;
+
+            #if DEBUG
+            if (DataType == PlcDataType.DWord)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PlcLabel] UpdateValue: {Label} ({Address}) rawValue={rawValue} (Type: {rawValue?.GetType().Name})");
+            }
+            #endif
 
             if (rawValue != null)
             {
@@ -435,11 +552,25 @@ namespace Stackdose.UI.Core.Controls
                             newValueStr = finalVal.ToString(StringFormat);
                         else
                             newValueStr = finalVal.ToString();
+                        
+                        #if DEBUG
+                        if (DataType == PlcDataType.DWord)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[PlcLabel] DWord Formatted: {Label} = {newValueStr} (原始:{dVal}, 除數:{Divisor})");
+                        }
+                        #endif
                     }
                     else
                     {
                         newValueStr = rawValue.ToString() ?? "-";
                         actualValue = rawValue;
+                        
+                        #if DEBUG
+                        if (DataType == PlcDataType.DWord)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[PlcLabel] DWord Parse Failed: {Label} rawValue={rawValue}");
+                        }
+                        #endif
                     }
                 }
             }

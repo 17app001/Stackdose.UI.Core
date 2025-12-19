@@ -17,8 +17,4 @@
     <ProjectReference Include="..\..\Stackdose.Platform\Stackdose.Hardware\Stackdose.Hardware.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Snippets\" />
-  </ItemGroup>
-
 </Project>

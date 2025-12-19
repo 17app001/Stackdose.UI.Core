@@ -8,35 +8,96 @@ using Stackdose.UI.Core.Helpers;
 
 namespace Stackdose.UI.Core.Controls
 {
+    /// <summary>
+    /// 賽博風格主框架控制項
+    /// </summary>
+    /// <remarks>
+    /// <para>提供完整的工業控制介面框架，包含：</para>
+    /// <list type="bullet">
+    /// <item>系統標題列與時鐘顯示</item>
+    /// <item>使用者登入/登出狀態顯示</item>
+    /// <item>Dark/Light 主題切換</item>
+    /// <item>狀態指示器（可選）</item>
+    /// <item>自動填滿整個 Window</item>
+    /// </list>
+    /// </remarks>
+    /// <example>
+    /// 基本用法：
+    /// <code>
+    /// &lt;Custom:CyberFrame Title="MODEL-S" /&gt;
+    /// </code>
+    /// </example>
     public partial class CyberFrame : UserControl
     {
+        #region Private Fields
+
+        /// <summary>時鐘計時器</summary>
         private DispatcherTimer? _clockTimer;
 
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// 建構函數
+        /// </summary>
         public CyberFrame()
         {
             InitializeComponent();
 
-            // 啟動時鐘，每秒更新一次時間
-            _clockTimer = new DispatcherTimer();
-            _clockTimer.Interval = TimeSpan.FromSeconds(1);
-            _clockTimer.Tick += ClockTimer_Tick;
-            _clockTimer.Start();
-
-            // 訂閱登入/登出事件
-            SecurityContext.LoginSuccess += OnLoginSuccess;
-            SecurityContext.LogoutOccurred += OnLogoutOccurred;
-
-            // 初始化使用者資訊
+            InitializeClock();
+            InitializeSecurityEvents();
             UpdateUserInfo();
 
-            // 當控制項卸載時取消訂閱
-            this.Unloaded += (s, e) =>
-            {
-                SecurityContext.LoginSuccess -= OnLoginSuccess;
-                SecurityContext.LogoutOccurred -= OnLogoutOccurred;
-                _clockTimer?.Stop();
-            };
+            // 控制項卸載時清理資源
+            this.Unloaded += CyberFrame_Unloaded;
         }
+
+        #endregion
+
+        #region Initialization
+
+        /// <summary>
+        /// 初始化時鐘計時器
+        /// </summary>
+        private void InitializeClock()
+        {
+            _clockTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            _clockTimer.Tick += ClockTimer_Tick;
+            _clockTimer.Start();
+        }
+
+        /// <summary>
+        /// 訂閱安全上下文事件
+        /// </summary>
+        private void InitializeSecurityEvents()
+        {
+            SecurityContext.LoginSuccess += OnLoginSuccess;
+            SecurityContext.LogoutOccurred += OnLogoutOccurred;
+        }
+
+        /// <summary>
+        /// 控制項卸載時的清理工作
+        /// </summary>
+        private void CyberFrame_Unloaded(object sender, RoutedEventArgs e)
+        {
+            // 取消訂閱事件避免記憶體洩漏
+            SecurityContext.LoginSuccess -= OnLoginSuccess;
+            SecurityContext.LogoutOccurred -= OnLogoutOccurred;
+            
+            // 停止並清理計時器
+            if (_clockTimer != null)
+            {
+                _clockTimer.Stop();
+                _clockTimer.Tick -= ClockTimer_Tick;
+                _clockTimer = null;
+            }
+        }
+
+        #endregion
 
         #region Dependency Properties
 
@@ -44,9 +105,15 @@ namespace Stackdose.UI.Core.Controls
         /// 系統標題
         /// </summary>
         public static readonly DependencyProperty TitleProperty =
-            DependencyProperty.Register("Title", typeof(string), typeof(CyberFrame),
+            DependencyProperty.Register(
+                nameof(Title), 
+                typeof(string), 
+                typeof(CyberFrame),
                 new PropertyMetadata("SYSTEM"));
 
+        /// <summary>
+        /// 取得或設定系統標題
+        /// </summary>
         public string Title
         {
             get => (string)GetValue(TitleProperty);
@@ -57,24 +124,29 @@ namespace Stackdose.UI.Core.Controls
         /// 是否顯示狀態指示器（Alarm、Total 等）
         /// </summary>
         public static readonly DependencyProperty ShowStatusIndicatorsProperty =
-            DependencyProperty.Register("ShowStatusIndicators", typeof(bool), typeof(CyberFrame), 
+            DependencyProperty.Register(
+                nameof(ShowStatusIndicators), 
+                typeof(bool), 
+                typeof(CyberFrame), 
                 new PropertyMetadata(false, OnShowStatusIndicatorsChanged));
 
+        /// <summary>
+        /// 取得或設定是否顯示狀態指示器
+        /// </summary>
         public bool ShowStatusIndicators
         {
             get => (bool)GetValue(ShowStatusIndicatorsProperty);
             set => SetValue(ShowStatusIndicatorsProperty, value);
         }
 
+        /// <summary>
+        /// ShowStatusIndicators 屬性變更回呼
+        /// </summary>
         private static void OnShowStatusIndicatorsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is CyberFrame frame)
+            if (d is CyberFrame frame && frame.FindName("StatusIndicatorsPanel") is StackPanel panel)
             {
-                var panel = frame.FindName("StatusIndicatorsPanel") as StackPanel;
-                if (panel != null)
-                {
-                    panel.Visibility = (bool)e.NewValue ? Visibility.Visible : Visibility.Collapsed;
-                }
+                panel.Visibility = (bool)e.NewValue ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -82,15 +154,27 @@ namespace Stackdose.UI.Core.Controls
         /// 是否使用淺色主題 (Light Theme)
         /// </summary>
         public static readonly DependencyProperty UseLightThemeProperty =
-            DependencyProperty.Register("UseLightTheme", typeof(bool), typeof(CyberFrame),
+            DependencyProperty.Register(
+                nameof(UseLightTheme), 
+                typeof(bool), 
+                typeof(CyberFrame),
                 new PropertyMetadata(false, OnUseLightThemeChanged));
 
+        /// <summary>
+        /// 取得或設定是否使用淺色主題
+        /// </summary>
+        /// <remarks>
+        /// 變更此屬性會自動觸發主題切換，並通知所有相關控制項更新
+        /// </remarks>
         public bool UseLightTheme
         {
             get => (bool)GetValue(UseLightThemeProperty);
             set => SetValue(UseLightThemeProperty, value);
         }
 
+        /// <summary>
+        /// UseLightTheme 屬性變更回呼
+        /// </summary>
         private static void OnUseLightThemeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is CyberFrame frame)

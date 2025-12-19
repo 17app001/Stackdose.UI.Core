@@ -37,11 +37,11 @@
             <!-- 3. 標籤靠右 -->
 
             <!-- 4. 成功色（綠色）-->
-            <Custom:PlcLabel Label="成功狀態" 
-                            Address="D400" 
+            <Custom:PlcLabel Label="X軸位置" 
+                            Address="D65" 
                             LabelForeground="Success"
                             ValueForeground="Success"
-                            Margin="0,0,0,5"/>
+                            Margin="0,0,0,5" DataType="DWord"/>
 
             <!-- 5. 警告色（橙色）-->
             <Custom:PlcLabel Label="警告狀態" 

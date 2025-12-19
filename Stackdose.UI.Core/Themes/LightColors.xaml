@@ -34,8 +34,8 @@
     <SolidColorBrush x:Key="Sensor.Text.Value" Color="#1976D2"/>
 
     <!-- ========== LiveLogViewer Colors ========== -->
-    <SolidColorBrush x:Key="Log.Bg.Main" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="Log.Bg.Header" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="Log.Bg.Main" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="Log.Bg.Header" Color="#E0E0E0"/>
     <SolidColorBrush x:Key="Log.Border" Color="#BDBDBD"/>
     <SolidColorBrush x:Key="Log.Text.Normal" Color="#212121"/>
     <SolidColorBrush x:Key="Log.Text.Time" Color="#616161"/>

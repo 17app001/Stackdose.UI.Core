@@ -1,8 +1,8 @@
-﻿using Stackdose.UI.Core.Helpers;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Specialized; // 用於監聽集合變動以自動捲動
 using System.Windows;
 using System.Windows.Controls;
+using Stackdose.UI.Core.Helpers;
 
 namespace Stackdose.UI.Core.Controls
 {
@@ -12,6 +12,37 @@ namespace Stackdose.UI.Core.Controls
         {
             InitializeComponent();
             this.Source = ComplianceContext.LiveLogs;
+            
+            // 🔥 註冊主題變化通知
+            this.Loaded += LiveLogViewer_Loaded;
+        }
+
+        private void LiveLogViewer_Loaded(object sender, RoutedEventArgs e)
+        {
+            // 如果 PlcLabelContext 有全域主題變化事件，可在此訂閱
+            // 目前使用手動刷新的方式
+        }
+
+        /// <summary>
+        /// 主題變化時強制刷新所有日誌項目
+        /// </summary>
+        public void RefreshLogColors()
+        {
+            System.Diagnostics.Debug.WriteLine("[LiveLogViewer] 刷新日誌顏色");
+            
+            // 強制 ListView 重新繪製所有項目
+            if (LogList.ItemsSource != null)
+            {
+                var items = LogList.ItemsSource;
+                LogList.ItemsSource = null;
+                LogList.ItemsSource = items;
+                
+                // 捲動到最後一項
+                if (LogList.Items.Count > 0)
+                {
+                    LogList.ScrollIntoView(LogList.Items[LogList.Items.Count - 1]);
+                }
+            }
         }
 
         // 定義一個依賴屬性 Source，讓外部可以綁定資料進來

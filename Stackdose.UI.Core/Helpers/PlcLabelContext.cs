@@ -218,6 +218,39 @@ namespace Stackdose.UI.Core.Helpers
         }
 
         #endregion
+
+        #region 主題變化通知
+
+        /// <summary>
+        /// 通知所有 PlcLabel 主題已變化
+        /// </summary>
+        public static void NotifyThemeChanged()
+        {
+            lock (_lock)
+            {
+                // 清理已回收的引用
+                _registeredLabels.RemoveWhere(wr => !wr.TryGetTarget(out _));
+
+                System.Diagnostics.Debug.WriteLine($"[PlcLabelContext] 通知 {_registeredLabels.Count} 個 PlcLabel 主題已變化");
+
+                foreach (var weakRef in _registeredLabels.ToList())
+                {
+                    if (weakRef.TryGetTarget(out var label))
+                    {
+                        try
+                        {
+                            label.OnThemeChanged();
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[PlcLabelContext] 更新 PlcLabel 失敗: {ex.Message}");
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion
     }
 
     #region 事件參數

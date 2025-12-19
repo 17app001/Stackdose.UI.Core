@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using System.Windows.Media;
 using Stackdose.UI.Core.Helpers;
 
 namespace Stackdose.UI.Core.Controls
@@ -250,6 +251,17 @@ namespace Stackdose.UI.Core.Controls
                 System.Diagnostics.Debug.WriteLine($"Theme Applied Successfully: {themeUri}");
                 System.Diagnostics.Debug.WriteLine($"Total MergedDictionaries: {appResources.MergedDictionaries.Count}");
                 
+                // 🔥 通知所有 PlcLabel 主題已變化
+                PlcLabelContext.NotifyThemeChanged();
+                System.Diagnostics.Debug.WriteLine("[CyberFrame] PlcLabel 主題變化通知已發送");
+                
+                // 🔥 刷新所有 LiveLogViewer
+                foreach (Window window in Application.Current.Windows)
+                {
+                    RefreshLiveLogViewers(window);
+                }
+                System.Diagnostics.Debug.WriteLine("[CyberFrame] LiveLogViewer 刷新完成");
+                
                 // 強制刷新 UI
                 Application.Current.Dispatcher.Invoke(() => 
                 {
@@ -288,6 +300,27 @@ namespace Stackdose.UI.Core.Controls
         public void ToggleTheme()
         {
             UseLightTheme = !UseLightTheme;
+        }
+
+        /// <summary>
+        /// 刷新視覺樹中的所有 LiveLogViewer
+        /// </summary>
+        private void RefreshLiveLogViewers(DependencyObject parent)
+        {
+            if (parent == null) return;
+
+            if (parent is LiveLogViewer liveLogViewer)
+            {
+                liveLogViewer.RefreshLogColors();
+                return;
+            }
+
+            int childCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                RefreshLiveLogViewers(child);
+            }
         }
 
         #endregion

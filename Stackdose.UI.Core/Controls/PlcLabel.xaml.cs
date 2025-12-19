@@ -43,6 +43,71 @@ namespace Stackdose.UI.Core.Controls
             this.Unloaded += PlcLabel_Unloaded;
         }
 
+        /// <summary>
+        /// 主題資源變化時重新應用底框顏色（由外部觸發）
+        /// </summary>
+        public void OnThemeChanged()
+        {
+            System.Diagnostics.Debug.WriteLine("[PlcLabel] 主題已變化，重新應用顏色");
+            UpdateFrameBackground();
+        }
+
+        /// <summary>
+        /// 更新底框背景顏色
+        /// </summary>
+        private void UpdateFrameBackground()
+        {
+            if (FrameBorder == null) return;
+
+            System.Diagnostics.Debug.WriteLine($"[PlcLabel] UpdateFrameBackground - FrameBackground={FrameBackground}");
+
+            // 🔥 根據 FrameBackground 屬性設定底框顏色
+            if (FrameBackground == PlcLabelColorTheme.DarkBlue)
+            {
+                // 判斷當前主題
+                bool isLightMode = IsLightTheme();
+                if (isLightMode)
+                {
+                    FrameBorder.Background = new System.Windows.Media.SolidColorBrush(
+                        System.Windows.Media.Color.FromRgb(0xF5, 0xF5, 0xF5)); // #F5F5F5 淺灰
+                    System.Diagnostics.Debug.WriteLine("[PlcLabel] ✓ 設定為 Light 模式底框（#F5F5F5）");
+                }
+                else
+                {
+                    FrameBorder.Background = new System.Windows.Media.SolidColorBrush(
+                        System.Windows.Media.Color.FromRgb(0x1E, 0x1E, 0x2E)); // #1E1E2E 深藍
+                    System.Diagnostics.Debug.WriteLine("[PlcLabel] ✓ 設定為 Dark 模式底框（#1E1E2E）");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 判斷當前是否為 Light 主題
+        /// </summary>
+        private bool IsLightTheme()
+        {
+            try
+            {
+                var plcBgBrush = Application.Current.TryFindResource("Plc.Bg.Main") as System.Windows.Media.SolidColorBrush;
+                if (plcBgBrush != null)
+                {
+                    var bgColor = plcBgBrush.Color;
+                    System.Diagnostics.Debug.WriteLine($"[PlcLabel] Plc.Bg.Main = {bgColor} (R:{bgColor.R}, G:{bgColor.G}, B:{bgColor.B})");
+                    if (bgColor.R > 200 && bgColor.G > 200 && bgColor.B > 200)
+                    {
+                        System.Diagnostics.Debug.WriteLine("[PlcLabel] → Light 模式");
+                        return true;
+                    }
+                }
+                System.Diagnostics.Debug.WriteLine("[PlcLabel] → Dark 模式");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PlcLabel] 檢測錯誤: {ex.Message}");
+            }
+            return false;
+        }
+
         #region Dependency Properties
 
         // 1. 標題
@@ -271,6 +336,9 @@ namespace Stackdose.UI.Core.Controls
         {
             // 🔥 註冊到 PlcLabelContext（用於自動監控）
             PlcLabelContext.Register(this);
+
+            // 🔥 初始化底框顏色
+            UpdateFrameBackground();
             
             if (TargetStatus == null) TryResolveContextStatus();
         }

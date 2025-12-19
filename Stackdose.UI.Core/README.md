@@ -432,7 +432,9 @@ public enum PlcDataType
 ```
 
 **FrameBackground 可用顏色：**
-- `DarkBlue` - 深藍色底 (#1E1E2E)（**預設**）
+- `DarkBlue` - **智慧配色**（**預設**）
+  - Dark 模式：深藍色 (#1E1E2E)
+  - Light 模式：淺灰色 (#F5F5F5)
 - `Default` - 主題預設底色（依照主題）
 - `Primary` - 藍色底
 - `Success` - 綠色底
@@ -442,6 +444,20 @@ public enum PlcDataType
 - `NeonBlue` - 霓虹藍底
 - `White` - 白色底
 - `Gray` - 灰色底
+
+**智慧配色說明：**
+
+`DarkBlue` 會根據當前主題自動調整：
+
+```
+Dark 模式：
+底框：#1E1E2E（深藍色）
+建議文字：NeonBlue (#00E5FF) / White
+
+Light 模式：
+底框：#F5F5F5（淺灰色）
+建議文字：Info (#2196F3) / Primary (#2196F3)
+```
 
 #### 組合應用範例
 

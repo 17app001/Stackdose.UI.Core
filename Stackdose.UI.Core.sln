@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36705.20 d17.14
+VisualStudioVersion = 17.14.36705.20
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.UI.Core", "Stackdose.UI.Core\Stackdose.UI.Core.csproj", "{45B8429F-B530-4B17-9477-BBE36E386E09}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Hardware", "..\Stackdose.Platform\Stackdose.Hardware\Stackdose.Hardware.csproj", "{2C085A15-6152-AFEC-F925-676C705527D4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Abstractions", "..\Stackdose.Platform\Stackdose.Abstractions\Stackdose.Abstractions.csproj", "{42A359B4-B96E-6F41-729B-E8E9655118B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wpf.Demo", "Wpf.Demo\Wpf.Demo.csproj", "{25908EB3-E54E-44FD-892B-5263E8E7C498}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{42A359B4-B96E-6F41-729B-E8E9655118B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42A359B4-B96E-6F41-729B-E8E9655118B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42A359B4-B96E-6F41-729B-E8E9655118B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25908EB3-E54E-44FD-892B-5263E8E7C498}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25908EB3-E54E-44FD-892B-5263E8E7C498}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25908EB3-E54E-44FD-892B-5263E8E7C498}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25908EB3-E54E-44FD-892B-5263E8E7C498}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

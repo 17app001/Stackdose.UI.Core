@@ -5,6 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="800"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
              x:Name="Root">
 
     <!-- Main Window Frame -->
@@ -39,18 +41,21 @@
                                    FontWeight="Bold" 
                                    FontStyle="Italic" 
                                    Margin="0,0,8,0"/>
-                        <TextBlock Text="ModelS" 
+                        <!--<TextBlock Text="ModelS" 
                                    Foreground="{DynamicResource Cyber.NeonBlue}" 
                                    FontSize="20" 
                                    FontWeight="Bold" 
                                    FontStyle="Italic" 
-                                   Margin="0,0,8,0"/>
+                                   Margin="0,0,8,0"/>-->
                         <TextBlock Text="{Binding Title, ElementName=Root}" 
                                    Foreground="{DynamicResource Cyber.Text.Bright}" 
+								   d:Text="MODEL NAME"
                                    FontSize="14" 
                                    FontWeight="Medium"
                                    VerticalAlignment="Center" 
-                                   Margin="0,0,15,0"/>
+                                   Margin="0,0,15,0"
+								   Padding="6,0,0,0"
+								   />
                         
                         <!-- Theme Toggle Button -->
                         <Button x:Name="ThemeToggleButton" 
@@ -61,32 +66,88 @@
                                 BorderBrush="{DynamicResource Cyber.Border.Strong}"
                                 BorderThickness="1"
                                 Cursor="Hand"
-                                ToolTip="Toggle Theme">
+                                ToolTip="切換主題 (Dark/Light)">
                             <Button.Style>
                                 <Style TargetType="Button">
                                     <Setter Property="Background" Value="Transparent"/>
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}" 
+                                                <Border x:Name="ButtonBorder"
+                                                        Background="{TemplateBinding Background}" 
                                                         BorderBrush="{TemplateBinding BorderBrush}"
                                                         BorderThickness="{TemplateBinding BorderThickness}"
-                                                        CornerRadius="4">
-                                                    <TextBlock Text="[T]" 
-                                                               Foreground="{DynamicResource Cyber.NeonBlue}" 
-                                                               FontSize="12" 
-                                                               FontWeight="Bold"
-                                                               HorizontalAlignment="Center" 
-                                                               VerticalAlignment="Center"/>
+                                                        CornerRadius="6">
+                                                    <!-- 月亮圖標 (Dark Theme) -->
+                                                    <Viewbox Width="18" Height="18" Stretch="Uniform">
+                                                        <Canvas Width="24" Height="24">
+                                                            <!-- 月亮形狀 -->
+                                                            <Path Data="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" 
+                                                                  Fill="{DynamicResource Cyber.NeonBlue}" 
+                                                                  Stroke="{DynamicResource Cyber.NeonBlue}"
+                                                                  StrokeThickness="0.5">
+                                                                <Path.Effect>
+                                                                    <DropShadowEffect Color="#00E5FF" 
+                                                                                      BlurRadius="8" 
+                                                                                      ShadowDepth="0" 
+                                                                                      Opacity="0.6"/>
+                                                                </Path.Effect>
+                                                            </Path>
+                                                        </Canvas>
+                                                    </Viewbox>
+                                    
+                                                    <Border.Effect>
+                                                        <DropShadowEffect x:Name="GlowEffect"
+                                                                          Color="#00E5FF" 
+                                                                          BlurRadius="0" 
+                                                                          ShadowDepth="0" 
+                                                                          Opacity="0"/>
+                                                    </Border.Effect>
                                                 </Border>
+                                                
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Trigger.EnterActions>
+                                                            <BeginStoryboard>
+                                                                <Storyboard>
+                                                                    <ColorAnimation Storyboard.TargetName="ButtonBorder"
+                                                                                    Storyboard.TargetProperty="Background.Color"
+                                                                                    To="#1A4A5F7F"
+                                                                                    Duration="0:0:0.2"/>
+                                                                    <DoubleAnimation Storyboard.TargetName="GlowEffect"
+                                                                                     Storyboard.TargetProperty="BlurRadius"
+                                                                                     To="15"
+                                                                                     Duration="0:0:0.2"/>
+                                                                    <DoubleAnimation Storyboard.TargetName="GlowEffect"
+                                                                                     Storyboard.TargetProperty="Opacity"
+                                                                                     To="0.5"
+                                                                                     Duration="0:0:0.2"/>
+                                                                </Storyboard>
+                                                            </BeginStoryboard>
+                                                        </Trigger.EnterActions>
+                                                        <Trigger.ExitActions>
+                                                            <BeginStoryboard>
+                                                                <Storyboard>
+                                                                    <ColorAnimation Storyboard.TargetName="ButtonBorder"
+                                                                                    Storyboard.TargetProperty="Background.Color"
+                                                                                    To="Transparent"
+                                                                                    Duration="0:0:0.2"/>
+                                                                    <DoubleAnimation Storyboard.TargetName="GlowEffect"
+                                                                                     Storyboard.TargetProperty="BlurRadius"
+                                                                                     To="0"
+                                                                                     Duration="0:0:0.2"/>
+                                                                    <DoubleAnimation Storyboard.TargetName="GlowEffect"
+                                                                                     Storyboard.TargetProperty="Opacity"
+                                                                                     To="0"
+                                                                                     Duration="0:0:0.2"/>
+                                                                </Storyboard>
+                                                            </BeginStoryboard>
+                                                        </Trigger.ExitActions>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
                                             </ControlTemplate>
                                         </Setter.Value>
                                     </Setter>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="{DynamicResource Cyber.Bg.Card}"/>
-                                        </Trigger>
-                                    </Style.Triggers>
                                 </Style>
                             </Button.Style>
                         </Button>
@@ -182,36 +243,129 @@
                         <!-- Logout Button -->
                         <Button x:Name="LogoutButton" 
                                 Click="LogoutButton_Click"
-                                Width="36" 
-                                Height="36" 
+                                Width="32" 
+                                Height="32" 
                                 Background="#FF5252" 
-                                BorderBrush="#FFFFFF"
-                                BorderThickness="2"
+                                BorderBrush="Transparent"
+                                BorderThickness="0"
                                 Cursor="Hand"
-                                ToolTip="Logout">
+                                ToolTip="登出系統">
                             <Button.Style>
                                 <Style TargetType="Button">
                                     <Setter Property="Background" Value="#FF5252"/>
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}" 
-                                                        CornerRadius="4">
-                                                    <TextBlock Text="[X]" 
-                                                               Foreground="White" 
-                                                               FontSize="14" 
-                                                               FontWeight="Bold"
-                                                               HorizontalAlignment="Center" 
-                                                               VerticalAlignment="Center"/>
-                                                </Border>
+                                                <Grid>
+                                                    <Border x:Name="ButtonBorder"
+                                                            Background="{TemplateBinding Background}" 
+                                                            CornerRadius="8"
+                                                            BorderBrush="#FFFFFF"
+                                                            BorderThickness="0">
+                                                        <!-- 電源圖標 -->
+                                                        <Viewbox Width="20" Height="20" Stretch="Uniform">
+                                                            <Canvas Width="24" Height="24">
+                                                                <!-- 電源符號 (圓弧 + 直線) -->
+                                                                <Path Data="M18.36 6.64a9 9 0 1 1-12.73 0" 
+                                                                      Stroke="White" 
+                                                                      StrokeThickness="2.5" 
+                                                                      Fill="Transparent"/>
+                                                                <Line X1="12" Y1="2" X2="12" Y2="12" 
+                                                                      Stroke="White" 
+                                                                      StrokeThickness="2.5"/>
+                                                            </Canvas>
+                                                        </Viewbox>
+                                
+                                                        <Border.Effect>
+                                                            <DropShadowEffect x:Name="ButtonShadow"
+                                                                              Color="#FF5252" 
+                                                                              BlurRadius="0" 
+                                                                              ShadowDepth="0" 
+                                                                              Opacity="0"/>
+                                                        </Border.Effect>
+                                                    </Border>
+                                                
+                                                    <!-- Hover 時的外框光暈 -->
+                                                    <Border x:Name="GlowBorder"
+                                                            CornerRadius="8"
+                                                            BorderBrush="White"
+                                                            BorderThickness="2"
+                                                            Opacity="0"/>
+                                                </Grid>
+                                                
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Trigger.EnterActions>
+                                                            <BeginStoryboard>
+                                                                <Storyboard>
+                                                                    <!-- 背景變暗 -->
+                                                                    <ColorAnimation Storyboard.TargetName="ButtonBorder"
+                                                                                    Storyboard.TargetProperty="Background.Color"
+                                                                                    To="#E53935"
+                                                                                    Duration="0:0:0.15"/>
+                                                                    <!-- 發光效果 -->
+                                                                    <DoubleAnimation Storyboard.TargetName="ButtonShadow"
+                                                                                     Storyboard.TargetProperty="BlurRadius"
+                                                                                     To="20"
+                                                                                     Duration="0:0:0.15"/>
+                                                                    <DoubleAnimation Storyboard.TargetName="ButtonShadow"
+                                                                                     Storyboard.TargetProperty="Opacity"
+                                                                                     To="0.8"
+                                                                                     Duration="0:0:0.15"/>
+                                                                    <!-- 外框出現 -->
+                                                                    <DoubleAnimation Storyboard.TargetName="GlowBorder"
+                                                                                     Storyboard.TargetProperty="Opacity"
+                                                                                     To="0.6"
+                                                                                     Duration="0:0:0.15"/>
+                                                                    <!-- 輕微放大 -->
+                                                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX"
+                                                                                     To="1.05"
+                                                                                     Duration="0:0:0.15"/>
+                                                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY"
+                                                                                     To="1.05"
+                                                                                     Duration="0:0:0.15"/>
+                                                                </Storyboard>
+                                                            </BeginStoryboard>
+                                                        </Trigger.EnterActions>
+                                                        <Trigger.ExitActions>
+                                                            <BeginStoryboard>
+                                                                <Storyboard>
+                                                                    <ColorAnimation Storyboard.TargetName="ButtonBorder"
+                                                                                    Storyboard.TargetProperty="Background.Color"
+                                                                                    To="#FF5252"
+                                                                                    Duration="0:0:0.15"/>
+                                                                    <DoubleAnimation Storyboard.TargetName="ButtonShadow"
+                                                                                     Storyboard.TargetProperty="BlurRadius"
+                                                                                     To="0"
+                                                                                     Duration="0:0:0.15"/>
+                                                                    <DoubleAnimation Storyboard.TargetName="ButtonShadow"
+                                                                                     Storyboard.TargetProperty="Opacity"
+                                                                                     To="0"
+                                                                                     Duration="0:0:0.15"/>
+                                                                    <DoubleAnimation Storyboard.TargetName="GlowBorder"
+                                                                                     Storyboard.TargetProperty="Opacity"
+                                                                                     To="0"
+                                                                                     Duration="0:0:0.15"/>
+                                                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX"
+                                                                                     To="1.0"
+                                                                                     Duration="0:0:0.15"/>
+                                                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY"
+                                                                                     To="1.0"
+                                                                                     Duration="0:0:0.15"/>
+                                                                </Storyboard>
+                                                            </BeginStoryboard>
+                                                        </Trigger.ExitActions>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
                                             </ControlTemplate>
                                         </Setter.Value>
                                     </Setter>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#E53935"/>
-                                        </Trigger>
-                                    </Style.Triggers>
+                                    <Setter Property="RenderTransform">
+                                        <Setter.Value>
+                                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
                                 </Style>
                             </Button.Style>
                         </Button>

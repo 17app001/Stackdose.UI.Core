@@ -1,0 +1,25 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Wpf.Demo"
+        xmlns:Custom="http://schemas.stackdose.com/wpf" x:Class="Wpf.Demo.MainWindow"
+        mc:Ignorable="d"
+        Title="MainWindow" Width="1200" Height="800" >
+    <Grid>
+        <!-- CyberFrame 現在預設就會自動填滿 -->
+        <Custom:CyberFrame Title="MODEL-S"/>
+
+        <!-- PlcStatus 放在左上角 -->
+        <Custom:PlcStatus  HorizontalAlignment="Left"                    
+                         VerticalAlignment="Top" 
+                         Margin="21,66,0,0" 
+                         IpAddress="192.168.22.39" 
+                         Port="3000" Width="261" Height="76" AutoConnect="False"/>
+        <Custom:PlcLabel HorizontalAlignment="Left"                        
+                         Margin="305,89,0,0" VerticalAlignment="Top" Width="145"/>
+        <Custom:PlcDeviceEditor HorizontalAlignment="Left" Margin="21,173,0,0" VerticalAlignment="Top" Width="372"/>
+        <Custom:LiveLogViewer HorizontalAlignment="Left" Margin="21,296,0,0" VerticalAlignment="Top" Height="243" Width="372"/>
+    </Grid>
+</Window>

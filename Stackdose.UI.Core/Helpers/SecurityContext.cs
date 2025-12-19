@@ -151,7 +151,7 @@ namespace Stackdose.UI.Core.Helpers
             CurrentSession.LastActivityTime = DateTime.Now;
 
             ComplianceContext.LogSystem(
-                $"[QUICK] Quick Login: {user.DisplayName} ({user.AccessLevel})",
+                $"[QUICK] Quick Login: {user.DisplayName}",
                 LogLevel.Info,
                 showInUi: true
             );

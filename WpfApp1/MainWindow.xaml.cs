@@ -2,6 +2,7 @@
 using WpfApp1.ViewModels;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Controls;
+using System.Threading.Tasks;
 
 namespace WpfApp1
 {
@@ -36,8 +37,53 @@ namespace WpfApp1
             SecurityContext.LoginSuccess += OnLoginSuccess;
             SecurityContext.LogoutOccurred += OnLogoutOccurred;
 
+            // ⭐ 初始化 Recipe 系統 (如果 RecipeLoader 控制項的 AutoLoadOnStartup 未觸發)
+            // RecipeLoader 控制項會自動載入,但也可以在這裡確保初始化
+            _ = InitializeRecipeSystemAsync();
+
             // 更新視窗標題
             UpdateWindowTitle();
+        }
+
+        /// <summary>
+        /// 初始化 Recipe 系統
+        /// </summary>
+        private async Task InitializeRecipeSystemAsync()
+        {
+            // RecipeContext 會自動初始化,但您也可以在這裡手動初始化
+            // 如果需要在啟動時就確保 Recipe 已載入
+            if (!RecipeContext.IsInitialized)
+            {
+                await RecipeContext.InitializeAsync(autoLoad: true);
+            }
+
+            // 訂閱 Recipe 事件 (可選)
+            RecipeContext.RecipeLoaded += OnRecipeLoaded;
+            RecipeContext.RecipeLoadFailed += OnRecipeLoadFailed;
+        }
+
+        private void OnRecipeLoaded(object? sender, Stackdose.UI.Core.Models.Recipe recipe)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                ComplianceContext.LogSystem(
+                    $"[Recipe] {recipe.RecipeName} 已載入,共 {recipe.EnabledItemCount} 項參數",
+                    Stackdose.UI.Core.Models.LogLevel.Success,
+                    showInUi: true
+                );
+            });
+        }
+
+        private void OnRecipeLoadFailed(object? sender, string errorMessage)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                ComplianceContext.LogSystem(
+                    $"[Recipe] 載入失敗: {errorMessage}",
+                    Stackdose.UI.Core.Models.LogLevel.Error,
+                    showInUi: true
+                );
+            });
         }
 
         private void OnLoginSuccess(object? sender, Stackdose.UI.Core.Models.UserAccount user)

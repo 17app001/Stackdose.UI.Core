@@ -62,7 +62,7 @@
                            DataType="Word" 
                            BitIndex="-1"/>
 
-        <Controls:PlcDeviceEditor HorizontalAlignment="Left" Margin="73,334,0,0" VerticalAlignment="Top" 
+        <Controls:PlcDeviceEditor HorizontalAlignment="Left" Margin="73,291,0,0" VerticalAlignment="Top" 
                           Width="267" 
                           Label="PLC Input" 
                           Address="D100" 
@@ -97,7 +97,7 @@
                            DataType="Bit" 
                            BitIndex="0"/>
 
-        <Controls:LiveLogViewer HorizontalAlignment="Left" Margin="418,472,0,0" VerticalAlignment="Top" 
+        <Controls:LiveLogViewer HorizontalAlignment="Left" Margin="418,393,0,0" VerticalAlignment="Top" 
                                 Height="200" Width="418"/>
 
         <Controls:PlcLabel HorizontalAlignment="Left" Margin="591,285,0,0" VerticalAlignment="Top" 
@@ -108,13 +108,25 @@
                            ShowLog="False"/>
 
         <!-- SensorViewer -->
-        <Controls:SensorViewer HorizontalAlignment="Left" Margin="970,92,0,0" VerticalAlignment="Top" 
+        <Controls:SensorViewer HorizontalAlignment="Left" Margin="1098,87,0,0" VerticalAlignment="Top" 
                                Width="458" Height="367"
                                Title="SENSOR Viewer"
                                ConfigFile="Sensors.json"
                                EnableGrouping="True"
                                AutoStart="True"
                                RefreshInterval="499"/>
+
+        <!-- ⭐ NEW: RecipeLoader Control -->
+        <Controls:RecipeLoader HorizontalAlignment="Left" 
+                               Margin="901,511,0,0" 
+                               VerticalAlignment="Top" 
+                               Width="450" 
+                               Height="320"
+                               Title="Recipe 配方管理"
+                               RecipeFilePath="Recipe.json"
+                               AutoLoadOnStartup="True"
+                               RequiredAccessLevel="Instructor"
+                               ShowDetails="True"/>
 
         <!-- PlcEventTrigger -->
         <Controls:PlcEventTrigger Address="M237" 
@@ -154,7 +166,7 @@
         </StackPanel>
 
         <!-- Permission Test Buttons -->
-        <Border HorizontalAlignment="Left" Margin="1228,487,0,0" VerticalAlignment="Top" 
+        <Border HorizontalAlignment="Left" Margin="1356,569,0,0" VerticalAlignment="Top" 
                 Width="200" Background="#1A1A2E" Padding="10" CornerRadius="5">
             <StackPanel>
                 <TextBlock Text="Permission Test" 

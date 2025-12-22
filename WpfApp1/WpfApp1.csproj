@@ -9,10 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Recipe.json" />
     <None Remove="Sensors.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Recipe.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Sensors.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

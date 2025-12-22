@@ -1,0 +1,170 @@
+{
+  "RecipeId": "RECIPE-001",
+  "RecipeName": "Standard Process Recipe A",
+  "Version": "1.2.0",
+  "CreatedDate": "2024-01-15T10:30:00",
+  "CreatedBy": "Engineer_001",
+  "LastModifiedDate": "2024-03-20T14:45:00",
+  "LastModifiedBy": "Supervisor_002",
+  "Description": "Standard process recipe for product model XYZ-100",
+  "ProductCode": "XYZ-100",
+  "IsDefault": true,
+  "Status": "Active",
+  "Items": [
+    {
+      "Name": "Heater Temperature",
+      "Address": "D100",
+      "Value": "180",
+      "DataType": "Int16",
+      "Unit": "¢XC",
+      "Description": "Main heater target temperature",
+      "MinValue": 100,
+      "MaxValue": 250,
+      "IsEnabled": true
+    },
+    {
+      "Name": "Cooling Water Pressure",
+      "Address": "D102",
+      "Value": "3.5",
+      "DataType": "Float",
+      "Unit": "bar",
+      "Description": "Cooling system pressure setting",
+      "MinValue": 2.0,
+      "MaxValue": 5.0,
+      "IsEnabled": true
+    },
+    {
+      "Name": "Conveyor Speed",
+      "Address": "D104",
+      "Value": "120",
+      "DataType": "Int16",
+      "Unit": "mm/s",
+      "Description": "Main conveyor belt speed",
+      "MinValue": 50,
+      "MaxValue": 200,
+      "IsEnabled": true
+    },
+    {
+      "Name": "Mixer RPM",
+      "Address": "D106",
+      "Value": "450",
+      "DataType": "Int16",
+      "Unit": "RPM",
+      "Description": "Mixer motor rotation speed",
+      "MinValue": 200,
+      "MaxValue": 800,
+      "IsEnabled": true
+    },
+    {
+      "Name": "Vacuum Pump Enable",
+      "Address": "M100",
+      "Value": "1",
+      "DataType": "Bool",
+      "Unit": "",
+      "Description": "Vacuum pump system enable status",
+      "IsEnabled": true
+    },
+    {
+      "Name": "Auto Mode",
+      "Address": "M102",
+      "Value": "1",
+      "DataType": "Bool",
+      "Unit": "",
+      "Description": "System automatic operation mode",
+      "IsEnabled": true
+    },
+    {
+      "Name": "Pressure Time",
+      "Address": "D110",
+      "Value": "30",
+      "DataType": "Int16",
+      "Unit": "sec",
+      "Description": "Pressurization phase duration",
+      "MinValue": 10,
+      "MaxValue": 60,
+      "IsEnabled": true
+    },
+    {
+      "Name": "Holding Time",
+      "Address": "D112",
+      "Value": "120",
+      "DataType": "Int16",
+      "Unit": "sec",
+      "Description": "Temperature holding phase duration",
+      "MinValue": 60,
+      "MaxValue": 300,
+      "IsEnabled": true
+    },
+    {
+      "Name": "Cooling Time",
+      "Address": "D114",
+      "Value": "90",
+      "DataType": "Int16",
+      "Unit": "sec",
+      "Description": "Cooling phase duration",
+      "MinValue": 30,
+      "MaxValue": 180,
+      "IsEnabled": true
+    },
+    {
+      "Name": "Material A Dosage",
+      "Address": "D120",
+      "Value": "250",
+      "DataType": "Int16",
+      "Unit": "g",
+      "Description": "Material A single dispensing weight",
+      "MinValue": 100,
+      "MaxValue": 500,
+      "IsEnabled": true
+    },
+    {
+      "Name": "Material B Dosage",
+      "Address": "D122",
+      "Value": "150",
+      "DataType": "Int16",
+      "Unit": "g",
+      "Description": "Material B single dispensing weight",
+      "MinValue": 50,
+      "MaxValue": 300,
+      "IsEnabled": true
+    },
+    {
+      "Name": "Quality Check Enable",
+      "Address": "M110",
+      "Value": "1",
+      "DataType": "Bool",
+      "Unit": "",
+      "Description": "Online quality inspection system enable",
+      "IsEnabled": true
+    },
+    {
+      "Name": "Alarm Critical Temp",
+      "Address": "D200",
+      "Value": "200",
+      "DataType": "Int16",
+      "Unit": "¢XC",
+      "Description": "Over-temperature alarm trigger temperature",
+      "MinValue": 150,
+      "MaxValue": 300,
+      "IsEnabled": true
+    },
+    {
+      "Name": "Reserved Param 1",
+      "Address": "D300",
+      "Value": "0",
+      "DataType": "Int16",
+      "Unit": "",
+      "Description": "Reserved for future expansion",
+      "IsEnabled": false
+    },
+    {
+      "Name": "Reserved Param 2",
+      "Address": "D302",
+      "Value": "0",
+      "DataType": "Int16",
+      "Unit": "",
+      "Description": "Reserved for future expansion",
+      "IsEnabled": false
+    }
+  ]
+}

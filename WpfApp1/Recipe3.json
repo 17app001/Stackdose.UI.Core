@@ -1,42 +1,42 @@
 {
-  "RecipeId": "RECIPE-001",
-  "RecipeName": "Recipe 1: Standard Process",
-  "Version": "1.2.0",
-  "CreatedDate": "2024-01-15T10:30:00",
-  "CreatedBy": "Engineer_001",
-  "LastModifiedDate": "2024-03-20T14:45:00",
-  "LastModifiedBy": "Supervisor_002",
-  "Description": "Standard process recipe for product model XYZ-100",
-  "ProductCode": "XYZ-100",
-  "IsDefault": true,
+  "RecipeId": "RECIPE-003",
+  "RecipeName": "Recipe 3: Low Temperature Process",
+  "Version": "1.1.0",
+  "CreatedDate": "2024-03-01T14:20:00",
+  "CreatedBy": "Engineer_003",
+  "LastModifiedDate": "2024-03-18T16:10:00",
+  "LastModifiedBy": "Supervisor_003",
+  "Description": "Low temperature process recipe for product model XYZ-300",
+  "ProductCode": "XYZ-300",
+  "IsDefault": false,
   "Status": "Active",
   "Items": [
     {
       "Name": "Heater Temperature",
       "Address": "D100",
-      "Value": "200000",
+      "Value": "150000",
       "DataType": "Int",
       "Unit": "°C",
-      "Description": "Main heater target temperature",
+      "Description": "Low temperature setting",
       "IsEnabled": true
     },
     {
       "Name": "Cooling Water Pressure",
       "Address": "D103",
-      "Value": "35",
+      "Value": "25",
       "DataType": "Word",
       "Unit": "bar",
-      "Description": "Cooling system pressure setting",
+      "Description": "Reduced cooling pressure",
       "MinValue": 0,
       "IsEnabled": true
     },
     {
       "Name": "Conveyor Speed",
       "Address": "D104",
-      "Value": "120",
+      "Value": "160",
       "DataType": "Short",
       "Unit": "mm/s",
-      "Description": "Main conveyor belt speed",
+      "Description": "Faster conveyor for low temp",
       "MinValue": 50,
       "MaxValue": 200,
       "IsEnabled": true
@@ -44,10 +44,10 @@
     {
       "Name": "Mixer RPM",
       "Address": "D106",
-      "Value": "450",
+      "Value": "350",
       "DataType": "Short",
       "Unit": "RPM",
-      "Description": "Mixer motor rotation speed",
+      "Description": "Lower mixing speed",
       "MinValue": 200,
       "MaxValue": 800,
       "IsEnabled": true
@@ -55,10 +55,10 @@
     {
       "Name": "Pressure Time",
       "Address": "D110",
-      "Value": "30",
+      "Value": "20",
       "DataType": "Short",
       "Unit": "sec",
-      "Description": "Pressurization phase duration",
+      "Description": "Shorter pressurization",
       "MinValue": 10,
       "MaxValue": 60,
       "IsEnabled": true
@@ -66,10 +66,10 @@
     {
       "Name": "Holding Time",
       "Address": "D112",
-      "Value": "120",
+      "Value": "80",
       "DataType": "Short",
       "Unit": "sec",
-      "Description": "Temperature holding phase duration",
+      "Description": "Shorter holding time",
       "MinValue": 60,
       "MaxValue": 300,
       "IsEnabled": true
@@ -77,10 +77,10 @@
     {
       "Name": "Cooling Time",
       "Address": "D114",
-      "Value": "90",
+      "Value": "60",
       "DataType": "Short",
       "Unit": "sec",
-      "Description": "Cooling phase duration",
+      "Description": "Shorter cooling",
       "MinValue": 30,
       "MaxValue": 180,
       "IsEnabled": true
@@ -88,10 +88,10 @@
     {
       "Name": "Material A Dosage",
       "Address": "D120",
-      "Value": "250",
+      "Value": "200",
       "DataType": "Short",
       "Unit": "g",
-      "Description": "Material A single dispensing weight",
+      "Description": "Reduced material A",
       "MinValue": 100,
       "MaxValue": 500,
       "IsEnabled": true
@@ -99,10 +99,10 @@
     {
       "Name": "Material B Dosage",
       "Address": "D122",
-      "Value": "150",
+      "Value": "100",
       "DataType": "Short",
       "Unit": "g",
-      "Description": "Material B single dispensing weight",
+      "Description": "Reduced material B",
       "MinValue": 50,
       "MaxValue": 300,
       "IsEnabled": true
@@ -110,10 +110,10 @@
     {
       "Name": "Alarm Critical Temp",
       "Address": "D200",
-      "Value": "200",
+      "Value": "180",
       "DataType": "Short",
-      "Unit": "°C",
-      "Description": "Over-temperature alarm trigger temperature",
+      "Unit": "�XC",
+      "Description": "Lower alarm threshold",
       "MinValue": 150,
       "MaxValue": 300,
       "IsEnabled": true

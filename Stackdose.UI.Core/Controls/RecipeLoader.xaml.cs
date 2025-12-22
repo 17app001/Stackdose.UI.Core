@@ -17,35 +17,18 @@ namespace Stackdose.UI.Core.Controls
         {
             InitializeComponent();
 
-            // 浪琩琌砞璸家Α
-            bool isDesignMode = System.ComponentModel.DesignerProperties.GetIsInDesignMode(this);
+            // 璹綷 Recipe 篈跑ㄆン
+            RecipeContext.RecipeLoaded += OnRecipeLoaded;
 
-            if (!isDesignMode)
-            {
-                // 璹綷 Recipe ㄆン
-                RecipeContext.RecipeLoaded += OnRecipeLoaded;
-                RecipeContext.RecipeLoadFailed += OnRecipeLoadFailed;
-                RecipeContext.RecipeChanged += OnRecipeChanged;
+            // ﹍て陪ボ
+            UpdateDisplay();
 
-                // 北兜更璹綷
-                this.Unloaded += (s, e) =>
-                {
-                    RecipeContext.RecipeLoaded -= OnRecipeLoaded;
-                    RecipeContext.RecipeLoadFailed -= OnRecipeLoadFailed;
-                    RecipeContext.RecipeChanged -= OnRecipeChanged;
-                };
-            }
+            // ? 箇砞匡拒 Recipe 1
+            _selectedRecipeNumber = 1;
+            UpdateRecipeButtonStates();
 
-            // Loaded ㄆン矪瞶
-            this.Loaded += async (s, e) =>
-            {
-                if (!isDesignMode && AutoLoadOnStartup && !RecipeContext.IsInitialized)
-                {
-                    await LoadRecipeAsync();
-                }
-
-                UpdateDisplay();
-            };
+            // 北兜更璹綷
+            this.Unloaded += (s, e) => RecipeContext.RecipeLoaded -= OnRecipeLoaded;
         }
 
         #region Dependency Properties
@@ -54,8 +37,7 @@ namespace Stackdose.UI.Core.Controls
         /// Recipe 郎隔畖
         /// </summary>
         public static readonly DependencyProperty RecipeFilePathProperty =
-            DependencyProperty.Register(nameof(RecipeFilePath), typeof(string), typeof(RecipeLoader),
-                new PropertyMetadata("Recipe.json", OnRecipeFilePathChanged));
+            DependencyProperty.Register("RecipeFilePath", typeof(string), typeof(RecipeLoader), new PropertyMetadata("Recipe.json", OnRecipeFilePathChanged));
 
         public string RecipeFilePath
         {
@@ -67,8 +49,7 @@ namespace Stackdose.UI.Core.Controls
         /// 琌币笆笆更
         /// </summary>
         public static readonly DependencyProperty AutoLoadOnStartupProperty =
-            DependencyProperty.Register(nameof(AutoLoadOnStartup), typeof(bool), typeof(RecipeLoader),
-                new PropertyMetadata(true));
+            DependencyProperty.Register("AutoLoadOnStartup", typeof(bool), typeof(RecipeLoader), new PropertyMetadata(false));
 
         public bool AutoLoadOnStartup
         {
@@ -80,8 +61,7 @@ namespace Stackdose.UI.Core.Controls
         /// も笆更秙┮惠舦单
         /// </summary>
         public static readonly DependencyProperty RequiredAccessLevelProperty =
-            DependencyProperty.Register(nameof(RequiredAccessLevel), typeof(AccessLevel), typeof(RecipeLoader),
-                new PropertyMetadata(AccessLevel.Instructor));
+            DependencyProperty.Register("RequiredAccessLevel", typeof(AccessLevel), typeof(RecipeLoader), new PropertyMetadata(AccessLevel.Instructor));
 
         public AccessLevel RequiredAccessLevel
         {
@@ -93,8 +73,7 @@ namespace Stackdose.UI.Core.Controls
         /// 琌陪ボ冈灿戈癟
         /// </summary>
         public static readonly DependencyProperty ShowDetailsProperty =
-            DependencyProperty.Register(nameof(ShowDetails), typeof(bool), typeof(RecipeLoader),
-                new PropertyMetadata(true, OnShowDetailsChanged));
+            DependencyProperty.Register("ShowDetails", typeof(bool), typeof(RecipeLoader), new PropertyMetadata(true, OnShowDetailsChanged));
 
         public bool ShowDetails
         {
@@ -106,14 +85,22 @@ namespace Stackdose.UI.Core.Controls
         /// 夹肈ゅ
         /// </summary>
         public static readonly DependencyProperty TitleProperty =
-            DependencyProperty.Register(nameof(Title), typeof(string), typeof(RecipeLoader),
-                new PropertyMetadata("Recipe 恨瞶"));
+            DependencyProperty.Register("Title", typeof(string), typeof(RecipeLoader), new PropertyMetadata("Recipe 皌よ恨瞶"));
 
         public string Title
         {
             get => (string)GetValue(TitleProperty);
             set => SetValue(TitleProperty, value);
         }
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// 讽玡匡拒 Recipe 絪腹1, 2, 3
+        /// </summary>
+        private int _selectedRecipeNumber = 1;
 
         #endregion
 
@@ -165,26 +152,44 @@ namespace Stackdose.UI.Core.Controls
 
         #region 秙ㄆン
 
+        private void Recipe1Button_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedRecipeNumber = 1;
+            UpdateRecipeButtonStates();
+            StatusText.Text = "Recipe 1 selected";
+            StatusText.Foreground = new SolidColorBrush(Colors.Cyan);
+        }
+
+        private void Recipe2Button_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedRecipeNumber = 2;
+            UpdateRecipeButtonStates();
+            StatusText.Text = "Recipe 2 selected";
+            StatusText.Foreground = new SolidColorBrush(Colors.Cyan);
+        }
+
+        private void Recipe3Button_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedRecipeNumber = 3;
+            UpdateRecipeButtonStates();
+            StatusText.Text = "Recipe 3 selected";
+            StatusText.Foreground = new SolidColorBrush(Colors.Cyan);
+        }
+
         private async void LoadButton_Click(object sender, RoutedEventArgs e)
         {
             await LoadRecipeAsync();
         }
 
-        private async void ReloadButton_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// 穝 Recipe 秙篈陪ボ匡い篈
+        /// </summary>
+        private void UpdateRecipeButtonStates()
         {
-            if (RecipeContext.HasActiveRecipe)
-            {
-                await ReloadRecipeAsync();
-            }
-            else
-            {
-                CyberMessageBox.Show(
-                    "No Recipe is currently loaded",
-                    "Cannot Reload",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning
-                );
-            }
+            // 竚┮Τ秙 Theme
+            Recipe1Button.Theme = _selectedRecipeNumber == 1 ? ButtonTheme.Success : ButtonTheme.Primary;
+            Recipe2Button.Theme = _selectedRecipeNumber == 2 ? ButtonTheme.Success : ButtonTheme.Primary;
+            Recipe3Button.Theme = _selectedRecipeNumber == 3 ? ButtonTheme.Success : ButtonTheme.Primary;
         }
 
         #endregion
@@ -197,9 +202,12 @@ namespace Stackdose.UI.Core.Controls
             StatusText.Text = "更い...";
             StatusText.Foreground = new SolidColorBrush(Colors.Yellow);
 
+            // ? 沮匡拒 Recipe 絪腹∕﹚郎隔畖
+            string recipeFile = $"Recipe{_selectedRecipeNumber}.json";
+
             // 1. 更 Recipe JSON 郎
             bool success = await RecipeContext.LoadRecipeAsync(
-                RecipeFilePath,
+                recipeFile,
                 isAutoLoad: false,
                 setAsActive: true
             );
@@ -229,11 +237,11 @@ namespace Stackdose.UI.Core.Controls
 
                 if (downloadCount > 0)
                 {
-                    StatusText.Text = $"Recipe 更更Θ: {downloadCount} 把计";
+                    StatusText.Text = $"Recipe {_selectedRecipeNumber} 更更Θ: {downloadCount} 把计";
                     StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
 
                     CyberMessageBox.Show(
-                        $"Recipe loaded and downloaded successfully!\n\n" +
+                        $"Recipe {_selectedRecipeNumber} loaded and downloaded successfully!\n\n" +
                         $"{downloadCount} parameters written to PLC.",
                         "Success",
                         MessageBoxButton.OK,
@@ -242,7 +250,7 @@ namespace Stackdose.UI.Core.Controls
                 }
                 else
                 {
-                    StatusText.Text = "Recipe 更Θ更ア毖";
+                    StatusText.Text = $"Recipe {_selectedRecipeNumber} 更Θ更ア毖";
                     StatusText.Foreground = new SolidColorBrush(Colors.Orange);
 
                     CyberMessageBox.Show(
@@ -257,73 +265,13 @@ namespace Stackdose.UI.Core.Controls
             {
                 // PLC ゼ硈絬更 Recipe
                 LoadingIndicator.Visibility = Visibility.Collapsed;
-                StatusText.Text = "Recipe 更Θ (PLC ゼ硈絬)";
+                StatusText.Text = $"Recipe {_selectedRecipeNumber} 更Θ (PLC ゼ硈絬)";
                 StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
 
                 CyberMessageBox.Show(
-                    "Recipe loaded successfully.\n\n" +
+                    $"Recipe {_selectedRecipeNumber} loaded successfully.\n\n" +
                     "Note: PLC is not connected. Recipe will be downloaded when PLC connects.",
                     "Recipe Loaded",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information
-                );
-            }
-        }
-
-        private async Task ReloadRecipeAsync()
-        {
-            LoadingIndicator.Visibility = Visibility.Visible;
-            StatusText.Text = "穝更い...";
-            StatusText.Foreground = new SolidColorBrush(Colors.Yellow);
-
-            // 1. 穝更 Recipe
-            bool success = await RecipeContext.ReloadCurrentRecipeAsync();
-
-            if (!success)
-            {
-                LoadingIndicator.Visibility = Visibility.Collapsed;
-                return;
-            }
-
-            // 2. 浪琩 PLC 琌硈絬狦硈絬玥笆更
-            var plcStatus = Helpers.PlcContext.GlobalStatus;
-            if (plcStatus?.CurrentManager != null && plcStatus.CurrentManager.IsConnected)
-            {
-                StatusText.Text = "更 Recipe  PLC い...";
-
-                int downloadCount = await RecipeContext.DownloadRecipeToPLCAsync(plcStatus.CurrentManager);
-
-                LoadingIndicator.Visibility = Visibility.Collapsed;
-
-                if (downloadCount > 0)
-                {
-                    StatusText.Text = $"Recipe 穝更更Θ: {downloadCount} 把计";
-                    StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
-
-                    CyberMessageBox.Show(
-                        $"Recipe reloaded and downloaded successfully!\n\n" +
-                        $"{downloadCount} parameters written to PLC.",
-                        "Success",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information
-                    );
-                }
-                else
-                {
-                    StatusText.Text = "Recipe 穝更Θ更ア毖";
-                    StatusText.Foreground = new SolidColorBrush(Colors.Orange);
-                }
-            }
-            else
-            {
-                LoadingIndicator.Visibility = Visibility.Collapsed;
-                StatusText.Text = "Recipe 穝更Θ (PLC ゼ硈絬)";
-                StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
-
-                CyberMessageBox.Show(
-                    "Recipe reloaded successfully.\n\n" +
-                    "Note: PLC is not connected.",
-                    "Recipe Reloaded",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information
                 );

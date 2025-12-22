@@ -188,26 +188,54 @@
             </Grid>
 
             <Grid Grid.Row="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <local:SecuredButton Grid.Column="0"
+                <!-- Recipe Selection Buttons -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <local:SecuredButton Grid.Column="0"
+                                         x:Name="Recipe1Button"
+                                         Content="Recipe 1"
+                                         Theme="Primary"
+                                         RequiredLevel="{Binding RequiredAccessLevel, ElementName=root}"
+                                         Click="Recipe1Button_Click"
+                                         Height="40"/>
+
+                    <local:SecuredButton Grid.Column="2"
+                                         x:Name="Recipe2Button"
+                                         Content="Recipe 2"
+                                         Theme="Primary"
+                                         RequiredLevel="{Binding RequiredAccessLevel, ElementName=root}"
+                                         Click="Recipe2Button_Click"
+                                         Height="40"/>
+
+                    <local:SecuredButton Grid.Column="4"
+                                         x:Name="Recipe3Button"
+                                         Content="Recipe 3"
+                                         Theme="Primary"
+                                         RequiredLevel="{Binding RequiredAccessLevel, ElementName=root}"
+                                         Click="Recipe3Button_Click"
+                                         Height="40"/>
+                </Grid>
+
+                <!-- Load Button -->
+                <local:SecuredButton Grid.Row="2"
                                      x:Name="LoadButton"
-                                     Content="Load Recipe"
+                                     Content="Load Selected Recipe"
                                      Theme="Success"
                                      RequiredLevel="{Binding RequiredAccessLevel, ElementName=root}"
                                      Click="LoadButton_Click"
-                                     Height="40"/>
-
-                <local:SecuredButton Grid.Column="2"
-                                     x:Name="ReloadButton"
-                                     Content="Reload"
-                                     Theme="Warning"
-                                     RequiredLevel="{Binding RequiredAccessLevel, ElementName=root}"
-                                     Click="ReloadButton_Click"
                                      Height="40"/>
 
             </Grid>

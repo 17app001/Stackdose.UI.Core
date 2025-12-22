@@ -137,15 +137,25 @@ namespace WpfApp1
         /// </summary>
         private async Task InitializeRecipeSystemAsync()
         {
-            // 只初始化 RecipeContext，不自動載入 Recipe
-            if (!RecipeContext.IsInitialized)
-            {
-                await RecipeContext.InitializeAsync(autoLoad: false);  // ⭐ 改為 false
-            }
+            // ⭐ 預設載入 Recipe 1
+            bool success = await RecipeContext.LoadRecipeAsync("Recipe1.json", isAutoLoad: true, setAsActive: true);
 
-            // 訂閱 Recipe 事件 (可選)
-            RecipeContext.RecipeLoaded += OnRecipeLoaded;
-            RecipeContext.RecipeLoadFailed += OnRecipeLoadFailed;
+            if (success)
+            {
+                ComplianceContext.LogSystem(
+                    "[Recipe] Recipe system initialized successfully",
+                    Stackdose.UI.Core.Models.LogLevel.Success,
+                    showInUi: true
+                );
+            }
+            else
+            {
+                ComplianceContext.LogSystem(
+                    "[Recipe] Failed to initialize Recipe system",
+                    Stackdose.UI.Core.Models.LogLevel.Warning,
+                    showInUi: true
+                );
+            }
         }
 
         private void OnRecipeLoaded(object? sender, Stackdose.UI.Core.Models.Recipe recipe)

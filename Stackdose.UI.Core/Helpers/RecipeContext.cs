@@ -24,6 +24,11 @@ namespace Stackdose.UI.Core.Helpers
         public static Recipe? CurrentRecipe { get; private set; }
 
         /// <summary>
+        /// 當前選擇的 Recipe 檔案名稱（例如：Recipe1.json, Recipe2.json, Recipe3.json）
+        /// </summary>
+        public static string CurrentRecipeFileName { get; private set; } = "Recipe1.json";
+
+        /// <summary>
         /// 所有已載入的 Recipe 集合
         /// </summary>
         public static Dictionary<string, Recipe> LoadedRecipes { get; } = new Dictionary<string, Recipe>();
@@ -31,7 +36,7 @@ namespace Stackdose.UI.Core.Helpers
         /// <summary>
         /// 預設 Recipe 檔案路徑
         /// </summary>
-        public static string DefaultRecipeFilePath { get; set; } = "Recipe.json";
+        public static string DefaultRecipeFilePath { get; set; } = "Recipe1.json";
 
         /// <summary>
         /// Recipe 目錄路徑 (用於掃描多個 Recipe 檔案)
@@ -226,11 +231,12 @@ namespace Stackdose.UI.Core.Helpers
                 if (setAsActive)
                 {
                     CurrentRecipe = recipe;
+                    CurrentRecipeFileName = Path.GetFileName(filePath); // ? 保存當前檔案名稱
+                    LastLoadTime = DateTime.Now;
                     RecipeChanged?.Invoke(null, recipe);
                 }
 
                 // 6. Update status
-                LastLoadTime = DateTime.Now;
                 LastLoadMessage = $"Successfully loaded Recipe: {recipe.RecipeName} v{recipe.Version} ({recipe.EnabledItemCount} parameters)";
 
                 // 7. Log success message

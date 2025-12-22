@@ -125,6 +125,21 @@ namespace Stackdose.UI.Core.Controls
             {
                 UpdateDisplay();
                 StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
+
+                // ?? Recipe 載入後，如果 PlcStatus 已經連線，則自動啟動監控
+                var plcStatus = PlcContext.GlobalStatus;
+                if (plcStatus?.CurrentManager != null && plcStatus.CurrentManager.IsConnected)
+                {
+                    int registeredCount = RecipeContext.StartMonitoring(plcStatus.CurrentManager, autoStart: true);
+                    if (registeredCount > 0)
+                    {
+                        Helpers.ComplianceContext.LogSystem(
+                            $"[Recipe] Auto-started monitoring: {registeredCount} parameters",
+                            Models.LogLevel.Success,
+                            showInUi: true
+                        );
+                    }
+                }
             });
         }
 

@@ -23,39 +23,23 @@
                             MonitorLength="1" 
                             ScanInterval="120"/>
 
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,97,0,0" VerticalAlignment="Top" 
-                           Width="130" Height="45" 
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,80,0,0" VerticalAlignment="Top" 
+                           Width="130" Height="62" 
                            Label="X Position"
                            Address="D10" 
                            DefaultValue="00000" 
-                           DataType="Word"/>
+                           DataType="Word" />
 
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,159,0,0" VerticalAlignment="Top" 
-                           Width="130" Height="45" 
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,147,0,0" VerticalAlignment="Top" 
+                           Width="164" Height="57" 
                            Label="Event Detect"
                            Address="M237" 
                            DefaultValue="OFF" 
                            DataType="Bit" 
                            BitIndex="-1"/>
 
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="484,97,0,0" VerticalAlignment="Top" 
-                           Width="130" Height="45" 
-                           Label="X Position"
-                           Address="D10" 
-                           DefaultValue="00000" 
-                           BitIndex="-1" 
-                           DataType="DWord"/>
-
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="484,159,0,0" VerticalAlignment="Top" 
-                           Width="130" Height="45" 
-                           Label="X Position"
-                           Address="M1" 
-                           DefaultValue="00000" 
-                           DataType="Bit" 
-                           BitIndex="0"/>
-
         <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,222,0,0" VerticalAlignment="Top" 
-                           Width="130" Height="45" 
+                           Width="159" Height="58" 
                            Label="R2000"
                            Address="R2000" 
                            DefaultValue="00000" 
@@ -72,8 +56,8 @@
                           EnableAuditTrail="True"/>
 
         <Controls:PlcLabel x:Name="LblTemp" 
-                           HorizontalAlignment="Left" Margin="484,222,0,0" VerticalAlignment="Top" 
-                           Width="130" Height="45" 
+                           HorizontalAlignment="Left" Margin="484,111,0,0" VerticalAlignment="Top" 
+                           Width="130" Height="156" 
                            Label="Temperature"
                            Address="R2002" 
                            DefaultValue="00000" 
@@ -81,8 +65,8 @@
                            BitIndex="-1" 
                            Divisor="10"/>
 
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="640,97,0,0" VerticalAlignment="Top" 
-                           Width="130" Height="45" 
+        <Controls:PlcLabel HorizontalAlignment="Left" Margin="640,84,0,0" VerticalAlignment="Top" 
+                           Width="203" Height="58" 
                            Label="X Position"
                            Address="D11" 
                            DefaultValue="OFF" 
@@ -124,7 +108,7 @@
                                Height="320"
                                Title="Recipe 配方管理"
                                RecipeFilePath="Recipe.json"
-                               AutoLoadOnStartup="True"
+                               AutoLoadOnStartup="False"
                                RequiredAccessLevel="Instructor"
                                ShowDetails="True"/>
 

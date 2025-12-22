@@ -37,8 +37,10 @@ namespace WpfApp1
             SecurityContext.LoginSuccess += OnLoginSuccess;
             SecurityContext.LogoutOccurred += OnLogoutOccurred;
 
-            // ⭐ 初始化 Recipe 系統 (如果 RecipeLoader 控制項的 AutoLoadOnStartup 未觸發)
-            // RecipeLoader 控制項會自動載入,但也可以在這裡確保初始化
+            // ⭐ 訂閱 PLC 連線成功事件
+            MainPlc.ConnectionEstablished += OnPlcConnectionEstablished;
+
+            // ⭐ 初始化 Recipe 系統 (不自動載入，等待 PLC 連線)
             _ = InitializeRecipeSystemAsync();
 
             // 更新視窗標題
@@ -46,15 +48,64 @@ namespace WpfApp1
         }
 
         /// <summary>
+        /// PLC 連線成功事件處理
+        /// </summary>
+        private async void OnPlcConnectionEstablished(Stackdose.Abstractions.Hardware.IPlcManager plcManager)
+        {
+            ComplianceContext.LogSystem(
+                "[PLC] Connection established, checking Recipe status...",
+                Stackdose.UI.Core.Models.LogLevel.Info,
+                showInUi: true
+            );
+
+            // 如果 Recipe 還沒載入，自動載入
+            if (!RecipeContext.HasActiveRecipe)
+            {
+                ComplianceContext.LogSystem(
+                    "[Recipe] Auto-loading Recipe after PLC connection...",
+                    Stackdose.UI.Core.Models.LogLevel.Info,
+                    showInUi: true
+                );
+
+                bool success = await RecipeContext.LoadRecipeAsync("Recipe.json", isAutoLoad: true);
+                
+                if (success && RecipeContext.CurrentRecipe != null)
+                {
+                    // 啟動監控
+                    int registeredCount = RecipeContext.StartMonitoring(plcManager, autoStart: true);
+                    
+                    ComplianceContext.LogSystem(
+                        $"[Recipe] Auto-loaded and monitoring started: {registeredCount} parameters",
+                        Stackdose.UI.Core.Models.LogLevel.Success,
+                        showInUi: true
+                    );
+                }
+            }
+            else
+            {
+                // Recipe 已經載入，只啟動監控
+                if (!RecipeContext.IsMonitoring)
+                {
+                    int registeredCount = RecipeContext.StartMonitoring(plcManager, autoStart: true);
+                    
+                    ComplianceContext.LogSystem(
+                        $"[Recipe] Monitoring started: {registeredCount} parameters",
+                        Stackdose.UI.Core.Models.LogLevel.Success,
+                        showInUi: true
+                    );
+                }
+            }
+        }
+
+        /// <summary>
         /// 初始化 Recipe 系統
         /// </summary>
         private async Task InitializeRecipeSystemAsync()
         {
-            // RecipeContext 會自動初始化,但您也可以在這裡手動初始化
-            // 如果需要在啟動時就確保 Recipe 已載入
+            // 只初始化 RecipeContext，不自動載入 Recipe
             if (!RecipeContext.IsInitialized)
             {
-                await RecipeContext.InitializeAsync(autoLoad: true);
+                await RecipeContext.InitializeAsync(autoLoad: false);  // ⭐ 改為 false
             }
 
             // 訂閱 Recipe 事件 (可選)

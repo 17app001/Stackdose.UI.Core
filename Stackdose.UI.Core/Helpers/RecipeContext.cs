@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Stackdose.Abstractions.Hardware;
+using System.Text.RegularExpressions;
 
 namespace Stackdose.UI.Core.Helpers
 {
@@ -51,6 +53,16 @@ namespace Stackdose.UI.Core.Helpers
         /// </summary>
         public static string LastLoadMessage { get; private set; } = string.Empty;
 
+        /// <summary>
+        /// Recipe 監控是否已啟動
+        /// </summary>
+        public static bool IsMonitoring { get; private set; } = false;
+
+        /// <summary>
+        /// Recipe 監控相關的 PLC Manager
+        /// </summary>
+        private static IPlcManager? _plcManager;
+
         #endregion
 
         #region 事件定義
@@ -74,6 +86,16 @@ namespace Stackdose.UI.Core.Helpers
         /// Recipe 項目更新事件
         /// </summary>
         public static event EventHandler<(Recipe recipe, RecipeItem item)>? RecipeItemUpdated;
+
+        /// <summary>
+        /// Recipe 監控啟動事件
+        /// </summary>
+        public static event EventHandler<Recipe>? MonitoringStarted;
+
+        /// <summary>
+        /// Recipe 監控停止事件
+        /// </summary>
+        public static event EventHandler? MonitoringStopped;
 
         #endregion
 
@@ -398,6 +420,192 @@ namespace Stackdose.UI.Core.Helpers
             }
 
             return $"{CurrentRecipe.RecipeName} v{CurrentRecipe.Version} - {CurrentRecipe.EnabledItemCount} parameters";
+        }
+
+        #endregion
+
+        #region Recipe Monitoring
+
+        /// <summary>
+        /// 啟動 Recipe 參數監控
+        /// 將所有 Recipe 參數註冊到 PLC Monitor 服務
+        /// </summary>
+        /// <param name="plcManager">PLC Manager 實例</param>
+        /// <param name="autoStart">是否自動啟動監控服務</param>
+        /// <returns>成功註冊的參數數量</returns>
+        public static int StartMonitoring(IPlcManager plcManager, bool autoStart = true)
+        {
+            if (CurrentRecipe == null)
+            {
+                ComplianceContext.LogSystem(
+                    "[Recipe] Cannot start monitoring: No active Recipe",
+                    LogLevel.Warning,
+                    showInUi: true
+                );
+                return 0;
+            }
+
+            if (plcManager?.Monitor == null)
+            {
+                ComplianceContext.LogSystem(
+                    "[Recipe] Cannot start monitoring: PlcManager or Monitor is null",
+                    LogLevel.Error,
+                    showInUi: true
+                );
+                return 0;
+            }
+
+            _plcManager = plcManager;
+            int registeredCount = 0;
+            var processedAddresses = new HashSet<string>();
+
+            try
+            {
+                foreach (var item in CurrentRecipe.Items.Where(x => x.IsEnabled))
+                {
+                    // 解析地址 (例如: D100, R200)
+                    var match = Regex.Match(item.Address, @"^([DR])(\d+)$");
+                    if (!match.Success)
+                    {
+                        ComplianceContext.LogSystem(
+                            $"[Recipe] Invalid address format: {item.Address} ({item.Name})",
+                            LogLevel.Warning,
+                            showInUi: false
+                        );
+                        continue;
+                    }
+
+                    string device = match.Groups[1].Value;
+                    int startAddress = int.Parse(match.Groups[2].Value);
+                    int length = 1; // 預設為 1 個暫存器
+
+                    // 根據 DataType 決定需要監控的暫存器數量
+                    // DWord/Float 需要兩個連續的暫存器
+                    if (item.DataType?.Equals("DWord", StringComparison.OrdinalIgnoreCase) == true ||
+                        item.DataType?.Equals("Float", StringComparison.OrdinalIgnoreCase) == true ||
+                        item.DataType?.Equals("Int", StringComparison.OrdinalIgnoreCase) == true ||
+                        item.DataType?.Equals("Int32", StringComparison.OrdinalIgnoreCase) == true)
+                    {
+                        length = 2; // DWORD 佔用兩個連續暫存器
+                    }
+
+                    // 避免重複註冊
+                    string addressKey = $"{device}{startAddress}:{length}";
+                    if (processedAddresses.Contains(addressKey))
+                        continue;
+
+                    // 註冊到 Monitor
+                    plcManager.Monitor.Register(item.Address, length);
+                    processedAddresses.Add(addressKey);
+                    registeredCount++;
+
+                    ComplianceContext.LogSystem(
+                        $"[Recipe Monitor] Registered: {item.Name} ({item.Address}) Length={length} Type={item.DataType}",
+                        LogLevel.Info,
+                        showInUi: false
+                    );
+                }
+
+                // 啟動監控服務
+                if (autoStart && !plcManager.Monitor.IsRunning)
+                {
+                    plcManager.Monitor.Start();
+                }
+
+                IsMonitoring = true;
+
+                ComplianceContext.LogSystem(
+                    $"[Recipe] Monitoring started: {registeredCount} parameters registered",
+                    LogLevel.Success,
+                    showInUi: true
+                );
+
+                // 觸發監控啟動事件
+                MonitoringStarted?.Invoke(null, CurrentRecipe);
+
+                return registeredCount;
+            }
+            catch (Exception ex)
+            {
+                ComplianceContext.LogSystem(
+                    $"[Recipe] Monitoring start failed: {ex.Message}",
+                    LogLevel.Error,
+                    showInUi: true
+                );
+                return registeredCount;
+            }
+        }
+
+        /// <summary>
+        /// 停止 Recipe 監控
+        /// </summary>
+        public static void StopMonitoring()
+        {
+            if (!IsMonitoring)
+            {
+                return;
+            }
+
+            try
+            {
+                // 如果需要，停止 Monitor 服務
+                // 注意：這裡不直接停止 Monitor，因為可能有其他控制項也在使用
+                // 只標記狀態為已停止
+                IsMonitoring = false;
+                _plcManager = null;
+
+                ComplianceContext.LogSystem(
+                    "[Recipe] Monitoring stopped",
+                    LogLevel.Info,
+                    showInUi: true
+                );
+
+                // 觸發監控停止事件
+                MonitoringStopped?.Invoke(null, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                ComplianceContext.LogSystem(
+                    $"[Recipe] Monitoring stop failed: {ex.Message}",
+                    LogLevel.Error,
+                    showInUi: true
+                );
+            }
+        }
+
+        /// <summary>
+        /// 生成 Recipe 監控位址字串 (用於 PlcStatus 自動註冊)
+        /// 格式: "D100:1,D102:2,D104:1,..."
+        /// </summary>
+        /// <returns>監控位址配置字串</returns>
+        public static string GenerateMonitorAddresses()
+        {
+            if (CurrentRecipe == null || !CurrentRecipe.Items.Any())
+                return string.Empty;
+
+            var addresses = new List<string>();
+
+            foreach (var item in CurrentRecipe.Items.Where(x => x.IsEnabled))
+            {
+                var match = Regex.Match(item.Address, @"^([DR])(\d+)$");
+                if (!match.Success)
+                    continue;
+
+                int length = 1;
+
+                // DWord/Float 需要兩個連續暫存器
+                if (item.DataType?.Equals("DWord", StringComparison.OrdinalIgnoreCase) == true ||
+                    item.DataType?.Equals("Float", StringComparison.OrdinalIgnoreCase) == true ||
+                    item.DataType?.Equals("Int", StringComparison.OrdinalIgnoreCase) == true ||
+                    item.DataType?.Equals("Int32", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    length = 2;
+                }
+
+                addresses.Add($"{item.Address}:{length}");
+            }
+
+            return string.Join(",", addresses);
         }
 
         #endregion

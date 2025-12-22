@@ -201,6 +201,18 @@ namespace Stackdose.UI.Core.Controls
                             );
                         }
 
+                        // 🔥 5. 自動註冊來自 RecipeContext 的監控位址
+                        string recipeAddresses = RecipeContext.GenerateMonitorAddresses();
+                        if (!string.IsNullOrWhiteSpace(recipeAddresses))
+                        {
+                            RegisterMonitors(recipeAddresses);
+                            ComplianceContext.LogSystem(
+                                $"[AutoRegister] Recipe: {recipeAddresses}", 
+                                Stackdose.UI.Core.Models.LogLevel.Info,
+                                showInUi: false
+                            );
+                        }
+
                         // 🔥 觸發連線成功事件（讓 SensorViewer 等訂閱者可以註冊 Monitor）
                         ConnectionEstablished?.Invoke(_plcManager);
 

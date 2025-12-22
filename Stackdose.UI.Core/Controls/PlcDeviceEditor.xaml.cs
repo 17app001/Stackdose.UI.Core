@@ -25,8 +25,50 @@ namespace Stackdose.UI.Core.Controls
             // 初始化權限狀態
             UpdateAuthorization();
             
-            // 當控制項卸載時取消訂閱
+            // 控制項卸載時取消訂閱
             this.Unloaded += (s, e) => SecurityContext.AccessLevelChanged -= OnAccessLevelChanged;
+            
+            // ? 控制項載入時，自動註冊監控地址
+            this.Loaded += OnControlLoaded;
+        }
+
+        /// <summary>
+        /// 控制項載入時，自動註冊監控地址
+        /// </summary>
+        private void OnControlLoaded(object sender, RoutedEventArgs e)
+        {
+            // 如果有設定 Address，自動註冊到監控服務
+            if (!string.IsNullOrWhiteSpace(Address))
+            {
+                RegisterMonitorAddress();
+            }
+        }
+
+        /// <summary>
+        /// 註冊監控地址（根據 DWord 模式決定註冊數量）
+        /// </summary>
+        private void RegisterMonitorAddress()
+        {
+            var status = PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
+            var manager = status?.CurrentManager;
+
+            if (manager?.Monitor == null) return;
+
+            string addr = Address?.Trim().ToUpper() ?? "";
+            if (string.IsNullOrEmpty(addr)) return;
+
+            // 解析地址
+            var match = System.Text.RegularExpressions.Regex.Match(addr, @"^([DR])(\d+)$");
+            if (!match.Success) return; // 只支援 D/R 裝置
+
+            // DWord 模式需要註冊兩個連續暫存器
+            int length = IsDWordMode ? 2 : 1;
+
+            manager.Monitor.Register(addr, length);
+
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[PlcDeviceEditor] Auto-registered: {addr}:{length}");
+            #endif
         }
 
         #region Dependency Properties
@@ -146,6 +188,9 @@ namespace Stackdose.UI.Core.Controls
             #if DEBUG
             System.Diagnostics.Debug.WriteLine("[PlcDeviceEditor] DataType: DWord (32-bit)");
             #endif
+            
+            // ? 重新註冊監控地址（DWord 需要 2 個暫存器）
+            RegisterMonitorAddress();
         }
 
         /// <summary>
@@ -156,6 +201,9 @@ namespace Stackdose.UI.Core.Controls
             #if DEBUG
             System.Diagnostics.Debug.WriteLine("[PlcDeviceEditor] DataType: Word (16-bit)");
             #endif
+            
+            // ? 重新註冊監控地址（Word 只需要 1 個暫存器）
+            RegisterMonitorAddress();
         }
 
         /// <summary>

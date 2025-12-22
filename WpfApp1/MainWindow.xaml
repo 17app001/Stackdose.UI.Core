@@ -26,9 +26,8 @@
         <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,80,0,0" VerticalAlignment="Top" 
                            Width="130" Height="62" 
                            Label="X Position"
-                           Address="D10" 
-                           DefaultValue="00000" 
-                           DataType="Word" />
+                           Address="D100" 
+                           DefaultValue="00000" />
 
         <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,147,0,0" VerticalAlignment="Top" 
                            Width="164" Height="57" 

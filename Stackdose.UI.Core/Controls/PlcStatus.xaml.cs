@@ -213,8 +213,20 @@ namespace Stackdose.UI.Core.Controls
                             );
                         }
 
-                        // 🔥 觸發連線成功事件（讓 SensorViewer 等訂閱者可以註冊 Monitor）
+                        // 🔥 觸發連線成功事件（讓訂閱者可以執行自訂邏輯，例如下載 Recipe）
+                        ComplianceContext.LogSystem(
+                            "[PlcStatus] Triggering ConnectionEstablished event...",
+                            Stackdose.UI.Core.Models.LogLevel.Info,
+                            showInUi: false
+                        );
+                        
                         ConnectionEstablished?.Invoke(_plcManager);
+                        
+                        ComplianceContext.LogSystem(
+                            $"[PlcStatus] ConnectionEstablished event triggered. Subscriber count: {ConnectionEstablished?.GetInvocationList().Length ?? 0}",
+                            Stackdose.UI.Core.Models.LogLevel.Info,
+                            showInUi: false
+                        );
 
                         // 🔥 連線成功後，啟動「看門狗」來偵測未來是否斷線
                         StartConnectionWatchdog();

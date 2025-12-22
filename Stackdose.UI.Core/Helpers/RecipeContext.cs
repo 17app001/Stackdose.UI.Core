@@ -53,16 +53,6 @@ namespace Stackdose.UI.Core.Helpers
         /// </summary>
         public static string LastLoadMessage { get; private set; } = string.Empty;
 
-        /// <summary>
-        /// Recipe 監控是否已啟動
-        /// </summary>
-        public static bool IsMonitoring { get; private set; } = false;
-
-        /// <summary>
-        /// Recipe 監控相關的 PLC Manager
-        /// </summary>
-        private static IPlcManager? _plcManager;
-
         #endregion
 
         #region 事件定義
@@ -86,16 +76,6 @@ namespace Stackdose.UI.Core.Helpers
         /// Recipe 項目更新事件
         /// </summary>
         public static event EventHandler<(Recipe recipe, RecipeItem item)>? RecipeItemUpdated;
-
-        /// <summary>
-        /// Recipe 監控啟動事件
-        /// </summary>
-        public static event EventHandler<Recipe>? MonitoringStarted;
-
-        /// <summary>
-        /// Recipe 監控停止事件
-        /// </summary>
-        public static event EventHandler? MonitoringStopped;
 
         #endregion
 
@@ -427,153 +407,6 @@ namespace Stackdose.UI.Core.Helpers
         #region Recipe Monitoring
 
         /// <summary>
-        /// 啟動 Recipe 參數監控
-        /// 將所有 Recipe 參數註冊到 PLC Monitor 服務
-        /// </summary>
-        /// <param name="plcManager">PLC Manager 實例</param>
-        /// <param name="autoStart">是否自動啟動監控服務</param>
-        /// <returns>成功註冊的參數數量</returns>
-        public static int StartMonitoring(IPlcManager plcManager, bool autoStart = true)
-        {
-            if (CurrentRecipe == null)
-            {
-                ComplianceContext.LogSystem(
-                    "[Recipe] Cannot start monitoring: No active Recipe",
-                    LogLevel.Warning,
-                    showInUi: true
-                );
-                return 0;
-            }
-
-            if (plcManager?.Monitor == null)
-            {
-                ComplianceContext.LogSystem(
-                    "[Recipe] Cannot start monitoring: PlcManager or Monitor is null",
-                    LogLevel.Error,
-                    showInUi: true
-                );
-                return 0;
-            }
-
-            _plcManager = plcManager;
-            int registeredCount = 0;
-            var processedAddresses = new HashSet<string>();
-
-            try
-            {
-                foreach (var item in CurrentRecipe.Items.Where(x => x.IsEnabled))
-                {
-                    // 解析地址 (例如: D100, R200)
-                    var match = Regex.Match(item.Address, @"^([DR])(\d+)$");
-                    if (!match.Success)
-                    {
-                        ComplianceContext.LogSystem(
-                            $"[Recipe] Invalid address format: {item.Address} ({item.Name})",
-                            LogLevel.Warning,
-                            showInUi: false
-                        );
-                        continue;
-                    }
-
-                    string device = match.Groups[1].Value;
-                    int startAddress = int.Parse(match.Groups[2].Value);
-                    int length = 1; // 預設為 1 個暫存器
-
-                    // 根據 DataType 決定需要監控的暫存器數量
-                    // DWord/Float 需要兩個連續的暫存器
-                    if (item.DataType?.Equals("DWord", StringComparison.OrdinalIgnoreCase) == true ||
-                        item.DataType?.Equals("Float", StringComparison.OrdinalIgnoreCase) == true ||
-                        item.DataType?.Equals("Int", StringComparison.OrdinalIgnoreCase) == true ||
-                        item.DataType?.Equals("Int32", StringComparison.OrdinalIgnoreCase) == true)
-                    {
-                        length = 2; // DWORD 佔用兩個連續暫存器
-                    }
-
-                    // 避免重複註冊
-                    string addressKey = $"{device}{startAddress}:{length}";
-                    if (processedAddresses.Contains(addressKey))
-                        continue;
-
-                    // 註冊到 Monitor
-                    plcManager.Monitor.Register(item.Address, length);
-                    processedAddresses.Add(addressKey);
-                    registeredCount++;
-
-                    ComplianceContext.LogSystem(
-                        $"[Recipe Monitor] Registered: {item.Name} ({item.Address}) Length={length} Type={item.DataType}",
-                        LogLevel.Info,
-                        showInUi: false
-                    );
-                }
-
-                // 啟動監控服務
-                if (autoStart && !plcManager.Monitor.IsRunning)
-                {
-                    plcManager.Monitor.Start();
-                }
-
-                IsMonitoring = true;
-
-                ComplianceContext.LogSystem(
-                    $"[Recipe] Monitoring started: {registeredCount} parameters registered",
-                    LogLevel.Success,
-                    showInUi: true
-                );
-
-                // 觸發監控啟動事件
-                MonitoringStarted?.Invoke(null, CurrentRecipe);
-
-                return registeredCount;
-            }
-            catch (Exception ex)
-            {
-                ComplianceContext.LogSystem(
-                    $"[Recipe] Monitoring start failed: {ex.Message}",
-                    LogLevel.Error,
-                    showInUi: true
-                );
-                return registeredCount;
-            }
-        }
-
-        /// <summary>
-        /// 停止 Recipe 監控
-        /// </summary>
-        public static void StopMonitoring()
-        {
-            if (!IsMonitoring)
-            {
-                return;
-            }
-
-            try
-            {
-                // 如果需要，停止 Monitor 服務
-                // 注意：這裡不直接停止 Monitor，因為可能有其他控制項也在使用
-                // 只標記狀態為已停止
-                IsMonitoring = false;
-                _plcManager = null;
-
-                ComplianceContext.LogSystem(
-                    "[Recipe] Monitoring stopped",
-                    LogLevel.Info,
-                    showInUi: true
-                );
-
-                // 觸發監控停止事件
-                MonitoringStopped?.Invoke(null, EventArgs.Empty);
-            }
-            catch (Exception ex)
-            {
-                ComplianceContext.LogSystem(
-                    $"[Recipe] Monitoring stop failed: {ex.Message}",
-                    LogLevel.Error,
-                    showInUi: true
-                );
-            }
-        }
-
-        /// <summary>
         /// 生成 Recipe 監控位址字串 (用於 PlcStatus 自動註冊)
         /// 格式: "D100:1,D102:2,D104:1,..."
         /// </summary>
@@ -606,6 +439,213 @@ namespace Stackdose.UI.Core.Helpers
             }
 
             return string.Join(",", addresses);
+        }
+
+        #endregion
+
+        #region Recipe Download (Write to PLC)
+
+        /// <summary>
+        /// 下載 Recipe 到 PLC (將 Recipe 參數值寫入 PLC)
+        /// </summary>
+        /// <param name="plcManager">PLC Manager 實例</param>
+        /// <param name="recipe">要下載的 Recipe (null 則使用 CurrentRecipe)</param>
+        /// <returns>成功寫入的參數數量</returns>
+        public static async Task<int> DownloadRecipeToPLCAsync(IPlcManager plcManager, Recipe? recipe = null)
+        {
+            recipe ??= CurrentRecipe;
+
+            if (recipe == null)
+            {
+                ComplianceContext.LogSystem(
+                    "[Recipe] Cannot download: No active Recipe",
+                    LogLevel.Warning,
+                    showInUi: true
+                );
+                return 0;
+            }
+
+            if (plcManager?.PlcClient == null || !plcManager.IsConnected)
+            {
+                ComplianceContext.LogSystem(
+                    "[Recipe] Cannot download: PLC not connected",
+                    LogLevel.Error,
+                    showInUi: true
+                );
+                return 0;
+            }
+
+            string userName = ComplianceContext.CurrentUser ?? "System";
+            int successCount = 0;
+            int failCount = 0;
+            var errors = new List<string>();
+
+            try
+            {
+                ComplianceContext.LogSystem(
+                    $"[Recipe] Downloading Recipe to PLC: {recipe.RecipeName} v{recipe.Version}",
+                    LogLevel.Info,
+                    showInUi: true
+                );
+
+                foreach (var item in recipe.Items.Where(x => x.IsEnabled))
+                {
+                    try
+                    {
+                        // 解析地址 (例如: D100, R200)
+                        var match = Regex.Match(item.Address, @"^([DR])(\d+)$");
+                        if (!match.Success)
+                        {
+                            errors.Add($"{item.Name}: Invalid address format {item.Address}");
+                            failCount++;
+                            continue;
+                        }
+
+                        string device = match.Groups[1].Value;
+                        int address = int.Parse(match.Groups[2].Value);
+
+                        // 根據 DataType 進行寫入
+                        bool writeSuccess = false;
+
+                        if (item.DataType?.Equals("Short", StringComparison.OrdinalIgnoreCase) == true ||
+                            item.DataType?.Equals("Word", StringComparison.OrdinalIgnoreCase) == true)
+                        {
+                            // Short/Word: 單一暫存器
+                            if (short.TryParse(item.Value, out short value))
+                            {
+                                await plcManager.PlcClient.WriteWordAsync(device, address, value);
+                                writeSuccess = true;
+                            }
+                            else
+                            {
+                                errors.Add($"{item.Name}: Invalid Short value '{item.Value}'");
+                                failCount++;
+                                continue;
+                            }
+                        }
+                        else if (item.DataType?.Equals("DWord", StringComparison.OrdinalIgnoreCase) == true ||
+                                 item.DataType?.Equals("Int", StringComparison.OrdinalIgnoreCase) == true ||
+                                 item.DataType?.Equals("Int32", StringComparison.OrdinalIgnoreCase) == true)
+                        {
+                            // DWord/Int: 兩個連續暫存器
+                            if (int.TryParse(item.Value, out int value))
+                            {
+                                await plcManager.PlcClient.WriteDWordAsync(device, address, value);
+                                writeSuccess = true;
+                            }
+                            else
+                            {
+                                errors.Add($"{item.Name}: Invalid Int value '{item.Value}'");
+                                failCount++;
+                                continue;
+                            }
+                        }
+                        else if (item.DataType?.Equals("Float", StringComparison.OrdinalIgnoreCase) == true)
+                        {
+                            // Float: 兩個連續暫存器（將 float 轉為 int 表示，例如 3.5 -> 35，需要除以 10）
+                            if (float.TryParse(item.Value, out float floatValue))
+                            {
+                                // 將 float 轉換為整數表示（假設精度為小數點後一位）
+                                // 例如：3.5 -> 35，然後寫入 PLC
+                                // 實際使用時可能需要根據 PLC 的 float 編碼方式調整
+                                int intValue = (int)(floatValue * 10); // 簡單的定點數轉換
+                                await plcManager.PlcClient.WriteDWordAsync(device, address, intValue);
+                                writeSuccess = true;
+                            }
+                            else
+                            {
+                                errors.Add($"{item.Name}: Invalid Float value '{item.Value}'");
+                                failCount++;
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            errors.Add($"{item.Name}: Unsupported DataType '{item.DataType}'");
+                            failCount++;
+                            continue;
+                        }
+
+                        if (writeSuccess)
+                        {
+                            successCount++;
+                            ComplianceContext.LogSystem(
+                                $"[Recipe Download] {item.Name} ({item.Address}) = {item.Value} {item.Unit}",
+                                LogLevel.Info,
+                                showInUi: false
+                            );
+                        }
+                        else
+                        {
+                            errors.Add($"{item.Name}: Write failed");
+                            failCount++;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add($"{item.Name}: {ex.Message}");
+                        failCount++;
+                    }
+                }
+
+                // 記錄結果
+                if (failCount == 0)
+                {
+                    ComplianceContext.LogSystem(
+                        $"[Recipe] Download completed successfully: {successCount}/{recipe.EnabledItemCount} parameters written",
+                        LogLevel.Success,
+                        showInUi: true
+                    );
+                }
+                else
+                {
+                    ComplianceContext.LogSystem(
+                        $"[Recipe] Download completed with errors: {successCount} success, {failCount} failed",
+                        LogLevel.Warning,
+                        showInUi: true
+                    );
+
+                    foreach (var error in errors.Take(3))
+                    {
+                        ComplianceContext.LogSystem(
+                            $"[Recipe] Error: {error}",
+                            LogLevel.Warning,
+                            showInUi: false
+                        );
+                    }
+                }
+
+                // FDA Audit Trail: 記錄下載操作
+                ComplianceContext.LogAuditTrail(
+                    "Recipe Download",
+                    recipe.RecipeId,
+                    "N/A",
+                    $"{recipe.RecipeName} v{recipe.Version}",
+                    $"Downloaded by {userName} - {successCount} success, {failCount} failed",
+                    showInUi: false
+                );
+
+                return successCount;
+            }
+            catch (Exception ex)
+            {
+                ComplianceContext.LogSystem(
+                    $"[Recipe] Download failed: {ex.Message}",
+                    LogLevel.Error,
+                    showInUi: true
+                );
+
+                ComplianceContext.LogAuditTrail(
+                    "Recipe Download",
+                    recipe.RecipeId,
+                    "N/A",
+                    "Failed",
+                    $"Download by {userName} - Error: {ex.Message}",
+                    showInUi: false
+                );
+
+                return successCount;
+            }
         }
 
         #endregion

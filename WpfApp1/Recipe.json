@@ -14,23 +14,20 @@
     {
       "Name": "Heater Temperature",
       "Address": "D100",
-      "Value": "180",
-      "DataType": "Short",
+      "Value": "200000",
+      "DataType": "Int",
       "Unit": "°C",
       "Description": "Main heater target temperature",
-      "MinValue": 100,
-      "MaxValue": 250,
       "IsEnabled": true
     },
     {
       "Name": "Cooling Water Pressure",
-      "Address": "D102",
-      "Value": "3.5",
-      "DataType": "DWord",
+      "Address": "D103",
+      "Value": "35",
+      "DataType": "Word",
       "Unit": "bar",
       "Description": "Cooling system pressure setting",
-      "MinValue": 2.0,
-      "MaxValue": 5.0,
+      "MinValue": 0,
       "IsEnabled": true
     },
     {

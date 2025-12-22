@@ -18,6 +18,25 @@
 System initialized. Main PLC set.  ← PLC 在 Recipe 之後才連線
 ```
 
+## 統一監控架構 ?
+
+Recipe 監控遵循 **統一監控模式**，由 `PlcStatus` 統一管理：
+
+```
+PlcStatus 連線成功
+  ↓
+自動調用 RecipeContext.GenerateMonitorAddresses()
+  ↓
+PlcStatus.RegisterMonitors() 統一註冊
+  ↓
+完成 ?
+```
+
+**RecipeContext 只負責**：
+- ? 提供 `GenerateMonitorAddresses()` 方法
+- ? 載入和管理 Recipe 配方
+- ? 不負責啟動監控（由 PlcStatus 統一處理）
+
 ## 解決方案
 
 ### 方案 1：延遲 Recipe 載入（簡單）
@@ -35,8 +54,11 @@ System initialized. Main PLC set.  ← PLC 在 Recipe 之後才連線
 ```
 1. 啟動應用程式
 2. 手動點擊 PlcStatus 連線 PLC
+   → PlcStatus 調用 RecipeContext.GenerateMonitorAddresses()
+   → 如果 Recipe 已載入，自動註冊監控 ?
 3. 手動點擊 RecipeLoader 的 Load 按鈕
-4. 監控自動啟動 ?
+4. Recipe 載入成功
+5. 下次 PLC 重新連線時，監控會自動註冊
 ```
 
 ### 方案 2：啟用 PLC 自動連線（適合生產環境）
@@ -59,12 +81,13 @@ System initialized. Main PLC set.  ← PLC 在 Recipe 之後才連線
 **操作流程：**
 ```
 1. 啟動應用程式
-2. PLC 自動連線 ?
-3. Recipe 自動載入 ?
-4. 監控自動啟動 ?
+2. Recipe 自動載入 ?
+3. PLC 自動連線 ?
+4. PlcStatus 調用 RecipeContext.GenerateMonitorAddresses()
+5. 監控自動註冊 ?
 ```
 
-### 方案 3：智能自動載入（推薦，已實現）?
+### 方案 3：智能自動載入（推薦）?
 
 在 `MainWindow.xaml.cs` 中訂閱 PLC 連線事件，當 PLC 連線成功時自動載入 Recipe。
 
@@ -76,9 +99,6 @@ public MainWindow()
     
     // ? 訂閱 PLC 連線成功事件
     MainPlc.ConnectionEstablished += OnPlcConnectionEstablished;
-    
-    // 初始化 Recipe 系統（不自動載入）
-    _ = InitializeRecipeSystemAsync();
 }
 
 private async void OnPlcConnectionEstablished(IPlcManager plcManager)
@@ -86,40 +106,23 @@ private async void OnPlcConnectionEstablished(IPlcManager plcManager)
     // 如果 Recipe 還沒載入，自動載入
     if (!RecipeContext.HasActiveRecipe)
     {
+        ComplianceContext.LogSystem(
+            "[Recipe] Auto-loading Recipe after PLC connection...",
+            LogLevel.Info,
+            showInUi: true
+        );
+
         bool success = await RecipeContext.LoadRecipeAsync("Recipe.json", isAutoLoad: true);
         
         if (success && RecipeContext.CurrentRecipe != null)
         {
-            // 啟動監控
-            int registeredCount = RecipeContext.StartMonitoring(plcManager, autoStart: true);
-            
             ComplianceContext.LogSystem(
-                $"[Recipe] Auto-loaded and monitoring started: {registeredCount} parameters",
+                $"[Recipe] Auto-loaded successfully: {RecipeContext.CurrentRecipe.RecipeName}",
                 LogLevel.Success,
                 showInUi: true
             );
         }
     }
-    else
-    {
-        // Recipe 已經載入，只啟動監控
-        if (!RecipeContext.IsMonitoring)
-        {
-            int registeredCount = RecipeContext.StartMonitoring(plcManager, autoStart: true);
-        }
-    }
-}
-
-private async Task InitializeRecipeSystemAsync()
-{
-    // 只初始化，不自動載入
-    if (!RecipeContext.IsInitialized)
-    {
-        await RecipeContext.InitializeAsync(autoLoad: false);
-    }
-    
-    RecipeContext.RecipeLoaded += OnRecipeLoaded;
-    RecipeContext.RecipeLoadFailed += OnRecipeLoadFailed;
 }
 ```
 
@@ -143,6 +146,7 @@ private async Task InitializeRecipeSystemAsync()
 - ? 支援手動和自動連線
 - ? 避免時序問題
 - ? 自動化流程
+- ? PlcStatus 統一管理監控註冊
 
 **操作流程：**
 ```
@@ -150,137 +154,120 @@ private async Task InitializeRecipeSystemAsync()
 1. 點擊 PlcStatus 連線 PLC
 2. 觸發 ConnectionEstablished 事件
 3. 自動載入 Recipe
-4. 自動啟動監控 ?
+4. PlcStatus 已在連線時調用過 GenerateMonitorAddresses()（返回空）
+5. 需要重新連線以註冊 Recipe 監控
 
 情況 B：Recipe 先載入（手動點擊 Load）
 1. 點擊 RecipeLoader 的 Load 按鈕
 2. Recipe 載入成功
 3. 點擊 PlcStatus 連線 PLC
-4. 觸發 ConnectionEstablished 事件
-5. 檢測到 Recipe 已載入
-6. 只啟動監控 ?
+4. PlcStatus 調用 RecipeContext.GenerateMonitorAddresses()
+5. 自動註冊 Recipe 監控 ?
 
-情況 C：Recipe 和 PLC 都已啟動
-1. Recipe 已載入
-2. PLC 已連線
-3. 監控已啟動
-4. 無需額外操作 ?
+情況 C：使用自動載入（方案 3）
+1. 點擊 PlcStatus 連線 PLC
+2. 觸發 ConnectionEstablished 事件
+3. MainWindow 自動載入 Recipe
+4. 下次 PLC 重新連線時，自動註冊監控 ?
+```
+
+## 重要說明
+
+### PlcStatus 連線時的監控註冊
+
+PlcStatus 在 **連線成功時** 會自動調用：
+
+```csharp
+// PlcStatus.xaml.cs ConnectAsync() 方法中
+string recipeAddresses = RecipeContext.GenerateMonitorAddresses();
+if (!string.IsNullOrWhiteSpace(recipeAddresses))
+{
+    RegisterMonitors(recipeAddresses);
+}
+```
+
+**這意味著**：
+- ? Recipe 必須在 PLC 連線時已經載入
+- ? Recipe 在 PLC 連線後載入，監控不會自動註冊
+- ? 需要重新連線 PLC 才能註冊新載入的 Recipe
+
+### 最佳實踐
+
+**開發環境**（方案 3 推薦）：
+```xml
+<Controls:PlcStatus AutoConnect="False" />
+<Controls:RecipeLoader AutoLoadOnStartup="False" />
+```
+```csharp
+// MainWindow.xaml.cs
+MainPlc.ConnectionEstablished += OnPlcConnectionEstablished;
+
+private async void OnPlcConnectionEstablished(IPlcManager plcManager)
+{
+    if (!RecipeContext.HasActiveRecipe)
+    {
+        await RecipeContext.LoadRecipeAsync("Recipe.json", isAutoLoad: true);
+        
+        // ? 重要：Recipe 剛載入，需要重新連線以註冊監控
+        // 或者手動觸發監控註冊
+        await plcManager.DisconnectAsync();
+        await Task.Delay(500);
+        await plcManager.InitializeAsync(IpAddress, Port, ScanInterval);
+    }
+}
+```
+
+**生產環境**（方案 2 推薦）：
+```xml
+<Controls:PlcStatus AutoConnect="True" />
+<Controls:RecipeLoader AutoLoadOnStartup="True" />
 ```
 
 ## 日誌輸出（正確流程）
 
 ```
+[Recipe] Successfully loaded Recipe: Standard Process Recipe A v1.2.0 (10 parameters)
 [PLC] Connecting to PLC (192.168.22.39:3000)...
 [PLC] Connection Established (192.168.22.39)
-[PLC] Connection established, checking Recipe status...
-[Recipe] Auto-loading Recipe after PLC connection...
-[Recipe] Successfully loaded Recipe: Standard Process Recipe A v1.2.0 (10 parameters)
-[Recipe Monitor] Registered: Heater Temperature (D100) Length=1 Type=Short
-[Recipe Monitor] Registered: Cooling Water Pressure (D102) Length=2 Type=DWord
-[Recipe Monitor] Registered: Conveyor Speed (D104) Length=1 Type=Short
-[Recipe Monitor] Registered: Mixer RPM (D106) Length=1 Type=Short
-[Recipe Monitor] Registered: Pressure Time (D110) Length=1 Type=Short
-[Recipe Monitor] Registered: Holding Time (D112) Length=1 Type=Short
-[Recipe Monitor] Registered: Cooling Time (D114) Length=1 Type=Short
-[Recipe Monitor] Registered: Material A Dosage (D120) Length=1 Type=Short
-[Recipe Monitor] Registered: Material B Dosage (D122) Length=1 Type=Short
-[Recipe Monitor] Registered: Alarm Critical Temp (D200) Length=1 Type=Short
-[Recipe] Monitoring started: 10 parameters registered
-[Recipe] Auto-loaded and monitoring started: 10 parameters
+[AutoRegister] Sensor: D10:1,R2000:1,R2002:1
+[AutoRegister] PlcLabel: D10:1,D11:1,M237:1,R2000:1,R2002:1
+[AutoRegister] PlcEvent: M237:1,M238:1
+[AutoRegister] Recipe: D100:1,D102:2,D104:1,D106:1,D110:1,D112:1,D114:1,D120:1,D122:1,D200:1
+System initialized. Main PLC set.
 ```
 
-## 驗證檢查
-
-### 1. 檢查 Recipe 是否已載入
-```csharp
-bool hasRecipe = RecipeContext.HasActiveRecipe;
-Console.WriteLine($"Has Recipe: {hasRecipe}");
-```
-
-### 2. 檢查 PLC 是否已連線
-```csharp
-bool isConnected = PlcContext.GlobalStatus?.CurrentManager?.IsConnected ?? false;
-Console.WriteLine($"PLC Connected: {isConnected}");
-```
-
-### 3. 檢查監控是否運行
-```csharp
-bool isMonitoring = RecipeContext.IsMonitoring;
-Console.WriteLine($"Recipe Monitoring: {isMonitoring}");
-```
-
-### 4. 檢查註冊的地址
-```csharp
-string addresses = RecipeContext.GenerateMonitorAddresses();
-Console.WriteLine($"Monitor Addresses: {addresses}");
-// 應該輸出: "D100:1,D102:2,D104:1,D106:1,D110:1,D112:1,D114:1,D120:1,D122:1,D200:1"
-```
+**關鍵**：`[AutoRegister] Recipe:` 行應該顯示所有 Recipe 監控地址。
 
 ## 故障排除
 
-### 問題：監控沒有啟動
+### 問題：Recipe 載入了，但沒有看到 [AutoRegister] Recipe: 日誌
 
-**檢查 1：Recipe 是否在 PLC 連線之前載入？**
+**原因**：Recipe 在 PLC 連線後才載入。
+
+**解決方法**：
+1. 重新連線 PLC（點擊 PlcStatus 斷線再連線）
+2. 或使用方案 2（全自動啟動）
+3. 或使用方案 3（智能自動載入 + 重新連線）
+
+### 問題：如何確認 Recipe 監控已註冊？
+
+**檢查 1：日誌輸出**
 ```
-如果日誌顯示 Recipe 載入在 "System initialized. Main PLC set." 之前，
-說明時序錯誤。
-```
-
-**解決方法：**
-- 設定 `RecipeLoader.AutoLoadOnStartup="False"`
-- 或實現方案 3 的智能自動載入
-
-**檢查 2：PLC 是否已連線？**
-```csharp
-if (PlcContext.GlobalStatus?.CurrentManager?.IsConnected == false)
-{
-    Console.WriteLine("PLC not connected!");
-}
+[AutoRegister] Recipe: D100:1,D102:2,D104:1,...
 ```
 
-**檢查 3：MonitorService 是否運行？**
-```csharp
-if (PlcContext.GlobalStatus?.CurrentManager?.Monitor?.IsRunning == false)
-{
-    Console.WriteLine("Monitor service not running!");
-}
-```
-
-### 問題：DWord 類型沒有正確註冊兩個暫存器
-
-**檢查：**
+**檢查 2：程式檢查**
 ```csharp
 string addresses = RecipeContext.GenerateMonitorAddresses();
-// D102 應該是 "D102:2"，不是 "D102:1"
+Console.WriteLine($"Recipe Monitor Addresses: {addresses}");
+// 應該輸出: "D100:1,D102:2,D104:1,D106:1,D110:1,D112:1,D114:1,D120:1,D122:1,D200:1"
 ```
 
-**確認 Recipe.json：**
-```json
-{
-  "Name": "Cooling Water Pressure",
-  "Address": "D102",
-  "DataType": "DWord",  ← 必須是 DWord、Float、Int 或 Int32
-  "IsEnabled": true
-}
+**檢查 3：PlcMonitorService**
+```csharp
+bool isMonitoring = PlcContext.GlobalStatus?.CurrentManager?.Monitor?.IsRunning ?? false;
+Console.WriteLine($"Monitor Running: {isMonitoring}");
 ```
-
-## 建議配置
-
-### 開發環境
-```xml
-<!-- 方便測試，手動控制 -->
-<Controls:PlcStatus AutoConnect="False" />
-<Controls:RecipeLoader AutoLoadOnStartup="False" />
-```
-+ 在 MainWindow.xaml.cs 實現智能自動載入（方案 3）
-
-### 生產環境
-```xml
-<!-- 全自動啟動 -->
-<Controls:PlcStatus AutoConnect="True" />
-<Controls:RecipeLoader AutoLoadOnStartup="True" />
-```
-+ RecipeLoader 會在 Recipe 載入後自動啟動監控
 
 ## 總結
 
@@ -290,7 +277,8 @@ string addresses = RecipeContext.GenerateMonitorAddresses();
 | **方案 2**: 自動連線 | 全自動 | 啟動失敗時卡住 | 生產環境 |
 | **方案 3**: 智能載入 | 靈活、可靠 | 需要寫代碼 | **推薦** |
 
-**推薦使用方案 3**：
-- ? 自動處理任何順序
-- ? 支援手動和自動
-- ? 最可靠的解決方案
+**核心原則**：
+- ? Recipe 必須在 PLC 連線時已載入
+- ? PlcStatus 統一管理所有監控註冊
+- ? RecipeContext 只提供 GenerateMonitorAddresses()
+- ? 不要在其他地方手動啟動監控

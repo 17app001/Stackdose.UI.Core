@@ -12,6 +12,11 @@ namespace WpfApp1
     public partial class MainWindow : Window
     {
         private readonly MainViewModel _viewModel;
+        
+        /// <summary>
+        /// 標記 Recipe 是否已經下載到 PLC（避免重連時重複下載）
+        /// </summary>
+        private bool _recipeDownloadedToPLC = false;
 
         public MainWindow()
         {
@@ -53,10 +58,27 @@ namespace WpfApp1
         private async void OnPlcConnectionEstablished(Stackdose.Abstractions.Hardware.IPlcManager plcManager)
         {
             ComplianceContext.LogSystem(
+                "[MainWindow] OnPlcConnectionEstablished called!",
+                Stackdose.UI.Core.Models.LogLevel.Info,
+                showInUi: true
+            );
+            
+            ComplianceContext.LogSystem(
                 "[PLC] Connection established, checking Recipe status...",
                 Stackdose.UI.Core.Models.LogLevel.Info,
                 showInUi: true
             );
+
+            // ⭐ 檢查是否已經下載過 Recipe
+            if (_recipeDownloadedToPLC)
+            {
+                ComplianceContext.LogSystem(
+                    "[Recipe] Recipe already downloaded to PLC, skipping re-download on reconnection.",
+                    Stackdose.UI.Core.Models.LogLevel.Info,
+                    showInUi: true
+                );
+                return;
+            }
 
             // 如果 Recipe 還沒載入，自動載入
             if (!RecipeContext.HasActiveRecipe)
@@ -71,25 +93,38 @@ namespace WpfApp1
                 
                 if (success && RecipeContext.CurrentRecipe != null)
                 {
-                    // 啟動監控
-                    int registeredCount = RecipeContext.StartMonitoring(plcManager, autoStart: true);
+                    // 自動下載 Recipe 到 PLC
+                    int downloadCount = await RecipeContext.DownloadRecipeToPLCAsync(plcManager);
                     
-                    ComplianceContext.LogSystem(
-                        $"[Recipe] Auto-loaded and monitoring started: {registeredCount} parameters",
-                        Stackdose.UI.Core.Models.LogLevel.Success,
-                        showInUi: true
-                    );
+                    if (downloadCount > 0)
+                    {
+                        _recipeDownloadedToPLC = true; // ⭐ 標記已下載
+                        
+                        ComplianceContext.LogSystem(
+                            $"[Recipe] Auto-loaded and downloaded: {downloadCount} parameters written to PLC",
+                            Stackdose.UI.Core.Models.LogLevel.Success,
+                            showInUi: true
+                        );
+                    }
                 }
             }
             else
             {
-                // Recipe 已經載入，只啟動監控
-                if (!RecipeContext.IsMonitoring)
+                ComplianceContext.LogSystem(
+                    "[Recipe] Recipe already loaded, downloading to PLC...",
+                    Stackdose.UI.Core.Models.LogLevel.Info,
+                    showInUi: true
+                );
+                
+                // Recipe 已經載入，自動下載到 PLC
+                int downloadCount = await RecipeContext.DownloadRecipeToPLCAsync(plcManager);
+                
+                if (downloadCount > 0)
                 {
-                    int registeredCount = RecipeContext.StartMonitoring(plcManager, autoStart: true);
+                    _recipeDownloadedToPLC = true; // ⭐ 標記已下載
                     
                     ComplianceContext.LogSystem(
-                        $"[Recipe] Monitoring started: {registeredCount} parameters",
+                        $"[Recipe] Auto-downloaded to PLC: {downloadCount} parameters written",
                         Stackdose.UI.Core.Models.LogLevel.Success,
                         showInUi: true
                     );

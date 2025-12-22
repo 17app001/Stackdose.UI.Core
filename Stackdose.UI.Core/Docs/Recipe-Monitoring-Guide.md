@@ -281,3 +281,296 @@ Console.WriteLine($"Recipe Monitoring: {recipeMonitoring}");
   - 支援 DWord 類型（佔用兩個暫存器）
   - 自動註冊機制
   - DataType 命名更新（Int16→Short, Float→DWord）
+
+# Recipe Monitoring Architecture
+
+## 統一監控架構 ?
+
+Recipe 監控遵循 **統一監控模式**，由 `PlcStatus` 統一管理所有監控註冊。
+
+### 架構設計
+
+```
+PlcStatus 連線成功
+  ↓
+自動調用各個 Context 的 GenerateMonitorAddresses()
+  - SensorContext.GenerateMonitorAddresses()
+  - PlcLabelContext.GenerateMonitorAddresses()
+  - PlcEventContext.GenerateMonitorAddresses()
+  - RecipeContext.GenerateMonitorAddresses()  ?
+  ↓
+PlcStatus.RegisterMonitors() 統一註冊
+  ↓
+PlcMonitorService 開始監控
+```
+
+### RecipeContext 的職責
+
+RecipeContext **只負責**：
+- ? 載入和管理 Recipe 配方
+- ? 提供 `GenerateMonitorAddresses()` 方法
+- ? Recipe 資料驗證
+
+RecipeContext **不負責**：
+- ? 啟動/停止監控（由 PlcStatus 統一處理）
+- ? 註冊監控地址（由 PlcStatus 統一處理）
+- ? 管理 PlcManager 實例
+
+## Recipe 監控流程
+
+### 自動流程（推薦）
+
+```
+1. 應用程式啟動
+   ↓
+2. PLC 連線成功
+   ↓
+3. PlcStatus 自動調用 RecipeContext.GenerateMonitorAddresses()
+   ↓
+4. 如果 Recipe 已載入，返回監控地址清單
+   如果 Recipe 未載入，返回空字串
+   ↓
+5. PlcStatus 統一註冊所有地址
+   ↓
+6. 監控自動啟動 ?
+```
+
+### 延遲載入 Recipe
+
+如果 Recipe 在 PLC 連線後才載入：
+
+```
+1. PLC 已連線
+   ↓
+2. PlcStatus 調用 RecipeContext.GenerateMonitorAddresses()
+   → 返回空字串（Recipe 未載入）
+   ↓
+3. 使用者或程式載入 Recipe
+   ↓
+4. Recipe 載入成功
+   ↓
+5. PlcStatus 需要重新掃描或重新連線才能註冊 Recipe 監控
+```
+
+**解決方案**：在 MainWindow 中訂閱 PLC ConnectionEstablished 事件，自動載入 Recipe
+
+```csharp
+MainPlc.ConnectionEstablished += OnPlcConnectionEstablished;
+
+private async void OnPlcConnectionEstablished(IPlcManager plcManager)
+{
+    if (!RecipeContext.HasActiveRecipe)
+    {
+        await RecipeContext.LoadRecipeAsync("Recipe.json", isAutoLoad: true);
+    }
+}
+```
+
+## GenerateMonitorAddresses() 方法
+
+### 功能
+
+生成 Recipe 監控位址配置字串，供 PlcStatus 自動註冊使用。
+
+### 格式
+
+```
+"地址:長度,地址:長度,..."
+```
+
+### 範例
+
+**Recipe.json**
+```json
+{
+  "Items": [
+    { "Address": "D100", "DataType": "Short", "IsEnabled": true },
+    { "Address": "D102", "DataType": "DWord", "IsEnabled": true },
+    { "Address": "D104", "DataType": "Short", "IsEnabled": true }
+  ]
+}
+```
+
+**輸出**
+```
+"D100:1,D102:2,D104:1"
+```
+
+### DataType 對應長度
+
+| DataType | 暫存器數量 | 說明 |
+|----------|-----------|------|
+| Short, Word | 1 | 16位元 |
+| DWord, Float, Int, Int32 | 2 | 32位元（佔用連續兩個暫存器）|
+
+### 實現
+
+```csharp
+public static string GenerateMonitorAddresses()
+{
+    if (CurrentRecipe == null || !CurrentRecipe.Items.Any())
+        return string.Empty;
+
+    var addresses = new List<string>();
+
+    foreach (var item in CurrentRecipe.Items.Where(x => x.IsEnabled))
+    {
+        var match = Regex.Match(item.Address, @"^([DR])(\d+)$");
+        if (!match.Success)
+            continue;
+
+        int length = 1;
+
+        // DWord/Float 需要兩個連續暫存器
+        if (item.DataType?.Equals("DWord", StringComparison.OrdinalIgnoreCase) == true ||
+            item.DataType?.Equals("Float", StringComparison.OrdinalIgnoreCase) == true ||
+            item.DataType?.Equals("Int", StringComparison.OrdinalIgnoreCase) == true ||
+            item.DataType?.Equals("Int32", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            length = 2;
+        }
+
+        addresses.Add($"{item.Address}:{length}");
+    }
+
+    return string.Join(",", addresses);
+}
+```
+
+## 日誌輸出
+
+### 正確的監控註冊流程
+
+```
+[PLC] Connecting to PLC (192.168.22.39:3000)...
+[PLC] Connection Established (192.168.22.39)
+[AutoRegister] Sensor: D10:1,R2000:1,R2002:1
+[AutoRegister] PlcLabel: D10:1,D11:1,M237:1,R2000:1,R2002:1
+[AutoRegister] PlcEvent: M237:1,M238:1
+[AutoRegister] Recipe: D100:1,D102:2,D104:1,D106:1,D110:1,D112:1,D114:1,D120:1,D122:1,D200:1
+System initialized. Main PLC set.
+```
+
+**注意**：Recipe 監控地址應該在 `[AutoRegister] Recipe:` 行中顯示。
+
+## 常見問題
+
+### Q: Recipe 載入後監控沒有啟動？
+
+**A**: 檢查 Recipe 是否在 PLC 連線時已經載入：
+
+```csharp
+// 檢查時序
+bool hasRecipe = RecipeContext.HasActiveRecipe;
+bool isConnected = PlcContext.GlobalStatus?.CurrentManager?.IsConnected ?? false;
+
+Console.WriteLine($"Has Recipe: {hasRecipe}");
+Console.WriteLine($"PLC Connected: {isConnected}");
+```
+
+**解決方案**：
+1. 確保 Recipe 在 PLC 連線前載入，或
+2. 在 PLC 連線後自動載入 Recipe（見上方程式碼範例）
+
+### Q: 為什麼不能直接調用 StartMonitoring？
+
+**A**: 統一監控架構的設計原則：
+- ? 所有監控由 PlcStatus 統一管理
+- ? 避免重複註冊
+- ? 簡化程式碼
+- ? 易於維護
+
+如果每個 Context 都自己啟動監控：
+- ? 重複註冊相同地址
+- ? 難以追蹤監控狀態
+- ? 增加複雜度
+
+### Q: 如何確認 Recipe 監控已註冊？
+
+**A**: 檢查日誌輸出：
+
+```
+[AutoRegister] Recipe: D100:1,D102:2,D104:1,...
+```
+
+或者在程式中檢查：
+
+```csharp
+string addresses = RecipeContext.GenerateMonitorAddresses();
+Console.WriteLine($"Recipe Monitor Addresses: {addresses}");
+```
+
+### Q: DWord 類型沒有正確註冊兩個暫存器？
+
+**A**: 檢查：
+
+1. **Recipe.json 中的 DataType**
+   ```json
+   {
+     "Address": "D102",
+     "DataType": "DWord"  ← 必須是 DWord、Float、Int 或 Int32
+   }
+   ```
+
+2. **生成的地址字串**
+   ```csharp
+   // D102 應該是 "D102:2"，不是 "D102:1"
+   string addresses = RecipeContext.GenerateMonitorAddresses();
+   ```
+
+## 配置範例
+
+### MainWindow.xaml
+
+```xml
+<!-- PLC 連線狀態 -->
+<Controls:PlcStatus x:Name="MainPlc"
+    IpAddress="192.168.22.39"
+    Port="3000"
+    AutoConnect="False"
+    ScanInterval="120"
+    IsGlobal="True" />
+
+<!-- Recipe 載入器 -->
+<Controls:RecipeLoader 
+    RecipeFilePath="Recipe.json"
+    AutoLoadOnStartup="False"
+    RequiredAccessLevel="Instructor"
+    ShowDetails="True"/>
+```
+
+### MainWindow.xaml.cs
+
+```csharp
+public MainWindow()
+{
+    InitializeComponent();
+    
+    // ? 訂閱 PLC 連線成功事件，自動載入 Recipe
+    MainPlc.ConnectionEstablished += OnPlcConnectionEstablished;
+}
+
+private async void OnPlcConnectionEstablished(IPlcManager plcManager)
+{
+    // 如果 Recipe 還沒載入，自動載入
+    if (!RecipeContext.HasActiveRecipe)
+    {
+        await RecipeContext.LoadRecipeAsync("Recipe.json", isAutoLoad: true);
+    }
+}
+```
+
+## 總結
+
+| 項目 | 負責單位 | 說明 |
+|------|---------|------|
+| 監控註冊 | PlcStatus | 統一管理所有監控註冊 |
+| 地址生成 | RecipeContext | 提供 GenerateMonitorAddresses() |
+| Recipe 載入 | RecipeContext | LoadRecipeAsync() |
+| 監控服務 | PlcMonitorService | 執行實際監控工作 |
+
+**設計原則**：
+- ? 單一職責：每個組件只負責自己的工作
+- ? 統一管理：所有監控由 PlcStatus 統一管理
+- ? 自動化：PLC 連線時自動註冊所有監控
+- ? 簡單化：避免重複程式碼和複雜邏輯

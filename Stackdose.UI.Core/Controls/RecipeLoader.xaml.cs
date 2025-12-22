@@ -125,21 +125,6 @@ namespace Stackdose.UI.Core.Controls
             {
                 UpdateDisplay();
                 StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
-
-                // ?? Recipe 更狦 PlcStatus 竒硈絬玥笆币笆菏北
-                var plcStatus = PlcContext.GlobalStatus;
-                if (plcStatus?.CurrentManager != null && plcStatus.CurrentManager.IsConnected)
-                {
-                    int registeredCount = RecipeContext.StartMonitoring(plcStatus.CurrentManager, autoStart: true);
-                    if (registeredCount > 0)
-                    {
-                        Helpers.ComplianceContext.LogSystem(
-                            $"[Recipe] Auto-started monitoring: {registeredCount} parameters",
-                            Models.LogLevel.Success,
-                            showInUi: true
-                        );
-                    }
-                }
             });
         }
 
@@ -212,21 +197,75 @@ namespace Stackdose.UI.Core.Controls
             StatusText.Text = "更い...";
             StatusText.Foreground = new SolidColorBrush(Colors.Yellow);
 
+            // 1. 更 Recipe JSON 郎
             bool success = await RecipeContext.LoadRecipeAsync(
                 RecipeFilePath,
                 isAutoLoad: false,
                 setAsActive: true
             );
 
-            LoadingIndicator.Visibility = Visibility.Collapsed;
-
             if (!success)
             {
+                LoadingIndicator.Visibility = Visibility.Collapsed;
                 CyberMessageBox.Show(
                     RecipeContext.LastLoadMessage,
                     "Recipe 更ア毖",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error
+                );
+                return;
+            }
+
+            // 2. 浪琩 PLC 琌硈絬狦硈絬玥笆更
+            var plcStatus = Helpers.PlcContext.GlobalStatus;
+            if (plcStatus?.CurrentManager != null && plcStatus.CurrentManager.IsConnected)
+            {
+                StatusText.Text = "更 Recipe  PLC い...";
+                StatusText.Foreground = new SolidColorBrush(Colors.Yellow);
+
+                int downloadCount = await RecipeContext.DownloadRecipeToPLCAsync(plcStatus.CurrentManager);
+
+                LoadingIndicator.Visibility = Visibility.Collapsed;
+
+                if (downloadCount > 0)
+                {
+                    StatusText.Text = $"Recipe 更更Θ: {downloadCount} 把计";
+                    StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
+
+                    CyberMessageBox.Show(
+                        $"Recipe loaded and downloaded successfully!\n\n" +
+                        $"{downloadCount} parameters written to PLC.",
+                        "Success",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information
+                    );
+                }
+                else
+                {
+                    StatusText.Text = "Recipe 更Θ更ア毖";
+                    StatusText.Foreground = new SolidColorBrush(Colors.Orange);
+
+                    CyberMessageBox.Show(
+                        "Recipe loaded but download to PLC failed. Check logs for details.",
+                        "Partial Success",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
+                }
+            }
+            else
+            {
+                // PLC ゼ硈絬更 Recipe
+                LoadingIndicator.Visibility = Visibility.Collapsed;
+                StatusText.Text = "Recipe 更Θ (PLC ゼ硈絬)";
+                StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
+
+                CyberMessageBox.Show(
+                    "Recipe loaded successfully.\n\n" +
+                    "Note: PLC is not connected. Recipe will be downloaded when PLC connects.",
+                    "Recipe Loaded",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
                 );
             }
         }
@@ -237,15 +276,54 @@ namespace Stackdose.UI.Core.Controls
             StatusText.Text = "穝更い...";
             StatusText.Foreground = new SolidColorBrush(Colors.Yellow);
 
+            // 1. 穝更 Recipe
             bool success = await RecipeContext.ReloadCurrentRecipeAsync();
 
-            LoadingIndicator.Visibility = Visibility.Collapsed;
-
-            if (success)
+            if (!success)
             {
+                LoadingIndicator.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            // 2. 浪琩 PLC 琌硈絬狦硈絬玥笆更
+            var plcStatus = Helpers.PlcContext.GlobalStatus;
+            if (plcStatus?.CurrentManager != null && plcStatus.CurrentManager.IsConnected)
+            {
+                StatusText.Text = "更 Recipe  PLC い...";
+
+                int downloadCount = await RecipeContext.DownloadRecipeToPLCAsync(plcStatus.CurrentManager);
+
+                LoadingIndicator.Visibility = Visibility.Collapsed;
+
+                if (downloadCount > 0)
+                {
+                    StatusText.Text = $"Recipe 穝更更Θ: {downloadCount} 把计";
+                    StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
+
+                    CyberMessageBox.Show(
+                        $"Recipe reloaded and downloaded successfully!\n\n" +
+                        $"{downloadCount} parameters written to PLC.",
+                        "Success",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information
+                    );
+                }
+                else
+                {
+                    StatusText.Text = "Recipe 穝更Θ更ア毖";
+                    StatusText.Foreground = new SolidColorBrush(Colors.Orange);
+                }
+            }
+            else
+            {
+                LoadingIndicator.Visibility = Visibility.Collapsed;
+                StatusText.Text = "Recipe 穝更Θ (PLC ゼ硈絬)";
+                StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
+
                 CyberMessageBox.Show(
-                    "Recipe Θ穝更",
-                    "穝更Θ",
+                    "Recipe reloaded successfully.\n\n" +
+                    "Note: PLC is not connected.",
+                    "Recipe Reloaded",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information
                 );

@@ -12,6 +12,10 @@ nupkg/
 # Rider
 .idea/
 
+
+# Sdk
+FeiyangSDK-2.3.1/
+
 # Visual Studio
 .vs/
 

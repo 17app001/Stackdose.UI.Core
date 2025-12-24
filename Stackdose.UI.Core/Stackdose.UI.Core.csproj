@@ -13,8 +13,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\FeiyangWrapper.vcxproj" />
     <ProjectReference Include="..\..\Stackdose.Platform\Stackdose.Core\Stackdose.Core.csproj" />
     <ProjectReference Include="..\..\Stackdose.Platform\Stackdose.Hardware\Stackdose.Hardware.csproj" />
+    <ProjectReference Include="..\..\Stackdose.Platform\Stackdose.PrintHead\Stackdose.PrintHead.csproj" />
   </ItemGroup>
+
+  <!-- 📋 複製 FeiyangSDK 依賴的 DLLs -->
 
 </Project>

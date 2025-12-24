@@ -13,7 +13,7 @@
   "Items": [
     {
       "Name": "Heater Temperature",
-      "Address": "",
+      "Address": "D100",
       "Value": "200000",
       "DataType": "Int",
       "Unit": "°C",

@@ -99,6 +99,15 @@
                                AutoStart="True"
                                RefreshInterval="499"/>
 
+        <!-- PrintHeadStatus -->
+        <Controls:PrintHeadStatus x:Name="PrintHead1"
+                                  HorizontalAlignment="Left" 
+                                  Margin="446,610,0,0" 
+                                  VerticalAlignment="Top"
+                                  HeadName="Feiyang Head 1"
+                                  ConfigFilePath="feiyang_head1.json"
+                                  AutoConnect="False"/>
+
         <!-- ⭐ NEW: RecipeLoader Control -->
         <Controls:RecipeLoader HorizontalAlignment="Left" 
                                Margin="901,511,0,0" 

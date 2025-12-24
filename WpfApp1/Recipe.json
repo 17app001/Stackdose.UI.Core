@@ -13,7 +13,7 @@
   "Items": [
     {
       "Name": "Heater Temperature",
-      "Address": "D100",
+      "Address": "",
       "Value": "200000",
       "DataType": "Int",
       "Unit": "°C",
@@ -52,6 +52,33 @@
       "MaxValue": 800,
       "IsEnabled": true
     },
+    {
+      "Name": "Motor Enable",
+      "Address": "R2002.0",
+      "Value": "1",
+      "DataType": "Bit",
+      "Unit": "",
+      "Description": "Motor enable signal (R2002 bit 0)",
+      "IsEnabled": true
+    },
+    {
+      "Name": "Heater Enable",
+      "Address": "R2002.1",
+      "Value": "1",
+      "DataType": "Bit",
+      "Unit": "",
+      "Description": "Heater enable signal (R2002 bit 1)",
+      "IsEnabled": true
+    },
+    {
+      "Name": "Alarm Reset",
+      "Address": "R2002.5",
+      "Value": "0",
+      "DataType": "Bit",
+      "Unit": "",
+      "Description": "Alarm reset signal (R2002 bit 5)",
+      "IsEnabled": true
+    },    
     {
       "Name": "Pressure Time",
       "Address": "D110",

@@ -414,7 +414,7 @@ namespace Stackdose.UI.Core.Helpers
 
         /// <summary>
         /// 生成 Recipe 監控位址字串 (用於 PlcStatus 自動註冊)
-        /// 格式: "D100:1,D102:2,D104:1,..."
+        /// 格式: "D100:1,D102:2,D104:1,M100:1,R2002:1,..."
         /// </summary>
         /// <returns>監控位址配置字串</returns>
         public static string GenerateMonitorAddresses()
@@ -423,9 +423,36 @@ namespace Stackdose.UI.Core.Helpers
                 return string.Empty;
 
             var addresses = new List<string>();
+            var processedWords = new HashSet<string>(); // 追蹤已處理的 Word 地址，避免重複
 
             foreach (var item in CurrentRecipe.Items.Where(x => x.IsEnabled))
             {
+                // ? 處理 Word Bit（例如：R2002.5）
+                var wordBitMatch = Regex.Match(item.Address, @"^([DRWM])(\d+)\.(\d+)$");
+                if (wordBitMatch.Success && item.DataType?.Equals("Bit", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    // 提取 Word 地址（例如：R2002）
+                    string wordAddress = $"{wordBitMatch.Groups[1].Value}{wordBitMatch.Groups[2].Value}";
+                    
+                    // 如果這個 Word 還沒被註冊，就註冊它（長度為 1）
+                    if (!processedWords.Contains(wordAddress))
+                    {
+                        addresses.Add($"{wordAddress}:1");
+                        processedWords.Add(wordAddress);
+                    }
+                    continue;
+                }
+
+                // ? 處理純 Bit 裝置（例如：M100, X10, Y20）
+                var pureBitMatch = Regex.Match(item.Address, @"^([MXY])(\d+)$");
+                if (pureBitMatch.Success && item.DataType?.Equals("Bit", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    // 純 Bit 裝置也註冊為長度 1
+                    addresses.Add($"{item.Address}:1");
+                    continue;
+                }
+
+                // ? 處理 Word/DWord 裝置（原有邏輯）
                 var match = Regex.Match(item.Address, @"^([DR])(\d+)$");
                 if (!match.Success)
                     continue;
@@ -498,88 +525,157 @@ namespace Stackdose.UI.Core.Helpers
                 {
                     try
                     {
-                        // 解析地址 (例如: D100, R200)
-                        var match = Regex.Match(item.Address, @"^([DR])(\d+)$");
-                        if (!match.Success)
-                        {
-                            errors.Add($"{item.Name}: Invalid address format {item.Address}");
-                            failCount++;
-                            continue;
-                        }
-
-                        string device = match.Groups[1].Value;
-                        int address = int.Parse(match.Groups[2].Value);
-
-                        // 根據 DataType 進行寫入
                         bool writeSuccess = false;
 
-                        if (item.DataType?.Equals("Short", StringComparison.OrdinalIgnoreCase) == true ||
-                            item.DataType?.Equals("Word", StringComparison.OrdinalIgnoreCase) == true)
+                        // ? 檢查是否為 Bit 位址（例如：R2002.5, D100.3, M100）
+                        var bitMatch = Regex.Match(item.Address, @"^([DRWM])(\d+)\.(\d+)$");
+                        if (bitMatch.Success && item.DataType?.Equals("Bit", StringComparison.OrdinalIgnoreCase) == true)
                         {
-                            // Short/Word: 單一暫存器
-                            if (short.TryParse(item.Value, out short value))
+                            // Bit 位址格式：R2002.5 表示 R2002 的第 5 個 bit
+                            string device = bitMatch.Groups[1].Value;
+                            int address = int.Parse(bitMatch.Groups[2].Value);
+                            int bitPos = int.Parse(bitMatch.Groups[3].Value);
+
+                            if (bitPos < 0 || bitPos > 15)
                             {
-                                await plcManager.PlcClient.WriteWordAsync(device, address, value);
+                                errors.Add($"{item.Name}: Invalid bit position {bitPos} (must be 0-15)");
+                                failCount++;
+                                continue;
+                            }
+
+                            if (int.TryParse(item.Value, out int bitValue) && (bitValue == 0 || bitValue == 1))
+                            {
+                                await plcManager.PlcClient.WriteBitAsync(device, address, bitPos, bitValue);
                                 writeSuccess = true;
+
+                                ComplianceContext.LogSystem(
+                                    $"[Recipe Download] {item.Name} ({item.Address}) = {bitValue}",
+                                    LogLevel.Info,
+                                    showInUi: false
+                                );
                             }
                             else
                             {
-                                errors.Add($"{item.Name}: Invalid Short value '{item.Value}'");
+                                errors.Add($"{item.Name}: Invalid Bit value '{item.Value}' (must be 0 or 1)");
                                 failCount++;
                                 continue;
                             }
                         }
-                        else if (item.DataType?.Equals("DWord", StringComparison.OrdinalIgnoreCase) == true ||
-                                 item.DataType?.Equals("Int", StringComparison.OrdinalIgnoreCase) == true ||
-                                 item.DataType?.Equals("Int32", StringComparison.OrdinalIgnoreCase) == true)
+                        // ? 檢查是否為純 Bit 裝置（例如：M100, X10, Y20）
+                        else if (Regex.IsMatch(item.Address, @"^[MXY]\d+$") && 
+                                 item.DataType?.Equals("Bit", StringComparison.OrdinalIgnoreCase) == true)
                         {
-                            // DWord/Int: 兩個連續暫存器
-                            if (int.TryParse(item.Value, out int value))
+                            // 純 Bit 裝置（M, X, Y）
+                            var pureBitMatch = Regex.Match(item.Address, @"^([MXY])(\d+)$");
+                            if (pureBitMatch.Success)
                             {
-                                await plcManager.PlcClient.WriteDWordAsync(device, address, value);
-                                writeSuccess = true;
-                            }
-                            else
-                            {
-                                errors.Add($"{item.Name}: Invalid Int value '{item.Value}'");
-                                failCount++;
-                                continue;
+                                string device = pureBitMatch.Groups[1].Value;
+                                int address = int.Parse(pureBitMatch.Groups[2].Value);
+
+                                if (int.TryParse(item.Value, out int bitValue) && (bitValue == 0 || bitValue == 1))
+                                {
+                                    await plcManager.PlcClient.WriteBitAsync(device, address, bitValue);
+                                    writeSuccess = true;
+
+                                    ComplianceContext.LogSystem(
+                                        $"[Recipe Download] {item.Name} ({item.Address}) = {bitValue}",
+                                        LogLevel.Info,
+                                        showInUi: false
+                                    );
+                                }
+                                else
+                                {
+                                    errors.Add($"{item.Name}: Invalid Bit value '{item.Value}' (must be 0 or 1)");
+                                    failCount++;
+                                    continue;
+                                }
                             }
                         }
-                        else if (item.DataType?.Equals("Float", StringComparison.OrdinalIgnoreCase) == true)
-                        {
-                            // Float: 兩個連續暫存器（將 float 轉為 int 表示，例如 3.5 -> 35，需要除以 10）
-                            if (float.TryParse(item.Value, out float floatValue))
-                            {
-                                // 將 float 轉換為整數表示（假設精度為小數點後一位）
-                                // 例如：3.5 -> 35，然後寫入 PLC
-                                // 實際使用時可能需要根據 PLC 的 float 編碼方式調整
-                                int intValue = (int)(floatValue * 10); // 簡單的定點數轉換
-                                await plcManager.PlcClient.WriteDWordAsync(device, address, intValue);
-                                writeSuccess = true;
-                            }
-                            else
-                            {
-                                errors.Add($"{item.Name}: Invalid Float value '{item.Value}'");
-                                failCount++;
-                                continue;
-                            }
-                        }
+                        // ? Word/DWord 裝置（原有邏輯）
                         else
                         {
-                            errors.Add($"{item.Name}: Unsupported DataType '{item.DataType}'");
-                            failCount++;
-                            continue;
+                            // 解析地址 (例如: D100, R200)
+                            var match = Regex.Match(item.Address, @"^([DR])(\d+)$");
+                            if (!match.Success)
+                            {
+                                errors.Add($"{item.Name}: Invalid address format {item.Address}");
+                                failCount++;
+                                continue;
+                            }
+
+                            string device = match.Groups[1].Value;
+                            int address = int.Parse(match.Groups[2].Value);
+
+                            // 根據 DataType 進行寫入
+                            if (item.DataType?.Equals("Short", StringComparison.OrdinalIgnoreCase) == true ||
+                                item.DataType?.Equals("Word", StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                // Short/Word: 單一暫存器
+                                if (short.TryParse(item.Value, out short value))
+                                {
+                                    await plcManager.PlcClient.WriteWordAsync(device, address, value);
+                                    writeSuccess = true;
+                                }
+                                else
+                                {
+                                    errors.Add($"{item.Name}: Invalid Short value '{item.Value}'");
+                                    failCount++;
+                                    continue;
+                                }
+                            }
+                            else if (item.DataType?.Equals("DWord", StringComparison.OrdinalIgnoreCase) == true ||
+                                     item.DataType?.Equals("Int", StringComparison.OrdinalIgnoreCase) == true ||
+                                     item.DataType?.Equals("Int32", StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                // DWord/Int: 兩個連續暫存器
+                                if (int.TryParse(item.Value, out int value))
+                                {
+                                    await plcManager.PlcClient.WriteDWordAsync(device, address, value);
+                                    writeSuccess = true;
+                                }
+                                else
+                                {
+                                    errors.Add($"{item.Name}: Invalid Int value '{item.Value}'");
+                                    failCount++;
+                                    continue;
+                                }
+                            }
+                            else if (item.DataType?.Equals("Float", StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                // Float: 兩個連續暫存器（將 float 轉為 int 表示，例如 3.5 -> 35，需要除以 10）
+                                if (float.TryParse(item.Value, out float floatValue))
+                                {
+                                    int intValue = (int)(floatValue * 10);
+                                    await plcManager.PlcClient.WriteDWordAsync(device, address, intValue);
+                                    writeSuccess = true;
+                                }
+                                else
+                                {
+                                    errors.Add($"{item.Name}: Invalid Float value '{item.Value}'");
+                                    failCount++;
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                errors.Add($"{item.Name}: Unsupported DataType '{item.DataType}'");
+                                failCount++;
+                                continue;
+                            }
+
+                            if (writeSuccess)
+                            {
+                                ComplianceContext.LogSystem(
+                                    $"[Recipe Download] {item.Name} ({item.Address}) = {item.Value} {item.Unit}",
+                                    LogLevel.Info,
+                                    showInUi: false
+                                );
+                            }
                         }
 
                         if (writeSuccess)
                         {
                             successCount++;
-                            ComplianceContext.LogSystem(
-                                $"[Recipe Download] {item.Name} ({item.Address}) = {item.Value} {item.Unit}",
-                                LogLevel.Info,
-                                showInUi: false
-                            );
                         }
                         else
                         {

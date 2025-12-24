@@ -56,13 +56,13 @@
 
         <Controls:PlcLabel x:Name="LblTemp" 
                            HorizontalAlignment="Left" Margin="484,111,0,0" VerticalAlignment="Top" 
-                           Width="130" Height="156" 
-                           Label="Temperature"
+                           Width="169" Height="156" 
+                           Label="溫度"
                            Address="R2002" 
-                           DefaultValue="00000" 
+                           DefaultValue="0000" 
                            DataType="Word" 
                            BitIndex="-1" 
-                           Divisor="10"/>
+                           Divisor="10" FrameShape="Circle" ValueAlignment="Center" LabelAlignment="Center" ShowAddress="False" LabelFontSize="23" ValueForeground="Warning"/>
 
         <Controls:PlcLabel HorizontalAlignment="Left" Margin="640,84,0,0" VerticalAlignment="Top" 
                            Width="203" Height="58" 

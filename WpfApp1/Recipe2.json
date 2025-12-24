@@ -109,13 +109,11 @@
     },
     {
       "Name": "Alarm Critical Temp",
-      "Address": "D200",
-      "Value": "280",
-      "DataType": "Short",
-      "Unit": "�XC",
+      "Address": "R2008.15",
+      "Value": "1",      
+      "DataType": "Bit",
+      "Unit": "",
       "Description": "Higher alarm threshold",
-      "MinValue": 150,
-      "MaxValue": 300,
       "IsEnabled": true
     }
   ]

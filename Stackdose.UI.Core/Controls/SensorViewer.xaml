@@ -136,7 +136,7 @@
                 <!-- Show Alarms Only Checkbox -->
                 <CheckBox Grid.Column="1" 
                           x:Name="ChkShowAlarmsOnly"
-                          Content="Only Sensor ON" 
+                          Content="Only ON" 
                           Foreground="{DynamicResource Sensor.Text.Label}" 
                           FontSize="12"
                           FontFamily="Microsoft JhengHei, Segoe UI, Arial"

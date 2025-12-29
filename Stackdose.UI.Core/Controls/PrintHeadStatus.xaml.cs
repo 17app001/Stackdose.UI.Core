@@ -97,8 +97,8 @@ namespace Stackdose.UI.Core.Controls
                 return;
             }
 
-            // ⭐ 显示假温度（用于 UI 测试）
-            ShowFakeTemperature();
+            // ⭐ 初始化時顯示 N/A
+            ResetStatusDisplay();
 
             // 自動連線（如果啟用）
             if (AutoConnect)
@@ -130,25 +130,20 @@ namespace Stackdose.UI.Core.Controls
         }
 
         /// <summary>
-        /// 显示假温度数据（用于 UI 测试）
+        /// 重置狀態顯示為 N/A
         /// </summary>
-        private void ShowFakeTemperature()
+        private void ResetStatusDisplay()
         {
-            // 假温度
-            TemperatureText.Text = "38.5°C";
-            
-            // 假电压 (4个通道)
-            var fakeVoltages = new[] { "V1: 23.5V", "V2: 23.5V", "V3: 23.5V", "V4: 23.5V" };
-            VoltagesPanel.ItemsSource = fakeVoltages;
-            
-            // 假编码器
-            EncoderText.Text = "21000";
-            
-            // 假 PrintIndex
-            PrintIndexText.Text = "10000";
+            Dispatcher.Invoke(() =>
+            {
+                TemperatureText.Text = "N/A";
+                EncoderText.Text = "N/A";
+                PrintIndexText.Text = "N/A";
+                VoltagesPanel.ItemsSource = new[] { "N/A" };
+            });
 
             ComplianceContext.LogSystem(
-                "[PrintHead] 🧪 Displaying fake data for UI testing",
+                "[PrintHead] Status display reset to N/A",
                 LogLevel.Info,
                 showInUi: false
             );
@@ -416,6 +411,9 @@ namespace Stackdose.UI.Core.Controls
                 }
 
                 _isConnected = false;
+
+                // ⭐ 斷線後重置顯示為 N/A
+                ResetStatusDisplay();
 
                 UpdateStatus(false);
 

@@ -3,6 +3,24 @@ using System.Text.Json.Serialization;
 namespace Stackdose.UI.Core.Models
 {
     /// <summary>
+    /// 閃噴參數
+    /// </summary>
+    public class SpitParams
+    {
+        /// <summary>頻率 (kHz)</summary>
+        public double Frequency { get; set; } = 0.1;
+
+        /// <summary>工作時間 (秒)</summary>
+        public double WorkDuration { get; set; } = 1.0;
+
+        /// <summary>閒置時間 (秒)</summary>
+        public double IdleDuration { get; set; } = 1.0;
+
+        /// <summary>液滴數</summary>
+        public int Drops { get; set; } = 1;
+    }
+
+    /// <summary>
     /// PrintHead 配置模型（對應 JSON 配置檔）
     /// </summary>
     public class PrintHeadConfig

@@ -102,7 +102,7 @@
         <!-- PrintHeadStatus -->
         <Controls:PrintHeadStatus x:Name="PrintHead1"
                                   HorizontalAlignment="Left" 
-                                  Margin="446,610,0,0" 
+                                  Margin="901,200,0,0" 
                                   VerticalAlignment="Top"
                                   HeadName="Feiyang Head 1"
                                   ConfigFilePath="feiyang_head1.json"
@@ -158,7 +158,7 @@
         </StackPanel>
 
         <!-- Permission Test Buttons -->
-        <Border HorizontalAlignment="Left" Margin="1356,569,0,0" VerticalAlignment="Top" 
+        <Border HorizontalAlignment="Left" Margin="1327,244,0,0" VerticalAlignment="Top" 
                 Width="200" Background="#1A1A2E" Padding="10" CornerRadius="5">
             <StackPanel>
                 <TextBlock Text="Permission Test" 

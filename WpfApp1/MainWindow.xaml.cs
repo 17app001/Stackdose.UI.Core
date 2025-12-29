@@ -43,7 +43,7 @@ namespace WpfApp1
             SecurityContext.LogoutOccurred += OnLogoutOccurred;
 
             // ⭐ 訂閱 PLC 連線成功事件
-            MainPlc.ConnectionEstablished += OnPlcConnectionEstablished;
+            // MainPlc.ConnectionEstablished += OnPlcConnectionEstablished;
 
             // ⭐ 初始化 Recipe 系統 (不自動載入，等待 PLC 連線)
             _ = InitializeRecipeSystemAsync();

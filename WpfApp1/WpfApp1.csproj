@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <None Remove="feiyang_head1.json" />
-    <None Remove="Recipe.json" />
     <None Remove="Recipe2.json" />
     <None Remove="Recipe3.json" />
     <None Remove="Sensors.json" />
@@ -20,7 +19,7 @@
     <Content Include="feiyang_head1.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Recipe.json">
+    <Content Include="Recipe1.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Recipe2.json">

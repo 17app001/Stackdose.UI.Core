@@ -5,52 +5,175 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d"
              x:Name="root"
-             Width="280" Height="180"
-             d:DesignHeight="180" d:DesignWidth="280">
+             Width="220"
+             d:DesignWidth="220">
 
     <Border Background="{DynamicResource Plc.Bg.Dark}" 
             BorderBrush="{DynamicResource Plc.Border}" 
             BorderThickness="1" 
             CornerRadius="8"
-            Padding="8">
+            Padding="6">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="10"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="10"/>
+                <RowDefinition Height="5"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Header -->
+            <!-- Header: Status Light + Name + IP + Temperature + Power Button + Expand Button -->
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="5"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="5"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0" 
-                           Text="{Binding HeadName, ElementName=root, FallbackValue='PrintHead 1'}" 
-                           FontSize="14" 
-                           FontWeight="Bold"
-                           Foreground="{DynamicResource Plc.Text.Label}"/>
+                <!-- Status Light -->
+                <Grid Grid.Column="0" VerticalAlignment="Center">
+                    <Ellipse x:Name="StatusLight" 
+                             Width="10" 
+                             Height="10" 
+                             Fill="#ff4757">
+                        <Ellipse.Effect>
+                            <DropShadowEffect x:Name="StatusGlow" 
+                                              Color="#ff4757" 
+                                              BlurRadius="6" 
+                                              ShadowDepth="0" 
+                                              Opacity="0.8"/>
+                        </Ellipse.Effect>
+                    </Ellipse>
+                </Grid>
 
-                <TextBlock x:Name="StatusText" 
-                           Grid.Column="1"
-                           Text="DISCONNECTED" 
-                           FontSize="11" 
+                <!-- Name + IP -->
+                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding HeadName, ElementName=root, FallbackValue='PrintHead 1'}" 
+                               FontSize="12" 
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource Plc.Text.Label}"/>
+                    <TextBlock x:Name="BoardAddressText" 
+                               Text="N/A" 
+                               FontSize="8" 
+                               Foreground="Gray"
+                               Margin="0,1,0,0"/>
+                </StackPanel>
+
+                <!-- Temperature -->
+                <TextBlock x:Name="TemperatureText" 
+                           Grid.Column="4"
+                           Text="N/A" 
+                           FontSize="12" 
+                           Foreground="#00d4ff" 
                            FontWeight="Bold"
-                           Foreground="#ff4757"
                            VerticalAlignment="Center"/>
+
+                <!-- Power ON/OFF Button -->
+                <ToggleButton x:Name="PowerButton"
+                              Grid.Column="6"
+                              Width="26"
+                              Height="26"
+                              VerticalAlignment="Center"
+                              Cursor="Hand"
+                              Checked="PowerButton_Checked"
+                              Unchecked="PowerButton_Unchecked">
+                    <ToggleButton.Style>
+                        <Style TargetType="ToggleButton">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Grid>
+                                            <!-- Circle Background -->
+                                            <Ellipse x:Name="CircleBackground"
+                                                     Width="26"
+                                                     Height="26"
+                                                     Fill="#2c3e50"
+                                                     Stroke="#34495e"
+                                                     StrokeThickness="1.5"/>
+                                            
+                                            <!-- Power Icon (Circle with vertical line) -->
+                                            <Canvas Width="14" Height="14" 
+                                                    HorizontalAlignment="Center" 
+                                                    VerticalAlignment="Center">
+                                                <!-- Vertical line -->
+                                                <Line X1="7" Y1="0" X2="7" Y2="7"
+                                                      x:Name="PowerLine"
+                                                      Stroke="#95a5a6"
+                                                      StrokeThickness="2"
+                                                      StrokeStartLineCap="Round"
+                                                      StrokeEndLineCap="Round"/>
+                                                <!-- Arc (partial circle) -->
+                                                <Path x:Name="PowerArc"
+                                                      Data="M 3,5 A 5,5 0 1,0 11,5"
+                                                      Stroke="#95a5a6"
+                                                      StrokeThickness="2"
+                                                      StrokeStartLineCap="Round"
+                                                      StrokeEndLineCap="Round"
+                                                      Fill="Transparent"/>
+                                            </Canvas>
+                                        </Grid>
+                                        <ControlTemplate.Triggers>
+                                            <!-- Checked State (ON) -->
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="CircleBackground" Property="Fill" Value="#2ecc71"/>
+                                                <Setter TargetName="CircleBackground" Property="Stroke" Value="#27ae60"/>
+                                                <Setter TargetName="PowerLine" Property="Stroke" Value="White"/>
+                                                <Setter TargetName="PowerArc" Property="Stroke" Value="White"/>
+                                            </Trigger>
+                                            
+                                            <!-- Hover Effect -->
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="CircleBackground" Property="Opacity" Value="0.85"/>
+                                            </Trigger>
+                                            
+                                            <!-- Disabled State -->
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter TargetName="CircleBackground" Property="Opacity" Value="0.5"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ToggleButton.Style>
+                </ToggleButton>
+
+                <!-- Expand/Collapse Button -->
+                <Button x:Name="ExpandButton"
+                        Grid.Column="8"
+                        Width="18"
+                        Height="18"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="ExpandButton_Click"
+                        VerticalAlignment="Center"
+                        Cursor="Hand">
+                    <TextBlock x:Name="ExpandIcon"
+                               Text="&#x25BC;"
+                               FontSize="7"
+                               Foreground="{DynamicResource Plc.Text.Label}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center">
+                        <TextBlock.RenderTransform>
+                            <RotateTransform x:Name="ExpandIconRotation" Angle="0" CenterX="4" CenterY="4"/>
+                        </TextBlock.RenderTransform>
+                    </TextBlock>
+                </Button>
             </Grid>
 
-            <!-- Connection Info & Temperatures -->
-            <Border Grid.Row="2" 
+            <!-- Status Data (Collapsible) -->
+            <Border x:Name="StatusDataPanel"
+                    Grid.Row="2" 
                     Background="{DynamicResource Plc.Bg.Main}" 
                     BorderBrush="{DynamicResource Plc.Border}" 
                     BorderThickness="1" 
                     CornerRadius="5"
-                    Padding="8">
+                    Padding="6"
+                    Visibility="Collapsed">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -58,153 +181,89 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="5"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="5"/>
-                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Config File -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal">
-                        <TextBlock Text="Config:" 
-                                   FontSize="11" 
-                                   Foreground="Gray" 
-                                   Margin="0,0,5,0"/>
-                        <TextBlock x:Name="ConfigFileText" 
-                                   Text="N/A" 
-                                   FontSize="11" 
-                                   Foreground="{DynamicResource Plc.Text.Value}"/>
-                    </StackPanel>
-
-                    <!-- Board IP:Port -->
-                    <StackPanel Grid.Row="2" Orientation="Horizontal">
-                        <TextBlock Text="Board:" 
-                                   FontSize="11" 
-                                   Foreground="Gray" 
-                                   Margin="0,0,5,0"/>
-                        <TextBlock x:Name="BoardAddressText" 
-                                   Text="N/A" 
-                                   FontSize="11" 
-                                   Foreground="{DynamicResource Plc.Text.Value}"/>
-                    </StackPanel>
-
-                    <!-- Model -->
-                    <StackPanel Grid.Row="4" Orientation="Horizontal">
-                        <TextBlock Text="Model:" 
-                                   FontSize="11" 
-                                   Foreground="Gray" 
-                                   Margin="0,0,5,0"/>
-                        <TextBlock x:Name="ModelText" 
-                                   Text="N/A" 
-                                   FontSize="11" 
-                                   Foreground="{DynamicResource Plc.Text.Value}"/>
-                    </StackPanel>
-
-                    <!-- Temperatures -->
-                    <Border Grid.Row="6" 
+                    <!-- Voltages (4 channels) -->
+                    <Border Grid.Row="0" 
                             Background="{DynamicResource Plc.Bg.Dark}" 
                             BorderBrush="{DynamicResource Plc.Border}" 
                             BorderThickness="1" 
-                            CornerRadius="4"
-                            Padding="6"
-                            Margin="0,5,0,0">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="3"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0" 
-                                       Text="??? Temperatures" 
-                                       FontSize="10" 
+                            CornerRadius="3"
+                            Padding="5">
+                        <StackPanel>
+                            <TextBlock Text="Voltages" 
+                                       FontSize="8" 
                                        Foreground="Gray"
+                                       FontWeight="Bold"
                                        HorizontalAlignment="Center"/>
-
-                            <ItemsControl x:Name="TemperaturesPanel" 
-                                          Grid.Row="2"
-                                          HorizontalAlignment="Center">
+                            <ItemsControl x:Name="VoltagesPanel" 
+                                          HorizontalAlignment="Center"
+                                          Margin="0,3,0,0">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal"/>
+                                        <UniformGrid Columns="2" Rows="2"/>
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="#16213e" 
+                                        <Border Background="#1a1a2e" 
                                                 BorderBrush="#2c3e50" 
                                                 BorderThickness="1" 
-                                                CornerRadius="3"
-                                                Padding="4,2"
+                                                CornerRadius="2"
+                                                Padding="3,1"
                                                 Margin="2">
                                             <TextBlock Text="{Binding}" 
-                                                       FontSize="11" 
-                                                       Foreground="#00d4ff" 
+                                                       FontSize="8" 
+                                                       Foreground="#ffd700" 
                                                        FontWeight="Bold"/>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                        </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Encoder -->
+                    <Border Grid.Row="2" 
+                            Background="{DynamicResource Plc.Bg.Dark}" 
+                            BorderBrush="{DynamicResource Plc.Border}" 
+                            BorderThickness="1" 
+                            CornerRadius="3"
+                            Padding="5">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="Encoder: " 
+                                       FontSize="8" 
+                                       Foreground="Gray"
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="EncoderText" 
+                                       Text="N/A" 
+                                       FontSize="8" 
+                                       Foreground="#00ff7f" 
+                                       FontWeight="Bold"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- PrintIndex -->
+                    <Border Grid.Row="4" 
+                            Background="{DynamicResource Plc.Bg.Dark}" 
+                            BorderBrush="{DynamicResource Plc.Border}" 
+                            BorderThickness="1" 
+                            CornerRadius="3"
+                            Padding="5">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="PrintIndex: " 
+                                       FontSize="8" 
+                                       Foreground="Gray"
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="PrintIndexText" 
+                                       Text="N/A" 
+                                       FontSize="8" 
+                                       Foreground="#ff69b4" 
+                                       FontWeight="Bold"/>
+                        </StackPanel>
                     </Border>
                 </Grid>
             </Border>
-
-            <!-- Buttons -->
-            <Grid Grid.Row="4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="5"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <Button x:Name="ConnectButton" 
-                        Grid.Column="0"
-                        Content="Connect" 
-                        Background="#2ecc71" 
-                        Foreground="White"
-                        BorderBrush="#27ae60"
-                        Height="32"
-                        FontWeight="Bold"
-                        Click="ConnectButton_Click"
-                        Style="{DynamicResource ModernButtonStyle}"/>
-
-                <Button x:Name="DisconnectButton" 
-                        Grid.Column="2"
-                        Content="Disconnect" 
-                        Background="#e74c3c" 
-                        Foreground="White"
-                        BorderBrush="#c0392b"
-                        Height="32"
-                        FontWeight="Bold"
-                        Click="DisconnectButton_Click"
-                        IsEnabled="False"
-                        Style="{DynamicResource ModernButtonStyle}"/>
-            </Grid>
         </Grid>
     </Border>
-
-    <UserControl.Resources>
-        <Style x:Key="ModernButtonStyle" TargetType="Button">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="4">
-                            <ContentPresenter HorizontalAlignment="Center" 
-                                              VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Opacity" Value="0.8"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" Value="0.5"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </UserControl.Resources>
 </UserControl>

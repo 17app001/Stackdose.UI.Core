@@ -49,7 +49,8 @@ namespace Stackdose.UI.Core.Controls
             InitializeSecurityEvents();
             UpdateUserInfo();
 
-            // 控制項卸載時清理資源
+            // ✅ 改用 Loaded 事件（確保 ComplianceContext 已初始化）
+            this.Loaded += CyberFrame_Loaded;
             this.Unloaded += CyberFrame_Unloaded;
         }
 
@@ -80,13 +81,77 @@ namespace Stackdose.UI.Core.Controls
         }
 
         /// <summary>
+        /// 🔥 初始化批次寫入狀態燈號
+        /// </summary>
+        private void InitializeBatchWriteIndicator()
+        {
+            try
+            {
+                // 訂閱批次刷新事件
+                SqliteLogger.BatchFlushStarted += OnBatchFlushStarted;
+                SqliteLogger.BatchFlushCompleted += OnBatchFlushCompleted;
+                
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[CyberFrame] 批次寫入狀態燈號已初始化");
+                #endif
+            }
+            catch (Exception ex)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[CyberFrame] InitializeBatchWriteIndicator Error: {ex.Message}");
+                #endif
+            }
+        }
+
+        /// <summary>
+        /// 控制項載入時的初始化
+        /// </summary>
+        private void CyberFrame_Loaded(object sender, RoutedEventArgs e)
+        {
+            // ✅ 強制輸出（Console + Debug + LiveLogViewer）
+            Console.WriteLine("========== CyberFrame_Loaded ==========");
+            System.Diagnostics.Debug.WriteLine("========== CyberFrame_Loaded ==========");
+            ComplianceContext.LogSystem("========== CyberFrame_Loaded ==========", Models.LogLevel.Info);
+            
+            try
+            {
+                // 確保 ComplianceContext 已初始化（觸發靜態建構函數）
+                ComplianceContext.LogSystem("[CyberFrame] Loaded, initializing batch write indicator...", 
+                    Models.LogLevel.Info, showInUi: true); // ✅ showInUi 改為 true
+                
+                Console.WriteLine("[CyberFrame] 訂閱前...");
+                
+                // 訂閱批次寫入事件
+                InitializeBatchWriteIndicator();
+                
+                Console.WriteLine("[CyberFrame] 訂閱後...");
+                
+                ComplianceContext.LogSystem("[CyberFrame] 批次寫入事件已訂閱", 
+                    Models.LogLevel.Success, showInUi: true); // ✅ 顯示在 LiveLogViewer
+                
+                System.Diagnostics.Debug.WriteLine("[CyberFrame] 批次寫入事件已訂閱");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CyberFrame] CyberFrame_Loaded ERROR: {ex.Message}");
+                ComplianceContext.LogSystem($"[CyberFrame] ERROR: {ex.Message}", 
+                    Models.LogLevel.Error, showInUi: true);
+                System.Diagnostics.Debug.WriteLine($"[CyberFrame] CyberFrame_Loaded Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// 控制項卸載時的清理工作
         /// </summary>
         private void CyberFrame_Unloaded(object sender, RoutedEventArgs e)
         {
-            // 取消訂閱事件避免記憶體洩漏
+            // 取消訂閱事件avoiding記憶體洩漏
             SecurityContext.LoginSuccess -= OnLoginSuccess;
             SecurityContext.LogoutOccurred -= OnLogoutOccurred;
+            
+            // 🔥 取消訂閱批次寫入事件
+            SqliteLogger.BatchFlushStarted -= OnBatchFlushStarted;
+            SqliteLogger.BatchFlushCompleted -= OnBatchFlushCompleted;
             
             // 停止並清理計時器
             if (_clockTimer != null)
@@ -262,6 +327,164 @@ namespace Stackdose.UI.Core.Controls
             }
             
             System.Diagnostics.Debug.WriteLine("========== Theme Toggle END ==========");
+        }
+
+        /// <summary>
+        /// 批次刷新開始事件處理
+        /// </summary>
+        private void OnBatchFlushStarted(int dataCount, int auditCount)
+        {
+            // ✅ 最優先輸出（確認事件有被觸發）
+            Console.WriteLine($"========== OnBatchFlushStarted ==========");
+            Console.WriteLine($"[CyberFrame] dataCount={dataCount}, auditCount={auditCount}");
+            
+            System.Diagnostics.Debug.WriteLine($"========== OnBatchFlushStarted ==========");
+            System.Diagnostics.Debug.WriteLine($"[CyberFrame] 批次寫入開始: {dataCount}+{auditCount}");
+            
+            // ✅ 顯示在 LiveLogViewer
+            ComplianceContext.LogSystem($"🟢 批次寫入開始: {dataCount} DataLogs + {auditCount} AuditLogs", 
+                Models.LogLevel.Success, showInUi: true);
+            
+            try
+            {
+                // ✅ 使用 Invoke 而非 InvokeAsync，確保立即執行
+                Dispatcher.Invoke(() =>
+                {
+                    Console.WriteLine("[CyberFrame] Dispatcher.Invoke 執行中...");
+                    
+                    // 變綠色 - 寫入中
+                    SetBatchWriteIndicatorColor(Colors.LimeGreen);
+                    
+                    Console.WriteLine("[CyberFrame] 顏色已設定為綠色");
+                    
+                    // 更新 Tooltip
+                    var batchWriteIndicator = this.FindName("BatchWriteIndicator") as Border;
+                    if (batchWriteIndicator != null)
+                    {
+                        batchWriteIndicator.ToolTip = $"批次寫入中: {dataCount} DataLogs + {auditCount} AuditLogs";
+                        Console.WriteLine("[CyberFrame] Tooltip 已更新");
+                    }
+                    else
+                    {
+                        Console.WriteLine("[CyberFrame] 警告：找不到 BatchWriteIndicator 控制項！");
+                        ComplianceContext.LogSystem("[CyberFrame] 警告：找不到 BatchWriteIndicator 控制項！", 
+                            Models.LogLevel.Warning, showInUi: true);
+                    }
+                }, System.Windows.Threading.DispatcherPriority.Send); // ✅ 使用 Send 優先級，立即執行
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CyberFrame] OnBatchFlushStarted Error: {ex.Message}");
+                ComplianceContext.LogSystem($"[CyberFrame] 批次寫入開始錯誤: {ex.Message}", 
+                    Models.LogLevel.Error, showInUi: true);
+                System.Diagnostics.Debug.WriteLine($"[CyberFrame] OnBatchFlushStarted Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 批次刷新完成事件處理
+        /// </summary>
+        private void OnBatchFlushCompleted(int dataCount, int auditCount)
+        {
+            // ✅ 最優先輸出
+            Console.WriteLine($"========== OnBatchFlushCompleted ==========");
+            Console.WriteLine($"[CyberFrame] dataCount={dataCount}, auditCount={auditCount}");
+            
+            System.Diagnostics.Debug.WriteLine($"========== OnBatchFlushCompleted ==========");
+            System.Diagnostics.Debug.WriteLine($"[CyberFrame] 批次寫入完成: {dataCount}+{auditCount}");
+            
+            // ✅ 顯示在 LiveLogViewer
+            ComplianceContext.LogSystem($"🔴 批次寫入完成: {dataCount} DataLogs + {auditCount} AuditLogs", 
+                Models.LogLevel.Info, showInUi: true);
+            
+            try
+            {
+                // ✅ 延遲 500ms 再變回紅色，讓綠色更明顯
+                Task.Delay(500).ContinueWith(_ =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        Console.WriteLine("[CyberFrame] Dispatcher.Invoke 執行中...");
+                        
+                        // 變紅色 - 閒置
+                        SetBatchWriteIndicatorColor(Colors.Red);
+                        
+                        Console.WriteLine("[CyberFrame] 顏色已設定為紅色");
+                        
+                        // 更新 Tooltip
+                        var batchWriteIndicator = this.FindName("BatchWriteIndicator") as Border;
+                        if (batchWriteIndicator != null)
+                        {
+                            var stats = ComplianceContext.GetBatchStatistics();
+                            batchWriteIndicator.ToolTip = $"批次寫入閒置\n" +
+                                $"待寫入: {stats.PendingDataLogs} DataLogs + {stats.PendingAuditLogs} AuditLogs\n" +
+                                $"累計: {stats.DataLogs} + {stats.AuditLogs} = {stats.DataLogs + stats.AuditLogs} 筆";
+                            Console.WriteLine("[CyberFrame] Tooltip 已更新");
+                        }
+                        else
+                        {
+                            Console.WriteLine("[CyberFrame] 警告：找不到 BatchWriteIndicator 控制項！");
+                            ComplianceContext.LogSystem("[CyberFrame] 警告：找不到 BatchWriteIndicator 控制項！", 
+                                Models.LogLevel.Warning, showInUi: true);
+                        }
+                    }, System.Windows.Threading.DispatcherPriority.Send);
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CyberFrame] OnBatchFlushCompleted Error: {ex.Message}");
+                ComplianceContext.LogSystem($"[CyberFrame] 批次寫入完成錯誤: {ex.Message}", 
+                    Models.LogLevel.Error, showInUi: true);
+                System.Diagnostics.Debug.WriteLine($"[CyberFrame] OnBatchFlushCompleted Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 設定批次寫入指示燈顏色
+        /// </summary>
+        private void SetBatchWriteIndicatorColor(Color color)
+        {
+            try
+            {
+                Console.WriteLine($"[CyberFrame] SetBatchWriteIndicatorColor: {color}");
+                
+                // 使用 FindName 取得控制項
+                var batchWriteIndicator = this.FindName("BatchWriteIndicator") as Border;
+                
+                Console.WriteLine($"[CyberFrame] BatchWriteIndicator found: {batchWriteIndicator != null}");
+                
+                if (batchWriteIndicator == null)
+                {
+                    Console.WriteLine("[CyberFrame] 錯誤：找不到 BatchWriteIndicator 控制項！");
+                    return;
+                }
+
+                // ✅ 直接設定顏色（不使用動畫，確保立即生效）
+                batchWriteIndicator.Background = new SolidColorBrush(color);
+                Console.WriteLine($"[CyberFrame] 背景顏色已直接設定: {color}");
+                
+                // 更新發光效果
+                if (batchWriteIndicator.Effect is System.Windows.Media.Effects.DropShadowEffect shadow)
+                {
+                    shadow.Color = color;
+                    Console.WriteLine("[CyberFrame] 發光效果顏色已設定");
+                }
+                else
+                {
+                    Console.WriteLine("[CyberFrame] 警告：Effect 不是 DropShadowEffect");
+                }
+                
+                // ✅ 強制刷新 UI
+                batchWriteIndicator.InvalidateVisual();
+                batchWriteIndicator.UpdateLayout();
+                Console.WriteLine("[CyberFrame] UI 已強制刷新");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CyberFrame] SetBatchWriteIndicatorColor Error: {ex.Message}");
+                Console.WriteLine($"[CyberFrame] StackTrace: {ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine($"[CyberFrame] SetBatchWriteIndicatorColor Error: {ex.Message}");
+            }
         }
 
         #endregion

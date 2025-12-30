@@ -79,15 +79,15 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         private void UpdateButtonPermissions()
         {
-            bool hasEngineerAccess = SecurityContext.HasAccess(AccessLevel.Engineer);
+            bool hasAdminAccess = SecurityContext.HasAccess(AccessLevel.Admin);
 
             // 圖片操作按鈕只有 Engineer 可以使用
-            BrowseImageButton.IsEnabled = hasEngineerAccess;
-            LoadImageButton.IsEnabled = hasEngineerAccess;
-            CancelTaskButton.IsEnabled = hasEngineerAccess;
+            BrowseImageButton.IsEnabled = hasAdminAccess;
+            LoadImageButton.IsEnabled = hasAdminAccess;
+            CancelTaskButton.IsEnabled = hasAdminAccess;
 
             // 設置提示文字
-            if (!hasEngineerAccess)
+            if (!hasAdminAccess)
             {
                 string tooltip = $"需要 Engineer 權限\n目前權限: {SecurityContext.CurrentSession.CurrentLevel}";
                 BrowseImageButton.ToolTip = tooltip;
@@ -206,7 +206,7 @@ namespace Stackdose.UI.Core.Controls
             SecurityContext.UpdateActivity();
 
             // 檢查權限
-            if (!SecurityContext.CheckAccess(AccessLevel.Engineer, "讀取圖片"))
+            if (!SecurityContext.CheckAccess(AccessLevel.Admin, "讀取圖片"))
             {
                 return;
             }
@@ -286,7 +286,7 @@ namespace Stackdose.UI.Core.Controls
             SecurityContext.UpdateActivity();
 
             // 檢查權限
-            if (!SecurityContext.CheckAccess(AccessLevel.Engineer, "載入任務"))
+            if (!SecurityContext.CheckAccess(AccessLevel.Admin, "載入任務"))
             {
                 return;
             }

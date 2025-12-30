@@ -29,9 +29,9 @@ namespace Stackdose.UI.Core.Models
         Supervisor = 3,
 
         /// <summary>
-        /// 单 4祘畍 (Engineer)
-        /// 舦程蔼舦э籹祘把计
+        /// 单 4恨瞶 (Admin)
+        /// 舦程蔼舦э╰参把计
         /// </summary>
-        Engineer = 4
+        Admin = 4
     }
 }

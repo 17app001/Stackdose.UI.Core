@@ -15,7 +15,7 @@ namespace Wpf.Demo
             InitializeComponent();
             
             // 🔑 一行程式切換權限（改這裡即可）
-            SecurityContext.QuickLogin(AccessLevel.Engineer);  // Guest / Operator / Instructor / Supervisor / Engineer
+            SecurityContext.QuickLogin(AccessLevel.Admin);  // Guest / Operator / Instructor / Supervisor / Admin
         }      
     }
 }

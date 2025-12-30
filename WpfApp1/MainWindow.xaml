@@ -190,7 +190,7 @@
                                         Margin="0,3"/>
 
                 <Controls:SecuredButton Content="Modify Params (L4)" 
-                                        RequiredLevel="Engineer"
+                                        RequiredLevel="Admin"
                                         OperationName="Modify Parameters"
                                         Theme="Primary"
                                         Click="EngineerButton_Click"
@@ -206,6 +206,40 @@
 
         <!-- Theme Showcase -->
         <Controls:SecuredButton HorizontalAlignment="Left" Margin="73,640,0,0" VerticalAlignment="Top" Theme="Success" Height="60" Width="190" Content="製程開始" FontSize="16" RequiredLevel="Operator" OperationName="製程開始" Click="StartProcess_Click"/>
+
+        <!-- 🔥 批次寫入測試按鈕 -->
+        <Border HorizontalAlignment="Left" Margin="73,715,0,0" VerticalAlignment="Top" 
+                Width="300" Background="#1A1A2E" Padding="10" CornerRadius="5">
+            <StackPanel>
+                <TextBlock Text="Batch Write Test" 
+                           Foreground="#FFA726" 
+                           FontWeight="Bold" 
+                           FontSize="14" 
+                           Margin="0,0,0,10"
+                           HorizontalAlignment="Center"/>
+
+                <Button Content="Test Batch Write (500 logs)" 
+                        Click="TestBatchWrite_Click"
+                        Height="35" Margin="0,3" 
+                        Background="#1E1E2E" 
+                        Foreground="White" 
+                        BorderBrush="#FFA726"/>
+
+                <Button Content="Flush Logs Now" 
+                        Click="FlushLogs_Click"
+                        Height="35" Margin="0,3" 
+                        Background="#1E1E2E" 
+                        Foreground="White" 
+                        BorderBrush="#00E5FF"/>
+
+                <Button Content="Show Statistics" 
+                        Click="ShowStatistics_Click"
+                        Height="35" Margin="0,3" 
+                        Background="#1E1E2E" 
+                        Foreground="White" 
+                        BorderBrush="#4CAF50"/>
+            </StackPanel>
+        </Border>
 
     </Grid>
 </Window>

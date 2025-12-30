@@ -133,7 +133,7 @@ namespace Stackdose.UI.Core.Helpers
         /// 快速登入（預設帳號，用於測試或初始化）
         /// </summary>
         /// <param name="level">權限等級</param>
-        public static void QuickLogin(AccessLevel level = AccessLevel.Engineer)
+        public static void QuickLogin(AccessLevel level = AccessLevel.Admin)
         {
             var user = new UserAccount
             {
@@ -333,7 +333,7 @@ namespace Stackdose.UI.Core.Helpers
                     UserId = "admin",
                     DisplayName = "系統管理員",
                     PasswordHash = HashPassword("1234"),
-                    AccessLevel = AccessLevel.Engineer,
+                    AccessLevel = AccessLevel.Admin,
                     IsActive = true,
                     CreatedBy = "System"
                 },
@@ -342,7 +342,7 @@ namespace Stackdose.UI.Core.Helpers
                     UserId = "engineer",
                     DisplayName = "工程師",
                     PasswordHash = HashPassword("1234"),
-                    AccessLevel = AccessLevel.Engineer,
+                    AccessLevel = AccessLevel.Admin,
                     IsActive = true,
                     CreatedBy = "System"
                 },
@@ -393,7 +393,7 @@ namespace Stackdose.UI.Core.Helpers
                 AccessLevel.Operator => "操作員 (Operator)",
                 AccessLevel.Instructor => "指導員 (Instructor)",
                 AccessLevel.Supervisor => "主管 (Supervisor)",
-                AccessLevel.Engineer => "工程師 (Engineer)",
+                AccessLevel.Admin => "管理員 (Admin)",
                 _ => "未知"
             };
         }

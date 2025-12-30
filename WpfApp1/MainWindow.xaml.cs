@@ -22,6 +22,13 @@ namespace WpfApp1
         {
             InitializeComponent();
 
+            // 🔥 強制初始化 ComplianceContext（觸發 SqliteLogger.Initialize）
+            ComplianceContext.LogSystem("========== Application Starting ==========", Stackdose.UI.Core.Models.LogLevel.Info);
+            
+            // 🔥 診斷：顯示批次設定
+            var stats = ComplianceContext.GetBatchStatistics();
+            Console.WriteLine($"[MainWindow] Batch Statistics: Pending={stats.PendingDataLogs + stats.PendingAuditLogs}");
+            
             // 顯示登入對話框（不使用快速登入）
             //bool loginSuccess = LoginDialog.ShowLoginDialog();
 
@@ -31,8 +38,8 @@ namespace WpfApp1
             //    SecurityContext.QuickLogin(Stackdose.UI.Core.Models.AccessLevel.Guest);
             //}
 
-            // 預設以 Engineer 身份登入（測試用）
-            SecurityContext.QuickLogin(Stackdose.UI.Core.Models.AccessLevel.Engineer);
+            // 預設以 Admin 身份登入（測試用）
+            SecurityContext.QuickLogin(Stackdose.UI.Core.Models.AccessLevel.Admin);
 
             // 設定 DataContext 為 ViewModel
             _viewModel = new MainViewModel();
@@ -50,6 +57,25 @@ namespace WpfApp1
 
             // 更新視窗標題
             UpdateWindowTitle();
+            
+            // 🔥 測試：5 秒後自動觸發批次寫入
+            Task.Run(async () =>
+            {
+                await Task.Delay(5000); // 等待 5 秒讓 UI 完全載入
+
+                Console.WriteLine("========== 開始批次寫入測試 ==========");
+                ComplianceContext.LogSystem("========== 開始批次寫入測試 ==========", Stackdose.UI.Core.Models.LogLevel.Warning);
+                
+                // 寫入 150 筆數據（會觸發批次刷新，因為預設 100 筆就刷新）
+                for (int i = 0; i < 150; i++)
+                {
+                    ComplianceContext.LogDataHistory($"AutoTest_{i}", $"D{i}", i.ToString());
+                    await Task.Delay(10);
+                }
+                
+                Console.WriteLine("========== 批次寫入測試完成 ==========");
+                ComplianceContext.LogSystem("========== 批次寫入測試完成 ==========", Stackdose.UI.Core.Models.LogLevel.Success);
+            });
         }
 
         /// <summary>
@@ -351,6 +377,140 @@ namespace WpfApp1
 
         #endregion
 
+        #region 批次寫入測試
+
+        /// <summary>
+        /// 測試批次寫入（寫入 500 筆日誌）
+        /// </summary>
+        private void TestBatchWrite_Click(object sender, RoutedEventArgs e)
+        {
+            ComplianceContext.LogSystem(
+                "[TEST] 開始批次寫入測試...",
+                Stackdose.UI.Core.Models.LogLevel.Info,
+                showInUi: true
+            );
+
+            Task.Run(() =>
+            {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                
+                for (int i = 0; i < 500; i++)
+                {
+                    // 模擬 PlcLabel 數據記錄
+                    ComplianceContext.LogDataHistory($"TestLabel_{i % 10}", $"D{100 + i % 100}", i.ToString());
+                    
+                    // 每 10 筆記錄一次 Audit Trail
+                    if (i % 10 == 0)
+                    {
+                        ComplianceContext.LogAuditTrail(
+                            deviceName: $"TestDevice_{i}",
+                            address: $"D{i}",
+                            oldValue: i.ToString(),
+                            newValue: (i + 1).ToString(),
+                            reason: "Batch Write Test",
+                            showInUi: false
+                        );
+                    }
+                    
+                    Thread.Sleep(10); // 模擬實際寫入間隔
+                }
+                
+                sw.Stop();
+                
+                Dispatcher.Invoke(() =>
+                {
+                    var stats = ComplianceContext.GetBatchStatistics();
+                    
+                    ComplianceContext.LogSystem(
+                        $"[TEST] 批次寫入測試完成！耗時: {sw.ElapsedMilliseconds}ms",
+                        Stackdose.UI.Core.Models.LogLevel.Success,
+                        showInUi: true
+                    );
+                    
+                    CyberMessageBox.Show(
+                        $"✅ 批次寫入測試完成\n\n" +
+                        $"寫入 500 筆 DataLogs\n" +
+                        $"寫入 50 筆 AuditLogs\n" +
+                        $"總耗時: {sw.ElapsedMilliseconds}ms\n\n" +
+                        $"統計資訊：\n" +
+                        $"已寫入 DataLogs: {stats.DataLogs}\n" +
+                        $"已寫入 AuditLogs: {stats.AuditLogs}\n" +
+                        $"批次刷新次數: {stats.BatchFlushes}\n" +
+                        $"待寫入 DataLogs: {stats.PendingDataLogs}\n" +
+                        $"待寫入 AuditLogs: {stats.PendingAuditLogs}",
+                        "批次寫入測試",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information
+                    );
+                });
+            });
+        }
+
+        /// <summary>
+        /// 手動刷新所有日誌
+        /// </summary>
+        private void FlushLogs_Click(object sender, RoutedEventArgs e)
+        {
+            var statsBefore = ComplianceContext.GetBatchStatistics();
+            
+            ComplianceContext.LogSystem(
+                "[FLUSH] 手動刷新日誌...",
+                Stackdose.UI.Core.Models.LogLevel.Info,
+                showInUi: true
+            );
+            
+            ComplianceContext.FlushLogs();
+            
+            var statsAfter = ComplianceContext.GetBatchStatistics();
+            
+            ComplianceContext.LogSystem(
+                $"[FLUSH] 刷新完成！寫入 {statsBefore.PendingDataLogs} 筆 DataLogs, {statsBefore.PendingAuditLogs} 筆 AuditLogs",
+                Stackdose.UI.Core.Models.LogLevel.Success,
+                showInUi: true
+            );
+            
+            CyberMessageBox.Show(
+                $"✅ 日誌已刷新到資料庫\n\n" +
+                $"刷新前待寫入：\n" +
+                $"DataLogs: {statsBefore.PendingDataLogs}\n" +
+                $"AuditLogs: {statsBefore.PendingAuditLogs}\n\n" +
+                $"刷新後待寫入：\n" +
+                $"DataLogs: {statsAfter.PendingDataLogs}\n" +
+                $"AuditLogs: {statsAfter.PendingAuditLogs}",
+                "手動刷新",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information
+            );
+        }
+
+        /// <summary>
+        /// 顯示批次寫入統計資訊
+        /// </summary>
+        private void ShowStatistics_Click(object sender, RoutedEventArgs e)
+        {
+            var stats = ComplianceContext.GetBatchStatistics();
+            
+            CyberMessageBox.Show(
+                $"📊 批次寫入統計資訊\n\n" +
+                $"已寫入資料庫：\n" +
+                $"  DataLogs: {stats.DataLogs:N0} 筆\n" +
+                $"  AuditLogs: {stats.AuditLogs:N0} 筆\n" +
+                $"  批次刷新次數: {stats.BatchFlushes:N0} 次\n\n" +
+                $"待寫入佇列：\n" +
+                $"  DataLogs: {stats.PendingDataLogs} 筆\n" +
+                $"  AuditLogs: {stats.PendingAuditLogs} 筆\n\n" +
+                $"💡 提示：\n" +
+                $"- 超過 100 筆會自動刷新\n" +
+                $"- 每 5 秒定時刷新\n" +
+                $"- 關閉程式時自動刷新",
+                "批次統計",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information
+            );
+        }
+
+        #endregion
+
         /// <summary>
         /// 視窗關閉時清理資源
         /// </summary>
@@ -367,6 +527,21 @@ namespace WpfApp1
             
             // 登出
             SecurityContext.Logout();
+            
+            // 🔥 新增：關閉合規引擎並刷新所有待寫入日誌
+            ComplianceContext.Shutdown();
+            
+            #if DEBUG
+            // 顯示批次寫入統計資訊
+            var stats = ComplianceContext.GetBatchStatistics();
+            System.Diagnostics.Debug.WriteLine("========== Compliance Context Statistics ==========");
+            System.Diagnostics.Debug.WriteLine($"Total DataLogs Written: {stats.DataLogs}");
+            System.Diagnostics.Debug.WriteLine($"Total AuditLogs Written: {stats.AuditLogs}");
+            System.Diagnostics.Debug.WriteLine($"Total Batch Flushes: {stats.BatchFlushes}");
+            System.Diagnostics.Debug.WriteLine($"Pending DataLogs: {stats.PendingDataLogs}");
+            System.Diagnostics.Debug.WriteLine($"Pending AuditLogs: {stats.PendingAuditLogs}");
+            System.Diagnostics.Debug.WriteLine("===================================================");
+            #endif
         }
     }
 }

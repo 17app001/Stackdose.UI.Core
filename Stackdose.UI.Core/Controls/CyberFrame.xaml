@@ -206,18 +206,18 @@
                         
                         <!-- 🔥 批次寫入狀態燈號 -->
                         <Border x:Name="BatchWriteIndicator"
-                                Width="20" 
-                                Height="20" 
-                                CornerRadius="10"
+                                Width="16" 
+                                Height="16" 
+                                CornerRadius="8"
                                 Background="#F44336"
                                 Margin="0,0,10,0"
                                 ToolTip="批次寫入狀態：紅色=閒置，綠色=寫入中">
                             <Border.Effect>
                                 <DropShadowEffect x:Name="BatchWriteShadow"
                                                   Color="#F44336" 
-                                                  BlurRadius="15" 
+                                                  BlurRadius="12" 
                                                   ShadowDepth="0" 
-                                                  Opacity="0.8"/>
+                                                  Opacity="0.7"/>
                             </Border.Effect>
                         </Border>
                         

@@ -3,6 +3,7 @@ using WpfApp1.ViewModels;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Controls;
 using System.Threading.Tasks;
+using Stackdose.Hardware.Simulators;
 
 namespace WpfApp1
 {
@@ -18,6 +19,9 @@ namespace WpfApp1
         /// </summary>
         private bool _recipeDownloadedToPLC = false;
 
+        // 🤖 模擬器控制視窗
+        private SimulatorWindow? _simulatorWindow;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -29,15 +33,6 @@ namespace WpfApp1
             var stats = ComplianceContext.GetBatchStatistics();
             Console.WriteLine($"[MainWindow] Batch Statistics: Pending={stats.PendingDataLogs + stats.PendingAuditLogs}");
             
-            // 顯示登入對話框（不使用快速登入）
-            //bool loginSuccess = LoginDialog.ShowLoginDialog();
-
-            //if (!loginSuccess)
-            //{
-            //    // 取消登入時預設為 Guest
-            //    SecurityContext.QuickLogin(Stackdose.UI.Core.Models.AccessLevel.Guest);
-            //}
-
             // 預設以 Admin 身份登入（測試用）
             SecurityContext.QuickLogin(Stackdose.UI.Core.Models.AccessLevel.Admin);
 
@@ -49,112 +44,98 @@ namespace WpfApp1
             SecurityContext.LoginSuccess += OnLoginSuccess;
             SecurityContext.LogoutOccurred += OnLogoutOccurred;
 
-            // ⭐ 訂閱 PLC 連線成功事件
-            // MainPlc.ConnectionEstablished += OnPlcConnectionEstablished;
-
             // ⭐ 初始化 Recipe 系統 (不自動載入，等待 PLC 連線)
             _ = InitializeRecipeSystemAsync();
 
             // 更新視窗標題
             UpdateWindowTitle();
             
-            // 🔥 測試：5 秒後自動觸發批次寫入
-            Task.Run(async () =>
-            {
-                await Task.Delay(5000); // 等待 5 秒讓 UI 完全載入
-
-                Console.WriteLine("========== 開始批次寫入測試 ==========");
-                ComplianceContext.LogSystem("========== 開始批次寫入測試 ==========", Stackdose.UI.Core.Models.LogLevel.Warning);
-                
-                // 寫入 150 筆數據（會觸發批次刷新，因為預設 100 筆就刷新）
-                for (int i = 0; i < 150; i++)
-                {
-                    ComplianceContext.LogDataHistory($"AutoTest_{i}", $"D{i}", i.ToString());
-                    await Task.Delay(10);
-                }
-                
-                Console.WriteLine("========== 批次寫入測試完成 ==========");
-                ComplianceContext.LogSystem("========== 批次寫入測試完成 ==========", Stackdose.UI.Core.Models.LogLevel.Success);
-            });
+            // 🤖 訂閱 PLC 連線成功事件，自動開啟模擬器面板
+            #if DEBUG
+            this.Loaded += MainWindow_Loaded;
+            #endif
         }
 
         /// <summary>
-        /// PLC 連線成功事件處理
+        /// 視窗載入完成，等待 PLC 連線後開啟模擬器
         /// </summary>
-        private async void OnPlcConnectionEstablished(Stackdose.Abstractions.Hardware.IPlcManager plcManager)
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            ComplianceContext.LogSystem(
-                "[MainWindow] OnPlcConnectionEstablished called!",
-                Stackdose.UI.Core.Models.LogLevel.Info,
-                showInUi: true
-            );
+            // 🔍 診斷：檢查模擬器模式
+            System.Diagnostics.Debug.WriteLine($"[MainWindow_Loaded] 開始檢查模擬器...");
+            System.Diagnostics.Debug.WriteLine($"[MainWindow_Loaded] PlcClientFactory.UseSimulator = {Stackdose.Hardware.Plc.PlcClientFactory.UseSimulator}");
             
-            ComplianceContext.LogSystem(
-                "[PLC] Connection established, checking Recipe status...",
-                Stackdose.UI.Core.Models.LogLevel.Info,
-                showInUi: true
-            );
-
-            // ⭐ 檢查是否已經下載過 Recipe
-            if (_recipeDownloadedToPLC)
+            // 等待 PlcStatus 控制項初始化
+            await Task.Delay(500);
+            
+            // 🔍 診斷：檢查 PlcStatus
+            System.Diagnostics.Debug.WriteLine($"[MainWindow_Loaded] MainPlc = {MainPlc != null}");
+            System.Diagnostics.Debug.WriteLine($"[MainWindow_Loaded] CurrentManager = {MainPlc?.CurrentManager != null}");
+            System.Diagnostics.Debug.WriteLine($"[MainWindow_Loaded] PlcClient Type = {MainPlc?.CurrentManager?.PlcClient?.GetType().Name ?? "null"}");
+            System.Diagnostics.Debug.WriteLine($"[MainWindow_Loaded] IsConnected = {MainPlc?.CurrentManager?.IsConnected}");
+            
+            // 檢查是否使用模擬器
+            bool isSimulator = MainPlc?.CurrentManager?.PlcClient is SmartPlcSimulator;
+            System.Diagnostics.Debug.WriteLine($"[MainWindow_Loaded] Is Simulator = {isSimulator}");
+            
+            if (isSimulator)
             {
                 ComplianceContext.LogSystem(
-                    "[Recipe] Recipe already downloaded to PLC, skipping re-download on reconnection.",
+                    "🤖 偵測到模擬器模式，準備開啟控制面板...",
                     Stackdose.UI.Core.Models.LogLevel.Info,
-                    showInUi: true
+                    showInUi: true  // 改為 true，讓使用者看到
                 );
-                return;
-            }
-
-            // 如果 Recipe 還沒載入，自動載入
-            if (!RecipeContext.HasActiveRecipe)
-            {
-                ComplianceContext.LogSystem(
-                    "[Recipe] Auto-loading Recipe after PLC connection...",
-                    Stackdose.UI.Core.Models.LogLevel.Info,
-                    showInUi: true
-                );
-
-                bool success = await RecipeContext.LoadRecipeAsync("Recipe.json", isAutoLoad: true);
                 
-                if (success && RecipeContext.CurrentRecipe != null)
+                // 等待 PLC 連線完成
+                int maxRetries = 20; // 最多等待 10 秒
+                int retryCount = 0;
+                
+                while (retryCount < maxRetries)
                 {
-                    // 自動下載 Recipe 到 PLC
-                    int downloadCount = await RecipeContext.DownloadRecipeToPLCAsync(plcManager);
+                    bool isConnected = MainPlc?.CurrentManager?.IsConnected == true;
+                    System.Diagnostics.Debug.WriteLine($"[MainWindow_Loaded] Retry {retryCount + 1}/{maxRetries}, IsConnected = {isConnected}");
                     
-                    if (downloadCount > 0)
+                    if (isConnected)
                     {
-                        _recipeDownloadedToPLC = true; // ⭐ 標記已下載
+                        System.Diagnostics.Debug.WriteLine($"[MainWindow_Loaded] ✅ PLC 已連線，準備開啟模擬器面板...");
+                        
+                        // 連線成功，延遲 500ms 後開啟面板
+                        await Task.Delay(500);
                         
                         ComplianceContext.LogSystem(
-                            $"[Recipe] Auto-loaded and downloaded: {downloadCount} parameters written to PLC",
+                            "✅ PLC 已連線，正在開啟模擬器控制面板...",
                             Stackdose.UI.Core.Models.LogLevel.Success,
                             showInUi: true
                         );
+                        
+                        OpenSimulatorWindow();
+                        break;
                     }
+                    
+                    await Task.Delay(500);
+                    retryCount++;
+                }
+                
+                if (retryCount >= maxRetries)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[MainWindow_Loaded] ❌ PLC 連線逾時");
+                    
+                    ComplianceContext.LogSystem(
+                        "⚠️ PLC 連線逾時，請手動按 F12 或點擊「Open Simulator」按鈕開啟模擬器面板",
+                        Stackdose.UI.Core.Models.LogLevel.Warning,
+                        showInUi: true
+                    );
                 }
             }
             else
             {
+                System.Diagnostics.Debug.WriteLine($"[MainWindow_Loaded] 🔌 使用真實 PLC 模式");
+                
                 ComplianceContext.LogSystem(
-                    "[Recipe] Recipe already loaded, downloading to PLC...",
+                    "🔌 使用真實 PLC 模式，模擬器面板不會自動開啟",
                     Stackdose.UI.Core.Models.LogLevel.Info,
                     showInUi: true
                 );
-                
-                // Recipe 已經載入，自動下載到 PLC
-                int downloadCount = await RecipeContext.DownloadRecipeToPLCAsync(plcManager);
-                
-                if (downloadCount > 0)
-                {
-                    _recipeDownloadedToPLC = true; // ⭐ 標記已下載
-                    
-                    ComplianceContext.LogSystem(
-                        $"[Recipe] Auto-downloaded to PLC: {downloadCount} parameters written",
-                        Stackdose.UI.Core.Models.LogLevel.Success,
-                        showInUi: true
-                    );
-                }
             }
         }
 
@@ -182,30 +163,6 @@ namespace WpfApp1
                     showInUi: true
                 );
             }
-        }
-
-        private void OnRecipeLoaded(object? sender, Stackdose.UI.Core.Models.Recipe recipe)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                ComplianceContext.LogSystem(
-                    $"[Recipe] {recipe.RecipeName} 已載入,共 {recipe.EnabledItemCount} 項參數",
-                    Stackdose.UI.Core.Models.LogLevel.Success,
-                    showInUi: true
-                );
-            });
-        }
-
-        private void OnRecipeLoadFailed(object? sender, string errorMessage)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                ComplianceContext.LogSystem(
-                    $"[Recipe] 載入失敗: {errorMessage}",
-                    Stackdose.UI.Core.Models.LogLevel.Error,
-                    showInUi: true
-                );
-            });
         }
 
         private void OnLoginSuccess(object? sender, Stackdose.UI.Core.Models.UserAccount user)
@@ -511,12 +468,135 @@ namespace WpfApp1
 
         #endregion
 
+        #region 模擬器控制視窗
+
+        /// <summary>
+        /// 手動開啟模擬器按鈕
+        /// </summary>
+        private void OpenSimulator_Click(object sender, RoutedEventArgs e)
+        {
+            // 🔍 診斷：顯示當前狀態
+            bool isSimulator = MainPlc?.CurrentManager?.PlcClient is SmartPlcSimulator;
+            bool isConnected = MainPlc?.CurrentManager?.IsConnected == true;
+            string plcType = MainPlc?.CurrentManager?.PlcClient?.GetType().Name ?? "null";
+            
+            System.Diagnostics.Debug.WriteLine($"[OpenSimulator_Click] PLC Type = {plcType}");
+            System.Diagnostics.Debug.WriteLine($"[OpenSimulator_Click] Is Simulator = {isSimulator}");
+            System.Diagnostics.Debug.WriteLine($"[OpenSimulator_Click] Is Connected = {isConnected}");
+            
+            if (!isSimulator)
+            {
+                CyberMessageBox.Show(
+                    "❌ 當前不是模擬器模式\n\n" +
+                    "請確認：\n" +
+                    $"1. PlcClientFactory.UseSimulator = {Stackdose.Hardware.Plc.PlcClientFactory.UseSimulator}\n" +
+                    $"2. PLC Client Type = {plcType}\n" +
+                    $"3. 請檢查 App.xaml.cs 中的設定",
+                    "模擬器未啟用",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                return;
+            }
+            
+            if (!isConnected)
+            {
+                CyberMessageBox.Show(
+                    "⚠️ PLC 尚未連線\n\n" +
+                    "請先點擊 PlcStatus 控制項連線",
+                    "PLC 未連線",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                return;
+            }
+            
+            OpenSimulatorWindow();
+        }
+
+        /// <summary>
+        /// 開啟模擬器控制視窗
+        /// </summary>
+        private void OpenSimulatorWindow()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"[OpenSimulatorWindow] 開始開啟模擬器視窗...");
+                
+                if (_simulatorWindow == null || !_simulatorWindow.IsLoaded)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[OpenSimulatorWindow] 建立新的 SimulatorWindow");
+                    
+                    _simulatorWindow = new SimulatorWindow();
+                    _simulatorWindow.Owner = this;
+                    _simulatorWindow.Closed += (s, e) =>
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[OpenSimulatorWindow] SimulatorWindow 已關閉");
+                        _simulatorWindow = null;
+                    };
+                    
+                    _simulatorWindow.Show();
+                    
+                    System.Diagnostics.Debug.WriteLine($"[OpenSimulatorWindow] ✅ SimulatorWindow 已顯示");
+                    
+                    ComplianceContext.LogSystem(
+                        "🤖 模擬器控制面板已開啟",
+                        Stackdose.UI.Core.Models.LogLevel.Success,
+                        showInUi: true
+                    );
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[OpenSimulatorWindow] 啟動現有的 SimulatorWindow");
+                    _simulatorWindow.Activate();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[OpenSimulatorWindow] ❌ 錯誤: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[OpenSimulatorWindow] StackTrace: {ex.StackTrace}");
+                
+                ComplianceContext.LogSystem(
+                    $"❌ 無法開啟模擬器控制面板: {ex.Message}",
+                    Stackdose.UI.Core.Models.LogLevel.Error,
+                    showInUi: true
+                );
+                
+                CyberMessageBox.Show(
+                    $"❌ 發生錯誤\n\n{ex.Message}\n\n詳細資訊請查看 Output 視窗",
+                    "錯誤",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+            }
+        }
+
+        /// <summary>
+        /// 快捷鍵：F12 開啟模擬器控制面板
+        /// </summary>
+        protected override void OnKeyDown(System.Windows.Input.KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            
+            if (e.Key == System.Windows.Input.Key.F12)
+            {
+                System.Diagnostics.Debug.WriteLine($"[OnKeyDown] F12 按下");
+                OpenSimulator_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+            }
+        }
+
+        #endregion
+
         /// <summary>
         /// 視窗關閉時清理資源
         /// </summary>
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
+            
+            // 關閉模擬器視窗
+            _simulatorWindow?.Close();
             
             // 取消訂閱事件
             SecurityContext.LoginSuccess -= OnLoginSuccess;

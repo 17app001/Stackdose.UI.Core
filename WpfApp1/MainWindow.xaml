@@ -18,7 +18,8 @@
                             VerticalAlignment="Top" 
                             IpAddress="192.168.22.39" 
                             Port="3000" 
-                            AutoConnect="False" 
+                            AutoConnect="True" 
+                            IsGlobal="True"
                             MonitorAddress="" 
                             MonitorLength="1" 
                             ScanInterval="120"/>
@@ -81,7 +82,7 @@
                            BitIndex="0"/>
 
         <Controls:LiveLogViewer HorizontalAlignment="Left" Margin="418,393,0,0" VerticalAlignment="Top" 
-                                Height="200" Width="418"/>
+                                Height="307" Width="450"/>
 
         <Controls:PlcLabel HorizontalAlignment="Left" Margin="591,285,0,0" VerticalAlignment="Top" 
                            Width="245" 
@@ -92,7 +93,7 @@
 
         <!-- SensorViewer -->
         <Controls:SensorViewer HorizontalAlignment="Left" Margin="1098,87,0,0" VerticalAlignment="Top" 
-                               Width="458" Height="367"
+                               Width="458" Height="193"
                                Title="SENSOR Viewer"
                                ConfigFile="Sensors.json"
                                EnableGrouping="True"
@@ -102,7 +103,7 @@
         <!-- PrintHeadStatus -->
         <Controls:PrintHeadStatus x:Name="PrintHead1"
                                   HorizontalAlignment="Left" 
-                                  Margin="901,200,0,0" 
+                                  Margin="48,185,0,0" 
                                   VerticalAlignment="Top"
                                   HeadName="Feiyang Head 1"
                                   ConfigFilePath="feiyang_head1.json"
@@ -110,10 +111,10 @@
 
         <!-- ⭐ NEW: RecipeLoader Control -->
         <Controls:RecipeLoader HorizontalAlignment="Left" 
-                               Margin="901,511,0,0" 
+                               Margin="418,743,0,0" 
                                VerticalAlignment="Top" 
                                Width="450" 
-                               Height="320"
+                               Height="112"
                                Title="Recipe 配方管理"
                                RecipeFilePath="Recipe.json"
                                AutoLoadOnStartup="False"
@@ -158,88 +159,12 @@
         </StackPanel>
 
         <!-- Permission Test Buttons -->
-        <Border HorizontalAlignment="Left" Margin="1327,244,0,0" VerticalAlignment="Top" 
-                Width="200" Background="#1A1A2E" Padding="10" CornerRadius="5">
-            <StackPanel>
-                <TextBlock Text="Permission Test" 
-                           Foreground="#00BCD4" 
-                           FontWeight="Bold" 
-                           FontSize="14" 
-                           Margin="0,0,0,10"
-                           HorizontalAlignment="Center"/>
-
-                <Controls:SecuredButton Content="Start Process (L1)" 
-                                        RequiredLevel="Operator"
-                                        OperationName="Start Process"
-                                        Theme="Success"
-                                        Click="OperatorButton_Click"
-                                        Margin="0,3"/>
-
-                <Controls:SecuredButton Content="View Logs (L2)" 
-                                        RequiredLevel="Instructor"
-                                        OperationName="View Logs"
-                                        Theme="Info"
-                                        Click="InstructorButton_Click"
-                                        Margin="0,3"/>
-
-                <Controls:SecuredButton Content="Manage Users (L3)" 
-                                        RequiredLevel="Supervisor"
-                                        OperationName="Manage Users"
-                                        Theme="Warning"
-                                        Click="SupervisorButton_Click"
-                                        Margin="0,3"/>
-
-                <Controls:SecuredButton Content="Modify Params (L4)" 
-                                        RequiredLevel="Admin"
-                                        OperationName="Modify Parameters"
-                                        Theme="Primary"
-                                        Click="EngineerButton_Click"
-                                        Margin="0,3"/>
-
-                <Controls:SecuredButton Content="Logout" 
-                                        RequiredLevel="Guest"
-                                        Theme="Error"
-                                        Click="LogoutButton_Click"
-                                        Margin="0,10,0,0"/>
-            </StackPanel>
-        </Border>
 
         <!-- Theme Showcase -->
         <Controls:SecuredButton HorizontalAlignment="Left" Margin="73,640,0,0" VerticalAlignment="Top" Theme="Success" Height="60" Width="190" Content="製程開始" FontSize="16" RequiredLevel="Operator" OperationName="製程開始" Click="StartProcess_Click"/>
+        <Controls:SimulatorControlPanel HorizontalAlignment="Left" Margin="1098,323,0,0" VerticalAlignment="Top"/>
 
         <!-- 🔥 批次寫入測試按鈕 -->
-        <Border HorizontalAlignment="Left" Margin="73,715,0,0" VerticalAlignment="Top" 
-                Width="300" Background="#1A1A2E" Padding="10" CornerRadius="5">
-            <StackPanel>
-                <TextBlock Text="Batch Write Test" 
-                           Foreground="#FFA726" 
-                           FontWeight="Bold" 
-                           FontSize="14" 
-                           Margin="0,0,0,10"
-                           HorizontalAlignment="Center"/>
-
-                <Button Content="Test Batch Write (500 logs)" 
-                        Click="TestBatchWrite_Click"
-                        Height="35" Margin="0,3" 
-                        Background="#1E1E2E" 
-                        Foreground="White" 
-                        BorderBrush="#FFA726"/>
-
-                <Button Content="Flush Logs Now" 
-                        Click="FlushLogs_Click"
-                        Height="35" Margin="0,3" 
-                        Background="#1E1E2E" 
-                        Foreground="White" 
-                        BorderBrush="#00E5FF"/>
-
-                <Button Content="Show Statistics" 
-                        Click="ShowStatistics_Click"
-                        Height="35" Margin="0,3" 
-                        Background="#1E1E2E" 
-                        Foreground="White" 
-                        BorderBrush="#4CAF50"/>
-            </StackPanel>
-        </Border>
 
     </Grid>
 </Window>

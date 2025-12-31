@@ -93,7 +93,7 @@
 
         <!-- SensorViewer -->
         <Controls:SensorViewer HorizontalAlignment="Left" Margin="1098,87,0,0" VerticalAlignment="Top" 
-                               Width="458" Height="193"
+                               Width="458" Height="411"
                                Title="SENSOR Viewer"
                                ConfigFile="Sensors.json"
                                EnableGrouping="True"
@@ -111,10 +111,10 @@
 
         <!-- ⭐ NEW: RecipeLoader Control -->
         <Controls:RecipeLoader HorizontalAlignment="Left" 
-                               Margin="418,743,0,0" 
+                               Margin="1102,540,0,0" 
                                VerticalAlignment="Top" 
                                Width="450" 
-                               Height="112"
+                               Height="299"
                                Title="Recipe 配方管理"
                                RecipeFilePath="Recipe.json"
                                AutoLoadOnStartup="False"
@@ -162,9 +162,6 @@
 
         <!-- Theme Showcase -->
         <Controls:SecuredButton HorizontalAlignment="Left" Margin="73,640,0,0" VerticalAlignment="Top" Theme="Success" Height="60" Width="190" Content="製程開始" FontSize="16" RequiredLevel="Operator" OperationName="製程開始" Click="StartProcess_Click"/>
-        <Controls:SimulatorControlPanel HorizontalAlignment="Left" Margin="1098,323,0,0" VerticalAlignment="Top"/>
-
-        <!-- 🔥 批次寫入測試按鈕 -->
 
     </Grid>
 </Window>

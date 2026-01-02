@@ -8,160 +8,164 @@
         x:Class="WpfApp1.MainWindow"
         mc:Ignorable="d"
         Title="MainWindow" Height="900" Width="1600">
-    <Grid>
+    
+    <!-- CyberFrame as Main Container -->
+    <Controls:CyberFrame Title="UBI SYSTEM">
+        <Controls:CyberFrame.MainContent>
+            <Grid>
+                <Controls:PlcStatus 
+                                    HorizontalAlignment="Left" 
+                                    Margin="73,89,0,0" 
+                                    VerticalAlignment="Top" 
+                                    IpAddress="192.168.22.39" 
+                                    Port="3000" 
+                                    AutoConnect="True" 
+                                    IsGlobal="True"
+                                    MonitorAddress="" 
+                                    MonitorLength="1" 
+                                    ScanInterval="120"/>
 
-        <Controls:CyberFrame Title="UBI SYSTEM"/>
+                <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,80,0,0" VerticalAlignment="Top" 
+                                   Width="130" Height="62" 
+                                   Label="X Position"
+                                   Address="D100" 
+                                   DefaultValue="00000" DataType="DWord" />
 
-        <Controls:PlcStatus x:Name="MainPlc" 
-                            HorizontalAlignment="Left" 
-                            Margin="73,89,0,0" 
-                            VerticalAlignment="Top" 
-                            IpAddress="192.168.22.39" 
-                            Port="3000" 
-                            AutoConnect="True" 
-                            IsGlobal="True"
-                            MonitorAddress="" 
-                            MonitorLength="1" 
-                            ScanInterval="120"/>
+                <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,147,0,0" VerticalAlignment="Top" 
+                                   Width="164" Height="57" 
+                                   Label="Event Detect"
+                                   Address="M237" 
+                                   DefaultValue="OFF" 
+                                   DataType="Bit" 
+                                   BitIndex="-1"/>
 
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,80,0,0" VerticalAlignment="Top" 
-                           Width="130" Height="62" 
-                           Label="X Position"
-                           Address="D100" 
-                           DefaultValue="00000" DataType="DWord" />
+                <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,222,0,0" VerticalAlignment="Top" 
+                                   Width="159" Height="58" 
+                                   Label="R2000"
+                                   Address="R2000" 
+                                   DefaultValue="00000" 
+                                   DataType="Word" 
+                                   BitIndex="-1"/>
 
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,147,0,0" VerticalAlignment="Top" 
-                           Width="164" Height="57" 
-                           Label="Event Detect"
-                           Address="M237" 
-                           DefaultValue="OFF" 
-                           DataType="Bit" 
-                           BitIndex="-1"/>
+                <Controls:PlcDeviceEditor HorizontalAlignment="Left" Margin="73,291,0,0" VerticalAlignment="Top" 
+                                  Width="267" 
+                                  Label="PLC Input" 
+                                  Address="D100" 
+                                  Value="0" 
+                                  Reason="Manual Test"
+                                  RequiredLevel="Supervisor"
+                                  EnableAuditTrail="True"/>
 
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,222,0,0" VerticalAlignment="Top" 
-                           Width="159" Height="58" 
-                           Label="R2000"
-                           Address="R2000" 
-                           DefaultValue="00000" 
-                           DataType="Word" 
-                           BitIndex="-1"/>
+                <Controls:PlcLabel 
+                                   HorizontalAlignment="Left" Margin="484,111,0,0" VerticalAlignment="Top" 
+                                   Width="169" Height="156" 
+                                   Label="溫度"
+                                   Address="R2002" 
+                                   DefaultValue="0000" 
+                                   DataType="Word" 
+                                   BitIndex="-1" 
+                                   Divisor="10" FrameShape="Circle" ValueAlignment="Center" LabelAlignment="Center" ShowAddress="False" LabelFontSize="23" ValueForeground="Warning"/>
 
-        <Controls:PlcDeviceEditor HorizontalAlignment="Left" Margin="73,291,0,0" VerticalAlignment="Top" 
-                          Width="267" 
-                          Label="PLC Input" 
-                          Address="D100" 
-                          Value="0" 
-                          Reason="Manual Test"
-                          RequiredLevel="Supervisor"
-                          EnableAuditTrail="True"/>
+                <Controls:PlcLabel HorizontalAlignment="Left" Margin="640,84,0,0" VerticalAlignment="Top" 
+                                   Width="203" Height="58" 
+                                   Label="X Position"
+                                   Address="D11" 
+                                   DefaultValue="OFF" 
+                                   BitIndex="0" 
+                                   DataType="Bit"/>
 
-        <Controls:PlcLabel x:Name="LblTemp" 
-                           HorizontalAlignment="Left" Margin="484,111,0,0" VerticalAlignment="Top" 
-                           Width="169" Height="156" 
-                           Label="溫度"
-                           Address="R2002" 
-                           DefaultValue="0000" 
-                           DataType="Word" 
-                           BitIndex="-1" 
-                           Divisor="10" FrameShape="Circle" ValueAlignment="Center" LabelAlignment="Center" ShowAddress="False" LabelFontSize="23" ValueForeground="Warning"/>
+                <Controls:PlcLabel HorizontalAlignment="Left" Margin="683,214,0,0" VerticalAlignment="Top" 
+                                   Width="153" 
+                                   DefaultValue="00000" 
+                                   EnableAuditTrail="True" 
+                                   EnableDataLog="True" 
+                                   DataType="Bit" 
+                                   BitIndex="0"/>
 
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="640,84,0,0" VerticalAlignment="Top" 
-                           Width="203" Height="58" 
-                           Label="X Position"
-                           Address="D11" 
-                           DefaultValue="OFF" 
-                           BitIndex="0" 
-                           DataType="Bit"/>
+                <Controls:LiveLogViewer HorizontalAlignment="Left" Margin="418,393,0,0" VerticalAlignment="Top" 
+                                        Height="307" Width="450"/>
 
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="683,214,0,0" VerticalAlignment="Top" 
-                           Width="153" 
-                           DefaultValue="00000" 
-                           EnableAuditTrail="True" 
-                           EnableDataLog="True" 
-                           DataType="Bit" 
-                           BitIndex="0"/>
+                <Controls:PlcLabel HorizontalAlignment="Left" Margin="591,285,0,0" VerticalAlignment="Top" 
+                                   Width="245" 
+                                   DefaultValue="00000" 
+                                   EnableAuditTrail="True" 
+                                   EnableDataLog="True" 
+                                   ShowLog="False"/>
 
-        <Controls:LiveLogViewer HorizontalAlignment="Left" Margin="418,393,0,0" VerticalAlignment="Top" 
-                                Height="307" Width="450"/>
+                <!-- SensorViewer -->
+                <Controls:SensorViewer HorizontalAlignment="Left" Margin="1098,87,0,0" VerticalAlignment="Top" 
+                                       Width="458" Height="411"
+                                       Title="SENSOR Viewer"
+                                       ConfigFile="Sensors.json"
+                                       EnableGrouping="True"
+                                       AutoStart="True"
+                                       RefreshInterval="499"/>
 
-        <Controls:PlcLabel HorizontalAlignment="Left" Margin="591,285,0,0" VerticalAlignment="Top" 
-                           Width="245" 
-                           DefaultValue="00000" 
-                           EnableAuditTrail="True" 
-                           EnableDataLog="True" 
-                           ShowLog="False"/>
+                <!-- PrintHeadStatus -->
+                <Controls:PrintHeadStatus 
+                                          HorizontalAlignment="Left" 
+                                          Margin="48,185,0,0" 
+                                          VerticalAlignment="Top"
+                                          HeadName="Feiyang Head 1"
+                                          ConfigFilePath="feiyang_head1.json"
+                                          AutoConnect="False"/>
 
-        <!-- SensorViewer -->
-        <Controls:SensorViewer HorizontalAlignment="Left" Margin="1098,87,0,0" VerticalAlignment="Top" 
-                               Width="458" Height="411"
-                               Title="SENSOR Viewer"
-                               ConfigFile="Sensors.json"
-                               EnableGrouping="True"
-                               AutoStart="True"
-                               RefreshInterval="499"/>
+                <!-- ⭐ NEW: RecipeLoader Control -->
+                <Controls:RecipeLoader HorizontalAlignment="Left" 
+                                       Margin="1102,540,0,0" 
+                                       VerticalAlignment="Top" 
+                                       Width="450" 
+                                       Height="299"
+                                       Title="Recipe 配方管理"
+                                       RecipeFilePath="Recipe.json"
+                                       AutoLoadOnStartup="False"
+                                       RequiredAccessLevel="Instructor"
+                                       ShowDetails="True"/>
 
-        <!-- PrintHeadStatus -->
-        <Controls:PrintHeadStatus x:Name="PrintHead1"
-                                  HorizontalAlignment="Left" 
-                                  Margin="48,185,0,0" 
-                                  VerticalAlignment="Top"
-                                  HeadName="Feiyang Head 1"
-                                  ConfigFilePath="feiyang_head1.json"
-                                  AutoConnect="False"/>
+                <!-- PlcEventTrigger -->
+                <Controls:PlcEventTrigger Address="M237" 
+                                          EventName="Recipe1Selected"
+                                          AutoClear="True"
+                                          ClearDelay="0"
+                                          TriggerCondition="OnRising"/>
 
-        <!-- ⭐ NEW: RecipeLoader Control -->
-        <Controls:RecipeLoader HorizontalAlignment="Left" 
-                               Margin="1102,540,0,0" 
-                               VerticalAlignment="Top" 
-                               Width="450" 
-                               Height="299"
-                               Title="Recipe 配方管理"
-                               RecipeFilePath="Recipe.json"
-                               AutoLoadOnStartup="False"
-                               RequiredAccessLevel="Instructor"
-                               ShowDetails="True"/>
+                <Controls:PlcEventTrigger Address="M238" 
+                                          EventName="Recipe2Selected"
+                                          AutoClear="True"
+                                          ClearDelay="0"
+                                          TriggerCondition="OnRising"/>
 
-        <!-- PlcEventTrigger -->
-        <Controls:PlcEventTrigger Address="M237" 
-                                  EventName="Recipe1Selected"
-                                  AutoClear="True"
-                                  ClearDelay="0"
-                                  TriggerCondition="OnRising"
-                                  TargetStatus="{Binding ElementName=MainPlc}"/>
+                <!-- Test Buttons: CyberMessageBox Thread Safety -->
+                <StackPanel HorizontalAlignment="Left" Margin="73,472,0,0" VerticalAlignment="Top" Width="300">
+                    <Button Content="Test UI Thread MessageBox" 
+                            Command="{Binding TestUIThreadMessageBoxCommand}"
+                            Height="35" Margin="0,5" 
+                            Background="#1E1E2E" 
+                            Foreground="White" 
+                            BorderBrush="#00E5FF"/>
+                    <Button Content="Test Background Thread MessageBox" 
+                            Command="{Binding TestBackgroundMessageBoxCommand}"
+                            Height="35" Margin="0,5" 
+                            Background="#1E1E2E" 
+                            Foreground="White" 
+                            BorderBrush="#FFA726"/>
+                    <Button Content="Test Multiple MessageBox" 
+                            Command="{Binding TestMultipleMessageBoxCommand}"
+                            Height="35" Margin="0,5" 
+                            Background="#1E1E2E" 
+                            Foreground="White" 
+                            BorderBrush="#4CAF50"/>
+                </StackPanel>
 
-        <Controls:PlcEventTrigger Address="M238" 
-                                  EventName="Recipe2Selected"
-                                  AutoClear="True"
-                                  ClearDelay="0"
-                                  TriggerCondition="OnRising"
-                                  TargetStatus="{Binding ElementName=MainPlc}"/>
+                <!-- Permission Test Buttons -->
 
-        <!-- Test Buttons: CyberMessageBox Thread Safety -->
-        <StackPanel HorizontalAlignment="Left" Margin="73,472,0,0" VerticalAlignment="Top" Width="300">
-            <Button Content="Test UI Thread MessageBox" 
-                    Command="{Binding TestUIThreadMessageBoxCommand}"
-                    Height="35" Margin="0,5" 
-                    Background="#1E1E2E" 
-                    Foreground="White" 
-                    BorderBrush="#00E5FF"/>
-            <Button Content="Test Background Thread MessageBox" 
-                    Command="{Binding TestBackgroundMessageBoxCommand}"
-                    Height="35" Margin="0,5" 
-                    Background="#1E1E2E" 
-                    Foreground="White" 
-                    BorderBrush="#FFA726"/>
-            <Button Content="Test Multiple MessageBox" 
-                    Command="{Binding TestMultipleMessageBoxCommand}"
-                    Height="35" Margin="0,5" 
-                    Background="#1E1E2E" 
-                    Foreground="White" 
-                    BorderBrush="#4CAF50"/>
-        </StackPanel>
-
-        <!-- Permission Test Buttons -->
-
-        <!-- Theme Showcase -->
-        <Controls:SecuredButton HorizontalAlignment="Left" Margin="73,640,0,0" VerticalAlignment="Top" Theme="Success" Height="60" Width="190" Content="製程開始" FontSize="16" RequiredLevel="Operator" OperationName="製程開始" Click="StartProcess_Click"/>
-
-    </Grid>
+                <!-- Theme Showcase -->
+                <Controls:SecuredButton HorizontalAlignment="Left" Margin="73,640,0,0" VerticalAlignment="Top" 
+                                       Theme="Success" Height="60" Width="190" 
+                                       Content="製程開始" FontSize="16" 
+                                       RequiredLevel="Operator" OperationName="製程開始" 
+                                       Click="StartProcess_Click"/>
+            </Grid>
+        </Controls:CyberFrame.MainContent>
+    </Controls:CyberFrame>
 </Window>

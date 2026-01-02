@@ -4,7 +4,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using System.Windows.Media;
+using System.ComponentModel;
 using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Models;
 
 namespace Stackdose.UI.Core.Controls
 {
@@ -44,6 +46,12 @@ namespace Stackdose.UI.Core.Controls
         public CyberFrame()
         {
             InitializeComponent();
+
+            // 🔥 設計階段不執行初始化
+            if (DesignerProperties.GetIsInDesignMode(this))
+            {
+                return;
+            }
 
             InitializeClock();
             InitializeSecurityEvents();
@@ -108,6 +116,12 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         private void CyberFrame_Loaded(object sender, RoutedEventArgs e)
         {
+            // 🔥 設計階段不執行
+            if (DesignerProperties.GetIsInDesignMode(this))
+            {
+                return;
+            }
+            
             // ✅ 強制輸出（Console + Debug + LiveLogViewer）
             Console.WriteLine("========== CyberFrame_Loaded ==========");
             System.Diagnostics.Debug.WriteLine("========== CyberFrame_Loaded ==========");
@@ -115,6 +129,10 @@ namespace Stackdose.UI.Core.Controls
             
             try
             {
+                // 🔥 初始化使用者管理服務（會自動建立預設 Admin）
+                var _ = new Services.UserManagementService();
+                System.Diagnostics.Debug.WriteLine("[CyberFrame] UserManagementService initialized");
+                
                 // 確保 ComplianceContext 已初始化（觸發靜態建構函數）
                 ComplianceContext.LogSystem("[CyberFrame] Loaded, initializing batch write indicator...", 
                     Models.LogLevel.Info, showInUi: true); // ✅ showInUi 改為 true
@@ -248,6 +266,55 @@ namespace Stackdose.UI.Core.Controls
             }
         }
 
+        /// <summary>
+        /// 主內容區域
+        /// </summary>
+        public static readonly DependencyProperty MainContentProperty =
+            DependencyProperty.Register(
+                nameof(MainContent),
+                typeof(object),
+                typeof(CyberFrame),
+                new PropertyMetadata(null));
+
+        /// <summary>
+        /// 取得或設定主內容區域
+        /// </summary>
+        public object MainContent
+        {
+            get => GetValue(MainContentProperty);
+            set => SetValue(MainContentProperty, value);
+        }
+
+        /// <summary>
+        /// 視圖模式 (正常內容 / 使用者管理)
+        /// </summary>
+        public static readonly DependencyProperty ViewModeProperty =
+            DependencyProperty.Register(
+                nameof(ViewMode),
+                typeof(CyberFrameViewMode),
+                typeof(CyberFrame),
+                new PropertyMetadata(CyberFrameViewMode.Normal, OnViewModeChanged));
+
+        /// <summary>
+        /// 取得或設定視圖模式
+        /// </summary>
+        public CyberFrameViewMode ViewMode
+        {
+            get => (CyberFrameViewMode)GetValue(ViewModeProperty);
+            set => SetValue(ViewModeProperty, value);
+        }
+
+        /// <summary>
+        /// 視圖模式變更回呼
+        /// </summary>
+        private static void OnViewModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is CyberFrame frame)
+            {
+                frame.UpdateViewMode((CyberFrameViewMode)e.NewValue);
+            }
+        }
+
         #endregion
 
         #region Event Handlers
@@ -327,6 +394,45 @@ namespace Stackdose.UI.Core.Controls
             }
             
             System.Diagnostics.Debug.WriteLine("========== Theme Toggle END ==========");
+        }
+
+        /// <summary>
+        /// 切換使用者管理介面按鈕點擊事件
+        /// </summary>
+        private void UserManagementToggleButton_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("========== UserManagementToggleButton_Click START ==========");
+            
+            // 檢查權限 (只有 Admin 和 Supervisor 可進入)
+            var session = SecurityContext.CurrentSession;
+            System.Diagnostics.Debug.WriteLine($"[CyberFrame] Current User: {session.CurrentUserName}, Level: {session.CurrentLevel}");
+            
+            if (session.CurrentLevel < AccessLevel.Supervisor)
+            {
+                System.Diagnostics.Debug.WriteLine("[CyberFrame] ❌ Permission denied");
+                CyberMessageBox.Show(
+                    "您沒有權限存取使用者管理功能\n需要 Supervisor 或 Admin 權限",
+                    "權限不足",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[CyberFrame] Current ViewMode BEFORE: {ViewMode}");
+            
+            // 切換視圖模式
+            ViewMode = ViewMode == CyberFrameViewMode.Normal 
+                ? CyberFrameViewMode.UserManagement 
+                : CyberFrameViewMode.Normal;
+
+            System.Diagnostics.Debug.WriteLine($"[CyberFrame] Current ViewMode AFTER: {ViewMode}");
+
+            // 記錄稽核日誌
+            ComplianceContext.LogSystem(
+                $"使用者 {session.CurrentUserName} {(ViewMode == CyberFrameViewMode.UserManagement ? "進入" : "離開")}使用者管理介面",
+                LogLevel.Info);
+            
+            System.Diagnostics.Debug.WriteLine("========== UserManagementToggleButton_Click END ==========");
         }
 
         /// <summary>
@@ -524,7 +630,7 @@ namespace Stackdose.UI.Core.Controls
         private void ApplyTheme(bool useLightTheme)
         {
             System.Diagnostics.Debug.WriteLine($"Applying Theme: {(useLightTheme ? "Light" : "Dark")}");
-            
+
             try
             {
                 // 取得應用程式層級的資源字典
@@ -628,6 +734,117 @@ namespace Stackdose.UI.Core.Controls
                 var child = VisualTreeHelper.GetChild(parent, i);
                 RefreshLiveLogViewers(child);
             }
+        }
+
+        /// <summary>
+        /// 更新視圖模式
+        /// </summary>
+        private void UpdateViewMode(CyberFrameViewMode mode)
+        {
+            System.Diagnostics.Debug.WriteLine($"========== UpdateViewMode START ==========");
+            System.Diagnostics.Debug.WriteLine($"[CyberFrame] Mode: {mode}");
+            
+            // 方法1: 使用 FindName
+            var normalContent = this.FindName("NormalContentPresenter") as ContentControl;
+            var userManagementPanel = this.FindName("UserManagementPanel") as FrameworkElement;
+
+            System.Diagnostics.Debug.WriteLine($"[CyberFrame] Method1 - NormalContentPresenter: {normalContent != null}");
+            System.Diagnostics.Debug.WriteLine($"[CyberFrame] Method1 - UserManagementPanel: {userManagementPanel != null}");
+
+            // 方法2: 如果 FindName 失敗，嘗試從視覺樹搜尋
+            if (normalContent == null || userManagementPanel == null)
+            {
+                System.Diagnostics.Debug.WriteLine("[CyberFrame] FindName failed, searching visual tree...");
+                
+                // 搜尋整個視覺樹
+                var contentGrid = FindVisualChild<Grid>(this, g => g.Parent is Border);
+                if (contentGrid != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[CyberFrame] Found content grid with {contentGrid.Children.Count} children");
+                    
+                    foreach (var child in contentGrid.Children)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[CyberFrame] Child type: {child.GetType().Name}");
+                        
+                        if (child is ContentControl cc)
+                        {
+                            normalContent = cc;
+                            System.Diagnostics.Debug.WriteLine("[CyberFrame] Found ContentControl");
+                        }
+                        else if (child is UserManagementPanel ump)
+                        {
+                            userManagementPanel = ump;
+                            System.Diagnostics.Debug.WriteLine("[CyberFrame] Found UserManagementPanel");
+                        }
+                    }
+                }
+            }
+
+            if (normalContent != null && userManagementPanel != null)
+            {
+                System.Diagnostics.Debug.WriteLine("[CyberFrame] Both controls found, switching view...");
+                
+                switch (mode)
+                {
+                    case CyberFrameViewMode.Normal:
+                        normalContent.Visibility = Visibility.Visible;
+                        userManagementPanel.Visibility = Visibility.Collapsed;
+                        System.Diagnostics.Debug.WriteLine("[CyberFrame] ✅ Switched to Normal view");
+                        System.Diagnostics.Debug.WriteLine($"[CyberFrame] Normal.Visibility = {normalContent.Visibility}");
+                        System.Diagnostics.Debug.WriteLine($"[CyberFrame] UserMgmt.Visibility = {userManagementPanel.Visibility}");
+                        break;
+
+                    case CyberFrameViewMode.UserManagement:
+                        normalContent.Visibility = Visibility.Collapsed;
+                        userManagementPanel.Visibility = Visibility.Visible;
+                        System.Diagnostics.Debug.WriteLine("[CyberFrame] ✅ Switched to UserManagement view");
+                        System.Diagnostics.Debug.WriteLine($"[CyberFrame] Normal.Visibility = {normalContent.Visibility}");
+                        System.Diagnostics.Debug.WriteLine($"[CyberFrame] UserMgmt.Visibility = {userManagementPanel.Visibility}");
+                        break;
+                }
+                
+                // 強制刷新 UI
+                normalContent.InvalidateVisual();
+                normalContent.UpdateLayout();
+                userManagementPanel.InvalidateVisual();
+                userManagementPanel.UpdateLayout();
+                
+                System.Diagnostics.Debug.WriteLine("[CyberFrame] UI refreshed");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("❌ [CyberFrame] ERROR: Cannot find view controls!");
+                System.Diagnostics.Debug.WriteLine($"[CyberFrame] NormalContent: {normalContent != null}");
+                System.Diagnostics.Debug.WriteLine($"[CyberFrame] UserManagementPanel: {userManagementPanel != null}");
+            }
+            
+            System.Diagnostics.Debug.WriteLine($"========== UpdateViewMode END ==========");
+        }
+        
+        /// <summary>
+        /// 搜尋視覺樹中的子元素
+        /// </summary>
+        private T? FindVisualChild<T>(DependencyObject parent, Func<T, bool>? predicate = null) where T : DependencyObject
+        {
+            if (parent == null) return null;
+
+            int childCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                
+                if (child is T typedChild)
+                {
+                    if (predicate == null || predicate(typedChild))
+                        return typedChild;
+                }
+
+                var result = FindVisualChild<T>(child, predicate);
+                if (result != null)
+                    return result;
+            }
+
+            return null;
         }
 
         #endregion

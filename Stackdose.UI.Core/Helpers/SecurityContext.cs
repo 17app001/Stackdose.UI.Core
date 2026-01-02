@@ -1,66 +1,69 @@
-using Stackdose.UI.Core.Models;
+ï»¿using Stackdose.UI.Core.Models;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
+using System.IO;
+using Microsoft.Data.Sqlite;
+using Dapper;
 
 namespace Stackdose.UI.Core.Helpers
 {
     /// <summary>
-    /// ¦w¥ş©Ê¤W¤U¤åºŞ²z (Security Context Manager)
-    /// ¥Î³~¡G²Î¤@ºŞ²z¨Ï¥ÎªÌµn¤J¡BÅv­­±±¨î¡B¦Û°Êµn¥X
-    /// ²Å¦X FDA 21 CFR Part 11 ­n¨D
+    /// å®‰å…¨æ€§ä¸Šä¸‹æ–‡ç®¡ç† (Security Context Manager)
+    /// ç”¨é€”ï¼šçµ±ä¸€ç®¡ç†ä½¿ç”¨è€…ç™»å…¥ã€æ¬Šé™æ§åˆ¶ã€è‡ªå‹•ç™»å‡º
+    /// ç¬¦åˆ FDA 21 CFR Part 11 è¦æ±‚
     /// </summary>
     public static class SecurityContext
     {
-        #region ÀRºAÄİ©Ê
+        #region éœæ…‹å±¬æ€§
 
         /// <summary>
-        /// ·í«e¨Ï¥ÎªÌ¤u§@¶¥¬q
+        /// ç•¶å‰ä½¿ç”¨è€…å·¥ä½œéšæ®µ
         /// </summary>
         public static UserSession CurrentSession { get; } = new UserSession();
 
         /// <summary>
-        /// ¦Û°Êµn¥X®É¶¡¡]¤ÀÄÁ¡A¹w³] 15¡^
+        /// è‡ªå‹•ç™»å‡ºæ™‚é–“ï¼ˆåˆ†é˜ï¼Œé è¨­ 15ï¼‰
         /// </summary>
         public static int AutoLogoutMinutes { get; set; } = 15;
 
         /// <summary>
-        /// ¬O§_±Ò¥Î¦Û°Êµn¥X¥\¯à
+        /// æ˜¯å¦å•Ÿç”¨è‡ªå‹•ç™»å‡ºåŠŸèƒ½
         /// </summary>
         public static bool EnableAutoLogout { get; set; } = true;
 
         #endregion
 
-        #region ¨Æ¥ó©w¸q
+        #region äº‹ä»¶å®šç¾©
 
         /// <summary>
-        /// µn¤J¦¨¥\¨Æ¥ó
+        /// ç™»å…¥æˆåŠŸäº‹ä»¶
         /// </summary>
         public static event EventHandler<UserAccount>? LoginSuccess;
 
         /// <summary>
-        /// µn¥X¨Æ¥ó
+        /// ç™»å‡ºäº‹ä»¶
         /// </summary>
         public static event EventHandler? LogoutOccurred;
 
         /// <summary>
-        /// Åv­­ÅÜ§ó¨Æ¥ó (¥Î©ó§ó·s UI)
+        /// æ¬Šé™è®Šæ›´äº‹ä»¶ (ç”¨æ–¼æ›´æ–° UI)
         /// </summary>
         public static event EventHandler? AccessLevelChanged;
 
         #endregion
 
-        #region µn¤J/µn¥X
+        #region ç™»å…¥/ç™»å‡º
 
         /// <summary>
-        /// ¨Ï¥ÎªÌµn¤J
+        /// ä½¿ç”¨è€…ç™»å…¥
         /// </summary>
-        /// <param name="userId">¨Ï¥ÎªÌ±b¸¹</param>
-        /// <param name="password">±K½X</param>
-        /// <returns>¬O§_µn¤J¦¨¥\</returns>
+        /// <param name="userId">ä½¿ç”¨è€…å¸³è™Ÿ</param>
+        /// <param name="password">å¯†ç¢¼</param>
+        /// <returns>æ˜¯å¦ç™»å…¥æˆåŠŸ</returns>
         public static bool Login(string userId, string password)
         {
-            // 1. ±q¸ê®Æ®w¬d¸ß¨Ï¥ÎªÌ
+            // 1. å¾è³‡æ–™åº«æŸ¥è©¢ä½¿ç”¨è€…
             var user = LoadUserFromDatabase(userId);
             if (user == null || !user.IsActive)
             {
@@ -72,7 +75,7 @@ namespace Stackdose.UI.Core.Helpers
                 return false;
             }
 
-            // 2. ÅçÃÒ±K½X
+            // 2. é©—è­‰å¯†ç¢¼
             string passwordHash = HashPassword(password);
             if (user.PasswordHash != passwordHash)
             {
@@ -82,7 +85,7 @@ namespace Stackdose.UI.Core.Helpers
                     showInUi: true
                 );
                 
-                // ?? Audit Trail¡Gµn¤J¥¢±Ñ
+                // ?? Audit Trailï¼šç™»å…¥å¤±æ•—
                 ComplianceContext.LogAuditTrail(
                     "User Login",
                     userId,
@@ -94,13 +97,13 @@ namespace Stackdose.UI.Core.Helpers
                 return false;
             }
 
-            // 3. µn¤J¦¨¥\
+            // 3. ç™»å…¥æˆåŠŸ
             CurrentSession.CurrentUser = user;
             CurrentSession.LoginTime = DateTime.Now;
             CurrentSession.LastActivityTime = DateTime.Now;
             user.LastLoginAt = DateTime.Now;
 
-            // 4. °O¿ı¨ì Audit Trail
+            // 4. è¨˜éŒ„åˆ° Audit Trail
             ComplianceContext.LogAuditTrail(
                 "User Login",
                 userId,
@@ -116,11 +119,11 @@ namespace Stackdose.UI.Core.Helpers
                 showInUi: true
             );
 
-            // 5. Ä²µo¨Æ¥ó
+            // 5. è§¸ç™¼äº‹ä»¶
             LoginSuccess?.Invoke(null, user);
             AccessLevelChanged?.Invoke(null, EventArgs.Empty);
 
-            // 6. ±Ò°Ê¦Û°Êµn¥X­p®É¾¹
+            // 6. å•Ÿå‹•è‡ªå‹•ç™»å‡ºè¨ˆæ™‚å™¨
             if (EnableAutoLogout)
             {
                 StartAutoLogoutTimer();
@@ -130,21 +133,35 @@ namespace Stackdose.UI.Core.Helpers
         }
 
         /// <summary>
-        /// §Ö³tµn¤J¡]¹w³]±b¸¹¡A¥Î©ó´ú¸Õ©Îªì©l¤Æ¡^
+        /// å¿«é€Ÿç™»å…¥ï¼ˆé è¨­å¸³è™Ÿï¼Œç”¨æ–¼æ¸¬è©¦æˆ–åˆå§‹åŒ–ï¼‰
         /// </summary>
-        /// <param name="level">Åv­­µ¥¯Å</param>
+        /// <param name="level">æ¬Šé™ç­‰ç´š</param>
         public static void QuickLogin(AccessLevel level = AccessLevel.Admin)
         {
-            var user = new UserAccount
+            // ğŸ”¥ å˜—è©¦å¾è³‡æ–™åº«è¼‰å…¥çœŸå¯¦ä½¿ç”¨è€…
+            var user = LoadUserFromDatabase("Admin"); // ä½¿ç”¨è³‡æ–™åº«ä¸­çš„ Admin å¸³è™Ÿ
+            
+            if (user == null)
             {
-                UserId = level.ToString().ToLower(),
-                DisplayName = GetLevelDisplayName(level),
-                PasswordHash = HashPassword("1234"),
-                AccessLevel = level,
-                IsActive = true,
-                CreatedBy = "System",
-                CreatedAt = DateTime.Now
-            };
+                System.Diagnostics.Debug.WriteLine("[SecurityContext] QuickLogin: Admin not found in database, creating temporary user");
+                
+                // å¦‚æœè³‡æ–™åº«ä¸­æ²’æœ‰ï¼Œå»ºç«‹è‡¨æ™‚è¨˜æ†¶é«”ä½¿ç”¨è€…
+                user = new UserAccount
+                {
+                    Id = 1, // ğŸ”¥ è¨­å®šä¸€å€‹è‡¨æ™‚ ID
+                    UserId = "Admin",
+                    DisplayName = "ç³»çµ±ç®¡ç†å“¡ (Admin)",
+                    PasswordHash = HashPassword("admin123"),
+                    AccessLevel = level,
+                    IsActive = true,
+                    CreatedBy = "System",
+                    CreatedAt = DateTime.Now
+                };
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"[SecurityContext] QuickLogin: Loaded user from database - {user.UserId} (ID: {user.Id})");
+            }
 
             CurrentSession.CurrentUser = user;
             CurrentSession.LoginTime = DateTime.Now;
@@ -156,11 +173,11 @@ namespace Stackdose.UI.Core.Helpers
                 showInUi: true
             );
 
-            // Ä²µo¨Æ¥ó
+            // è§¸ç™¼äº‹ä»¶
             LoginSuccess?.Invoke(null, user);
             AccessLevelChanged?.Invoke(null, EventArgs.Empty);
 
-            // ±Ò°Ê¦Û°Êµn¥X­p®É¾¹
+            // å•Ÿå‹•è‡ªå‹•ç™»å‡ºè¨ˆæ™‚å™¨
             if (EnableAutoLogout)
             {
                 StartAutoLogoutTimer();
@@ -168,9 +185,9 @@ namespace Stackdose.UI.Core.Helpers
         }
 
         /// <summary>
-        /// ¨Ï¥ÎªÌµn¥X
+        /// ä½¿ç”¨è€…ç™»å‡º
         /// </summary>
-        /// <param name="isAutoLogout">¬O§_¬°¦Û°Êµn¥X</param>
+        /// <param name="isAutoLogout">æ˜¯å¦ç‚ºè‡ªå‹•ç™»å‡º</param>
         public static void Logout(bool isAutoLogout = false)
         {
             if (!CurrentSession.IsLoggedIn)
@@ -178,7 +195,7 @@ namespace Stackdose.UI.Core.Helpers
 
             var user = CurrentSession.CurrentUser!;
 
-            // 1. °O¿ı¨ì Audit Trail
+            // 1. è¨˜éŒ„åˆ° Audit Trail
             string reason = isAutoLogout ? "Auto-Logout (Timeout)" : "Manual Logout";
             ComplianceContext.LogAuditTrail(
                 "User Logout",
@@ -195,19 +212,19 @@ namespace Stackdose.UI.Core.Helpers
                 showInUi: true
             );
 
-            // 2. ²M°£¤u§@¶¥¬q
+            // 2. æ¸…é™¤å·¥ä½œéšæ®µ
             CurrentSession.CurrentUser = null;
 
-            // 3. Ä²µo¨Æ¥ó
+            // 3. è§¸ç™¼äº‹ä»¶
             LogoutOccurred?.Invoke(null, EventArgs.Empty);
             AccessLevelChanged?.Invoke(null, EventArgs.Empty);
 
-            // 4. °±¤î¦Û°Êµn¥X­p®É¾¹
+            // 4. åœæ­¢è‡ªå‹•ç™»å‡ºè¨ˆæ™‚å™¨
             StopAutoLogoutTimer();
         }
 
         /// <summary>
-        /// §ó·s³Ì«á¬¡°Ê®É¶¡¡]¥Ñ UI ¾Ş§@®É©I¥s¡^
+        /// æ›´æ–°æœ€å¾Œæ´»å‹•æ™‚é–“ï¼ˆç”± UI æ“ä½œæ™‚å‘¼å«ï¼‰
         /// </summary>
         public static void UpdateActivity()
         {
@@ -219,30 +236,30 @@ namespace Stackdose.UI.Core.Helpers
 
         #endregion
 
-        #region Åv­­ÀË¬d
+        #region æ¬Šé™æª¢æŸ¥
 
         /// <summary>
-        /// ÀË¬d·í«e¨Ï¥ÎªÌ¬O§_¦³«ü©wÅv­­
+        /// æª¢æŸ¥ç•¶å‰ä½¿ç”¨è€…æ˜¯å¦æœ‰æŒ‡å®šæ¬Šé™
         /// </summary>
-        /// <param name="requiredLevel">©Ò»İÅv­­µ¥¯Å</param>
-        /// <returns>¬O§_¦³Åv­­</returns>
+        /// <param name="requiredLevel">æ‰€éœ€æ¬Šé™ç­‰ç´š</param>
+        /// <returns>æ˜¯å¦æœ‰æ¬Šé™</returns>
         public static bool HasAccess(AccessLevel requiredLevel)
         {
             return CurrentSession.HasAccess(requiredLevel);
         }
 
         /// <summary>
-        /// ÀË¬dÅv­­¡A¦pªG¤£¨¬«hÅã¥Ü°T®§¨Ãªğ¦^ false
+        /// æª¢æŸ¥æ¬Šé™ï¼Œå¦‚æœä¸è¶³å‰‡é¡¯ç¤ºè¨Šæ¯ä¸¦è¿”å› false
         /// </summary>
-        /// <param name="requiredLevel">©Ò»İÅv­­µ¥¯Å</param>
-        /// <param name="operationName">¾Ş§@¦WºÙ</param>
-        /// <returns>¬O§_¦³Åv­­</returns>
-        public static bool CheckAccess(AccessLevel requiredLevel, string operationName = "¦¹¾Ş§@")
+        /// <param name="requiredLevel">æ‰€éœ€æ¬Šé™ç­‰ç´š</param>
+        /// <param name="operationName">æ“ä½œåç¨±</param>
+        /// <returns>æ˜¯å¦æœ‰æ¬Šé™</returns>
+        public static bool CheckAccess(AccessLevel requiredLevel, string operationName = "æ­¤æ“ä½œ")
         {
             if (HasAccess(requiredLevel))
                 return true;
 
-            string message = $"[ERROR] Åv­­¤£¨¬\n\n{operationName} »İ­n {GetLevelDisplayName(requiredLevel)} ¥H¤WÅv­­\n\n·í«eÅv­­: {GetLevelDisplayName(CurrentSession.CurrentLevel)}";
+            string message = $"[ERROR] æ¬Šé™ä¸è¶³\n\n{operationName} éœ€è¦ {GetLevelDisplayName(requiredLevel)} ä»¥ä¸Šæ¬Šé™\n\nç•¶å‰æ¬Šé™: {GetLevelDisplayName(CurrentSession.CurrentLevel)}";
             
             ComplianceContext.LogSystem(
                 $"Access Denied: {operationName} requires {requiredLevel} (Current: {CurrentSession.CurrentLevel})",
@@ -250,7 +267,7 @@ namespace Stackdose.UI.Core.Helpers
                 showInUi: true
             );
 
-            // °O¿ı¨ì Audit Trail
+            // è¨˜éŒ„åˆ° Audit Trail
             ComplianceContext.LogAuditTrail(
                 "Access Denied",
                 CurrentSession.CurrentUser?.UserId ?? "Guest",
@@ -262,7 +279,7 @@ namespace Stackdose.UI.Core.Helpers
 
             Application.Current?.Dispatcher.BeginInvoke(() =>
             {
-                MessageBox.Show(message, "Åv­­¤£¨¬ - Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(message, "æ¬Šé™ä¸è¶³ - Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
             });
 
             return false;
@@ -270,7 +287,7 @@ namespace Stackdose.UI.Core.Helpers
 
         #endregion
 
-        #region ¦Û°Êµn¥X­p®É¾¹
+        #region è‡ªå‹•ç™»å‡ºè¨ˆæ™‚å™¨
 
         private static System.Threading.Timer? _autoLogoutTimer;
 
@@ -288,7 +305,7 @@ namespace Stackdose.UI.Core.Helpers
                 {
                     Application.Current?.Dispatcher.Invoke(() => Logout(isAutoLogout: true));
                 }
-            }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30)); // ¨C 30 ¬íÀË¬d¤@¦¸
+            }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30)); // æ¯ 30 ç§’æª¢æŸ¥ä¸€æ¬¡
         }
 
         private static void StopAutoLogoutTimer()
@@ -299,13 +316,13 @@ namespace Stackdose.UI.Core.Helpers
 
         #endregion
 
-        #region ±K½X¥[±K
+        #region å¯†ç¢¼åŠ å¯†
 
         /// <summary>
-        /// SHA-256 ±K½XÂø´ê
+        /// SHA-256 å¯†ç¢¼é›œæ¹Š
         /// </summary>
-        /// <param name="password">©ú¤å±K½X</param>
-        /// <returns>Âø´ê«áªº±K½X</returns>
+        /// <param name="password">æ˜æ–‡å¯†ç¢¼</param>
+        /// <returns>é›œæ¹Šå¾Œçš„å¯†ç¢¼</returns>
         public static string HashPassword(string password)
         {
             using (var sha256 = SHA256.Create())
@@ -317,84 +334,67 @@ namespace Stackdose.UI.Core.Helpers
 
         #endregion
 
-        #region ¸ê®Æ®w¦s¨ú (Placeholder)
+        #region è³‡æ–™åº«å­˜å– (Placeholder)
 
         /// <summary>
-        /// ±q¸ê®Æ®w¸ü¤J¨Ï¥ÎªÌ¡]¼È®É¨Ï¥Î¹w³]±b¸¹¡^
+        /// å¾è³‡æ–™åº«è¼‰å…¥ä½¿ç”¨è€…
         /// </summary>
         private static UserAccount? LoadUserFromDatabase(string userId)
         {
-            // ?? TODO: ±q SQLite Åª¨ú
-            // ¼È®É¦^¶Ç¹w³]´ú¸Õ±b¸¹
-            var defaultAccounts = new Dictionary<string, UserAccount>
+            try
             {
-                ["admin"] = new UserAccount
+                // ğŸ”¥ å¾çœŸå¯¦è³‡æ–™åº«è®€å–
+                var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "StackDoseData.db");
+                using var conn = new SqliteConnection($"Data Source={dbPath}");
+                conn.Open();
+                
+                var user = conn.QueryFirstOrDefault<UserAccount>(
+                    "SELECT * FROM Users WHERE UserId = @UserId AND IsActive = 1",
+                    new { UserId = userId }
+                );
+                
+                return user;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SecurityContext] LoadUserFromDatabase Error: {ex.Message}");
+                
+                // ğŸ”¥ Fallback åˆ°å…§å»ºå¸³è™Ÿ
+                var defaultAccounts = new Dictionary<string, UserAccount>
                 {
-                    UserId = "admin",
-                    DisplayName = "¨t²ÎºŞ²z­û",
-                    PasswordHash = HashPassword("1234"),
-                    AccessLevel = AccessLevel.Admin,
-                    IsActive = true,
-                    CreatedBy = "System"
-                },
-                ["engineer"] = new UserAccount
-                {
-                    UserId = "engineer",
-                    DisplayName = "¤uµ{®v",
-                    PasswordHash = HashPassword("1234"),
-                    AccessLevel = AccessLevel.Admin,
-                    IsActive = true,
-                    CreatedBy = "System"
-                },
-                ["supervisor"] = new UserAccount
-                {
-                    UserId = "supervisor",
-                    DisplayName = "¥DºŞ",
-                    PasswordHash = HashPassword("1234"),
-                    AccessLevel = AccessLevel.Supervisor,
-                    IsActive = true,
-                    CreatedBy = "System"
-                },
-                ["instructor"] = new UserAccount
-                {
-                    UserId = "instructor",
-                    DisplayName = "«ü¾É­û",
-                    PasswordHash = HashPassword("1234"),
-                    AccessLevel = AccessLevel.Instructor,
-                    IsActive = true,
-                    CreatedBy = "System"
-                },
-                ["operator"] = new UserAccount
-                {
-                    UserId = "operator",
-                    DisplayName = "¾Ş§@­û",
-                    PasswordHash = HashPassword("1234"),
-                    AccessLevel = AccessLevel.Operator,
-                    IsActive = true,
-                    CreatedBy = "System"
-                }
-            };
+                    ["Admin"] = new UserAccount
+                    {
+                        Id = 1,
+                        UserId = "Admin",
+                        DisplayName = "ç³»çµ±ç®¡ç†å“¡",
+                        PasswordHash = HashPassword("admin123"),
+                        AccessLevel = AccessLevel.Admin,
+                        IsActive = true,
+                        CreatedBy = "System"
+                    }
+                };
 
-            return defaultAccounts.TryGetValue(userId.ToLower(), out var account) ? account : null;
+                return defaultAccounts.TryGetValue(userId, out var account) ? account : null;
+            }
         }
 
         #endregion
 
-        #region »²§U¤èªk
+        #region è¼”åŠ©æ–¹æ³•
 
         /// <summary>
-        /// ¨ú±oÅv­­µ¥¯ÅªºÅã¥Ü¦WºÙ
+        /// å–å¾—æ¬Šé™ç­‰ç´šçš„é¡¯ç¤ºåç¨±
         /// </summary>
         private static string GetLevelDisplayName(AccessLevel level)
         {
             return level switch
             {
-                AccessLevel.Guest => "³X«È (Guest)",
-                AccessLevel.Operator => "¾Ş§@­û (Operator)",
-                AccessLevel.Instructor => "«ü¾É­û (Instructor)",
-                AccessLevel.Supervisor => "¥DºŞ (Supervisor)",
-                AccessLevel.Admin => "ºŞ²z­û (Admin)",
-                _ => "¥¼ª¾"
+                AccessLevel.Guest => "è¨ªå®¢ (Guest)",
+                AccessLevel.Operator => "æ“ä½œå“¡ (Operator)",
+                AccessLevel.Instructor => "æŒ‡å°å“¡ (Instructor)",
+                AccessLevel.Supervisor => "ä¸»ç®¡ (Supervisor)",
+                AccessLevel.Admin => "ç®¡ç†å“¡ (Admin)",
+                _ => "æœªçŸ¥"
             };
         }
 

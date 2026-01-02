@@ -22,15 +22,11 @@ namespace WpfApp1
         {
             InitializeComponent();
 
-            // 🔥 強制初始化 ComplianceContext（觸發 SqliteLogger.Initialize）
-            ComplianceContext.LogSystem("========== Application Starting ==========", Stackdose.UI.Core.Models.LogLevel.Info);
-            
-            // 🔥 診斷：顯示批次設定
-            var stats = ComplianceContext.GetBatchStatistics();
-            Console.WriteLine($"[MainWindow] Batch Statistics: Pending={stats.PendingDataLogs + stats.PendingAuditLogs}");
+            // 🔥 ComplianceContext 已在 App.OnStartup 中初始化
             
             // 預設以 Admin 身份登入（測試用）
-            SecurityContext.QuickLogin(Stackdose.UI.Core.Models.AccessLevel.Admin);
+            // 🔥 已移至 App.OnStartup，避免時序問題
+            // SecurityContext.QuickLogin(Stackdose.UI.Core.Models.AccessLevel.Admin);
 
             // 設定 DataContext 為 ViewModel
             _viewModel = new MainViewModel();

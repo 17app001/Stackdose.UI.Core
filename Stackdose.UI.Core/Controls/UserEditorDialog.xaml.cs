@@ -60,6 +60,8 @@ namespace Stackdose.UI.Core.Controls
                 // 編輯模式不需要輸入密碼
                 PasswordLabel.Visibility = Visibility.Collapsed;
                 PasswordBox.Visibility = Visibility.Collapsed;
+                ConfirmPasswordLabel.Visibility = Visibility.Collapsed;
+                ConfirmPasswordBox.Visibility = Visibility.Collapsed;
             }
             else
             {
@@ -95,15 +97,35 @@ namespace Stackdose.UI.Core.Controls
                 if (!_isEditMode)
                 {
                     var password = PasswordBox.Password;
+                    var confirmPassword = ConfirmPasswordBox.Password;
+                    
                     if (string.IsNullOrWhiteSpace(password))
                     {
                         CyberMessageBox.Show("請輸入密碼", "驗證錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        PasswordBox.Focus();
                         return;
                     }
 
                     if (password.Length < 8)
                     {
                         CyberMessageBox.Show("密碼長度至少需要 8 個字元", "驗證錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        PasswordBox.Focus();
+                        return;
+                    }
+
+                    // ?? 新增：密碼確認驗證
+                    if (string.IsNullOrWhiteSpace(confirmPassword))
+                    {
+                        CyberMessageBox.Show("請確認您的密碼", "驗證錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ConfirmPasswordBox.Focus();
+                        return;
+                    }
+
+                    if (password != confirmPassword)
+                    {
+                        CyberMessageBox.Show("密碼不相符！\n請確保兩個密碼欄位的內容完全相同。", "密碼不一致", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ConfirmPasswordBox.Clear();
+                        PasswordBox.Focus();
                         return;
                     }
 
@@ -124,7 +146,7 @@ namespace Stackdose.UI.Core.Controls
                     }
                     else
                     {
-                        CyberMessageBox.Show($"創建失敗: {message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
+                        CyberMessageBox.Show($"創建使用者失敗: {message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 // 編輯模式
@@ -146,7 +168,7 @@ namespace Stackdose.UI.Core.Controls
                     }
                     else
                     {
-                        CyberMessageBox.Show($"更新失敗: {message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
+                        CyberMessageBox.Show($"更新使用者失敗: {message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
             }

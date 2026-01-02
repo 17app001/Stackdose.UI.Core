@@ -83,12 +83,17 @@ namespace WpfApp1
             {
                 UpdateWindowTitle();
                 
-                // 登出後顯示登入對話框
+                // 🔥 修正：登出後顯示登入對話框
                 bool loginSuccess = LoginDialog.ShowLoginDialog();
                 if (!loginSuccess)
                 {
-                    // 如果取消登入，預設以 Operator 身份登入
-                    SecurityContext.QuickLogin(Stackdose.UI.Core.Models.AccessLevel.Operator);
+                    // 🔥 修正：如果取消登入，以 Guest 身份留在首頁（而不是關閉程式）
+                    SecurityContext.QuickLogin(Stackdose.UI.Core.Models.AccessLevel.Guest);
+                    ComplianceContext.LogSystem(
+                        "[Logout] User cancelled login, staying as Guest",
+                        Stackdose.UI.Core.Models.LogLevel.Info,
+                        showInUi: true
+                    );
                 }
             });
         }

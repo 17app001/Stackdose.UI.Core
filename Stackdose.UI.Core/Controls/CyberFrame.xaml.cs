@@ -332,7 +332,21 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         private void OnLoginSuccess(object? sender, Models.UserAccount user)
         {
-            Dispatcher.BeginInvoke(UpdateUserInfo);
+            Dispatcher.BeginInvoke(() =>
+            {
+                UpdateUserInfo();
+                
+                // 🔥 新增：登入成功後自動切回首頁（避免某些角色卡在使用者管理頁面）
+                if (ViewMode == CyberFrameViewMode.UserManagement)
+                {
+                    ViewMode = CyberFrameViewMode.Normal;
+                    ComplianceContext.LogSystem(
+                        $"使用者 {user.DisplayName} 登入成功，自動返回首頁",
+                        LogLevel.Info,
+                        showInUi: true
+                    );
+                }
+            });
         }
 
         /// <summary>

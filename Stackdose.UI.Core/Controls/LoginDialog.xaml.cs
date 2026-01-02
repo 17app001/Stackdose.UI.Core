@@ -35,7 +35,7 @@ namespace Stackdose.UI.Core.Controls
         private void LoginButton_Click(object? sender, RoutedEventArgs? e)
         {
             // 清除錯誤訊息
-            ErrorText.Visibility = Visibility.Collapsed;
+            ErrorPanel.Visibility = Visibility.Collapsed;
 
             // 取得輸入
             string userId = UserIdTextBox.Text.Trim();
@@ -45,29 +45,40 @@ namespace Stackdose.UI.Core.Controls
             if (string.IsNullOrWhiteSpace(userId))
             {
                 ShowError("請輸入帳號 (Please enter User ID)");
+                UserIdTextBox.Focus();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(password))
             {
                 ShowError("請輸入密碼 (Please enter Password)");
+                PasswordBox.Focus();
                 return;
             }
 
-            // 嘗試登入
-            bool success = SecurityContext.Login(userId, password);
+            // ?? 修正：更詳細的登入驗證與錯誤訊息
+            try
+            {
+                bool success = SecurityContext.Login(userId, password);
 
-            if (success)
-            {
-                LoginSuccessful = true;
-                this.DialogResult = true;
-                this.Close();
+                if (success)
+                {
+                    LoginSuccessful = true;
+                    this.DialogResult = true;
+                    this.Close();
+                }
+                else
+                {
+                    // 登入失敗，顯示更具體的錯誤訊息
+                    ShowError($"登入失敗 Login Failed\n帳號: {userId}\n\n可能原因：\n? 帳號不存在 (User not found)\n? 密碼錯誤 (Wrong password)\n? 帳號已停用 (Account inactive)");
+                    PasswordBox.Clear();
+                    PasswordBox.Focus();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                ShowError("登入失敗：帳號或密碼錯誤\nLogin Failed: Invalid User ID or Password");
-                PasswordBox.Clear();
-                PasswordBox.Focus();
+                ShowError($"登入錯誤 Login Error:\n{ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[LoginDialog] Login Error: {ex.Message}");
             }
         }
 
@@ -81,7 +92,11 @@ namespace Stackdose.UI.Core.Controls
         private void ShowError(string message)
         {
             ErrorText.Text = message;
-            ErrorText.Visibility = Visibility.Visible;
+            ErrorPanel.Visibility = Visibility.Visible;
+            
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[LoginDialog] Show Error: {message}");
+            #endif
         }
 
         /// <summary>

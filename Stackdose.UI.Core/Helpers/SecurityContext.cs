@@ -65,19 +65,49 @@ namespace Stackdose.UI.Core.Helpers
         {
             // 1. 從資料庫查詢使用者
             var user = LoadUserFromDatabase(userId);
-            if (user == null || !user.IsActive)
+            if (user == null)
             {
                 ComplianceContext.LogSystem(
-                    $"Login Failed: User '{userId}' not found or inactive",
+                    $"Login Failed: User '{userId}' not found",
                     LogLevel.Warning,
                     showInUi: true
+                );
+                
+                // 🔥 記錄到 Audit Trail：登入失敗（帳號不存在）
+                ComplianceContext.LogAuditTrail(
+                    "User Login",
+                    userId,
+                    "N/A",
+                    "Failed (User not found)",
+                    "Account does not exist",
+                    showInUi: false
+                );
+                return false;
+            }
+            
+            if (!user.IsActive)
+            {
+                ComplianceContext.LogSystem(
+                    $"Login Failed: User '{userId}' is inactive",
+                    LogLevel.Warning,
+                    showInUi: true
+                );
+                
+                // 🔥 記錄到 Audit Trail：登入失敗（帳號已停用）
+                ComplianceContext.LogAuditTrail(
+                    "User Login",
+                    userId,
+                    "N/A",
+                    "Failed (Account inactive)",
+                    "Account has been disabled",
+                    showInUi: false
                 );
                 return false;
             }
 
-            // 2. 驗證密碼
-            string passwordHash = HashPassword(password);
-            if (user.PasswordHash != passwordHash)
+            // 2. 🔥 修正：驗證密碼 - 使用帶 Salt 的方式
+            bool passwordValid = VerifyPassword(password, user.PasswordHash, user.Salt);
+            if (!passwordValid)
             {
                 ComplianceContext.LogSystem(
                     $"Login Failed: Invalid password for user '{userId}'",
@@ -85,12 +115,19 @@ namespace Stackdose.UI.Core.Helpers
                     showInUi: true
                 );
                 
-                // ?? Audit Trail：登入失敗
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[SecurityContext] Password verification failed");
+                System.Diagnostics.Debug.WriteLine($"[SecurityContext] Input password: {password}");
+                System.Diagnostics.Debug.WriteLine($"[SecurityContext] Stored hash: {user.PasswordHash}");
+                System.Diagnostics.Debug.WriteLine($"[SecurityContext] Salt: {user.Salt}");
+                #endif
+                
+                // 🔥 記錄到 Audit Trail：登入失敗（密碼錯誤）
                 ComplianceContext.LogAuditTrail(
                     "User Login",
                     userId,
                     "N/A",
-                    "Failed",
+                    "Failed (Wrong password)",
                     "Invalid password",
                     showInUi: false
                 );
@@ -138,29 +175,64 @@ namespace Stackdose.UI.Core.Helpers
         /// <param name="level">權限等級</param>
         public static void QuickLogin(AccessLevel level = AccessLevel.Admin)
         {
-            // 🔥 嘗試從資料庫載入真實使用者
-            var user = LoadUserFromDatabase("Admin"); // 使用資料庫中的 Admin 帳號
+            UserAccount? user = null;
             
-            if (user == null)
+            // 🔥 修正：根據權限等級決定要載入的使用者
+            switch (level)
             {
-                System.Diagnostics.Debug.WriteLine("[SecurityContext] QuickLogin: Admin not found in database, creating temporary user");
-                
-                // 如果資料庫中沒有，建立臨時記憶體使用者
-                user = new UserAccount
-                {
-                    Id = 1, // 🔥 設定一個臨時 ID
-                    UserId = "Admin",
-                    DisplayName = "系統管理員 (Admin)",
-                    PasswordHash = HashPassword("admin123"),
-                    AccessLevel = level,
-                    IsActive = true,
-                    CreatedBy = "System",
-                    CreatedAt = DateTime.Now
-                };
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine($"[SecurityContext] QuickLogin: Loaded user from database - {user.UserId} (ID: {user.Id})");
+                case AccessLevel.Admin:
+                    // 嘗試從資料庫載入 Admin
+                    user = LoadUserFromDatabase("Admin");
+                    if (user == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine("[SecurityContext] QuickLogin: Admin not found in database, creating temporary user");
+                        user = new UserAccount
+                        {
+                            Id = 1,
+                            UserId = "Admin",
+                            DisplayName = "系統管理員 (Admin)",
+                            PasswordHash = HashPassword("admin123"),
+                            AccessLevel = AccessLevel.Admin,
+                            IsActive = true,
+                            CreatedBy = "System",
+                            CreatedAt = DateTime.Now
+                        };
+                    }
+                    break;
+                    
+                case AccessLevel.Guest:
+                    // 🔥 建立 Guest 臨時帳號
+                    System.Diagnostics.Debug.WriteLine("[SecurityContext] QuickLogin: Creating Guest user");
+                    user = new UserAccount
+                    {
+                        Id = 0,
+                        UserId = "Guest",
+                        DisplayName = "訪客 (Guest)",
+                        PasswordHash = string.Empty,
+                        Salt = string.Empty,
+                        AccessLevel = AccessLevel.Guest,
+                        IsActive = true,
+                        CreatedBy = "System",
+                        CreatedAt = DateTime.Now
+                    };
+                    break;
+                    
+                default:
+                    // 🔥 其他權限等級，建立臨時帳號
+                    System.Diagnostics.Debug.WriteLine($"[SecurityContext] QuickLogin: Creating temporary {level} user");
+                    user = new UserAccount
+                    {
+                        Id = (int)level,
+                        UserId = level.ToString(),
+                        DisplayName = $"{level} (Temporary)",
+                        PasswordHash = string.Empty,
+                        Salt = string.Empty,
+                        AccessLevel = level,
+                        IsActive = true,
+                        CreatedBy = "System",
+                        CreatedAt = DateTime.Now
+                    };
+                    break;
             }
 
             CurrentSession.CurrentUser = user;
@@ -168,7 +240,7 @@ namespace Stackdose.UI.Core.Helpers
             CurrentSession.LastActivityTime = DateTime.Now;
 
             ComplianceContext.LogSystem(
-                $"[QUICK] Quick Login: {user.DisplayName}",
+                $"[QUICK] Quick Login: {user.DisplayName} (Level: {user.AccessLevel})",
                 LogLevel.Info,
                 showInUi: true
             );
@@ -177,8 +249,8 @@ namespace Stackdose.UI.Core.Helpers
             LoginSuccess?.Invoke(null, user);
             AccessLevelChanged?.Invoke(null, EventArgs.Empty);
 
-            // 啟動自動登出計時器
-            if (EnableAutoLogout)
+            // 🔥 修正：Guest 不需要自動登出計時器
+            if (EnableAutoLogout && level != AccessLevel.Guest)
             {
                 StartAutoLogoutTimer();
             }
@@ -319,16 +391,46 @@ namespace Stackdose.UI.Core.Helpers
         #region 密碼加密
 
         /// <summary>
-        /// SHA-256 密碼雜湊
+        /// SHA-256 密碼雜湊（不帶 Salt，僅用於舊系統相容）
         /// </summary>
         /// <param name="password">明文密碼</param>
         /// <returns>雜湊後的密碼</returns>
+        [Obsolete("此方法不安全，僅用於舊系統相容。請使用 VerifyPassword 進行驗證。")]
         public static string HashPassword(string password)
         {
             using (var sha256 = SHA256.Create())
             {
                 byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
                 return Convert.ToBase64String(bytes);
+            }
+        }
+
+        /// <summary>
+        /// 🔥 新增：驗證密碼（使用 Salt）
+        /// </summary>
+        /// <param name="password">明文密碼</param>
+        /// <param name="storedHash">儲存的密碼雜湊值</param>
+        /// <param name="salt">密碼鹽值</param>
+        /// <returns>密碼是否正確</returns>
+        private static bool VerifyPassword(string password, string storedHash, string salt)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                // 計算密碼 + Salt 的雜湊值
+                var passwordWithSalt = Encoding.UTF8.GetBytes(password + salt);
+                var hashBytes = sha256.ComputeHash(passwordWithSalt);
+                string computedHash = Convert.ToBase64String(hashBytes);
+                
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[SecurityContext] VerifyPassword:");
+                System.Diagnostics.Debug.WriteLine($"  Input: {password}");
+                System.Diagnostics.Debug.WriteLine($"  Salt: {salt}");
+                System.Diagnostics.Debug.WriteLine($"  Computed Hash: {computedHash}");
+                System.Diagnostics.Debug.WriteLine($"  Stored Hash: {storedHash}");
+                System.Diagnostics.Debug.WriteLine($"  Match: {computedHash == storedHash}");
+                #endif
+                
+                return computedHash == storedHash;
             }
         }
 

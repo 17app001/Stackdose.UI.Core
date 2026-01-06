@@ -64,6 +64,7 @@ namespace Stackdose.UI.Core.Controls
     /// <item>可自訂顏色主題（Dark/Light 自動適應）</item>
     /// <item>支援數值格式化（小數點、除數）</item>
     /// <item>提供矩形/圓形底框樣式</item>
+    /// <item>實作 IThemeAware 自動接收主題變更通知</item>
     /// </list>
     /// </remarks>
     /// <example>
@@ -82,7 +83,7 @@ namespace Stackdose.UI.Core.Controls
     ///     FrameShape="Circle" /&gt;
     /// </code>
     /// </example>
-    public partial class PlcLabel : UserControl
+    public partial class PlcLabel : UserControl, IThemeAware
     {
         #region Private Fields
 
@@ -120,25 +121,28 @@ namespace Stackdose.UI.Core.Controls
 
         #endregion
 
-        #region Theme Management
+        #region IThemeAware Implementation
 
         /// <summary>
-        /// 主題變化時重新應用底框顏色
+        /// 主題變更時的回呼方法（實作 IThemeAware）
         /// </summary>
-        /// <remarks>
-        /// 由 PlcLabelContext 透過 CyberFrame 的主題切換事件觸發
-        /// </remarks>
-        public void OnThemeChanged()
+        /// <param name="e">主題變更事件參數</param>
+        public void OnThemeChanged(ThemeChangedEventArgs e)
         {
             // 清除快取，強制重新檢測主題
             _cachedLightThemeResult = null;
             
             #if DEBUG
-            System.Diagnostics.Debug.WriteLine("[PlcLabel] 主題已變化，重新應用顏色");
+            System.Diagnostics.Debug.WriteLine($"[PlcLabel] OnThemeChanged: {e.ThemeName} ({(e.IsLightTheme ? "Light" : "Dark")})");
             #endif
             
+            // 更新底框背景顏色
             UpdateFrameBackground();
         }
+
+        #endregion
+
+        #region Theme Management
 
         /// <summary>
         /// 更新底框背景顏色
@@ -171,12 +175,12 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         /// <returns>true 為 Light 模式，false 為 Dark 模式</returns>
         /// <remarks>
-        /// 透過檢查 Plc.Bg.Main 資源的顏色來判斷主題
+        /// 優先使用 ThemeManager，若無法取得則回退到檢查資源
         /// 結果會被快取以提升效能
         /// </remarks>
         private bool IsLightTheme()
         {
-            // 使用快取避免重複檢查（主題切換時會清除快取）
+            // 使用快取冒煙檢查（主題切換時會清除快取）
             if (_cachedLightThemeResult.HasValue)
             {
                 return _cachedLightThemeResult.Value;
@@ -186,16 +190,12 @@ namespace Stackdose.UI.Core.Controls
             
             try
             {
-                if (Application.Current?.TryFindResource("Plc.Bg.Main") is SolidColorBrush bgBrush)
-                {
-                    var bgColor = bgBrush.Color;
-                    // RGB 值都大於 200 判定為淺色主題
-                    isLight = bgColor.R > 200 && bgColor.G > 200 && bgColor.B > 200;
-                    
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[PlcLabel] 主題檢測: {(isLight ? "Light" : "Dark")}, RGB({bgColor.R}, {bgColor.G}, {bgColor.B})");
-                    #endif
-                }
+                // 🔥 優先使用 ThemeManager
+                isLight = ThemeManager.IsLightTheme();
+                
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[PlcLabel] 主題檢測 (ThemeManager): {(isLight ? "Light" : "Dark")}");
+                #endif
             }
             catch (Exception ex)
             {
@@ -440,6 +440,9 @@ namespace Stackdose.UI.Core.Controls
             // 🔥 註冊到 PlcLabelContext（用於自動監控）
             PlcLabelContext.Register(this);
 
+            // 🔥 註冊到 ThemeManager（自動接收主題變更通知）
+            ThemeManager.Register(this);
+
             // 🔥 初始化底框顏色
             UpdateFrameBackground();
             
@@ -468,6 +471,9 @@ namespace Stackdose.UI.Core.Controls
         {
             // 🔥 註銷 PlcLabelContext
             PlcLabelContext.Unregister(this);
+            
+            // 🔥 註銷 ThemeManager（WeakReference 會自動處理，但手動註銷更安全）
+            ThemeManager.Unregister(this);
             
             if (_boundStatus != null) { _boundStatus.ScanUpdated -= OnScanUpdated; _boundStatus = null; }
         }

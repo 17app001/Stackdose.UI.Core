@@ -165,6 +165,51 @@
                                        Content="製程開始" FontSize="16" 
                                        RequiredLevel="Operator" OperationName="製程開始" 
                                        Click="StartProcess_Click"/>
+
+                <!-- ⭐ NEW: Theme Test Buttons -->
+                <StackPanel HorizontalAlignment="Left" Margin="885,83,0,0" VerticalAlignment="Top" Width="200">
+                    <TextBlock Text="🎨 主題測試" FontSize="14" FontWeight="Bold" Foreground="#00E5FF" Margin="0,0,0,10"/>
+                    
+                    <Button Content="🌙 切換 Dark/Light" 
+                            Click="ToggleTheme_Click"
+                            Height="35" Margin="0,5" 
+                            Background="#1E1E2E" 
+                            Foreground="White" 
+                            BorderBrush="#00E5FF"
+                            ToolTip="手動切換主題（Dark/Light）"/>
+                    
+                    <Button Content="📊 主題統計" 
+                            Click="ShowThemeStats_Click"
+                            Height="35" Margin="0,5" 
+                            Background="#1E1E2E" 
+                            Foreground="White" 
+                            BorderBrush="#FFA726"
+                            ToolTip="顯示已註冊的主題感知控制項統計"/>
+                    
+                    <Button Content="🖼️ 開啟測試視窗" 
+                            Click="OpenThemeDemo_Click"
+                            Height="35" Margin="0,5" 
+                            Background="#1E1E2E" 
+                            Foreground="White" 
+                            BorderBrush="#4CAF50"
+                            ToolTip="開啟完整主題管理功能展示視窗"/>
+                    
+                    <Button Content="🔍 列印已註冊控制項" 
+                            Click="PrintRegistered_Click"
+                            Height="35" Margin="0,5" 
+                            Background="#1E1E2E" 
+                            Foreground="White" 
+                            BorderBrush="#AB47BC"
+                            ToolTip="在 Debug Console 列印所有已註冊控制項"/>
+                    
+                    <Button Content="🗑️ 清理失效參考" 
+                            Click="CleanupTheme_Click"
+                            Height="35" Margin="0,5" 
+                            Background="#1E1E2E" 
+                            Foreground="White" 
+                            BorderBrush="#F44336"
+                            ToolTip="手動清理失效的 WeakReference"/>
+                </StackPanel>
             </Grid>
         </Controls:CyberFrame.MainContent>
     </Controls:CyberFrame>

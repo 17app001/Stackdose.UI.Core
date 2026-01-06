@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Models;
 
 namespace Stackdose.UI.Core.Controls
 {
@@ -15,7 +16,7 @@ namespace Stackdose.UI.Core.Controls
     /// <item>即時顯示系統事件與操作記錄</item>
     /// <item>支援不同等級的日誌顯示（Info/Warning/Error/Success）</item>
     /// <item>自動捲動到最新日誌</item>
-    /// <item>Dark/Light 主題自動適應</item>
+    /// <item>Dark/Light 主題自動適應（實作 IThemeAware）</item>
     /// <item>整合 ComplianceContext 即時日誌來源</item>
     /// </list>
     /// </remarks>
@@ -29,7 +30,7 @@ namespace Stackdose.UI.Core.Controls
     /// &lt;Custom:LiveLogViewer Source="{Binding CustomLogs}" /&gt;
     /// </code>
     /// </example>
-    public partial class LiveLogViewer : UserControl
+    public partial class LiveLogViewer : UserControl, IThemeAware
     {
         #region Constructor
 
@@ -44,6 +45,25 @@ namespace Stackdose.UI.Core.Controls
             this.Source = ComplianceContext.LiveLogs;
             
             this.Loaded += LiveLogViewer_Loaded;
+            this.Unloaded += LiveLogViewer_Unloaded;
+        }
+
+        #endregion
+
+        #region IThemeAware Implementation
+
+        /// <summary>
+        /// 主題變更時的回呼方法（實作 IThemeAware）
+        /// </summary>
+        /// <param name="e">主題變更事件參數</param>
+        public void OnThemeChanged(ThemeChangedEventArgs e)
+        {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[LiveLogViewer] OnThemeChanged: {e.ThemeName} ({(e.IsLightTheme ? "Light" : "Dark")})");
+            #endif
+            
+            // 刷新所有日誌項目顏色
+            RefreshLogColors();
         }
 
         #endregion
@@ -55,7 +75,17 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         private void LiveLogViewer_Loaded(object sender, RoutedEventArgs e)
         {
-            // 預留：未來可在此訂閱主題變化事件
+            // 🔥 註冊到 ThemeManager（自動接收主題變更通知）
+            ThemeManager.Register(this);
+        }
+
+        /// <summary>
+        /// 控制項卸載事件
+        /// </summary>
+        private void LiveLogViewer_Unloaded(object sender, RoutedEventArgs e)
+        {
+            // 🔥 註銷 ThemeManager（WeakReference 會自動處理，但手動註銷更安全）
+            ThemeManager.Unregister(this);
         }
 
         #endregion
@@ -66,7 +96,6 @@ namespace Stackdose.UI.Core.Controls
         /// 主題變化時強制刷新所有日誌項目顏色
         /// </summary>
         /// <remarks>
-        /// 由 CyberFrame 的主題切換邏輯自動呼叫
         /// 透過重新綁定 ItemsSource 觸發所有 LogEntry.Color 屬性重新計算
         /// </remarks>
         public void RefreshLogColors()

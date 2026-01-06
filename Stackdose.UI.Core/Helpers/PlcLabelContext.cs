@@ -290,14 +290,21 @@ namespace Stackdose.UI.Core.Helpers
         /// <summary>
         /// 通知所有 PlcLabel 主題已變化
         /// </summary>
+        /// <remarks>
+        /// 此方法已棄用，請使用 ThemeManager 統一管理主題
+        /// </remarks>
+        [Obsolete("請使用 ThemeManager.SwitchTheme() 統一切換主題")]
         public static void NotifyThemeChanged()
         {
             lock (_lock)
             {
-                // 清理已回收的引用
+                // 清理已回收的參考
                 _registeredLabels.RemoveWhere(wr => !wr.TryGetTarget(out _));
 
                 System.Diagnostics.Debug.WriteLine($"[PlcLabelContext] 通知 {_registeredLabels.Count} 個 PlcLabel 主題已變化");
+
+                // ?? 使用 ThemeManager 取得當前主題
+                var currentTheme = ThemeManager.CurrentTheme;
 
                 foreach (var weakRef in _registeredLabels.ToList())
                 {
@@ -305,7 +312,7 @@ namespace Stackdose.UI.Core.Helpers
                     {
                         try
                         {
-                            label.OnThemeChanged();
+                            label.OnThemeChanged(currentTheme);
                         }
                         catch (Exception ex)
                         {

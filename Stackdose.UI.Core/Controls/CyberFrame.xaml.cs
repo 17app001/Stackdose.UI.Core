@@ -18,7 +18,7 @@ namespace Stackdose.UI.Core.Controls
     /// <list type="bullet">
     /// <item>系統標題列與時鐘顯示</item>
     /// <item>使用者登入/登出狀態顯示</item>
-    /// <item>Dark/Light 主題切換</item>
+    /// <item>Dark/Light 主題切換（整合 ThemeManager）</item>
     /// <item>狀態指示器（可選）</item>
     /// <item>自動填滿整個 Window</item>
     /// </list>
@@ -383,30 +383,10 @@ namespace Stackdose.UI.Core.Controls
             System.Diagnostics.Debug.WriteLine("========== Theme Toggle START ==========");
             System.Diagnostics.Debug.WriteLine($"Current UseLightTheme: {UseLightTheme}");
             
-            // 輸出當前資源字典狀態
-            var appResources = Application.Current.Resources;
-            System.Diagnostics.Debug.WriteLine($"Total MergedDictionaries Before: {appResources.MergedDictionaries.Count}");
-            foreach (var dict in appResources.MergedDictionaries)
-            {
-                if (dict.Source != null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"  - {dict.Source}");
-                }
-            }
-            
-            // 切換主題
+            // 🔥 使用 ThemeManager 統一切換主題
             ToggleTheme();
             
             System.Diagnostics.Debug.WriteLine($"New UseLightTheme: {UseLightTheme}");
-            System.Diagnostics.Debug.WriteLine($"Total MergedDictionaries After: {appResources.MergedDictionaries.Count}");
-            foreach (var dict in appResources.MergedDictionaries)
-            {
-                if (dict.Source != null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"  - {dict.Source}");
-                }
-            }
-            
             System.Diagnostics.Debug.WriteLine("========== Theme Toggle END ==========");
         }
 
@@ -643,7 +623,7 @@ namespace Stackdose.UI.Core.Controls
         /// <param name="useLightTheme">是否使用淺色主題</param>
         private void ApplyTheme(bool useLightTheme)
         {
-            System.Diagnostics.Debug.WriteLine($"Applying Theme: {(useLightTheme ? "Light" : "Dark")}");
+            System.Diagnostics.Debug.WriteLine($"[CyberFrame] Applying Theme: {(useLightTheme ? "Light" : "Dark")}");
 
             try
             {
@@ -669,25 +649,37 @@ namespace Stackdose.UI.Core.Controls
                 foreach (var dict in toRemove)
                 {
                     appResources.MergedDictionaries.Remove(dict);
-                    System.Diagnostics.Debug.WriteLine($"Removed: {dict.Source}");
+                    System.Diagnostics.Debug.WriteLine($"[CyberFrame] Removed: {dict.Source}");
                 }
 
                 // 加入新的主題字典
                 appResources.MergedDictionaries.Add(newThemeDict);
                 
-                System.Diagnostics.Debug.WriteLine($"Theme Applied Successfully: {themeUri}");
-                System.Diagnostics.Debug.WriteLine($"Total MergedDictionaries: {appResources.MergedDictionaries.Count}");
+                System.Diagnostics.Debug.WriteLine($"[CyberFrame] Theme Applied Successfully: {themeUri}");
                 
-                // 🔥 通知所有 PlcLabel 主題已變化
-                PlcLabelContext.NotifyThemeChanged();
-                System.Diagnostics.Debug.WriteLine("[CyberFrame] PlcLabel 主題變化通知已發送");
+                // 🔥 讀取主題顏色
+                Color? bgColor = null;
+                Color? fgColor = null;
                 
-                // 🔥 刷新所有 LiveLogViewer
-                foreach (Window window in Application.Current.Windows)
+                if (Application.Current?.TryFindResource("Plc.Bg.Main") is SolidColorBrush bgBrush)
                 {
-                    RefreshLiveLogViewers(window);
+                    bgColor = bgBrush.Color;
                 }
-                System.Diagnostics.Debug.WriteLine("[CyberFrame] LiveLogViewer 刷新完成");
+                
+                if (Application.Current?.TryFindResource("Plc.Fg.Main") is SolidColorBrush fgBrush)
+                {
+                    fgColor = fgBrush.Color;
+                }
+                
+                // 🔥 使用 ThemeManager 統一通知所有已註冊的控制項
+                ThemeManager.SwitchTheme(
+                    useLightTheme,
+                    useLightTheme ? "Light" : "Dark",
+                    bgColor,
+                    fgColor
+                );
+                
+                System.Diagnostics.Debug.WriteLine("[CyberFrame] ThemeManager.SwitchTheme 已呼叫");
                 
                 // 強制刷新 UI
                 Application.Current.Dispatcher.Invoke(() => 
@@ -700,18 +692,17 @@ namespace Stackdose.UI.Core.Controls
                     }
                 }, System.Windows.Threading.DispatcherPriority.Render);
                 
-                //// 顯示通知
-                //CyberMessageBox.Show(
-                //    $"Theme changed to {(useLightTheme ? "Light" : "Dark")} mode",
-                //    "Theme Switch",
-                //    MessageBoxButton.OK,
-                //    MessageBoxImage.Information
-                //);
+                // 記錄日誌
+                ComplianceContext.LogSystem(
+                    $"主題已切換為 {(useLightTheme ? "Light" : "Dark")} 模式",
+                    LogLevel.Info,
+                    showInUi: true
+                );
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Theme Apply Error: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine($"[CyberFrame] Theme Apply Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[CyberFrame] Stack Trace: {ex.StackTrace}");
                 CyberMessageBox.Show(
                     $"Theme switch failed: {ex.Message}",
                     "Error",

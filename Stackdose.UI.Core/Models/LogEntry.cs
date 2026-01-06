@@ -2,6 +2,7 @@
 using System;
 using System.Windows;
 using System.Windows.Media;
+using Stackdose.UI.Core.Helpers;
 
 namespace Stackdose.UI.Core.Models
 {
@@ -18,8 +19,8 @@ namespace Stackdose.UI.Core.Models
         {
             get
             {
-                // 🔥 根據主題動態調整顏色
-                bool isLightMode = IsLightTheme();
+                // 🔥 使用 ThemeManager 統一判斷主題
+                bool isLightMode = ThemeManager.IsLightTheme();
                 
                 return Level switch
                 {
@@ -36,32 +37,5 @@ namespace Stackdose.UI.Core.Models
         }
 
         public string TimeStr => Timestamp.ToString("HH:mm:ss.f"); // 顯示到毫秒
-
-        /// <summary>
-        /// 判斷當前是否為 Light 主題
-        /// </summary>
-        private bool IsLightTheme()
-        {
-            try
-            {
-                var plcBgBrush = Application.Current?.TryFindResource("Plc.Bg.Main") as SolidColorBrush;
-                if (plcBgBrush != null)
-                {
-                    var bgColor = plcBgBrush.Color;
-                    bool isLight = bgColor.R > 200 && bgColor.G > 200 && bgColor.B > 200;
-                    
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[LogEntry] IsLightTheme: {isLight}, Plc.Bg.Main={bgColor}");
-                    #endif
-                    
-                    return isLight;
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[LogEntry] Error: {ex.Message}");
-            }
-            return false; // 預設 Dark 模式
-        }
     }
 }

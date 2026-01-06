@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
+        xmlns:panels="clr-namespace:WpfApp1.Panels"
         xmlns:Controls="http://schemas.stackdose.com/wpf"
         x:Class="WpfApp1.MainWindow"
         mc:Ignorable="d"
@@ -13,203 +14,46 @@
     <Controls:CyberFrame Title="UBI SYSTEM">
         <Controls:CyberFrame.MainContent>
             <Grid>
-                <Controls:PlcStatus 
-                                    HorizontalAlignment="Left" 
-                                    Margin="73,89,0,0" 
-                                    VerticalAlignment="Top" 
-                                    IpAddress="192.168.22.39" 
-                                    Port="3000" 
-                                    AutoConnect="True" 
-                                    IsGlobal="True"
-                                    MonitorAddress="" 
-                                    MonitorLength="1" 
-                                    ScanInterval="120"/>
+                <!-- TabControl for organized layout -->
+                <TabControl Background="#0D0D1A" BorderBrush="#00E5FF" BorderThickness="1"
+                            Foreground="White">
 
-                <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,80,0,0" VerticalAlignment="Top" 
-                                   Width="130" Height="62" 
-                                   Label="X Position"
-                                   Address="D100" 
-                                   DefaultValue="00000" DataType="DWord" />
+                    <!-- Tab 1: Main Control Panel -->
+                    <TabItem Header="Main">
+                        <panels:MainPanel/>
+                    </TabItem>
 
-                <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,147,0,0" VerticalAlignment="Top" 
-                                   Width="164" Height="57" 
-                                   Label="Event Detect"
-                                   Address="M237" 
-                                   DefaultValue="OFF" 
-                                   DataType="Bit" 
-                                   BitIndex="-1"/>
+                    <!-- Tab 2: Sensors and PrintHead -->
+                    <TabItem Header="Sensors / PrintHead">
+                        <panels:SensorPrintHeadPanel/>
+                    </TabItem>
 
-                <Controls:PlcLabel HorizontalAlignment="Left" Margin="307,222,0,0" VerticalAlignment="Top" 
-                                   Width="159" Height="58" 
-                                   Label="R2000"
-                                   Address="R2000" 
-                                   DefaultValue="00000" 
-                                   DataType="Word" 
-                                   BitIndex="-1"/>
+                    <!-- Tab 3: Recipe and Logs -->
+                    <TabItem Header="Recipe / Logs">
+                        <panels:RecipeLogPanel/>
+                    </TabItem>
 
-                <Controls:PlcDeviceEditor HorizontalAlignment="Left" Margin="73,291,0,0" VerticalAlignment="Top" 
-                                  Width="267" 
-                                  Label="PLC Input" 
-                                  Address="D100" 
-                                  Value="0" 
-                                  Reason="Manual Test"
-                                  RequiredLevel="Supervisor"
-                                  EnableAuditTrail="True"/>
+                    <!-- Tab 4: System Test (Development) -->
+                    <TabItem Header="System Test">
+                        <panels:SystemTestPanel/>
+                    </TabItem>
 
-                <Controls:PlcLabel 
-                                   HorizontalAlignment="Left" Margin="484,111,0,0" VerticalAlignment="Top" 
-                                   Width="169" Height="156" 
-                                   Label="溫度"
-                                   Address="R2002" 
-                                   DefaultValue="0000" 
-                                   DataType="Word" 
-                                   BitIndex="-1" 
-                                   Divisor="10" FrameShape="Circle" ValueAlignment="Center" LabelAlignment="Center" ShowAddress="False" LabelFontSize="23" ValueForeground="Warning"/>
+                </TabControl>
 
-                <Controls:PlcLabel HorizontalAlignment="Left" Margin="640,84,0,0" VerticalAlignment="Top" 
-                                   Width="203" Height="58" 
-                                   Label="X Position"
-                                   Address="D11" 
-                                   DefaultValue="OFF" 
-                                   BitIndex="0" 
-                                   DataType="Bit"/>
-
-                <Controls:PlcLabel HorizontalAlignment="Left" Margin="683,214,0,0" VerticalAlignment="Top" 
-                                   Width="153" 
-                                   DefaultValue="00000" 
-                                   EnableAuditTrail="True" 
-                                   EnableDataLog="True" 
-                                   DataType="Bit" 
-                                   BitIndex="0"/>
-
-                <Controls:LiveLogViewer HorizontalAlignment="Left" Margin="418,393,0,0" VerticalAlignment="Top" 
-                                        Height="307" Width="450"/>
-
-                <Controls:PlcLabel HorizontalAlignment="Left" Margin="591,285,0,0" VerticalAlignment="Top" 
-                                   Width="245" 
-                                   DefaultValue="00000" 
-                                   EnableAuditTrail="True" 
-                                   EnableDataLog="True" 
-                                   ShowLog="False"/>
-
-                <!-- SensorViewer -->
-                <Controls:SensorViewer HorizontalAlignment="Left" Margin="1098,87,0,0" VerticalAlignment="Top" 
-                                       Width="458" Height="411"
-                                       Title="SENSOR Viewer"
-                                       ConfigFile="Sensors.json"
-                                       EnableGrouping="True"
-                                       AutoStart="True"
-                                       RefreshInterval="499"/>
-
-                <!-- PrintHeadStatus -->
-                <Controls:PrintHeadStatus 
-                                          HorizontalAlignment="Left" 
-                                          Margin="48,185,0,0" 
-                                          VerticalAlignment="Top"
-                                          HeadName="Feiyang Head 1"
-                                          ConfigFilePath="feiyang_head1.json"
-                                          AutoConnect="False"/>
-
-                <!-- ⭐ NEW: RecipeLoader Control -->
-                <Controls:RecipeLoader HorizontalAlignment="Left" 
-                                       Margin="1102,540,0,0" 
-                                       VerticalAlignment="Top" 
-                                       Width="450" 
-                                       Height="299"
-                                       Title="Recipe 配方管理"
-                                       RecipeFilePath="Recipe.json"
-                                       AutoLoadOnStartup="False"
-                                       RequiredAccessLevel="Instructor"
-                                       ShowDetails="True"/>
-
-                <!-- PlcEventTrigger -->
+                <!-- PlcEventTrigger (invisible, kept for functionality) -->
                 <Controls:PlcEventTrigger Address="M237" 
                                           EventName="Recipe1Selected"
                                           AutoClear="True"
                                           ClearDelay="0"
-                                          TriggerCondition="OnRising"/>
+                                          TriggerCondition="OnRising"
+                                          Visibility="Collapsed"/>
 
                 <Controls:PlcEventTrigger Address="M238" 
                                           EventName="Recipe2Selected"
                                           AutoClear="True"
                                           ClearDelay="0"
-                                          TriggerCondition="OnRising"/>
-
-                <!-- Test Buttons: CyberMessageBox Thread Safety -->
-                <StackPanel HorizontalAlignment="Left" Margin="73,472,0,0" VerticalAlignment="Top" Width="300">
-                    <Button Content="Test UI Thread MessageBox" 
-                            Command="{Binding TestUIThreadMessageBoxCommand}"
-                            Height="35" Margin="0,5" 
-                            Background="#1E1E2E" 
-                            Foreground="White" 
-                            BorderBrush="#00E5FF"/>
-                    <Button Content="Test Background Thread MessageBox" 
-                            Command="{Binding TestBackgroundMessageBoxCommand}"
-                            Height="35" Margin="0,5" 
-                            Background="#1E1E2E" 
-                            Foreground="White" 
-                            BorderBrush="#FFA726"/>
-                    <Button Content="Test Multiple MessageBox" 
-                            Command="{Binding TestMultipleMessageBoxCommand}"
-                            Height="35" Margin="0,5" 
-                            Background="#1E1E2E" 
-                            Foreground="White" 
-                            BorderBrush="#4CAF50"/>
-                </StackPanel>
-
-                <!-- Permission Test Buttons -->
-
-                <!-- Theme Showcase -->
-                <Controls:SecuredButton HorizontalAlignment="Left" Margin="73,640,0,0" VerticalAlignment="Top" 
-                                       Theme="Success" Height="60" Width="190" 
-                                       Content="製程開始" FontSize="16" 
-                                       RequiredLevel="Operator" OperationName="製程開始" 
-                                       Click="StartProcess_Click"/>
-
-                <!-- ⭐ NEW: Theme Test Buttons -->
-                <StackPanel HorizontalAlignment="Left" Margin="885,83,0,0" VerticalAlignment="Top" Width="200">
-                    <TextBlock Text="🎨 主題測試" FontSize="14" FontWeight="Bold" Foreground="#00E5FF" Margin="0,0,0,10"/>
-                    
-                    <Button Content="🌙 切換 Dark/Light" 
-                            Click="ToggleTheme_Click"
-                            Height="35" Margin="0,5" 
-                            Background="#1E1E2E" 
-                            Foreground="White" 
-                            BorderBrush="#00E5FF"
-                            ToolTip="手動切換主題（Dark/Light）"/>
-                    
-                    <Button Content="📊 主題統計" 
-                            Click="ShowThemeStats_Click"
-                            Height="35" Margin="0,5" 
-                            Background="#1E1E2E" 
-                            Foreground="White" 
-                            BorderBrush="#FFA726"
-                            ToolTip="顯示已註冊的主題感知控制項統計"/>
-                    
-                    <Button Content="🖼️ 開啟測試視窗" 
-                            Click="OpenThemeDemo_Click"
-                            Height="35" Margin="0,5" 
-                            Background="#1E1E2E" 
-                            Foreground="White" 
-                            BorderBrush="#4CAF50"
-                            ToolTip="開啟完整主題管理功能展示視窗"/>
-                    
-                    <Button Content="🔍 列印已註冊控制項" 
-                            Click="PrintRegistered_Click"
-                            Height="35" Margin="0,5" 
-                            Background="#1E1E2E" 
-                            Foreground="White" 
-                            BorderBrush="#AB47BC"
-                            ToolTip="在 Debug Console 列印所有已註冊控制項"/>
-                    
-                    <Button Content="🗑️ 清理失效參考" 
-                            Click="CleanupTheme_Click"
-                            Height="35" Margin="0,5" 
-                            Background="#1E1E2E" 
-                            Foreground="White" 
-                            BorderBrush="#F44336"
-                            ToolTip="手動清理失效的 WeakReference"/>
-                </StackPanel>
+                                          TriggerCondition="OnRising"
+                                          Visibility="Collapsed"/>
             </Grid>
         </Controls:CyberFrame.MainContent>
     </Controls:CyberFrame>

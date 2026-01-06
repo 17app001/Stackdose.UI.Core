@@ -16,6 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="A8_1536GS_L_25PL_UV_DROP1_30K_ABC0.data" TargetPath="Resources\A8_1536GS_L_25PL_UV_DROP1_30K_ABC0.data">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="feiyang_head1.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

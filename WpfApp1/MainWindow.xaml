@@ -14,6 +14,17 @@
     <Controls:CyberFrame Title="UBI SYSTEM">
         <Controls:CyberFrame.MainContent>
             <Grid>
+                <!-- 🔥 Global PlcStatus (隱藏但保持連線) -->
+                <Controls:PlcStatus 
+                    IpAddress="192.168.22.39" 
+                    Port="3000" 
+                    AutoConnect="True" 
+                    IsGlobal="True"
+                    MonitorAddress="" 
+                    MonitorLength="1" 
+                    ScanInterval="120"
+                    Visibility="Collapsed"/>
+                
                 <!-- TabControl for organized layout -->
                 <TabControl Background="#0D0D1A" BorderBrush="#00E5FF" BorderThickness="1"
                             Foreground="White">

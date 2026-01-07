@@ -19,6 +19,11 @@ namespace Stackdose.UI.Core.Helpers
         /// </summary>
         public static ObservableCollection<SensorConfig> Sensors { get; } = new ObservableCollection<SensorConfig>();
 
+        /// <summary>
+        /// 🔥 新增：追蹤 Monitor 是否已註冊
+        /// </summary>
+        public static bool IsMonitorRegistered { get; private set; } = false;
+
         private static object _lock = new object();
 
         #endregion
@@ -185,6 +190,13 @@ namespace Stackdose.UI.Core.Helpers
             }
 
             string result = string.Join(",", monitorParts);
+            
+            // 🔥 標記已註冊
+            if (!string.IsNullOrEmpty(result))
+            {
+                IsMonitorRegistered = true;
+            }
+            
             LogInfo($"Generated monitor addresses: {result}");
             return result;
         }

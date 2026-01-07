@@ -25,6 +25,15 @@ namespace Stackdose.UI.Core.Controls
     /// </summary>
     public partial class PrintHeadPanel : UserControl
     {
+        #region Fields
+        
+        /// <summary>
+        /// 🔥 追蹤是否已初始化 PrintHead 列表
+        /// </summary>
+        private bool _isInitialized = false;
+        
+        #endregion
+
         #region Dependency Properties
 
         /// <summary>
@@ -75,11 +84,8 @@ namespace Stackdose.UI.Core.Controls
         {
             InitializeComponent();
 
-            this.Loaded += OnLoaded;
-            
-            #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[PrintHeadPanel] Constructor");
-            #endif
+            this.Loaded += OnLoaded;           
+      
         }
 
         #endregion
@@ -91,20 +97,22 @@ namespace Stackdose.UI.Core.Controls
             // 設定預設 Flash 參數
             FlashTimesTextBox.Text = DefaultFlashParameters;
 
-            // 🔥 自動掃描並載入 PrintHead 配置
-            if (PrintHeadConfigs == null || PrintHeadConfigs.Count == 0)
+            // 🔥 只在第一次載入時掃描並建立 PrintHead 控件
+            if (!_isInitialized)
             {
-                AutoLoadPrintHeadConfigs();
+                // 自動掃描並載入 PrintHead 配置
+                if (PrintHeadConfigs == null || PrintHeadConfigs.Count == 0)
+                {
+                    AutoLoadPrintHeadConfigs();
+                }
+                else
+                {
+                    // 使用外部提供的配置
+                    UpdatePrintHeadList();
+                }
+                
+                _isInitialized = true;
             }
-            else
-            {
-                // 使用外部提供的配置
-                UpdatePrintHeadList();
-            }
-            
-            #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[PrintHeadPanel] OnLoaded - PrintHeadConfigs count: {PrintHeadConfigs?.Count ?? 0}");
-            #endif
         }
 
         /// <summary>
@@ -145,9 +153,6 @@ namespace Stackdose.UI.Core.Controls
                         
                         if (string.IsNullOrWhiteSpace(jsonContent))
                         {
-                            #if DEBUG
-                            System.Diagnostics.Debug.WriteLine($"[PrintHeadPanel] Skipped empty file: {fileName}");
-                            #endif
                             continue;
                         }
 
@@ -175,10 +180,6 @@ namespace Stackdose.UI.Core.Controls
                             ConfigFilePath = fileName,
                             AutoConnect = true // 預設自動連線
                         });
-
-                        #if DEBUG
-                        System.Diagnostics.Debug.WriteLine($"[PrintHeadPanel] Loaded: {headName} ({fileName})");
-                        #endif
                     }
                     catch (Exception ex)
                     {
@@ -222,41 +223,27 @@ namespace Stackdose.UI.Core.Controls
         {
             if (PrintHeadContainer != null && PrintHeadConfigs != null)
             {
-                // 清除現有控件
-                PrintHeadContainer.Children.Clear();
-                
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[PrintHeadPanel] UpdatePrintHeadList - Creating {PrintHeadConfigs.Count} PrintHead controls");
-                #endif
-
-                // 動態建立 PrintHead 控件
-                foreach (var config in PrintHeadConfigs)
+                // 🔥 只在尚未初始化時清空並重建（避免 Tab 切換時重建）
+                if (!_isInitialized)
                 {
-                    var printHeadStatus = new PrintHeadStatus
-                    {
-                        HeadName = config.HeadName,
-                        ConfigFilePath = config.ConfigFilePath,
-                        AutoConnect = config.AutoConnect,
-                        Margin = new Thickness(0, 0, 0, 10),
-                        HorizontalAlignment = HorizontalAlignment.Stretch
-                    };
-
-                    PrintHeadContainer.Children.Add(printHeadStatus);
+                    // 清除現有控件
+                    PrintHeadContainer.Children.Clear();
                     
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"  - Added: {config.HeadName} ({config.ConfigFilePath})");
-                    #endif
+                    // 動態建立 PrintHead 控件
+                    foreach (var config in PrintHeadConfigs)
+                    {
+                        var printHeadStatus = new PrintHeadStatus
+                        {
+                            HeadName = config.HeadName,
+                            ConfigFilePath = config.ConfigFilePath,
+                            AutoConnect = config.AutoConnect,
+                            Margin = new Thickness(0, 0, 0, 10),
+                            HorizontalAlignment = HorizontalAlignment.Stretch
+                        };
+
+                        PrintHeadContainer.Children.Add(printHeadStatus);
+                    }
                 }
-                
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[PrintHeadPanel] Total PrintHead controls in container: {PrintHeadContainer.Children.Count}");
-                #endif
-            }
-            else
-            {
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[PrintHeadPanel] UpdatePrintHeadList - Skipped (Container: {PrintHeadContainer != null}, Configs: {PrintHeadConfigs != null})");
-                #endif
             }
         }
 
@@ -275,7 +262,7 @@ namespace Stackdose.UI.Core.Controls
             try
             {
                 // 解析 Flash 參數
-                string flashParams = FlashTimesTextBox.Text?.Trim();
+                string? flashParams = FlashTimesTextBox.Text?.Trim();
                 if (string.IsNullOrWhiteSpace(flashParams))
                 {
                     CyberMessageBox.Show(

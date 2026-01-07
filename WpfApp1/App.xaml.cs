@@ -1,10 +1,8 @@
-﻿using System.Configuration;
-using System.Data;
-using System.Windows;
-using Stackdose.Hardware.Plc;
+﻿using Stackdose.Hardware.Plc;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
 using Stackdose.UI.Core.Services;
+using System.Windows;
 
 namespace WpfApp1
 {

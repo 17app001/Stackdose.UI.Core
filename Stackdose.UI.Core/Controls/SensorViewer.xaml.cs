@@ -13,6 +13,11 @@ namespace Stackdose.UI.Core.Controls
     {
         private DispatcherTimer? _monitorTimer;
         private CancellationTokenSource? _cancellationTokenSource;
+        
+        /// <summary>
+        /// 🔥 追蹤是否已初始化 Sensor 狀態（避免重複初始化）
+        /// </summary>
+        private bool _isInitialized = false;
 
         public SensorViewer()
         {
@@ -89,29 +94,65 @@ namespace Stackdose.UI.Core.Controls
 
         private void SensorViewer_Loaded(object sender, RoutedEventArgs e)
         {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[SensorViewer] Loaded called. IsInitialized={_isInitialized}, MonitorRunning={_monitorTimer != null}");
+            #endif
+            
+            // 🔥 避免重複初始化和啟動
+            if (_isInitialized)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[SensorViewer] Already initialized, skipping Loaded logic.");
+                #endif
+                return;
+            }
+            
+            // 設定為已初始化
+            _isInitialized = true;
+            
             // 載入配置檔案
             if (!string.IsNullOrEmpty(ConfigFile))
             {
                 SensorContext.LoadFromJson(ConfigFile);
             }
 
-            // 🔥 修改：訂閱 PlcStatus 連線成功事件（而非輪詢）
-            SubscribeToPlcStatusEvents();
+            // 🔥 只在第一次載入時訂閱 PlcStatus 事件
+            if (PlcContext.GlobalStatus != null)
+            {
+                // 移除舊的訂閱（如果存在）
+                PlcContext.GlobalStatus.ConnectionEstablished -= OnPlcConnectionEstablished;
+                
+                // 訂閱連線成功事件
+                PlcContext.GlobalStatus.ConnectionEstablished += OnPlcConnectionEstablished;
+
+                // 🔥 如果 PlcStatus 已經連線完成，立即執行註冊
+                if (PlcContext.GlobalStatus.CurrentManager != null && 
+                    PlcContext.GlobalStatus.CurrentManager.IsConnected &&
+                    !SensorContext.IsMonitorRegistered)
+                {
+                    OnPlcConnectionEstablished(PlcContext.GlobalStatus.CurrentManager);
+                }
+            }
 
             // 綁定資料源
             BindSensorList();
 
-            // 自動啟動監控
-            if (AutoStart)
+            // 🔥 自動啟動監控（只在第一次且已連線時）
+            if (AutoStart && PlcContext.GlobalStatus?.CurrentManager?.IsConnected == true)
             {
+                InitializeSensorStates(PlcContext.GlobalStatus.CurrentManager);
                 StartMonitoring();
             }
         }
 
         private void SensorViewer_Unloaded(object sender, RoutedEventArgs e)
         {
-            // 停止監控
+            // 🔥 停止監控（但不取消訂閱，不移除 Monitor 註冊，不重置初始化標誌）
             StopMonitoring();
+            
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine("[SensorViewer] Unloaded (keeping subscription and registration)");
+            #endif
         }
 
         private static void OnConfigFileChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -446,6 +487,24 @@ namespace Stackdose.UI.Core.Controls
         {
             try
             {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[SensorViewer] OnPlcConnectionEstablished called. IsInitialized={_isInitialized}, IsMonitorRegistered={SensorContext.IsMonitorRegistered}");
+                #endif
+                
+                // 🔥 如果已經初始化過，不重複執行
+                if (_isInitialized)
+                {
+                    ComplianceContext.LogSystem("[SensorViewer] Already initialized, skipping OnPlcConnectionEstablished logic.", Models.LogLevel.Info, showInUi: false);
+                    return;
+                }
+                
+                // 🔥 如果已經註冊過，不重複註冊
+                if (SensorContext.IsMonitorRegistered)
+                {
+                    ComplianceContext.LogSystem("[SensorViewer] Monitor addresses already registered, skipping.", Models.LogLevel.Info, showInUi: false);
+                    return;
+                }
+
                 if (manager.Monitor == null)
                 {
                     ComplianceContext.LogSystem("[SensorViewer] Monitor not available.", Models.LogLevel.Warning, showInUi: false);
@@ -461,67 +520,107 @@ namespace Stackdose.UI.Core.Controls
                     return;
                 }
 
-                // 解析並註冊到 Monitor
-                RegisterMonitorAddresses(manager, monitorAddresses);
-
-                ComplianceContext.LogSystem($"[SensorViewer] Auto-registered monitor addresses: {monitorAddresses}", Models.LogLevel.Info, showInUi: true);
+                ComplianceContext.LogSystem($"[SensorViewer] Monitor addresses prepared: {monitorAddresses}", Models.LogLevel.Info, showInUi: false);
+                
+                // 🔥 註冊監控位址（SensorContext.GenerateMonitorAddresses 會設定 IsMonitorRegistered）
+                // 由 PlcStatus 的 ConnectAsync 自動呼叫 RegisterMonitors
             }
             catch (Exception ex)
             {
-                ComplianceContext.LogSystem($"[SensorViewer] Failed to auto-register monitors: {ex.Message}", Models.LogLevel.Error, showInUi: true);
+                ComplianceContext.LogSystem($"[SensorViewer] Failed to prepare monitors: {ex.Message}", Models.LogLevel.Error, showInUi: true);
             }
         }
 
         /// <summary>
-        /// 🔥 新增：解析監控位址字串並註冊到 Monitor（類似 PlcStatus 的邏輯）
+        /// 🔥 新增：初始化 Sensor 狀態（靜默讀取，不觸發警報）
         /// </summary>
-        private void RegisterMonitorAddresses(IPlcManager manager, string config)
+        private async void InitializeSensorStates(IPlcManager manager)
         {
-            if (manager.Monitor == null) return;
-
-            if (config.Contains(","))
+            if (manager == null || !manager.IsConnected)
             {
-                var parts = config.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                for (int i = 0; i < parts.Length; i++)
-                {
-                    string current = parts[i].Trim();
-                    
-                    // 跳過純數字（這是長度參數）
-                    if (int.TryParse(current, out _))
-                        continue;
-
-                    int length = 1; // 預設長度
-
-                    // 檢查下一個 token 是否為長度
-                    if (i + 1 < parts.Length)
-                    {
-                        string nextToken = parts[i + 1].Trim();
-                        if (int.TryParse(nextToken, out int parsedLen))
-                        {
-                            length = parsedLen;
-                            i++; // 跳過下一個 token
-                        }
-                    }
-
-                    try
-                    {
-                        manager.Monitor.Register(current, length);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[SensorViewer] Failed to register {current}: {ex.Message}");
-                    }
-                }
+                ComplianceContext.LogSystem("[SensorViewer] Cannot initialize sensor states: PLC not connected.", Models.LogLevel.Warning, showInUi: false);
+                return;
             }
-            else
+
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine("[SensorViewer] InitializeSensorStates starting...");
+            #endif
+
+            ComplianceContext.LogSystem("[SensorViewer] Initializing sensor states (silent)...", Models.LogLevel.Info, showInUi: false);
+
+            var alarmSensors = new List<SensorConfig>(); // 🔥 收集異常 Sensor
+
+            foreach (var sensor in SensorContext.Sensors)
             {
                 try
                 {
-                    manager.Monitor.Register(config, 1);
+                    bool isActive = await EvaluateSensor(sensor, manager);
+                    string currentValue = sensor.CurrentValue;
+
+                    // 🔥 直接設定初始狀態，不呼叫 UpdateSensorState（避免觸發警報事件）
+                    sensor.IsActive = isActive;
+                    sensor.CurrentValue = currentValue;
+                    
+                    // 🔥 如果初始狀態就是觸發（異常），記錄並收集
+                    if (isActive)
+                    {
+                        alarmSensors.Add(sensor);
+                        
+                        ComplianceContext.LogSystem(
+                            $"[Sensor] 初始狀態異常: {sensor.OperationDescription} ({sensor.Device}) = {currentValue}",
+                            Models.LogLevel.Warning,
+                            showInUi: true
+                        );
+                    }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SensorViewer] Failed to initialize {sensor.Device}: {ex.Message}");
+                }
+            }
+
+            // 更新統計
+            UpdateStatistics();
+
+            ComplianceContext.LogSystem($"[SensorViewer] Sensor states initialized. Total alarms: {alarmSensors.Count}", Models.LogLevel.Success, showInUi: false);
+
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[SensorViewer] InitializeSensorStates completed.");
+            #endif
+
+            // 🔥 如果有異常 Sensor，顯示 MessageBox 警告
+            if (alarmSensors.Count > 0)
+            {
+                string message = $"偵測到 {alarmSensors.Count} 個感測器異常：\n\n";
+                
+                // 最多顯示前 10 個
+                int displayCount = Math.Min(alarmSensors.Count, 10);
+                for (int i = 0; i < displayCount; i++)
+                {
+                    var sensor = alarmSensors[i];
+                    message += $"  ⚠️ {sensor.OperationDescription}\n";
+                    message += $"      ({sensor.Device} = {sensor.CurrentValue})\n\n";
+                }
+                
+                if (alarmSensors.Count > 10)
+                {
+                    message += $"  ...還有 {alarmSensors.Count - 10} 個異常\n\n";
+                }
+                
+                message += "請檢查設備狀態！";
+
+                Dispatcher.Invoke(() =>
+                {
+                    CyberMessageBox.Show(
+                        message,
+                        "⚠️ 感測器異常警告",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
+                });
             }
         }
+
         #endregion
     }
 }

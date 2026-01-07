@@ -93,6 +93,9 @@ namespace Stackdose.UI.Core.Controls
         /// <summary>快取的主題檢測結果（避免重複檢查）</summary>
         private bool? _cachedLightThemeResult;
 
+        /// <summary>🔥 追蹤是否已註冊到 Context（避免 Tab 切換重複註冊）</summary>
+        private bool _isRegistered = false;
+
         #endregion
 
         #region Events
@@ -437,8 +440,16 @@ namespace Stackdose.UI.Core.Controls
 
         private void PlcLabel_Loaded(object sender, RoutedEventArgs e)
         {
-            // 🔥 註冊到 PlcLabelContext（用於自動監控）
-            PlcLabelContext.Register(this);
+            // 🔥 只在第一次載入時註冊到 PlcLabelContext（避免 Tab 切換重複註冊）
+            if (!_isRegistered)
+            {
+                PlcLabelContext.Register(this);
+                _isRegistered = true;
+                
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[PlcLabel] Registered to PlcLabelContext: {Label} ({Address})");
+                #endif
+            }
 
             // 🔥 註冊到 ThemeManager（自動接收主題變更通知）
             ThemeManager.Register(this);
@@ -469,13 +480,18 @@ namespace Stackdose.UI.Core.Controls
 
         private void PlcLabel_Unloaded(object sender, RoutedEventArgs e)
         {
-            // 🔥 註銷 PlcLabelContext
-            PlcLabelContext.Unregister(this);
+            // 🔥 不要在 Unloaded 時註銷 PlcLabelContext（保持註冊狀態，避免 Tab 切換重複註冊）
+            // PlcLabelContext.Unregister(this);
             
             // 🔥 註銷 ThemeManager（WeakReference 會自動處理，但手動註銷更安全）
             ThemeManager.Unregister(this);
             
-            if (_boundStatus != null) { _boundStatus.ScanUpdated -= OnScanUpdated; _boundStatus = null; }
+            // 🔥 不要解除 PLC 綁定（保持連接，避免 Tab 切換重複綁定）
+            // if (_boundStatus != null) { _boundStatus.ScanUpdated -= OnScanUpdated; _boundStatus = null; }
+            
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[PlcLabel] Unloaded (keeping PLC binding): {Label} ({Address})");
+            #endif
         }
 
         private void OnScanUpdated(IPlcManager manager)

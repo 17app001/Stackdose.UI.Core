@@ -38,29 +38,15 @@
                                   Foreground="Black" HorizontalAlignment="Center"/>
                     </Border>
 
-                    <!-- PLC Status -->
-                    <Controls:PlcStatus Grid.Row="1"
-                        IpAddress="192.168.22.39" 
-                        Port="3000" 
-                        AutoConnect="True" 
-                        IsGlobal="True"
-                        MonitorAddress="" 
-                        MonitorLength="1" 
-                        ScanInterval="120"
+                    <!-- PLC Status Indicator (Display Only) -->
+                    <Controls:PlcStatusIndicator Grid.Row="1"
+                        DisplayAddress="192.168.22.39:3000"
                         HorizontalAlignment="Stretch"
                         Margin="10,10,10,5"/>
 
                     <!-- Process Control Buttons -->
-                    <Grid Grid.Row="2" Margin="10">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Grid.Row="0" Text="Process Control" FontSize="12" FontWeight="Bold" 
-                                  Foreground="#00E5FF" Margin="0,5,0,8"/>
-
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <Grid Grid.Row="2" Margin="10,5,10,10">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <StackPanel Margin="5">
                                 <Controls:SecuredButton 
                                     Content="Start Process" 

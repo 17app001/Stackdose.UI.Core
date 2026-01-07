@@ -1,10 +1,8 @@
-﻿using System.Windows;
-using WpfApp1.ViewModels;
-using Stackdose.UI.Core.Helpers;
-using Stackdose.UI.Core.Controls;
+﻿using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Examples;
-using Stackdose.UI.Core.Models;
-using System.Threading.Tasks;
+using Stackdose.UI.Core.Helpers;
+using System.Windows;
+using WpfApp1.ViewModels;
 
 namespace WpfApp1
 {
@@ -15,10 +13,7 @@ namespace WpfApp1
     {
         private readonly MainViewModel _viewModel;
         
-        /// <summary>
-        /// 標記 Recipe 是否已經下載到 PLC（避免重連時重複下載）
-        /// </summary>
-        private bool _recipeDownloadedToPLC = false;
+        
 
         public MainWindow()
         {
@@ -39,7 +34,7 @@ namespace WpfApp1
             SecurityContext.LogoutOccurred += OnLogoutOccurred;
 
             // ⭐ 初始化 Recipe 系統 (不自動載入，等待 PLC 連線)
-            _ = InitializeRecipeSystemAsync();
+            //_ = InitializeRecipeSystemAsync();
 
             // 更新視窗標題
             UpdateWindowTitle();
@@ -113,88 +108,7 @@ namespace WpfApp1
             }
         }
 
-        #region 權限測試按鈕事件
-
-        private void OperatorButton_Click(object sender, RoutedEventArgs e)
-        {
-            ComplianceContext.LogSystem(
-                "[OK] 操作員功能：啟動製程",
-                Stackdose.UI.Core.Models.LogLevel.Success,
-                showInUi: true
-            );
-            
-            CyberMessageBox.Show(
-                "[OK] 啟動製程成功！\n\n這是 Level 1 (Operator) 權限功能",
-                "操作成功",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information
-            );
-        }
-
-        private void InstructorButton_Click(object sender, RoutedEventArgs e)
-        {
-            ComplianceContext.LogSystem(
-                "[OK] 指導員功能：查看日誌",
-                Stackdose.UI.Core.Models.LogLevel.Info,
-                showInUi: true
-            );
-            
-            CyberMessageBox.Show(
-                "[LOG] 日誌查看功能\n\n這是 Level 2 (Instructor) 權限功能",
-                "查看日誌",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information
-            );
-        }
-
-        private void SupervisorButton_Click(object sender, RoutedEventArgs e)
-        {
-            ComplianceContext.LogSystem(
-                "[OK] 主管功能：管理使用者",
-                Stackdose.UI.Core.Models.LogLevel.Info,
-                showInUi: true
-            );
-            
-            CyberMessageBox.Show(
-                "[USER] 使用者管理功能\n\n這是 Level 3 (Supervisor) 權限功能\n可以管理 Level 1-2 的帳號",
-                "使用者管理",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information
-            );
-        }
-
-        private void EngineerButton_Click(object sender, RoutedEventArgs e)
-        {
-            ComplianceContext.LogSystem(
-                "[OK] 工程師功能：修改參數",
-                Stackdose.UI.Core.Models.LogLevel.Warning,
-                showInUi: true
-            );
-            
-            // 記錄到 Audit Trail
-            ComplianceContext.LogAuditTrail(
-                "Parameter Modified",
-                "D100",
-                "100",
-                "200",
-                $"Modified by {SecurityContext.CurrentSession.CurrentUserName}",
-                showInUi: true
-            );
-            
-            CyberMessageBox.Show(
-                "[CONFIG] 參數修改功能\n\n這是 Level 4 (Engineer) 最高權限功能\n已記錄到 Audit Trail",
-                "修改參數",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning
-            );
-        }
-
-        private void LogoutButton_Click(object sender, RoutedEventArgs e)
-        {
-            SecurityContext.Logout();
-        }
-
-        #endregion
+      
 
         #region 主題測試按鈕事件
 
@@ -413,17 +327,7 @@ namespace WpfApp1
             // 🔥 新增：關閉合規引擎並刷新所有待寫入日誌
             ComplianceContext.Shutdown();
             
-            #if DEBUG
-            // 顯示批次寫入統計資訊
-            var stats = ComplianceContext.GetBatchStatistics();
-            System.Diagnostics.Debug.WriteLine("========== Compliance Context Statistics ==========");
-            System.Diagnostics.Debug.WriteLine($"Total DataLogs Written: {stats.DataLogs}");
-            System.Diagnostics.Debug.WriteLine($"Total AuditLogs Written: {stats.AuditLogs}");
-            System.Diagnostics.Debug.WriteLine($"Total Batch Flushes: {stats.BatchFlushes}");
-            System.Diagnostics.Debug.WriteLine($"Pending DataLogs: {stats.PendingDataLogs}");
-            System.Diagnostics.Debug.WriteLine($"Pending AuditLogs: {stats.PendingAuditLogs}");
-            System.Diagnostics.Debug.WriteLine("===================================================");
-            #endif
+         
         }
     }
 }

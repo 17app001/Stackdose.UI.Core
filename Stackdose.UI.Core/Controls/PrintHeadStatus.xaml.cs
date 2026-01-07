@@ -60,6 +60,11 @@ namespace Stackdose.UI.Core.Controls
         private CancellationTokenSource? _temperatureMonitorCts;
         private bool _isConnected = false;
         private bool _isExpanded = false;
+        
+        /// <summary>
+        /// 🔥 追蹤是否已初始化（避免 Tab 切換重複初始化）
+        /// </summary>
+        private bool _isInitialized = false;
 
         #endregion
 
@@ -89,6 +94,22 @@ namespace Stackdose.UI.Core.Controls
 
         private async void OnControlLoaded(object sender, RoutedEventArgs e)
         {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[PrintHeadStatus] OnControlLoaded called. IsInitialized={_isInitialized}, IsConnected={_isConnected}");
+            #endif
+            
+            // 🔥 避免重複初始化
+            if (_isInitialized)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[PrintHeadStatus] Already initialized, skipping.");
+                #endif
+                return;
+            }
+            
+            // 設定為已初始化
+            _isInitialized = true;
+            
             // 載入配置檔
             if (!LoadConfiguration())
             {
@@ -98,8 +119,8 @@ namespace Stackdose.UI.Core.Controls
             // ⭐ 初始化時顯示 N/A
             ResetStatusDisplay();
 
-            // 自動連線（如果啟用）
-            if (AutoConnect)
+            // 🔥 自動連線（只在第一次初始化時執行）
+            if (AutoConnect && !_isConnected && _printHead == null)
             {
                 await Task.Delay(500); // 延遲確保 UI 完全載入
                 await ConnectAsync();
@@ -108,23 +129,15 @@ namespace Stackdose.UI.Core.Controls
 
         private void OnControlUnloaded(object sender, RoutedEventArgs e)
         {
-            // 停止監控並斷線
-            StopTemperatureMonitoring();
+            // 🔥 不要停止監控（保持監控狀態，避免 Tab 切換重啟監控）
+            // StopTemperatureMonitoring();
             
-            if (_isConnected && _printHead != null)
-            {
-                try
-                {
-                    _printHead.Disconnect();
-                    
-                    // ⭐ 從 PrintHeadContext 注銷
-                    if (_config != null)
-                    {
-                        PrintHeadContext.UnregisterPrintHead(_config.Name);
-                    }
-                }
-                catch { }
-            }
+            // 🔥 不要在 Unloaded 時斷線，保持 PrintHead 連線狀態
+            // 這樣 Tab 切換時不會重新連線
+            
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[PrintHeadStatus] OnControlUnloaded called (keeping connection and monitoring)");
+            #endif
         }
 
         /// <summary>

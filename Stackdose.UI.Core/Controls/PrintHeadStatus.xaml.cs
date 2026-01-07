@@ -23,6 +23,9 @@ namespace Stackdose.UI.Core.Controls
     {
         #region Dependency Properties
 
+        /// <summary>
+        /// 配置檔案路徑（例如：feiyang_head1.json，會自動從 Resources 目錄載入）
+        /// </summary>
         public static readonly DependencyProperty ConfigFilePathProperty =
             DependencyProperty.Register("ConfigFilePath", typeof(string), typeof(PrintHeadStatus), 
                 new PropertyMetadata("feiyang_head1.json"));
@@ -196,18 +199,33 @@ namespace Stackdose.UI.Core.Controls
         {
             try
             {
-                if (!File.Exists(ConfigFilePath))
+                // 🔥 使用 ResourcePathHelper 統一管理路徑
+                string fullPath;
+                
+                if (Path.IsPathRooted(ConfigFilePath) && File.Exists(ConfigFilePath))
+                {
+                    // 支援絕對路徑（向下相容）
+                    fullPath = ConfigFilePath;
+                }
+                else
+                {
+                    // 優先使用 ResourcePathHelper
+                    fullPath = ResourcePathHelper.GetResourceFilePath(ConfigFilePath);
+                }
+
+                if (!File.Exists(fullPath))
                 {
                     UpdateStatus(false);
                     ComplianceContext.LogSystem(
-                        $"[PrintHead] Config file not found: {ConfigFilePath}",
+                        $"[PrintHead] Config file not found: {fullPath}",
                         LogLevel.Error,
                         showInUi: false
                     );
                     return false;
                 }
 
-                string jsonContent = File.ReadAllText(ConfigFilePath);
+                // 🔥 使用 UTF-8 編碼讀取（支援中文）
+                string jsonContent = File.ReadAllText(fullPath, System.Text.Encoding.UTF8);
                 _config = JsonSerializer.Deserialize<PrintHeadConfig>(jsonContent, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
@@ -292,7 +310,18 @@ namespace Stackdose.UI.Core.Controls
                     showInUi: true
                 );
 
-                _printHead = new FeiyangPrintHead(ConfigFilePath);
+                // 🔥 使用完整路徑初始化 FeiyangPrintHead
+                string fullPath;
+                if (Path.IsPathRooted(ConfigFilePath) && File.Exists(ConfigFilePath))
+                {
+                    fullPath = ConfigFilePath;
+                }
+                else
+                {
+                    fullPath = ResourcePathHelper.GetResourceFilePath(ConfigFilePath);
+                }
+
+                _printHead = new FeiyangPrintHead(fullPath);
                 
                 _printHead.Log = (msg) =>
                 {

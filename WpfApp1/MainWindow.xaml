@@ -22,17 +22,6 @@
                     <TabItem Header="Main">
                         <panels:MainPanel/>
                     </TabItem>
-
-                    <!-- Tab 2: Sensors and PrintHead -->
-                    <TabItem Header="Sensors / PrintHead">
-                        <panels:SensorPrintHeadPanel/>
-                    </TabItem>
-
-                    <!-- Tab 3: Recipe and Logs -->
-                    <TabItem Header="Recipe / Logs">
-                        <panels:RecipeLogPanel/>
-                    </TabItem>
-
                     <!-- Tab 4: System Test (Development) -->
                     <TabItem Header="System Test">
                         <panels:SystemTestPanel/>

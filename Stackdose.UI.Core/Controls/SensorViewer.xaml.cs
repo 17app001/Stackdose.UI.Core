@@ -36,11 +36,11 @@ namespace Stackdose.UI.Core.Controls
         }
 
         /// <summary>
-        /// JSON 配置檔案路徑 (例如：Sensors.json)
+        /// JSON 配置檔案路徑 (例如：Sensors.json，會自動從 Resources 目錄載入)
         /// </summary>
         public static readonly DependencyProperty ConfigFileProperty =
             DependencyProperty.Register("ConfigFile", typeof(string), typeof(SensorViewer), 
-                new PropertyMetadata("", OnConfigFileChanged));
+                new PropertyMetadata("Sensors.json", OnConfigFileChanged));
         public string ConfigFile
         {
             get { return (string)GetValue(ConfigFileProperty); }

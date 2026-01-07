@@ -6,32 +6,36 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="feiyang_head1.json" />
-    <None Remove="Recipe2.json" />
-    <None Remove="Recipe3.json" />
-    <None Remove="Sensors.json" />
+    <None Remove="Resources\feiyang_head1.json" />
+    <None Remove="Resources\feiyang_head2.json" />
+    <None Remove="Resources\Recipe1.json" />
+    <None Remove="Resources\Recipe2.json" />
+    <None Remove="Resources\Recipe3.json" />
+    <None Remove="Resources\Sensors.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="A8_1536GS_L_25PL_UV_DROP1_30K_ABC0.data" TargetPath="Resources\A8_1536GS_L_25PL_UV_DROP1_30K_ABC0.data">
+    <!-- 移除不存在的檔案 -->
+    <Content Include="Resources\feiyang_head1.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="feiyang_head1.json">
+    <Content Include="Resources\feiyang_head2.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Recipe1.json">
+    <Content Include="Resources\Recipe1.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Recipe2.json">
+    <Content Include="Resources\Recipe2.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Recipe3.json">
+    <Content Include="Resources\Recipe3.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Sensors.json">
+    <Content Include="Resources\Sensors.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -123,7 +123,7 @@ namespace Stackdose.UI.Core.Helpers
         /// <summary>
         /// 載入 Recipe 檔案
         /// </summary>
-        /// <param name="filePath">Recipe 檔案路徑</param>
+        /// <param name="filePath">Recipe 檔案名稱（例如：Recipe1.json，會自動從 Resources 目錄載入）</param>
         /// <param name="isAutoLoad">是否為自動載入</param>
         /// <param name="setAsActive">是否設定為當前活動 Recipe</param>
         public static async Task<bool> LoadRecipeAsync(
@@ -136,10 +136,24 @@ namespace Stackdose.UI.Core.Helpers
 
             try
             {
-                // 1. Check if file exists
-                if (!File.Exists(filePath))
+                // ?? 使用 ResourcePathHelper 統一管理路徑
+                string fullPath;
+                
+                if (Path.IsPathRooted(filePath) && File.Exists(filePath))
                 {
-                    string errorMsg = $"Recipe file not found: {filePath}";
+                    // 支援絕對路徑（向下相容）
+                    fullPath = filePath;
+                }
+                else
+                {
+                    // 優先使用 ResourcePathHelper
+                    fullPath = ResourcePathHelper.GetResourceFilePath(filePath);
+                }
+
+                // 1. Check if file exists
+                if (!File.Exists(fullPath))
+                {
+                    string errorMsg = $"Recipe file not found: {fullPath}";
                     LastLoadMessage = errorMsg;
 
                     ComplianceContext.LogSystem(
@@ -163,7 +177,8 @@ namespace Stackdose.UI.Core.Helpers
                 }
 
                 // 2. Read and parse JSON file
-                string jsonContent = await File.ReadAllTextAsync(filePath);
+                // ?? 使用 UTF-8 編碼讀取（支援中文）
+                string jsonContent = await File.ReadAllTextAsync(fullPath, System.Text.Encoding.UTF8);
                 
                 var options = new JsonSerializerOptions
                 {
@@ -231,7 +246,7 @@ namespace Stackdose.UI.Core.Helpers
                 if (setAsActive)
                 {
                     CurrentRecipe = recipe;
-                    CurrentRecipeFileName = Path.GetFileName(filePath); // ? 保存當前檔案名稱
+                    CurrentRecipeFileName = Path.GetFileName(fullPath); // ? 保存當前檔案名稱
                     LastLoadTime = DateTime.Now;
                     RecipeChanged?.Invoke(null, recipe);
                 }

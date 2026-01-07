@@ -52,15 +52,24 @@ namespace Stackdose.UI.Core.Helpers
         /// <summary>
         /// 從 JSON 檔案載入感測器配置
         /// </summary>
-        /// <param name="jsonFilePath">JSON 檔案路徑 (相對或絕對路徑)</param>
+        /// <param name="jsonFilePath">JSON 檔案名稱 (例如：Sensors.json，會自動從 Resources 目錄載入)</param>
         public static void LoadFromJson(string jsonFilePath)
         {
             try
             {
-                // 支援相對路徑 (相對於執行檔目錄)
-                string fullPath = Path.IsPathRooted(jsonFilePath)
-                    ? jsonFilePath
-                    : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, jsonFilePath);
+                // 🔥 使用 ResourcePathHelper 統一管理路徑
+                string fullPath;
+                
+                if (Path.IsPathRooted(jsonFilePath) && File.Exists(jsonFilePath))
+                {
+                    // 支援絕對路徑（向下相容）
+                    fullPath = jsonFilePath;
+                }
+                else
+                {
+                    // 優先使用 ResourcePathHelper
+                    fullPath = ResourcePathHelper.GetResourceFilePath(jsonFilePath);
+                }
 
                 if (!File.Exists(fullPath))
                 {

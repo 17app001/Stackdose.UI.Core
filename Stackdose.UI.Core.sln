@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.PrintHead", "..\S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfAppPrintHead", "WpfAppPrintHead\WpfAppPrintHead.csproj", "{D82741A6-03B4-4902-8648-814467F34CC6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Plc", "..\Stackdose.Platform\Stackdose.Plc\Stackdose.Plc.csproj", "{AD27C021-4D83-4715-BF2F-02F4B8C2A771}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -139,6 +141,18 @@ Global
 		{D82741A6-03B4-4902-8648-814467F34CC6}.Release|x64.Build.0 = Release|Any CPU
 		{D82741A6-03B4-4902-8648-814467F34CC6}.Release|x86.ActiveCfg = Release|Any CPU
 		{D82741A6-03B4-4902-8648-814467F34CC6}.Release|x86.Build.0 = Release|Any CPU
+		{AD27C021-4D83-4715-BF2F-02F4B8C2A771}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD27C021-4D83-4715-BF2F-02F4B8C2A771}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD27C021-4D83-4715-BF2F-02F4B8C2A771}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AD27C021-4D83-4715-BF2F-02F4B8C2A771}.Debug|x64.Build.0 = Debug|Any CPU
+		{AD27C021-4D83-4715-BF2F-02F4B8C2A771}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AD27C021-4D83-4715-BF2F-02F4B8C2A771}.Debug|x86.Build.0 = Debug|Any CPU
+		{AD27C021-4D83-4715-BF2F-02F4B8C2A771}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD27C021-4D83-4715-BF2F-02F4B8C2A771}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD27C021-4D83-4715-BF2F-02F4B8C2A771}.Release|x64.ActiveCfg = Release|Any CPU
+		{AD27C021-4D83-4715-BF2F-02F4B8C2A771}.Release|x64.Build.0 = Release|Any CPU
+		{AD27C021-4D83-4715-BF2F-02F4B8C2A771}.Release|x86.ActiveCfg = Release|Any CPU
+		{AD27C021-4D83-4715-BF2F-02F4B8C2A771}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

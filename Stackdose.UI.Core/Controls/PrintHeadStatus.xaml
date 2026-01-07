@@ -5,14 +5,15 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d"
              x:Name="root"
-             Width="220"
-             d:DesignWidth="220">
+             d:DesignWidth="220"
+             HorizontalAlignment="Stretch">
 
     <Border Background="{DynamicResource Plc.Bg.Dark}" 
             BorderBrush="{DynamicResource Plc.Border}" 
             BorderThickness="1" 
             CornerRadius="8"
-            Padding="6">
+            Padding="6"
+            HorizontalAlignment="Stretch">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

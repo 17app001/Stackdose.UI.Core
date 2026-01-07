@@ -4,8 +4,7 @@
     "Device": "D90",
     "Bit": "0,1",
     "Value": "0,0",
-    "Mode": "AND",
-    "Invert": true,
+    "Mode": "AND",   
     "OperationDescription": "粉槽_A無粉"
   },
   {

@@ -20,22 +20,7 @@
                     BorderBrush="#4CAF50" BorderThickness="2" 
                     Background="#1A1A2E" Padding="10"
                     Margin="0,0,0,10">
-                <StackPanel>
-                    <TextBlock Text="Process Control" 
-                               FontSize="18" FontWeight="Bold" 
-                               Foreground="#4CAF50" 
-                               Margin="0,0,0,10"/>
-
-                    <Controls:SecuredButton 
-                        Theme="Success" 
-                        Height="60" Width="200" 
-                        Content="Start Process" 
-                        FontSize="16" 
-                        RequiredLevel="Operator" 
-                        OperationName="Start Process" 
-                        Click="StartProcess_Click"
-                        HorizontalAlignment="Left"/>
-                </StackPanel>
+                <Controls:PlcDeviceEditor/>
             </Border>
 
             <!-- MessageBox Test Area -->

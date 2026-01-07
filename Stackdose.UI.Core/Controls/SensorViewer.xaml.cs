@@ -98,12 +98,20 @@ namespace Stackdose.UI.Core.Controls
             System.Diagnostics.Debug.WriteLine($"[SensorViewer] Loaded called. IsInitialized={_isInitialized}, MonitorRunning={_monitorTimer != null}");
             #endif
             
-            // 🔥 避免重複初始化和啟動
+            // 🔥 如果已經初始化過，只需要重新啟動監控（不重新初始化）
             if (_isInitialized)
             {
                 #if DEBUG
-                System.Diagnostics.Debug.WriteLine("[SensorViewer] Already initialized, skipping Loaded logic.");
+                System.Diagnostics.Debug.WriteLine("[SensorViewer] Already initialized, restarting monitoring only.");
                 #endif
+                
+                // 🔥 重新啟動監控（如果已經連線且監控未運行）
+                if (AutoStart && 
+                    PlcContext.GlobalStatus?.CurrentManager?.IsConnected == true && 
+                    _monitorTimer == null)
+                {
+                    StartMonitoring();
+                }
                 return;
             }
             
@@ -147,11 +155,11 @@ namespace Stackdose.UI.Core.Controls
 
         private void SensorViewer_Unloaded(object sender, RoutedEventArgs e)
         {
-            // 🔥 停止監控（但不取消訂閱，不移除 Monitor 註冊，不重置初始化標誌）
+            // 🔥 Tab 切換時停止監控（節省資源）
             StopMonitoring();
             
             #if DEBUG
-            System.Diagnostics.Debug.WriteLine("[SensorViewer] Unloaded (keeping subscription and registration)");
+            System.Diagnostics.Debug.WriteLine("[SensorViewer] Unloaded, monitoring stopped (will restart on next Loaded)");
             #endif
         }
 
@@ -160,7 +168,7 @@ namespace Stackdose.UI.Core.Controls
             var viewer = (SensorViewer)d;
             if (viewer.IsLoaded && !string.IsNullOrEmpty(e.NewValue as string))
             {
-                SensorContext.LoadFromJson((string)e.NewValue);
+                SensorContext.LoadFromJson((string)e.NewValue!);
                 viewer.BindSensorList();
             }
         }
@@ -588,37 +596,8 @@ namespace Stackdose.UI.Core.Controls
             System.Diagnostics.Debug.WriteLine($"[SensorViewer] InitializeSensorStates completed.");
             #endif
 
-            // 🔥 如果有異常 Sensor，顯示 MessageBox 警告
-            if (alarmSensors.Count > 0)
-            {
-                string message = $"偵測到 {alarmSensors.Count} 個感測器異常：\n\n";
-                
-                // 最多顯示前 10 個
-                int displayCount = Math.Min(alarmSensors.Count, 10);
-                for (int i = 0; i < displayCount; i++)
-                {
-                    var sensor = alarmSensors[i];
-                    message += $"  ⚠️ {sensor.OperationDescription}\n";
-                    message += $"      ({sensor.Device} = {sensor.CurrentValue})\n\n";
-                }
-                
-                if (alarmSensors.Count > 10)
-                {
-                    message += $"  ...還有 {alarmSensors.Count - 10} 個異常\n\n";
-                }
-                
-                message += "請檢查設備狀態！";
-
-                Dispatcher.Invoke(() =>
-                {
-                    CyberMessageBox.Show(
-                        message,
-                        "⚠️ 感測器異常警告",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning
-                    );
-                });
-            }
+            // 🔥 MessageBox 警告已移除，僅保留 SensorView 顯示及 Log 記錄
+            // 使用者可透過 SensorView 介面查看所有感測器狀態
         }
 
         #endregion

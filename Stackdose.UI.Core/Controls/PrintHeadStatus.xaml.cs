@@ -1,17 +1,12 @@
-﻿using System;
+﻿using Stackdose.PrintHead.Feiyang;
+using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Models;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Effects;
-using Stackdose.PrintHead.Feiyang;
-using Stackdose.UI.Core.Helpers;
-using Stackdose.UI.Core.Models;
 
 namespace Stackdose.UI.Core.Controls
 {

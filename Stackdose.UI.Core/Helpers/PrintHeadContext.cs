@@ -182,6 +182,15 @@ namespace Stackdose.UI.Core.Helpers
             return false;
         }
 
+        /// <summary>
+        /// 取得所有已連線的 PrintHead 清單
+        /// </summary>
+        /// <returns>包含所有已連線 PrintHead 的字典</returns>
+        public static Dictionary<string, dynamic> GetAllConnectedPrintHeads()
+        {
+            return new Dictionary<string, dynamic>(ConnectedPrintHeads);
+        }
+
         #endregion
 
         #region 狀態報告

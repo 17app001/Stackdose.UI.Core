@@ -8,21 +8,26 @@
         xmlns:Controls="http://schemas.stackdose.com/wpf"
         x:Class="WpfApp1.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="900" Width="1600">
+        Title="MainWindow" Height="900" Width="1600"
+        Closing="Window_Closing">
     
     <!-- CyberFrame as Main Container -->
     <Controls:CyberFrame Title="UBI SYSTEM">
         <Controls:CyberFrame.MainContent>
             <Grid>
                 <!-- TabControl for organized layout -->
+                <!-- 🔥 加入虛擬化以加速載入 -->
                 <TabControl Background="#0D0D1A" BorderBrush="#00E5FF" BorderThickness="1"
-                            Foreground="White">
+                            Foreground="White"
+                            VirtualizingPanel.IsVirtualizing="True"
+                            VirtualizingPanel.VirtualizationMode="Recycling">
 
                     <!-- Tab 1: Main Control Panel -->
                     <TabItem Header="Main">
                         <panels:MainPanel/>
                     </TabItem>
-                    <!-- Tab 4: System Test (Development) -->
+                    
+                    <!-- Tab 2: System Test (Development) -->
                     <TabItem Header="System Test">
                         <panels:SystemTestPanel/>
                     </TabItem>

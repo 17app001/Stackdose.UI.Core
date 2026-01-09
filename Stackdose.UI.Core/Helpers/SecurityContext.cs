@@ -1,4 +1,5 @@
 ﻿using Stackdose.UI.Core.Models;
+using Stackdose.UI.Core.Services;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
@@ -32,6 +33,50 @@ namespace Stackdose.UI.Core.Helpers
         /// </summary>
         public static bool EnableAutoLogout { get; set; } = true;
 
+        /// <summary>
+        /// 🔥 新增：是否啟用 AD 驗證（預設 true）
+        /// </summary>
+        #if DEBUG
+        public static bool EnableAdAuthentication { get; set; } = true; // 🔥 DEBUG 也啟用（但用本機驗證）
+        #else
+        public static bool EnableAdAuthentication { get; set; } = true;
+        #endif
+
+        /// <summary>
+        /// 🔥 新增：是否僅使用本機 Windows 驗證（不連網域，速度快）
+        /// </summary>
+        public static bool UseLocalMachineOnly { get; set; } = true; // 🔥 預設使用本機驗證
+
+        /// <summary>
+        /// 🔥 新增：AD 驗證服務實例
+        /// </summary>
+        private static AdAuthenticationService? _adService;
+
+        /// <summary>
+        /// 🔥 新增：取得 AD 驗證服務實例
+        /// </summary>
+        public static AdAuthenticationService AdService
+        {
+            get
+            {
+                if (_adService == null)
+                {
+                    // 🔥 根據設定決定使用 Domain 或 LocalMachine
+                    _adService = new AdAuthenticationService(
+                        domainName: null, 
+                        useLocalMachine: UseLocalMachineOnly // ← 使用本機驗證
+                    );
+                    
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[SecurityContext] AdAuthenticationService initialized (LocalMachine: {UseLocalMachineOnly})");
+                    System.Diagnostics.Debug.WriteLine($"[SecurityContext] Current Windows User: {AdAuthenticationService.GetCurrentWindowsUserWithDomain()}");
+                    System.Diagnostics.Debug.WriteLine($"[SecurityContext] AD Available: {_adService.IsAvailable()}");
+                    #endif
+                }
+                return _adService;
+            }
+        }
+
         #endregion
 
         #region 事件定義
@@ -63,17 +108,117 @@ namespace Stackdose.UI.Core.Helpers
         /// <returns>是否登入成功</returns>
         public static bool Login(string userId, string password)
         {
-            // 1. 從資料庫查詢使用者
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            
+            // 🔥 寫入檔案日誌（確保能看到）
+            var logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "login_debug.log");
+            void WriteLog(string message)
+            {
+                try
+                {
+                    System.IO.File.AppendAllText(logPath, $"[{DateTime.Now:HH:mm:ss.fff}] {message}\n");
+                    System.Diagnostics.Debug.WriteLine($"[SecurityContext] {message}");
+                }
+                catch { }
+            }
+            
+            WriteLog($"========================================");
+            WriteLog($"Login START: {userId}");
+            WriteLog($"========================================");
+
+            // 🔥 步驟 1：優先嘗試 AD 驗證（如果啟用）
+            bool adVerified = false;
+            AdUserInfo? adUserInfo = null;
+
+            if (EnableAdAuthentication)
+            {
+                try
+                {
+                    WriteLog($"AD Authentication enabled (LocalMachine: {UseLocalMachineOnly})");
+                    var adStopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+                    adVerified = AdService.ValidateCredentials(userId, password);
+                    
+                    adStopwatch.Stop();
+                    WriteLog($"AD Authentication took {adStopwatch.ElapsedMilliseconds}ms - Result: {adVerified}");
+                    
+                    if (adVerified)
+                    {
+                        adUserInfo = AdService.GetUserInfo(userId);
+                        
+                        WriteLog($"AD Authentication SUCCESS: {userId}");
+                        WriteLog($"AD DisplayName: {adUserInfo?.DisplayName}");
+                        
+                        ComplianceContext.LogSystem(
+                            $"[AD] Authentication Success: {userId} (Windows AD)",
+                            LogLevel.Success,
+                            showInUi: true
+                        );
+                    }
+                    else
+                    {
+                        WriteLog($"AD Authentication FAILED: {userId}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    WriteLog($"AD Authentication Error: {ex.Message}");
+                    
+                    ComplianceContext.LogSystem(
+                        $"[AD] Authentication Error: {ex.Message}",
+                        LogLevel.Warning,
+                        showInUi: false
+                    );
+                }
+            }
+            else
+            {
+                WriteLog($"AD Authentication disabled");
+            }
+
+            WriteLog($"Loading user from database...");
+            var dbStopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+            // 🔥 步驟 2：從本地資料庫查詢使用者（必須存在，才能取得權限）
             var user = LoadUserFromDatabase(userId);
+            
+            dbStopwatch.Stop();
+            WriteLog($"Database load took {dbStopwatch.ElapsedMilliseconds}ms - User found: {user != null}");
+            
             if (user == null)
             {
+                // 🔥 如果 AD 驗證通過，但本地資料庫沒有該使用者，提示管理員建立
+                if (adVerified && adUserInfo != null)
+                {
+                    WriteLog($"Login Failed: AD verified but user not in database");
+                    
+                    ComplianceContext.LogSystem(
+                        $"[AD] Login Failed: User '{userId}' verified by AD but not found in local database. Please contact administrator to create account.",
+                        LogLevel.Warning,
+                        showInUi: true
+                    );
+                    
+                    ComplianceContext.LogAuditTrail(
+                        "User Login",
+                        userId,
+                        "N/A",
+                        "Failed (Not in local database)",
+                        "AD verified but account not created",
+                        showInUi: false
+                    );
+                    
+                    return false;
+                }
+                
+                // 原有邏輯：使用者不存在
+                WriteLog($"Login Failed: User not found");
+                
                 ComplianceContext.LogSystem(
                     $"Login Failed: User '{userId}' not found",
                     LogLevel.Warning,
                     showInUi: true
                 );
                 
-                // 🔥 記錄到 Audit Trail：登入失敗（帳號不存在）
                 ComplianceContext.LogAuditTrail(
                     "User Login",
                     userId,
@@ -87,13 +232,14 @@ namespace Stackdose.UI.Core.Helpers
             
             if (!user.IsActive)
             {
+                WriteLog($"Login Failed: User inactive");
+                
                 ComplianceContext.LogSystem(
                     $"Login Failed: User '{userId}' is inactive",
                     LogLevel.Warning,
                     showInUi: true
                 );
                 
-                // 🔥 記錄到 Audit Trail：登入失敗（帳號已停用）
                 ComplianceContext.LogAuditTrail(
                     "User Login",
                     userId,
@@ -105,66 +251,101 @@ namespace Stackdose.UI.Core.Helpers
                 return false;
             }
 
-            // 2. 🔥 修正：驗證密碼 - 使用帶 Salt 的方式
-            bool passwordValid = VerifyPassword(password, user.PasswordHash, user.Salt);
-            if (!passwordValid)
+            // 🔥 步驟 3：驗證密碼
+            bool passwordValid = false;
+            string authMethod = "Unknown";
+
+            WriteLog($"Verifying password...");
+            var pwdStopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+            if (adVerified)
             {
-                ComplianceContext.LogSystem(
-                    $"Login Failed: Invalid password for user '{userId}'",
-                    LogLevel.Warning,
-                    showInUi: true
-                );
+                // AD 驗證成功，直接通過
+                passwordValid = true;
+                authMethod = "Windows AD";
                 
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[SecurityContext] Password verification failed");
-                System.Diagnostics.Debug.WriteLine($"[SecurityContext] Input password: {password}");
-                System.Diagnostics.Debug.WriteLine($"[SecurityContext] Stored hash: {user.PasswordHash}");
-                System.Diagnostics.Debug.WriteLine($"[SecurityContext] Salt: {user.Salt}");
-                #endif
+                // 🔥 更新本地使用者資訊（從 AD 同步）
+                if (adUserInfo != null)
+                {
+                    user.DisplayName = adUserInfo.DisplayName;
+                    user.Email = adUserInfo.Email;
+                }
                 
-                // 🔥 記錄到 Audit Trail：登入失敗（密碼錯誤）
-                ComplianceContext.LogAuditTrail(
-                    "User Login",
-                    userId,
-                    "N/A",
-                    "Failed (Wrong password)",
-                    "Invalid password",
-                    showInUi: false
-                );
-                return false;
+                WriteLog($"Password validated via AD");
+            }
+            else
+            {
+                // 使用本地密碼驗證
+                passwordValid = VerifyPassword(password, user.PasswordHash, user.Salt);
+                authMethod = "Local Database";
+                
+                pwdStopwatch.Stop();
+                WriteLog($"Password verification took {pwdStopwatch.ElapsedMilliseconds}ms - Result: {passwordValid}");
+                
+                if (!passwordValid)
+                {
+                    WriteLog($"Login Failed: Invalid password");
+                    
+                    ComplianceContext.LogSystem(
+                        $"Login Failed: Invalid password for user '{userId}'",
+                        LogLevel.Warning,
+                        showInUi: true
+                    );
+                    
+                    ComplianceContext.LogAuditTrail(
+                        "User Login",
+                        userId,
+                        "N/A",
+                        "Failed (Wrong password)",
+                        "Invalid password",
+                        showInUi: false
+                    );
+                    return false;
+                }
             }
 
-            // 3. 登入成功
+            stopwatch.Stop();
+            WriteLog($"========================================");
+            WriteLog($"Login COMPLETED in {stopwatch.ElapsedMilliseconds}ms");
+            WriteLog($"Auth Method: {authMethod}");
+            WriteLog($"========================================");
+
+            // 🔥 步驟 4：登入成功
             CurrentSession.CurrentUser = user;
             CurrentSession.LoginTime = DateTime.Now;
             CurrentSession.LastActivityTime = DateTime.Now;
             user.LastLoginAt = DateTime.Now;
 
-            // 4. 記錄到 Audit Trail
+            // 記錄到 Audit Trail
             ComplianceContext.LogAuditTrail(
                 "User Login",
                 userId,
                 "Logged Out",
                 $"Logged In (Level {(int)user.AccessLevel} - {user.AccessLevel})",
-                $"Login from {Environment.MachineName}",
+                $"Login from {Environment.MachineName} via {authMethod}",
                 showInUi: true
             );
 
             ComplianceContext.LogSystem(
-                $"[OK] Login Success: {user.DisplayName} ({user.AccessLevel})",
+                $"[OK] Login Success: {user.DisplayName} ({user.AccessLevel}) via {authMethod}",
                 LogLevel.Success,
                 showInUi: true
             );
 
-            // 5. 觸發事件
+            // 觸發事件
             LoginSuccess?.Invoke(null, user);
             AccessLevelChanged?.Invoke(null, EventArgs.Empty);
 
-            // 6. 啟動自動登出計時器
+            // 啟動自動登出計時器
             if (EnableAutoLogout)
             {
                 StartAutoLogoutTimer();
             }
+
+            #if DEBUG
+            stopwatch.Stop();
+            System.Diagnostics.Debug.WriteLine($"[SecurityContext] Login END: {userId} - Duration: {stopwatch.ElapsedMilliseconds}ms");
+            #endif
 
             return true;
         }

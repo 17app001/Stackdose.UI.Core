@@ -1,6 +1,7 @@
 ﻿using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Examples;
 using Stackdose.UI.Core.Helpers;
+using System.Diagnostics;
 using System.Windows;
 using WpfApp1.ViewModels;
 
@@ -12,112 +13,243 @@ namespace WpfApp1
     public partial class MainWindow : Window
     {
         private readonly MainViewModel _viewModel;
-        
-        
 
         public MainWindow()
         {
-            InitializeComponent();
+            try
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[MainWindow] Constructor: Start");
+                App.WriteLog("MainWindow: Constructor Start");
+                #endif
 
-            // 🔥 ComplianceContext 已在 App.OnStartup 中初始化
-            
-            // 預設以 Admin 身份登入（測試用）
-            // 🔥 已移至 App.OnStartup，避免時序問題
-            // SecurityContext.QuickLogin(Stackdose.UI.Core.Models.AccessLevel.Admin);
+                InitializeComponent();
 
-            // 設定 DataContext 為 ViewModel
-            _viewModel = new MainViewModel();
-            DataContext = _viewModel;
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[MainWindow] Constructor: InitializeComponent completed");
+                App.WriteLog("MainWindow: InitializeComponent completed");
+                #endif
 
-            // 訂閱登入/登出事件（更新 UI 標題）
-            SecurityContext.LoginSuccess += OnLoginSuccess;
-            SecurityContext.LogoutOccurred += OnLogoutOccurred;
+                // 設定 DataContext 為 ViewModel
+                _viewModel = new MainViewModel();
+                DataContext = _viewModel;
 
-            // ⭐ 初始化 Recipe 系統 (不自動載入，等待 PLC 連線)
-            //_ = InitializeRecipeSystemAsync();
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[MainWindow] Constructor: ViewModel created");
+                App.WriteLog("MainWindow: ViewModel created");
+                #endif
 
-            // 更新視窗標題
-            UpdateWindowTitle();
+                // 🔥 修改：只在 MainWindow 顯示後才訂閱事件（避免時序問題）
+                this.Loaded += MainWindow_Loaded;
+                this.Closing += MainWindow_Closing;
+                this.Closed += MainWindow_Closed;
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[MainWindow] Constructor: Event handlers registered");
+                App.WriteLog("MainWindow: Event handlers registered");
+                #endif
+
+                // 更新視窗標題
+                UpdateWindowTitle();
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[MainWindow] Constructor: Completed successfully");
+                App.WriteLog("MainWindow: Constructor Completed");
+                #endif
+            }
+            catch (Exception ex)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[MainWindow] Constructor EXCEPTION: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[MainWindow] Stack Trace: {ex.StackTrace}");
+                App.WriteLog($"MainWindow: Constructor EXCEPTION: {ex.Message}");
+                App.WriteLog($"MainWindow: Stack Trace: {ex.StackTrace}");
+                #endif
+
+                MessageBox.Show(
+                    $"MainWindow 初始化失敗 Initialization Failed\n\n{ex.Message}\n\n{ex.StackTrace}",
+                    "Fatal Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+
+                throw;
+            }
         }
 
-        /// <summary>
-        /// 初始化 Recipe 系統
-        /// </summary>
-        private async Task InitializeRecipeSystemAsync()
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // ⭐ 預設載入 Recipe 1
-            bool success = await RecipeContext.LoadRecipeAsync("Recipe1.json", isAutoLoad: true, setAsActive: true);
+            try
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[MainWindow] Loaded event: Start");
+                App.WriteLog("MainWindow: Loaded event Start");
+                #endif
 
-            if (success)
+                // 訂閱登入/登出事件
+                SecurityContext.LoginSuccess += OnLoginSuccess;
+                SecurityContext.LogoutOccurred += OnLogoutOccurred;
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[MainWindow] Loaded event: Events subscribed");
+                App.WriteLog("MainWindow: Events subscribed");
+                #endif
+
+                // 更新標題
+                UpdateWindowTitle();
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[MainWindow] Loaded event: Completed");
+                App.WriteLog("MainWindow: Loaded event Completed");
+                #endif
+            }
+            catch (Exception ex)
             {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[MainWindow] Loaded EXCEPTION: {ex.Message}");
+                App.WriteLog($"MainWindow: Loaded EXCEPTION: {ex.Message}");
+                #endif
+
                 ComplianceContext.LogSystem(
-                    "[Recipe] Recipe system initialized successfully",
-                    Stackdose.UI.Core.Models.LogLevel.Success,
+                    $"[MainWindow] Loaded error: {ex.Message}",
+                    Stackdose.UI.Core.Models.LogLevel.Error,
                     showInUi: true
                 );
             }
-            else
+        }
+
+        // 🔥 新增：XAML 中的 Closing 事件處理
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            #if DEBUG
+            var stackTrace = new StackTrace(true);
+            System.Diagnostics.Debug.WriteLine($"[MainWindow] Window_Closing called from:");
+            App.WriteLog("MainWindow: Window_Closing called from:");
+            
+            for (int i = 0; i < Math.Min(stackTrace.FrameCount, 10); i++)
             {
-                ComplianceContext.LogSystem(
-                    "[Recipe] Failed to initialize Recipe system",
-                    Stackdose.UI.Core.Models.LogLevel.Warning,
-                    showInUi: true
-                );
+                var frame = stackTrace.GetFrame(i);
+                var method = frame?.GetMethod();
+                var logLine = $"  {i}: {method?.DeclaringType?.Name}.{method?.Name} at {frame?.GetFileName()}:{frame?.GetFileLineNumber()}";
+                System.Diagnostics.Debug.WriteLine(logLine);
+                App.WriteLog(logLine);
             }
+            #endif
+        }
+
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            try
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[MainWindow] Closing event: Start");
+                App.WriteLog("MainWindow: Closing event Start");
+                #endif
+
+                // 取消訂閱事件
+                SecurityContext.LoginSuccess -= OnLoginSuccess;
+                SecurityContext.LogoutOccurred -= OnLogoutOccurred;
+
+                // 清理 ViewModel
+                _viewModel?.Cleanup();
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[MainWindow] Closing event: Cleanup completed");
+                App.WriteLog("MainWindow: Closing event Cleanup completed");
+                #endif
+            }
+            catch (Exception ex)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[MainWindow] Closing EXCEPTION: {ex.Message}");
+                App.WriteLog($"MainWindow: Closing EXCEPTION: {ex.Message}");
+                #endif
+            }
+        }
+
+        private void MainWindow_Closed(object sender, EventArgs e)
+        {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine("[MainWindow] Closed event: MainWindow has been closed");
+            App.WriteLog("MainWindow: Closed event - Window has been closed");
+            #endif
         }
 
         private void OnLoginSuccess(object? sender, Stackdose.UI.Core.Models.UserAccount user)
         {
-            Dispatcher.BeginInvoke(() =>
+            try
             {
-                UpdateWindowTitle();
-            });
+                Dispatcher.BeginInvoke(() =>
+                {
+                    UpdateWindowTitle();
+                });
+            }
+            catch (Exception ex)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[MainWindow] OnLoginSuccess EXCEPTION: {ex.Message}");
+                #endif
+            }
         }
 
         private void OnLogoutOccurred(object? sender, EventArgs e)
         {
-            Dispatcher.BeginInvoke(() =>
+            try
             {
-                UpdateWindowTitle();
-                
-                // 🔥 修正：登出後顯示登入對話框
-                bool loginSuccess = LoginDialog.ShowLoginDialog();
-                if (!loginSuccess)
+                Dispatcher.BeginInvoke(() =>
                 {
-                    // 🔥 修正：如果取消登入，以 Guest 身份留在首頁（而不是關閉程式）
-                    SecurityContext.QuickLogin(Stackdose.UI.Core.Models.AccessLevel.Guest);
-                    ComplianceContext.LogSystem(
-                        "[Logout] User cancelled login, staying as Guest",
-                        Stackdose.UI.Core.Models.LogLevel.Info,
-                        showInUi: true
-                    );
-                }
-            });
+                    UpdateWindowTitle();
+                    
+                    // 登出後顯示登入對話框
+                    bool loginSuccess = LoginDialog.ShowLoginDialog();
+                    if (!loginSuccess)
+                    {
+                        // 如果取消登入，以 Guest 身份留在首頁
+                        SecurityContext.QuickLogin(Stackdose.UI.Core.Models.AccessLevel.Guest);
+                        ComplianceContext.LogSystem(
+                            "[Logout] User cancelled login, staying as Guest",
+                            Stackdose.UI.Core.Models.LogLevel.Info,
+                            showInUi: true
+                        );
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[MainWindow] OnLogoutOccurred EXCEPTION: {ex.Message}");
+                #endif
+            }
         }
 
         private void UpdateWindowTitle()
         {
-            var session = SecurityContext.CurrentSession;
-            if (session.IsLoggedIn)
+            try
             {
-                this.Title = $"Stackdose Control System - {session.CurrentUserName} ({session.CurrentLevel})";
+                var session = SecurityContext.CurrentSession;
+                if (session.IsLoggedIn)
+                {
+                    this.Title = $"Stackdose Control System - {session.CurrentUserName} ({session.CurrentLevel})";
+                }
+                else
+                {
+                    this.Title = "Stackdose Control System - Not Logged In";
+                }
             }
-            else
+            catch (Exception ex)
             {
-                this.Title = "Stackdose Control System - Not Logged In";
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[MainWindow] UpdateWindowTitle EXCEPTION: {ex.Message}");
+                #endif
+                
+                this.Title = "Stackdose Control System";
             }
         }
 
-      
-
         #region 主題測試按鈕事件
 
-        /// <summary>
-        /// 切換 Dark/Light 主題
-        /// </summary>
         public void ToggleTheme_Click(object sender, RoutedEventArgs e)
         {
-            // 直接使用 CyberFrame 的主題切換按鈕功能
             var cyberFrame = FindCyberFrame(this);
             if (cyberFrame != null)
             {
@@ -131,9 +263,6 @@ namespace WpfApp1
             }
         }
 
-        /// <summary>
-        /// 顯示主題統計資訊
-        /// </summary>
         public void ShowThemeStats_Click(object sender, RoutedEventArgs e)
         {
             var stats = ThemeManager.GetStatistics();
@@ -154,32 +283,14 @@ namespace WpfApp1
                 MessageBoxButton.OK,
                 MessageBoxImage.Information
             );
-            
-            ComplianceContext.LogSystem(
-                $"[Theme Stats] Total={stats.Total}, Alive={stats.Alive}, Dead={stats.Dead}",
-                Stackdose.UI.Core.Models.LogLevel.Info,
-                showInUi: true
-            );
         }
 
-        /// <summary>
-        /// 開啟完整主題測試視窗
-        /// </summary>
         public void OpenThemeDemo_Click(object sender, RoutedEventArgs e)
         {
             var demoWindow = new ThemeManagerDemoWindow();
             demoWindow.Show();
-            
-            ComplianceContext.LogSystem(
-                "已開啟 ThemeManager 測試視窗",
-                Stackdose.UI.Core.Models.LogLevel.Info,
-                showInUi: true
-            );
         }
 
-        /// <summary>
-        /// 列印已註冊控制項（輸出到 Debug Console）
-        /// </summary>
         public void PrintRegistered_Click(object sender, RoutedEventArgs e)
         {
             ThemeManager.PrintRegisteredControls();
@@ -190,29 +301,18 @@ namespace WpfApp1
                 MessageBoxButton.OK,
                 MessageBoxImage.Information
             );
-            
-            ComplianceContext.LogSystem(
-                "已列印所有已註冊的主題感知控制項",
-                Stackdose.UI.Core.Models.LogLevel.Info,
-                showInUi: true
-            );
         }
 
-        /// <summary>
-        /// 手動清理失效的 WeakReference
-        /// </summary>
         public void CleanupTheme_Click(object sender, RoutedEventArgs e)
         {
             var statsBefore = ThemeManager.GetStatistics();
-            
             ThemeManager.Cleanup();
-            
             var statsAfter = ThemeManager.GetStatistics();
             int removed = statsBefore.Dead;
             
             string message = $"🗑️ 清理完成\n\n" +
-                           $"清理前: {statsBefore.Total} 個 (存活: {statsBefore.Alive}, 失效: {statsBefore.Dead})\n" +
-                           $"清理後: {statsAfter.Total} 個 (存活: {statsAfter.Alive}, 失效: {statsAfter.Dead})\n\n" +
+                           $"清理前: {statsBefore.Total} 個\n" +
+                           $"清理後: {statsAfter.Total} 個\n\n" +
                            $"已移除 {removed} 個失效參考";
             
             CyberMessageBox.Show(
@@ -221,17 +321,8 @@ namespace WpfApp1
                 MessageBoxButton.OK,
                 MessageBoxImage.Information
             );
-            
-            ComplianceContext.LogSystem(
-                $"[Theme Cleanup] Removed {removed} dead references",
-                Stackdose.UI.Core.Models.LogLevel.Success,
-                showInUi: true
-            );
         }
 
-        /// <summary>
-        /// 搜尋視覺樹中的 CyberFrame
-        /// </summary>
         private CyberFrame? FindCyberFrame(DependencyObject parent)
         {
             if (parent is CyberFrame cyberFrame)
@@ -253,28 +344,19 @@ namespace WpfApp1
 
         #region Public Methods for Panels
 
-        /// <summary>
-        /// 製程開始（公開方法供 SystemTestPanel 呼叫）
-        /// </summary>
         public void StartProcess_Click(object sender, RoutedEventArgs e)
         {
-            // 製程開始邏輯
-            
-            // 1. 記錄到系統日誌
             ComplianceContext.LogSystem(
                 "[START] 製程開始",
                 Stackdose.UI.Core.Models.LogLevel.Info,
                 showInUi: true
             );
 
-            // 2. 寫入 PLC 啟動信號（例如：M100 = 1）
             var plcManager = PlcContext.GlobalStatus?.CurrentManager;
             if (plcManager != null && plcManager.IsConnected)
             {
-                // 寫入啟動信號
                 _ = plcManager.WriteAsync("M100,1");
                 
-                // 記錄到 Audit Trail
                 ComplianceContext.LogAuditTrail(
                     deviceName: "製程控制",
                     address: "M100",
@@ -286,7 +368,6 @@ namespace WpfApp1
             }
             else
             {
-                // PLC 未連線警告
                 CyberMessageBox.Show(
                     "[WARNING] PLC 未連線\n無法啟動製程",
                     "警告",
@@ -296,9 +377,8 @@ namespace WpfApp1
                 return;
             }
 
-            // 3. 顯示確認訊息
             CyberMessageBox.Show(
-                "✅ 製程已啟動\n\n請確認設備運行狀態",
+                "✅ 製程已啟動",
                 "製程開始",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information
@@ -306,28 +386,5 @@ namespace WpfApp1
         }
 
         #endregion
-
-        /// <summary>
-        /// 視窗關閉時清理資源
-        /// </summary>
-        protected override void OnClosed(EventArgs e)
-        {
-            base.OnClosed(e);
-            
-            // 取消訂閱事件
-            SecurityContext.LoginSuccess -= OnLoginSuccess;
-            SecurityContext.LogoutOccurred -= OnLogoutOccurred;
-            
-            // 清理 ViewModel
-            _viewModel.Cleanup();
-            
-            // 登出
-            SecurityContext.Logout();
-            
-            // 🔥 新增：關閉合規引擎並刷新所有待寫入日誌
-            ComplianceContext.Shutdown();
-            
-         
-        }
     }
 }

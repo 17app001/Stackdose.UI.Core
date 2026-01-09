@@ -1,11 +1,12 @@
 using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Services;
 using System.Windows;
 using System.Windows.Input;
 
 namespace Stackdose.UI.Core.Controls
 {
     /// <summary>
-    /// 使用者登入對話框
+    /// 使用者登入對話視窗
     /// </summary>
     public partial class LoginDialog : Window
     {
@@ -14,6 +15,29 @@ namespace Stackdose.UI.Core.Controls
         public LoginDialog()
         {
             InitializeComponent();
+
+            #if DEBUG
+            // ?? DEBUG 模式：自動填入 Admin/admin123
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] DEBUG Mode: Auto-filling Admin credentials");
+            UserIdTextBox.Text = "Admin";
+            PasswordBox.Password = "admin123";
+            #else
+            // ?? RELEASE 模式：自動填入當前 Windows 使用者名稱
+            try
+            {
+                string currentUser = AdAuthenticationService.GetCurrentWindowsUser();
+                UserIdTextBox.Text = currentUser;
+                
+                System.Diagnostics.Debug.WriteLine($"[LoginDialog] Auto-filled Windows user: {currentUser}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LoginDialog] Failed to get Windows user: {ex.Message}");
+                
+                // 如果無法取得 Windows 使用者，預設為 Admin
+                UserIdTextBox.Text = "Admin";
+            }
+            #endif
 
             // 支援 Enter 鍵登入
             this.KeyDown += (s, e) =>
@@ -28,18 +52,42 @@ namespace Stackdose.UI.Core.Controls
                 }
             };
 
-            // 自動 focus 到帳號欄位
-            this.Loaded += (s, e) => UserIdTextBox.Focus();
+            // ?? 自動 focus 到密碼框（即使已預填，也讓使用者可以直接按 Enter 登入）
+            this.Loaded += (s, e) =>
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[LoginDialog] Window loaded, focusing PasswordBox (credentials pre-filled, press Enter to login)");
+                #else
+                System.Diagnostics.Debug.WriteLine("[LoginDialog] Window loaded, focusing PasswordBox");
+                #endif
+                PasswordBox.Focus();
+            };
+
+            // 監聽視窗關閉事件
+            this.Closing += (s, e) =>
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[LoginDialog] Window closing - LoginSuccessful: {LoginSuccessful}, DialogResult: {DialogResult}");
+                #endif
+            };
         }
 
         private void LoginButton_Click(object? sender, RoutedEventArgs? e)
         {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] LoginButton_Click called");
+            #endif
+
             // 清除錯誤訊息
             ErrorPanel.Visibility = Visibility.Collapsed;
 
             // 取得輸入
             string userId = UserIdTextBox.Text.Trim();
             string password = PasswordBox.Password;
+
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[LoginDialog] Attempting login for user: {userId}");
+            #endif
 
             // 驗證輸入
             if (string.IsNullOrWhiteSpace(userId))
@@ -56,36 +104,79 @@ namespace Stackdose.UI.Core.Controls
                 return;
             }
 
-            // ?? 修正：更詳細的登入驗證與錯誤訊息
+            // ?? 使用整合後的登入邏輯（支援 AD 驗證）
             try
             {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[LoginDialog] Calling SecurityContext.Login...");
+                #endif
+
                 bool success = SecurityContext.Login(userId, password);
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[LoginDialog] Login result: {success}");
+                #endif
 
                 if (success)
                 {
+                    // ?? 顯示登入成功訊息
+                    var user = SecurityContext.CurrentSession.CurrentUser;
+                    
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[LoginDialog] Login successful for: {user?.DisplayName} ({user?.AccessLevel})");
+                    #endif
+
+                    ComplianceContext.LogSystem(
+                        $"[LoginDialog] Login successful: {user?.DisplayName} ({user?.AccessLevel})",
+                        Models.LogLevel.Success,
+                        showInUi: false
+                    );
+
                     LoginSuccessful = true;
+                    
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine("[LoginDialog] Setting DialogResult = true and closing");
+                    #endif
+                    
                     this.DialogResult = true;
                     this.Close();
                 }
                 else
                 {
-                    // 登入失敗，顯示更具體的錯誤訊息
-                    ShowError($"登入失敗 Login Failed\n帳號: {userId}\n\n可能原因：\n? 帳號不存在 (User not found)\n? 密碼錯誤 (Wrong password)\n? 帳號已停用 (Account inactive)");
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine("[LoginDialog] Login failed");
+                    #endif
+
+                    // 登入失敗，顯示詳細的錯誤訊息
+                    ShowError($"登入失敗 Login Failed\n帳號: {userId}\n\n可能原因:\n? Windows 密碼錯誤 (Wrong Windows password)\n? 帳號未在系統中註冊 (User not registered)\n? 帳號已停用 (Account inactive)");
                     PasswordBox.Clear();
                     PasswordBox.Focus();
                 }
             }
             catch (Exception ex)
             {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[LoginDialog] Login exception: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[LoginDialog] Stack trace: {ex.StackTrace}");
+                #endif
+
                 ShowError($"登入錯誤 Login Error:\n{ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"[LoginDialog] Login Error: {ex.Message}");
             }
         }
 
         private void CancelButton_Click(object? sender, RoutedEventArgs? e)
         {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] CancelButton_Click called");
+            #endif
+
             LoginSuccessful = false;
             this.DialogResult = false;
+            
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] User cancelled login, closing dialog");
+            #endif
+            
             this.Close();
         }
 
@@ -100,14 +191,47 @@ namespace Stackdose.UI.Core.Controls
         }
 
         /// <summary>
-        /// 顯示登入對話框
+        /// 顯示登入對話視窗
         /// </summary>
         /// <returns>是否登入成功</returns>
         public static bool ShowLoginDialog()
         {
-            var dialog = new LoginDialog();
-            bool? result = dialog.ShowDialog();
-            return result == true && dialog.LoginSuccessful;
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine("[LoginDialog.ShowLoginDialog] Creating dialog...");
+            #endif
+
+            try
+            {
+                var dialog = new LoginDialog();
+                
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[LoginDialog.ShowLoginDialog] Showing dialog...");
+                #endif
+
+                bool? result = dialog.ShowDialog();
+                
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[LoginDialog.ShowLoginDialog] Dialog closed - Result: {result}, LoginSuccessful: {dialog.LoginSuccessful}");
+                #endif
+
+                return result == true && dialog.LoginSuccessful;
+            }
+            catch (Exception ex)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[LoginDialog.ShowLoginDialog] EXCEPTION: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[LoginDialog.ShowLoginDialog] Stack trace: {ex.StackTrace}");
+                #endif
+                
+                MessageBox.Show(
+                    $"登入對話框發生錯誤 Login Dialog Error:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+                
+                return false;
+            }
         }
     }
 }

@@ -94,8 +94,27 @@ namespace Stackdose.UI.Core.Controls
 
             //IpDisplay.Text = $"{IpAddress}:{Port}";
 
-            if (AutoConnect) await ConnectAsync();
-            else { UpdateUiState(ConnectionState.Failed); StatusText.Text = "Click To Connecting"; }
+            // 🔥 改為非同步背景連線，不阻塞 UI
+            if (AutoConnect)
+            {
+                // 不要使用 await，讓連線在背景執行
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await ConnectAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[PlcStatus] Background connection failed: {ex.Message}");
+                    }
+                });
+            }
+            else
+            {
+                UpdateUiState(ConnectionState.Failed);
+                StatusText.Text = "Click To Connecting";
+            }
         }
 
         private async void PlcStatus_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => await ToggleConnectionAsync();

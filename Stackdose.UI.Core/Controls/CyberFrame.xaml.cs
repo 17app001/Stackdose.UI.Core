@@ -119,17 +119,25 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         private void InitializeGlobalPlcConnection()
         {
+            #if DEBUG
+            // 🔥 DEBUG 模式：不自動連線 PLC（避免長時間等待）
+            System.Diagnostics.Debug.WriteLine("[CyberFrame] DEBUG Mode: PLC auto-connect disabled");
+            ComplianceContext.LogSystem(
+                "[CyberFrame] DEBUG Mode: PLC auto-connect disabled (click status to connect manually)",
+                LogLevel.Info,
+                showInUi: true
+            );
+            return; // 直接返回，不建立 PlcStatus
+            #endif
+
             try
             {
-                // 從 IntegratedPlcStatus (PlcStatusIndicator) 取得 PlcContext.GlobalStatus
-                // 由於 PlcStatusIndicator 會自動訂閱 GlobalStatus，我們需要確保有一個實際的 PlcStatus 實例
-                
                 // 創建隱藏的 PlcStatus 實例作為全域連線管理器
                 _globalPlcStatus = new PlcStatus
                 {
                     IpAddress = PlcIpAddress,
                     Port = PlcPort,
-                    AutoConnect = PlcAutoConnect,
+                    AutoConnect = false,  // 🔥 禁用自動連線
                     IsGlobal = true,
                     MonitorAddress = "",
                     MonitorLength = 1,
@@ -138,17 +146,46 @@ namespace Stackdose.UI.Core.Controls
                 };
                 
                 // 將其添加到 CyberFrame 的視覺樹中（但不顯示）
-                // 這樣它就會在 Loaded 時自動連線
                 var rootGrid = this.FindName("Root") as Grid;
                 if (rootGrid != null && rootGrid.Parent is Border rootBorder && rootBorder.Child is Grid mainGrid)
                 {
                     mainGrid.Children.Add(_globalPlcStatus);
                     System.Diagnostics.Debug.WriteLine($"[CyberFrame] Global PlcStatus initialized: {PlcIpAddress}:{PlcPort}");
                     ComplianceContext.LogSystem(
-                        $"[CyberFrame] PLC 連線管理器已初始化: {PlcIpAddress}:{PlcPort}",
+                        $"[CyberFrame] PLC 連線管理器已初始化 (AutoConnect disabled)",
                         LogLevel.Info,
                         showInUi: false
                     );
+                    
+                    // 🔥 延遲 2 秒後才開始背景連線（確保 MainWindow 已完全顯示）
+                    Task.Delay(2000).ContinueWith(_ =>
+                    {
+                        Dispatcher.InvokeAsync(async () =>
+                        {
+                            try
+                            {
+                                System.Diagnostics.Debug.WriteLine("[CyberFrame] 開始背景連線 PLC (delayed)...");
+                                
+                                // 透過反射呼叫 ConnectAsync
+                                var connectMethod = _globalPlcStatus.GetType().GetMethod("ConnectAsync", 
+                                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                                    
+                                if (connectMethod != null)
+                                {
+                                    var task = connectMethod.Invoke(_globalPlcStatus, null) as Task;
+                                    if (task != null)
+                                    {
+                                        await task;
+                                        System.Diagnostics.Debug.WriteLine("[CyberFrame] PLC 背景連線完成");
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[CyberFrame] PLC 背景連線失敗: {ex.Message}");
+                            }
+                        });
+                    });
                 }
                 else
                 {

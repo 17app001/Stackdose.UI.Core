@@ -256,6 +256,125 @@ namespace Stackdose.UI.Core.Services
             }
         }
 
+        /// <summary>
+        /// ?? 新增：從 Windows AD 建立使用者
+        /// </summary>
+        /// <param name="adUsername">AD 使用者名稱</param>
+        /// <param name="accessLevel">要給予的權限等級</param>
+        /// <param name="creatorUserId">建立者的 UserId</param>
+        /// <param name="defaultPassword">預設密碼（選填，用於本地驗證 fallback）</param>
+        /// <returns>操作結果</returns>
+        public async Task<(bool Success, string Message, UserAccount? User)> CreateUserFromAdAsync(
+            string adUsername,
+            AccessLevel accessLevel,
+            int creatorUserId,
+            string? defaultPassword = null)
+        {
+            try
+            {
+                using var conn = new SqliteConnection(_connectionString);
+                await conn.OpenAsync();
+
+                // 1. 檢查 AD 使用者是否存在
+                var adService = new AdAuthenticationService();
+                var adUserInfo = adService.GetUserInfo(adUsername);
+
+                if (adUserInfo == null)
+                {
+                    return (false, $"AD 使用者 '{adUsername}' 不存在或無法存取", null);
+                }
+
+                if (!adUserInfo.IsEnabled)
+                {
+                    return (false, $"AD 使用者 '{adUsername}' 已停用", null);
+                }
+
+                // 2. 檢查 UserId 是否已存在
+                var existing = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                    "SELECT * FROM Users WHERE UserId = @UserId",
+                    new { UserId = adUsername });
+
+                if (existing != null)
+                {
+                    return (false, $"使用者 ID '{adUsername}' 已存在", null);
+                }
+
+                // 3. 取得建立者資訊
+                var creator = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                    "SELECT * FROM Users WHERE Id = @Id",
+                    new { Id = creatorUserId });
+
+                if (creator == null)
+                {
+                    return (false, "找不到建立者資訊", null);
+                }
+
+                // 4. 檢查權限
+                if (!CanManageUser(creator.AccessLevel, accessLevel))
+                {
+                    return (false, $"您沒有權限建立 {accessLevel} 等級的使用者", null);
+                }
+
+                // 5. Hash 預設密碼（如果提供）
+                string hash, salt;
+                if (!string.IsNullOrWhiteSpace(defaultPassword))
+                {
+                    (hash, salt) = HashPassword(defaultPassword);
+                }
+                else
+                {
+                    // 使用隨機密碼作為 fallback（但實際不會用到，因為優先使用 AD）
+                    var randomPassword = Guid.NewGuid().ToString("N").Substring(0, 16);
+                    (hash, salt) = HashPassword(randomPassword);
+                }
+
+                // 6. 建立使用者（從 AD 同步資訊）
+                var newUser = new UserAccount
+                {
+                    UserId = adUserInfo.Username,
+                    DisplayName = adUserInfo.DisplayName,
+                    PasswordHash = hash,
+                    Salt = salt,
+                    AccessLevel = accessLevel,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    CreatedByUserId = creatorUserId,
+                    CreatedBy = creator.DisplayName,
+                    Email = adUserInfo.Email,
+                    Department = adUserInfo.Description, // AD Description 可能包含部門資訊
+                    Remarks = $"Created from Windows AD: {adUserInfo.Username}"
+                };
+
+                // 7. 寫入資料庫
+                var sql = @"
+                    INSERT INTO Users (UserId, DisplayName, PasswordHash, Salt, AccessLevel, IsActive, 
+                                      CreatedAt, CreatedByUserId, CreatedBy, Email, Department, Remarks)
+                    VALUES (@UserId, @DisplayName, @PasswordHash, @Salt, @AccessLevel, @IsActive, 
+                           @CreatedAt, @CreatedByUserId, @CreatedBy, @Email, @Department, @Remarks);
+                    SELECT last_insert_rowid();";
+
+                newUser.Id = await conn.ExecuteScalarAsync<int>(sql, newUser);
+
+                // 8. 記錄審計軌跡
+                await LogAuditAsync(conn, new UserAuditLog
+                {
+                    Timestamp = DateTime.Now,
+                    OperatorUserId = creatorUserId,
+                    OperatorUserName = creator.DisplayName,
+                    Action = UserAuditAction.CreateUser,
+                    TargetUserId = newUser.Id,
+                    TargetUserName = adUsername,
+                    Details = $"從 AD 建立使用者: {adUserInfo.DisplayName} ({accessLevel})"
+                });
+
+                return (true, $"已從 AD 建立使用者: {adUserInfo.DisplayName}", newUser);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"建立失敗: {ex.Message}", null);
+            }
+        }
+
         #endregion
 
         #region Delete User
@@ -611,6 +730,67 @@ namespace Stackdose.UI.Core.Services
                 return true;
 
             return false;
+        }
+
+        #endregion
+
+        #region AD Integration Helpers
+
+        /// <summary>
+        /// ?? 新增：取得本機所有 AD 使用者清單（用於下拉選單）
+        /// </summary>
+        /// <returns>AD 使用者清單</returns>
+        public List<string> GetAvailableAdUsers()
+        {
+            var users = new List<string>();
+            
+            try
+            {
+                var adService = new AdAuthenticationService();
+                
+                // 取得本機所有使用者（限制 LocalMachine 模式）
+                using (var context = new System.DirectoryServices.AccountManagement.PrincipalContext(
+                    System.DirectoryServices.AccountManagement.ContextType.Machine))
+                {
+                    var searcher = new System.DirectoryServices.AccountManagement.UserPrincipal(context);
+                    using (var search = new System.DirectoryServices.AccountManagement.PrincipalSearcher(searcher))
+                    {
+                        foreach (var result in search.FindAll())
+                        {
+                            if (result is System.DirectoryServices.AccountManagement.UserPrincipal userPrincipal)
+                            {
+                                if (!string.IsNullOrWhiteSpace(userPrincipal.SamAccountName))
+                                {
+                                    users.Add(userPrincipal.SamAccountName);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] GetAvailableAdUsers Error: {ex.Message}");
+            }
+            
+            return users.OrderBy(u => u).ToList();
+        }
+
+        /// <summary>
+        /// ?? 新增：檢查 AD 使用者是否已在本地資料庫中
+        /// </summary>
+        /// <param name="adUsername">AD 使用者名稱</param>
+        /// <returns>是否已存在</returns>
+        public async Task<bool> IsAdUserRegisteredAsync(string adUsername)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            await conn.OpenAsync();
+            
+            var count = await conn.ExecuteScalarAsync<int>(
+                "SELECT COUNT(*) FROM Users WHERE UserId = @UserId",
+                new { UserId = adUsername });
+            
+            return count > 0;
         }
 
         #endregion

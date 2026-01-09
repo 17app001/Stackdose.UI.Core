@@ -70,6 +70,11 @@ namespace Stackdose.UI.Core.Controls
             DependencyProperty.Register("MaxRetryCount", typeof(int), typeof(PlcStatus), new PropertyMetadata(3));
         public int MaxRetryCount { get { return (int)GetValue(MaxRetryCountProperty); } set { SetValue(MaxRetryCountProperty, value); } }
 
+        // 新增：控制是否顯示邊框 (預設 true)
+        public static readonly DependencyProperty ShowBorderProperty =
+            DependencyProperty.Register("ShowBorder", typeof(bool), typeof(PlcStatus), new PropertyMetadata(true));
+        public bool ShowBorder { get { return (bool)GetValue(ShowBorderProperty); } set { SetValue(ShowBorderProperty, value); } }
+
         private static void OnIsGlobalChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is PlcStatus plcStatus && (bool)e.NewValue) PlcContext.GlobalStatus = plcStatus;
@@ -87,7 +92,7 @@ namespace Stackdose.UI.Core.Controls
 
             if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(this)) return;
 
-            IpDisplay.Text = $"{IpAddress}:{Port}";
+            //IpDisplay.Text = $"{IpAddress}:{Port}";
 
             if (AutoConnect) await ConnectAsync();
             else { UpdateUiState(ConnectionState.Failed); StatusText.Text = "Click To Connecting"; }

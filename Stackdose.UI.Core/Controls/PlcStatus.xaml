@@ -4,13 +4,23 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="80" d:DesignWidth="220">
+             d:DesignHeight="50" d:DesignWidth="220">
 
-    <Border BorderBrush="{DynamicResource Plc.Text.Value}" 
-            BorderThickness="1" 
+    <Border x:Name="MainBorder"
+            BorderBrush="{DynamicResource Plc.Text.Value}" 
             Background="{DynamicResource Plc.Bg.Main}" 
             CornerRadius="4" 
             Padding="10">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="BorderThickness" Value="1"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding ShowBorder, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
+                        <Setter Property="BorderThickness" Value="0"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -61,12 +71,7 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- IP 與 狀態 -->
-                <TextBlock x:Name="IpDisplay" 
-                           Text="0.0.0.0:0000" 
-                           Foreground="{DynamicResource Cyber.Text.Bright}" 
-                           FontSize="14" 
-                           FontFamily="Consolas"/>
+               
                 <TextBlock x:Name="StatusText" 
                            Text="Waiting..." 
                            Foreground="{DynamicResource Plc.Text.Default}" 

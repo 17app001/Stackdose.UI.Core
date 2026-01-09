@@ -35,6 +35,9 @@ namespace Stackdose.UI.Core.Controls
 
         /// <summary>時鐘計時器</summary>
         private DispatcherTimer? _clockTimer;
+        
+        /// <summary>🔥 全域 PLC 連線管理器</summary>
+        private PlcStatus? _globalPlcStatus;
 
         #endregion
 
@@ -87,7 +90,7 @@ namespace Stackdose.UI.Core.Controls
             SecurityContext.LoginSuccess += OnLoginSuccess;
             SecurityContext.LogoutOccurred += OnLogoutOccurred;
         }
-
+        
         /// <summary>
         /// 🔥 初始化批次寫入狀態燈號
         /// </summary>
@@ -112,6 +115,58 @@ namespace Stackdose.UI.Core.Controls
         }
 
         /// <summary>
+        /// 🔥 初始化全域 PLC 連線
+        /// </summary>
+        private void InitializeGlobalPlcConnection()
+        {
+            try
+            {
+                // 從 IntegratedPlcStatus (PlcStatusIndicator) 取得 PlcContext.GlobalStatus
+                // 由於 PlcStatusIndicator 會自動訂閱 GlobalStatus，我們需要確保有一個實際的 PlcStatus 實例
+                
+                // 創建隱藏的 PlcStatus 實例作為全域連線管理器
+                _globalPlcStatus = new PlcStatus
+                {
+                    IpAddress = PlcIpAddress,
+                    Port = PlcPort,
+                    AutoConnect = PlcAutoConnect,
+                    IsGlobal = true,
+                    MonitorAddress = "",
+                    MonitorLength = 1,
+                    ScanInterval = 120,
+                    Visibility = Visibility.Collapsed
+                };
+                
+                // 將其添加到 CyberFrame 的視覺樹中（但不顯示）
+                // 這樣它就會在 Loaded 時自動連線
+                var rootGrid = this.FindName("Root") as Grid;
+                if (rootGrid != null && rootGrid.Parent is Border rootBorder && rootBorder.Child is Grid mainGrid)
+                {
+                    mainGrid.Children.Add(_globalPlcStatus);
+                    System.Diagnostics.Debug.WriteLine($"[CyberFrame] Global PlcStatus initialized: {PlcIpAddress}:{PlcPort}");
+                    ComplianceContext.LogSystem(
+                        $"[CyberFrame] PLC 連線管理器已初始化: {PlcIpAddress}:{PlcPort}",
+                        LogLevel.Info,
+                        showInUi: false
+                    );
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("[CyberFrame] Warning: Cannot find root grid to add PlcStatus");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CyberFrame] InitializeGlobalPlcConnection Error: {ex.Message}");
+                ComplianceContext.LogSystem(
+                    $"[CyberFrame] PLC 連線初始化失敗: {ex.Message}",
+                    LogLevel.Error,
+                    showInUi: true
+                );
+            }
+        }
+
+        /// <summary>
         /// 控制項載入時的初始化
         /// </summary>
         private void CyberFrame_Loaded(object sender, RoutedEventArgs e)
@@ -132,6 +187,9 @@ namespace Stackdose.UI.Core.Controls
                 // 🔥 初始化使用者管理服務（會自動建立預設 Admin）
                 var _ = new Services.UserManagementService();
                 System.Diagnostics.Debug.WriteLine("[CyberFrame] UserManagementService initialized");
+                
+                // 🔥 NEW: 初始化全域 PLC 連線
+                InitializeGlobalPlcConnection();
                 
                 // 確保 ComplianceContext 已初始化（觸發靜態建構函數）
                 ComplianceContext.LogSystem("[CyberFrame] Loaded, initializing batch write indicator...", 
@@ -283,6 +341,63 @@ namespace Stackdose.UI.Core.Controls
         {
             get => GetValue(MainContentProperty);
             set => SetValue(MainContentProperty, value);
+        }
+        
+        /// <summary>
+        /// PLC IP 位址
+        /// </summary>
+        public static readonly DependencyProperty PlcIpAddressProperty =
+            DependencyProperty.Register(
+                nameof(PlcIpAddress),
+                typeof(string),
+                typeof(CyberFrame),
+                new PropertyMetadata("192.168.22.39"));
+
+        /// <summary>
+        /// 取得或設定 PLC IP 位址
+        /// </summary>
+        public string PlcIpAddress
+        {
+            get => (string)GetValue(PlcIpAddressProperty);
+            set => SetValue(PlcIpAddressProperty, value);
+        }
+
+        /// <summary>
+        /// PLC 連接埠
+        /// </summary>
+        public static readonly DependencyProperty PlcPortProperty =
+            DependencyProperty.Register(
+                nameof(PlcPort),
+                typeof(int),
+                typeof(CyberFrame),
+                new PropertyMetadata(3000));
+
+        /// <summary>
+        /// 取得或設定 PLC 連接埠
+        /// </summary>
+        public int PlcPort
+        {
+            get => (int)GetValue(PlcPortProperty);
+            set => SetValue(PlcPortProperty, value);
+        }
+
+        /// <summary>
+        /// 是否自動連線 PLC
+        /// </summary>
+        public static readonly DependencyProperty PlcAutoConnectProperty =
+            DependencyProperty.Register(
+                nameof(PlcAutoConnect),
+                typeof(bool),
+                typeof(CyberFrame),
+                new PropertyMetadata(true));
+
+        /// <summary>
+        /// 取得或設定是否自動連線 PLC
+        /// </summary>
+        public bool PlcAutoConnect
+        {
+            get => (bool)GetValue(PlcAutoConnectProperty);
+            set => SetValue(PlcAutoConnectProperty, value);
         }
 
         /// <summary>

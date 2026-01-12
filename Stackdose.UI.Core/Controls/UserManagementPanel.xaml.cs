@@ -18,16 +18,16 @@ namespace Stackdose.UI.Core.Controls
     {
         #region Fields
 
-        private readonly IUserManagementService _userService;
-        private ObservableCollection<UserAccount> _users = new();
-        private UserAccount? _selectedUser;
-        private bool _hasLoaded = false; // ?? 新增：追蹤是否已載入過
+        private readonly WindowsAccountService _windowsAccountService;
+        private ObservableCollection<WindowsAccountService.UserInfo> _users = new();
+        private WindowsAccountService.UserInfo? _selectedUser;
+        private bool _hasLoaded = false;
 
         #endregion
 
         #region Properties
 
-        public ObservableCollection<UserAccount> Users
+        public ObservableCollection<WindowsAccountService.UserInfo> Users
         {
             get => _users;
             set
@@ -37,7 +37,7 @@ namespace Stackdose.UI.Core.Controls
             }
         }
 
-        public UserAccount? SelectedUser
+        public WindowsAccountService.UserInfo? SelectedUser
         {
             get => _selectedUser;
             set
@@ -64,9 +64,10 @@ namespace Stackdose.UI.Core.Controls
             
             DataContext = this;
 
-            _userService = new UserManagementService();
+            // ?? 使用 Windows AD 服務
+            _windowsAccountService = new WindowsAccountService(System.DirectoryServices.AccountManagement.ContextType.Machine);
 
-            // ?? 改用 IsVisibleChanged 事件而非 Loaded
+            // ?? 監聽 IsVisibleChanged 事件
             IsVisibleChanged += UserManagementPanel_IsVisibleChanged;
         }
 
@@ -112,24 +113,29 @@ namespace Stackdose.UI.Core.Controls
                     return;
                 }
 
-                // ?? 修正：根據當前使用者的 UserId（而非 DisplayName）查詢資料庫取得 ID
-                var loggedInUser = session.CurrentUser;
-
-                if (loggedInUser == null)
+                // ?? 檢查是否有管理員權限
+                if (!WindowsAccountService.IsRunningAsAdministrator())
                 {
-                    CyberMessageBox.Show("找不到當前使用者資訊", "錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
+                    CyberMessageBox.Show(
+                        "?? 警告：程式未以管理員權限執行\n\n" +
+                        "大部分使用者管理功能需要管理員權限。\n" +
+                        "建議以管理員身分重新執行程式。",
+                        "權限提示",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
                 }
 
-                // 取得可管理的使用者列表
-                var users = await _userService.GetManagedUsersAsync(loggedInUser.Id);
+                // ?? 從 Windows AD 載入使用者
+                var users = await System.Threading.Tasks.Task.Run(() => _windowsAccountService.ListAllAppUsers());
+                
                 Users.Clear();
                 foreach (var user in users)
                 {
                     Users.Add(user);
                 }
 
-                ComplianceContext.LogSystem($"載入使用者列表: {users.Count} 筆", LogLevel.Info);
+                ComplianceContext.LogSystem($"載入 Windows 使用者清單: {users.Count} 位", LogLevel.Info);
             }
             catch (Exception ex)
             {
@@ -147,7 +153,6 @@ namespace Stackdose.UI.Core.Controls
             try
             {
                 var session = SecurityContext.CurrentSession;
-                // ?? 修正：直接使用 CurrentUser
                 var loggedInUser = session.CurrentUser;
 
                 if (loggedInUser == null)
@@ -156,17 +161,17 @@ namespace Stackdose.UI.Core.Controls
                     return;
                 }
 
-                // 開啟新增使用者對話框
-                var dialog = new UserEditorDialog(_userService, loggedInUser.Id, loggedInUser.AccessLevel)
+                // ?? 開啟新增 Windows 使用者對話視窗
+                var dialog = new UserEditorDialog(_windowsAccountService, loggedInUser.AccessLevel)
                 {
                     Owner = Window.GetWindow(this),
-                    Title = "新增使用者"
+                    Title = "新增 Windows 使用者"
                 };
 
                 if (dialog.ShowDialog() == true)
                 {
                     await LoadUsersAsync();
-                    CyberMessageBox.Show("使用者創建成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    CyberMessageBox.Show("使用者建立成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
@@ -181,27 +186,17 @@ namespace Stackdose.UI.Core.Controls
 
             try
             {
-                var session = SecurityContext.CurrentSession;
-                // ?? 修正：直接使用 CurrentUser
-                var loggedInUser = session.CurrentUser;
-
-                if (loggedInUser == null)
-                {
-                    CyberMessageBox.Show("找不到當前使用者資訊", "錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                // 開啟編輯對話框
-                var dialog = new UserEditorDialog(_userService, loggedInUser.Id, loggedInUser.AccessLevel, SelectedUser)
+                // ?? Windows AD 使用者管理：變更群組
+                var groupDialog = new GroupManagementDialog(_windowsAccountService, SelectedUser)
                 {
                     Owner = Window.GetWindow(this),
-                    Title = $"編輯使用者 - {SelectedUser.UserId}"
+                    Title = $"群組管理 - {SelectedUser.SamAccountName}"
                 };
 
-                if (dialog.ShowDialog() == true)
+                if (groupDialog.ShowDialog() == true)
                 {
                     await LoadUsersAsync();
-                    CyberMessageBox.Show("使用者資料已更新", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    CyberMessageBox.Show("群組設定已更新", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
@@ -216,10 +211,10 @@ namespace Stackdose.UI.Core.Controls
 
             try
             {
-                // 輸入新密碼
+                // ?? 輸入新密碼
                 var inputDialog = new InputDialog(
                     "重設密碼",
-                    $"請輸入 {SelectedUser.DisplayName} 的新密碼:")
+                    $"請輸入 {SelectedUser.DisplayName} 的新密碼:\n\n?? 此操作需要管理員權限")
                 {
                     Owner = Window.GetWindow(this)
                 };
@@ -229,7 +224,7 @@ namespace Stackdose.UI.Core.Controls
 
                 var newPassword = inputDialog.InputText;
 
-                // 確認對話框
+                // ?? 確認對話視窗
                 var result = CyberMessageBox.Show(
                     $"確定要重設 {SelectedUser.DisplayName} 的密碼嗎？",
                     "確認重設",
@@ -238,30 +233,26 @@ namespace Stackdose.UI.Core.Controls
 
                 if (result != MessageBoxResult.Yes)
                     return;
-                
-                var session = SecurityContext.CurrentSession;
-                // ?? 修正：直接使用 CurrentUser
-                var loggedInUser = session.CurrentUser;
 
-                if (loggedInUser == null)
-                {
-                    CyberMessageBox.Show("找不到當前使用者資訊", "錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
+                // ?? 呼叫 Windows AD API
+                var operationResult = await System.Threading.Tasks.Task.Run(() => 
+                    _windowsAccountService.ResetPassword(SelectedUser.SamAccountName, newPassword));
 
-                var (success, message) = await _userService.ResetPasswordAsync(
-                    SelectedUser.Id,
-                    loggedInUser.Id,
-                    newPassword);
-
-                if (success)
+                if (operationResult.Success)
                 {
                     CyberMessageBox.Show("密碼重設成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
-                    ComplianceContext.LogSystem($"重設密碼: {SelectedUser.UserId}", LogLevel.Info);
+                    ComplianceContext.LogAuditTrail(
+                        "Windows 使用者",
+                        SelectedUser.SamAccountName,
+                        "密碼",
+                        "已重設",
+                        $"由 {SecurityContext.CurrentSession.CurrentUserName} 執行",
+                        showInUi: true
+                    );
                 }
                 else
                 {
-                    CyberMessageBox.Show($"重設失敗: {message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
+                    CyberMessageBox.Show($"重設失敗: {operationResult.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
@@ -276,26 +267,16 @@ namespace Stackdose.UI.Core.Controls
 
             try
             {
-                var session = SecurityContext.CurrentSession;
-                // ?? 修正：直接使用 CurrentUser
-                var loggedInUser = session.CurrentUser;
-
-                if (loggedInUser == null)
+                // ?? 不能停用自己
+                if (SelectedUser.SamAccountName.Equals(Environment.UserName, StringComparison.OrdinalIgnoreCase))
                 {
-                    CyberMessageBox.Show("找不到當前使用者資訊", "錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    CyberMessageBox.Show("無法停用自己的帳號", "錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                // 不能刪除自己
-                if (SelectedUser.Id == loggedInUser.Id)
-                {
-                    CyberMessageBox.Show("不能停用自己的帳號", "錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                var action = SelectedUser.IsActive ? "停用" : "啟用";
+                var action = SelectedUser.IsEnabled ? "停用" : "啟用";
                 var result = CyberMessageBox.Show(
-                    $"確定要{action}使用者 {SelectedUser.DisplayName} 嗎？",
+                    $"確定要{action}使用者 {SelectedUser.DisplayName} 嗎？\n\n?? 此操作需要管理員權限",
                     $"確認{action}",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
@@ -303,18 +284,27 @@ namespace Stackdose.UI.Core.Controls
                 if (result != MessageBoxResult.Yes)
                     return;
 
-                var (success, message) = SelectedUser.IsActive
-                    ? await _userService.SoftDeleteUserAsync(SelectedUser.Id, loggedInUser.Id)
-                    : await _userService.ActivateUserAsync(SelectedUser.Id, loggedInUser.Id);
+                // ?? 呼叫 Windows AD API
+                var operationResult = await System.Threading.Tasks.Task.Run(() => 
+                    _windowsAccountService.UpdateUserStatus(SelectedUser.SamAccountName, !SelectedUser.IsEnabled));
 
-                if (success)
+                if (operationResult.Success)
                 {
                     await LoadUsersAsync();
                     CyberMessageBox.Show($"{action}成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    
+                    ComplianceContext.LogAuditTrail(
+                        "Windows 使用者",
+                        SelectedUser.SamAccountName,
+                        SelectedUser.IsEnabled ? "啟用" : "停用",
+                        !SelectedUser.IsEnabled ? "啟用" : "停用",
+                        $"由 {SecurityContext.CurrentSession.CurrentUserName} 執行",
+                        showInUi: true
+                    );
                 }
                 else
                 {
-                    CyberMessageBox.Show($"{action}失敗: {message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
+                    CyberMessageBox.Show($"{action}失敗: {operationResult.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
@@ -329,16 +319,18 @@ namespace Stackdose.UI.Core.Controls
 
             try
             {
-                var logs = await _userService.GetAuditLogsAsync(SelectedUser.Id, 50);
+                // ?? 顯示使用者群組資訊
+                var groups = SelectedUser.Groups;
                 
-                var message = logs.Count > 0
-                    ? string.Join("\n", logs.Take(10).Select(l =>
-                        $"[{l.Timestamp:yyyy-MM-dd HH:mm}] {l.OperatorUserName} - {l.Action}: {l.Details}"))
-                    : "無稽核記錄";
+                var message = groups.Count > 0
+                    ? $"使用者: {SelectedUser.DisplayName} ({SelectedUser.SamAccountName})\n\n" +
+                      $"狀態: {(SelectedUser.IsEnabled ? "啟用" : "停用")}\n\n" +
+                      $"所屬群組:\n" + string.Join("\n", groups.Select(g => $"  ? {g}"))
+                    : $"使用者: {SelectedUser.DisplayName}\n\n無群組資訊";
 
                 CyberMessageBox.Show(
-                    $"使用者 {SelectedUser.DisplayName} 的稽核記錄 (最近 10 筆):\n\n{message}",
-                    "稽核記錄",
+                    message,
+                    "使用者資訊",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
@@ -373,8 +365,9 @@ namespace Stackdose.UI.Core.Controls
 
             if (hasSelection && SelectedUser != null)
             {
-                ToggleActiveButton.Content = SelectedUser.IsActive ? "? 停用" : "? 啟用";
-                ToggleActiveButton.Background = SelectedUser.IsActive 
+                // ?? 修正：使用 IsEnabled 屬性
+                ToggleActiveButton.Content = SelectedUser.IsEnabled ? "?? 停用" : "? 啟用";
+                ToggleActiveButton.Background = SelectedUser.IsEnabled 
                     ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(244, 67, 54))
                     : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(76, 175, 80));
             }

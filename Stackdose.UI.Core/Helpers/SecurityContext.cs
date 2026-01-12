@@ -572,16 +572,21 @@ namespace Stackdose.UI.Core.Helpers
 
         #endregion
 
-        #region 資料庫存取 (Placeholder)
+        #region 資料庫存取 (已停用 - 改用純 Windows AD)
 
         /// <summary>
-        /// 從資料庫載入使用者
+        /// 🔥 已停用：從資料庫載入使用者（改用純 Windows AD）
         /// </summary>
+        /// <remarks>
+        /// 此方法僅保留給 QuickLogin() 使用（測試用途）
+        /// 正常登入流程不會使用資料庫，所有使用者資訊來自 Windows AD
+        /// </remarks>
+        [Obsolete("No longer used in production - all user data comes from Windows AD")]
         private static UserAccount? LoadUserFromDatabase(string userId)
         {
             try
             {
-                // 🔥 從真實資料庫讀取
+                // 🔥 從真實資料庫讀取（僅 QuickLogin 測試用）
                 var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "StackDoseData.db");
                 using var conn = new SqliteConnection($"Data Source={dbPath}");
                 conn.Open();
@@ -590,6 +595,14 @@ namespace Stackdose.UI.Core.Helpers
                     "SELECT * FROM Users WHERE UserId = @UserId AND IsActive = 1",
                     new { UserId = userId }
                 );
+                
+                #if DEBUG
+                if (user != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SecurityContext] ⚠️ LoadUserFromDatabase: Found legacy user in DB: {userId}");
+                    System.Diagnostics.Debug.WriteLine($"[SecurityContext] Note: Normal login uses Windows AD, not database");
+                }
+                #endif
                 
                 return user;
             }
@@ -604,11 +617,11 @@ namespace Stackdose.UI.Core.Helpers
                     {
                         Id = 1,
                         UserId = "admin01",
-                        DisplayName = "系統管理員",
+                        DisplayName = "系統管理員 (Fallback)",
                         PasswordHash = HashPassword("admin01admin01"),
                         AccessLevel = AccessLevel.Admin,
                         IsActive = true,
-                        CreatedBy = "System"
+                        CreatedBy = "System (Fallback)"
                     }
                 };
 

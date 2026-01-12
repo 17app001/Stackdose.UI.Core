@@ -7,6 +7,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <PlatformTarget>x64</PlatformTarget>
+    <!-- 🔥 啟用 app.manifest，要求管理員權限 -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,6 +40,11 @@
     <Content Include="Resources\Sensors.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <!-- 🔥 確保 app.manifest 被包含 -->
+  <ItemGroup>
+    <None Include="app.manifest" />
   </ItemGroup>
 
   <ItemGroup>

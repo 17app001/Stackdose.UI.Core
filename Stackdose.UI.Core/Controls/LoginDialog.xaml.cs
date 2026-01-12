@@ -17,11 +17,11 @@ namespace Stackdose.UI.Core.Controls
             InitializeComponent();
 
             #if DEBUG
-            // ?? DEBUG 模式：自動填入 admin001（測試用）
-            System.Diagnostics.Debug.WriteLine("[LoginDialog] DEBUG Mode: Auto-filling admin001 credentials");
-            UserIdTextBox.Text = "admin001";
+            // ?? DEBUG 模式：自動填入 admin01（測試用）
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] DEBUG Mode: Auto-filling admin01 credentials");
+            UserIdTextBox.Text = "admin01";
             // 注意：密碼不預填，需手動輸入（安全考量）
-            System.Diagnostics.Debug.WriteLine("[LoginDialog] Tip: Use Windows password 'admin001admin001' to login");
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] Tip: Use Windows password 'admin01admin01' to login");
             #else
             // ?? RELEASE 模式：自動填入當前 Windows 使用者名稱
             try
@@ -55,7 +55,7 @@ namespace Stackdose.UI.Core.Controls
             this.Loaded += (s, e) =>
             {
                 #if DEBUG
-                System.Diagnostics.Debug.WriteLine("[LoginDialog] Window loaded, focusing PasswordBox (username pre-filled: admin001)");
+                System.Diagnostics.Debug.WriteLine("[LoginDialog] Window loaded, focusing PasswordBox (username pre-filled: admin01)");
                 #else
                 System.Diagnostics.Debug.WriteLine("[LoginDialog] Window loaded, focusing PasswordBox");
                 #endif

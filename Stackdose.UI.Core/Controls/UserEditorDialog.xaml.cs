@@ -11,39 +11,52 @@ namespace Stackdose.UI.Core.Controls
     /// </summary>
     public partial class UserEditorDialog : Window
     {
-        private readonly IUserManagementService _userService;
-        private readonly int _operatorUserId;
+        private readonly WindowsAccountService _windowsAccountService;
         private readonly AccessLevel _operatorAccessLevel;
         private readonly UserAccount? _editingUser;
         private readonly bool _isEditMode;
 
         public UserEditorDialog(
-            IUserManagementService userService,
-            int operatorUserId,
-            AccessLevel operatorAccessLevel,
-            UserAccount? editingUser = null)
+            WindowsAccountService windowsAccountService,
+            AccessLevel operatorAccessLevel)
         {
             InitializeComponent();
 
-            _userService = userService;
-            _operatorUserId = operatorUserId;
+            _windowsAccountService = windowsAccountService;
             _operatorAccessLevel = operatorAccessLevel;
-            _editingUser = editingUser;
-            _isEditMode = editingUser != null;
 
             InitializeForm();
         }
 
         private void InitializeForm()
         {
-            // 設定可選的權限等級
-            var availableLevels = Enum.GetValues(typeof(AccessLevel))
-                .Cast<AccessLevel>()
-                .Where(level => _userService.CanManageUser(_operatorAccessLevel, level))
-                .ToList();
+            // ?? 設定可選擇的群組
+            var availableGroups = new List<string>();
 
-            AccessLevelComboBox.ItemsSource = availableLevels;
+            // 根據當前使用者權限決定可建立的群組
+            if (_operatorAccessLevel == AccessLevel.Admin)
+            {
+                availableGroups.Add("App_Operators");
+                availableGroups.Add("App_Instructors");
+                availableGroups.Add("App_Supervisors");
+                availableGroups.Add("App_Admins");
+            }
+            else if (_operatorAccessLevel == AccessLevel.Supervisor)
+            {
+                availableGroups.Add("App_Operators");
+                availableGroups.Add("App_Instructors");
+                availableGroups.Add("App_Supervisors");
+            }
+            else
+            {
+                availableGroups.Add("App_Operators");
+            }
+
+            AccessLevelComboBox.ItemsSource = availableGroups;
             AccessLevelComboBox.SelectedIndex = 0;
+
+            TitleText.Text = "新增 Windows 使用者";
+            UserIdTextBox.IsReadOnly = false;
 
             // 編輯模式
             if (_isEditMode && _editingUser != null)
@@ -75,15 +88,15 @@ namespace Stackdose.UI.Core.Controls
             {
                 var userId = UserIdTextBox.Text.Trim();
                 var displayName = DisplayNameTextBox.Text.Trim();
-                var accessLevel = (AccessLevel)(AccessLevelComboBox.SelectedItem ?? AccessLevel.Operator);
-                var email = EmailTextBox.Text.Trim();
-                var department = DepartmentTextBox.Text.Trim();
-                var remarks = RemarksTextBox.Text.Trim();
+                var selectedGroup = AccessLevelComboBox.SelectedItem?.ToString() ?? "App_Operators";
+                var password = PasswordBox.Password;
+                var confirmPassword = ConfirmPasswordBox.Password;
+                var description = RemarksTextBox.Text.Trim();
 
-                // 驗證必填欄位
+                // ?? 驗證必填欄位
                 if (string.IsNullOrWhiteSpace(userId))
                 {
-                    CyberMessageBox.Show("請輸入使用者 ID", "驗證錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    CyberMessageBox.Show("請輸入使用者名稱", "驗證錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -93,83 +106,47 @@ namespace Stackdose.UI.Core.Controls
                     return;
                 }
 
-                // 新增模式
-                if (!_isEditMode)
+                if (string.IsNullOrWhiteSpace(password))
                 {
-                    var password = PasswordBox.Password;
-                    var confirmPassword = ConfirmPasswordBox.Password;
-                    
-                    if (string.IsNullOrWhiteSpace(password))
-                    {
-                        CyberMessageBox.Show("請輸入密碼", "驗證錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        PasswordBox.Focus();
-                        return;
-                    }
-
-                    if (password.Length < 8)
-                    {
-                        CyberMessageBox.Show("密碼長度至少需要 8 個字元", "驗證錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        PasswordBox.Focus();
-                        return;
-                    }
-
-                    // ?? 新增：密碼確認驗證
-                    if (string.IsNullOrWhiteSpace(confirmPassword))
-                    {
-                        CyberMessageBox.Show("請確認您的密碼", "驗證錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        ConfirmPasswordBox.Focus();
-                        return;
-                    }
-
-                    if (password != confirmPassword)
-                    {
-                        CyberMessageBox.Show("密碼不相符！\n請確保兩個密碼欄位的內容完全相同。", "密碼不一致", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        ConfirmPasswordBox.Clear();
-                        PasswordBox.Focus();
-                        return;
-                    }
-
-                    var (success, message, user) = await _userService.CreateUserAsync(
-                        userId,
-                        displayName,
-                        password,
-                        accessLevel,
-                        _operatorUserId,
-                        string.IsNullOrWhiteSpace(email) ? null : email,
-                        string.IsNullOrWhiteSpace(department) ? null : department,
-                        string.IsNullOrWhiteSpace(remarks) ? null : remarks);
-
-                    if (success)
-                    {
-                        DialogResult = true;
-                        Close();
-                    }
-                    else
-                    {
-                        CyberMessageBox.Show($"創建使用者失敗: {message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
+                    CyberMessageBox.Show("請輸入密碼", "驗證錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    PasswordBox.Focus();
+                    return;
                 }
-                // 編輯模式
-                else if (_editingUser != null)
-                {
-                    var (success, message) = await _userService.UpdateUserAsync(
-                        _editingUser.Id,
-                        _operatorUserId,
-                        displayName,
-                        string.IsNullOrWhiteSpace(email) ? null : email,
-                        string.IsNullOrWhiteSpace(department) ? null : department,
-                        string.IsNullOrWhiteSpace(remarks) ? null : remarks,
-                        accessLevel);
 
-                    if (success)
-                    {
-                        DialogResult = true;
-                        Close();
-                    }
-                    else
-                    {
-                        CyberMessageBox.Show($"更新使用者失敗: {message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
+                if (password.Length < 8)
+                {
+                    CyberMessageBox.Show("密碼長度至少需要 8 個字元", "驗證錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    PasswordBox.Focus();
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(confirmPassword))
+                {
+                    CyberMessageBox.Show("請確認您的密碼", "驗證錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ConfirmPasswordBox.Focus();
+                    return;
+                }
+
+                if (password != confirmPassword)
+                {
+                    CyberMessageBox.Show("密碼不符合！\n請確保兩次密碼輸入的內容完全相同。", "密碼不一致", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ConfirmPasswordBox.Clear();
+                    PasswordBox.Focus();
+                    return;
+                }
+
+                // ?? 呼叫 Windows AD API 建立使用者
+                var result = await System.Threading.Tasks.Task.Run(() => 
+                    _windowsAccountService.CreateUser(userId, password, displayName, selectedGroup, description));
+
+                if (result.Success)
+                {
+                    DialogResult = true;
+                    Close();
+                }
+                else
+                {
+                    CyberMessageBox.Show($"建立使用者失敗: {result.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)

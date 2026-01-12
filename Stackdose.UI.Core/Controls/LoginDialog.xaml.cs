@@ -17,10 +17,11 @@ namespace Stackdose.UI.Core.Controls
             InitializeComponent();
 
             #if DEBUG
-            // ?? DEBUG 模式：自動填入 Admin/admin123
-            System.Diagnostics.Debug.WriteLine("[LoginDialog] DEBUG Mode: Auto-filling Admin credentials");
-            UserIdTextBox.Text = "Admin";
-            PasswordBox.Password = "admin123";
+            // ?? DEBUG 模式：自動填入 admin001（測試用）
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] DEBUG Mode: Auto-filling admin001 credentials");
+            UserIdTextBox.Text = "admin001";
+            // 注意：密碼不預填，需手動輸入（安全考量）
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] Tip: Use Windows password 'admin001admin001' to login");
             #else
             // ?? RELEASE 模式：自動填入當前 Windows 使用者名稱
             try
@@ -33,9 +34,7 @@ namespace Stackdose.UI.Core.Controls
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[LoginDialog] Failed to get Windows user: {ex.Message}");
-                
-                // 如果無法取得 Windows 使用者，預設為 Admin
-                UserIdTextBox.Text = "Admin";
+                UserIdTextBox.Text = Environment.UserName; // Fallback
             }
             #endif
 
@@ -52,11 +51,11 @@ namespace Stackdose.UI.Core.Controls
                 }
             };
 
-            // ?? 自動 focus 到密碼框（即使已預填，也讓使用者可以直接按 Enter 登入）
+            // ?? 自動 focus 到密碼欄（因為帳號已預填）
             this.Loaded += (s, e) =>
             {
                 #if DEBUG
-                System.Diagnostics.Debug.WriteLine("[LoginDialog] Window loaded, focusing PasswordBox (credentials pre-filled, press Enter to login)");
+                System.Diagnostics.Debug.WriteLine("[LoginDialog] Window loaded, focusing PasswordBox (username pre-filled: admin001)");
                 #else
                 System.Diagnostics.Debug.WriteLine("[LoginDialog] Window loaded, focusing PasswordBox");
                 #endif
@@ -147,8 +146,17 @@ namespace Stackdose.UI.Core.Controls
                     System.Diagnostics.Debug.WriteLine("[LoginDialog] Login failed");
                     #endif
 
-                    // 登入失敗，顯示詳細的錯誤訊息
-                    ShowError($"登入失敗 Login Failed\n帳號: {userId}\n\n可能原因:\n? Windows 密碼錯誤 (Wrong Windows password)\n? 帳號未在系統中註冊 (User not registered)\n? 帳號已停用 (Account inactive)");
+                    // ?? 登入失敗，顯示詳細的錯誤訊息
+                    ShowError($"登入失敗 Login Failed\n" +
+                             $"帳號: {userId}\n\n" +
+                             $"可能原因:\n" +
+                             $"? Windows 密碼錯誤\n" +
+                             $"? 不屬於任何 App_ 群組\n" +
+                             $"   (需要: App_Operators, App_Instructors, App_Supervisors, 或 App_Admins)\n\n" +
+                             $"請確認:\n" +
+                             $"1. 使用 Windows 本機帳號密碼\n" +
+                             $"2. 帳號已加入上述群組之一\n" +
+                             $"3. 檢查 login_debug.log 了解詳情");
                     PasswordBox.Clear();
                     PasswordBox.Focus();
                 }

@@ -22,7 +22,12 @@ namespace Stackdose.UI.Core.Services
             var path = dbPath ?? System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "StackDoseData.db");
             _connectionString = $"Data Source={path}";
             InitializeDatabase();
-            EnsureDefaultAdminExists(); // ?? 確保預設 Admin 存在
+            // ?? 移除：不再需要預設 Admin 帳號（改用 Windows AD）
+            // EnsureDefaultAdminExists();
+            
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine("[UserManagementService] Initialized (Pure Windows AD Mode - No default admin needed)");
+            #endif
         }
 
         #region Database Initialization
@@ -75,55 +80,14 @@ namespace Stackdose.UI.Core.Services
         }
 
         /// <summary>
-        /// 確保預設 Admin 帳號存在
+        /// ?? 已停用：不再需要預設 Admin 帳號（改用 Windows AD 登入）
         /// </summary>
+        [Obsolete("No longer needed - using pure Windows AD authentication")]
         private void EnsureDefaultAdminExists()
         {
-            try
-            {
-                using var conn = new SqliteConnection(_connectionString);
-                conn.Open();
-
-                // 檢查是否已有 Admin 帳號
-                var adminCount = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM Users WHERE AccessLevel = @Level",
-                    new { Level = (int)AccessLevel.Admin });
-
-                if (adminCount == 0)
-                {
-                    System.Diagnostics.Debug.WriteLine("[UserManagementService] No Admin found, creating default Admin...");
-
-                    // 建立預設 Admin 帳號
-                    var (hash, salt) = HashPassword("admin123"); // ?? 預設密碼
-
-                    var sql = @"
-                        INSERT INTO Users (UserId, DisplayName, PasswordHash, Salt, AccessLevel, IsActive, 
-                                          CreatedAt, CreatedByUserId, CreatedBy, Email, Department, Remarks)
-                        VALUES (@UserId, @DisplayName, @PasswordHash, @Salt, @AccessLevel, @IsActive, 
-                               @CreatedAt, NULL, @CreatedBy, @Email, @Department, @Remarks)";
-
-                    conn.Execute(sql, new
-                    {
-                        UserId = "Admin",
-                        DisplayName = "System Administrator",
-                        PasswordHash = hash,
-                        Salt = salt,
-                        AccessLevel = (int)AccessLevel.Admin,
-                        IsActive = 1,
-                        CreatedAt = DateTime.Now,
-                        CreatedBy = "System",
-                        Email = "admin@stackdose.com",
-                        Department = "IT",
-                        Remarks = "Default admin account (Password: admin123)"
-                    });
-
-                    System.Diagnostics.Debug.WriteLine("[UserManagementService] Default Admin created successfully!");
-                    System.Diagnostics.Debug.WriteLine("[UserManagementService] Login: Admin / Password: admin123");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[UserManagementService] EnsureDefaultAdminExists Error: {ex.Message}");
-            }
+            // ?? 此方法已停用，因為改用 Windows AD 驗證
+            // 不再需要在資料庫中建立預設 Admin 帳號
+            System.Diagnostics.Debug.WriteLine("[UserManagementService] EnsureDefaultAdminExists: Skipped (Pure AD Mode)");
         }
 
         #endregion
@@ -805,6 +769,49 @@ namespace Stackdose.UI.Core.Services
                   VALUES (@Timestamp, @OperatorUserId, @OperatorUserName, @Action, 
                          @TargetUserId, @TargetUserName, @Details, @IpAddress)",
                 log);
+        }
+
+        /// <summary>
+        /// ?? 新增：根據 AD 群組自動判斷對應的 AccessLevel
+        /// </summary>
+        /// <param name="userGroups">使用者所屬的 AD 群組清單</param>
+        /// <returns>對應的 AccessLevel</returns>
+        public static AccessLevel DetermineAccessLevelFromAdGroups(List<string> userGroups)
+        {
+            // 將群組名稱轉為小寫以便忽略大小寫差異
+            var groupsLower = userGroups.Select(g => g.ToLower()).ToList();
+
+            // 判斷權限等級（從高到低）
+            // L4: App_Admins
+            if (groupsLower.Contains("app_admins"))
+            {
+                return AccessLevel.Admin;
+            }
+            // L3: App_Supervisors
+            else if (groupsLower.Contains("app_supervisors"))
+            {
+                return AccessLevel.Supervisor;
+            }
+            // L2: App_Instructors
+            else if (groupsLower.Contains("app_instructors"))
+            {
+                return AccessLevel.Operator; // ?? 對應到 Operator（您可以根據需求調整）
+            }
+            // L1: App_Operators
+            else if (groupsLower.Contains("app_operators"))
+            {
+                return AccessLevel.Operator;
+            }
+            // Domain/Local Admins
+            else if (groupsLower.Any(g => g.Contains("domain admins") || g.Contains("enterprise admins") || g.Contains("administrators")))
+            {
+                return AccessLevel.Admin;
+            }
+            // Guest - 預設最低權限
+            else
+            {
+                return AccessLevel.Guest;
+            }
         }
 
         #endregion

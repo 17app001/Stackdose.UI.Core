@@ -101,7 +101,7 @@ namespace Stackdose.UI.Core.Helpers
         #region 登入/登出
 
         /// <summary>
-        /// 使用者登入
+        /// 使用者登入 - 純 Windows AD 驗證（不需要資料庫帳號）
         /// </summary>
         /// <param name="userId">使用者帳號</param>
         /// <param name="password">密碼</param>
@@ -124,11 +124,11 @@ namespace Stackdose.UI.Core.Helpers
             
             WriteLog($"========================================");
             WriteLog($"Login START: {userId}");
+            WriteLog($"Mode: Pure Windows AD (No Database Check)");
             WriteLog($"========================================");
 
-            // 🔥 步驟 1：優先嘗試 AD 驗證（如果啟用）
-            bool adVerified = false;
-            AdUserInfo? adUserInfo = null;
+            // 🔥 步驟 1：Windows AD 驗證（使用完整的 Authenticate 取得群組資訊）
+            AuthenticationResult? adResult = null;
 
             if (EnableAdAuthentication)
             {
@@ -137,84 +137,95 @@ namespace Stackdose.UI.Core.Helpers
                     WriteLog($"AD Authentication enabled (LocalMachine: {UseLocalMachineOnly})");
                     var adStopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-                    adVerified = AdService.ValidateCredentials(userId, password);
+                    // 🔥 呼叫 AD 驗證
+                    adResult = AdService.Authenticate(userId, password);
                     
                     adStopwatch.Stop();
-                    WriteLog($"AD Authentication took {adStopwatch.ElapsedMilliseconds}ms - Result: {adVerified}");
+                    WriteLog($"AD Authentication took {adStopwatch.ElapsedMilliseconds}ms - Result: {adResult.IsSuccess}");
                     
-                    if (adVerified)
+                    if (adResult.IsSuccess)
                     {
-                        adUserInfo = AdService.GetUserInfo(userId);
-                        
-                        WriteLog($"AD Authentication SUCCESS: {userId}");
-                        WriteLog($"AD DisplayName: {adUserInfo?.DisplayName}");
+                        WriteLog($"✅ AD Authentication SUCCESS: {userId}");
+                        WriteLog($"   DisplayName: {adResult.DisplayName}");
+                        WriteLog($"   Permission Level: {adResult.PermissionLevel}");
+                        WriteLog($"   Groups: {string.Join(", ", adResult.UserGroups)}");
                         
                         ComplianceContext.LogSystem(
-                            $"[AD] Authentication Success: {userId} (Windows AD)",
+                            $"[AD] Authentication Success: {userId} - Groups: {string.Join(", ", adResult.UserGroups)}",
                             LogLevel.Success,
                             showInUi: true
                         );
                     }
                     else
                     {
-                        WriteLog($"AD Authentication FAILED: {userId}");
+                        WriteLog($"❌ AD Authentication FAILED: {userId}");
+                        WriteLog($"   Error: {adResult.ErrorMessage}");
+                        
+                        ComplianceContext.LogSystem(
+                            $"[AD] Login Failed: {userId} - {adResult.ErrorMessage}",
+                            LogLevel.Warning,
+                            showInUi: true
+                        );
+                        
+                        ComplianceContext.LogAuditTrail(
+                            "User Login",
+                            userId,
+                            "N/A",
+                            "Failed (Invalid Credentials)",
+                            $"Windows AD: {adResult.ErrorMessage}",
+                            showInUi: false
+                        );
+                        
+                        return false;
                     }
                 }
                 catch (Exception ex)
                 {
-                    WriteLog($"AD Authentication Error: {ex.Message}");
+                    WriteLog($"❌ AD Authentication Error: {ex.Message}");
+                    WriteLog($"   Stack: {ex.StackTrace}");
                     
                     ComplianceContext.LogSystem(
                         $"[AD] Authentication Error: {ex.Message}",
-                        LogLevel.Warning,
-                        showInUi: false
-                    );
-                }
-            }
-            else
-            {
-                WriteLog($"AD Authentication disabled");
-            }
-
-            WriteLog($"Loading user from database...");
-            var dbStopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-            // 🔥 步驟 2：從本地資料庫查詢使用者（必須存在，才能取得權限）
-            var user = LoadUserFromDatabase(userId);
-            
-            dbStopwatch.Stop();
-            WriteLog($"Database load took {dbStopwatch.ElapsedMilliseconds}ms - User found: {user != null}");
-            
-            if (user == null)
-            {
-                // 🔥 如果 AD 驗證通過，但本地資料庫沒有該使用者，提示管理員建立
-                if (adVerified && adUserInfo != null)
-                {
-                    WriteLog($"Login Failed: AD verified but user not in database");
-                    
-                    ComplianceContext.LogSystem(
-                        $"[AD] Login Failed: User '{userId}' verified by AD but not found in local database. Please contact administrator to create account.",
-                        LogLevel.Warning,
+                        LogLevel.Error,
                         showInUi: true
-                    );
-                    
-                    ComplianceContext.LogAuditTrail(
-                        "User Login",
-                        userId,
-                        "N/A",
-                        "Failed (Not in local database)",
-                        "AD verified but account not created",
-                        showInUi: false
                     );
                     
                     return false;
                 }
-                
-                // 原有邏輯：使用者不存在
-                WriteLog($"Login Failed: User not found");
+            }
+            else
+            {
+                WriteLog($"❌ AD Authentication is DISABLED");
+                ComplianceContext.LogSystem(
+                    "[AD] Authentication is disabled - cannot login",
+                    LogLevel.Error,
+                    showInUi: true
+                );
+                return false;
+            }
+
+            // 🔥 步驟 2：檢查 AD 群組（必須屬於 App_ 群組之一）
+            if (adResult == null || !adResult.IsSuccess)
+            {
+                WriteLog($"❌ Login Failed: AD verification failed");
+                return false;
+            }
+
+            // 🔥 判斷 AccessLevel
+            var accessLevel = UserManagementService.DetermineAccessLevelFromAdGroups(adResult.UserGroups);
+            
+            WriteLog($"✅ AccessLevel determined: {accessLevel}");
+            WriteLog($"   Based on groups: {string.Join(", ", adResult.UserGroups)}");
+
+            // 🔥 檢查是否屬於任何 App_ 群組
+            if (accessLevel == AccessLevel.Guest)
+            {
+                WriteLog($"❌ Login Failed: User is not in any App_ group");
+                WriteLog($"   User groups: {string.Join(", ", adResult.UserGroups)}");
+                WriteLog($"   Required: App_Operators, App_Instructors, App_Supervisors, or App_Admins");
                 
                 ComplianceContext.LogSystem(
-                    $"Login Failed: User '{userId}' not found",
+                    $"[AD] Login Failed: User '{userId}' is not in any App_ group. Current groups: {string.Join(", ", adResult.UserGroups)}",
                     LogLevel.Warning,
                     showInUi: true
                 );
@@ -223,91 +234,40 @@ namespace Stackdose.UI.Core.Helpers
                     "User Login",
                     userId,
                     "N/A",
-                    "Failed (User not found)",
-                    "Account does not exist",
+                    "Failed (No App_ Group)",
+                    $"User is not in App_Operators, App_Instructors, App_Supervisors, or App_Admins. Groups: {string.Join(", ", adResult.UserGroups)}",
                     showInUi: false
                 );
-                return false;
-            }
-            
-            if (!user.IsActive)
-            {
-                WriteLog($"Login Failed: User inactive");
                 
-                ComplianceContext.LogSystem(
-                    $"Login Failed: User '{userId}' is inactive",
-                    LogLevel.Warning,
-                    showInUi: true
-                );
-                
-                ComplianceContext.LogAuditTrail(
-                    "User Login",
-                    userId,
-                    "N/A",
-                    "Failed (Account inactive)",
-                    "Account has been disabled",
-                    showInUi: false
-                );
                 return false;
             }
 
-            // 🔥 步驟 3：驗證密碼
-            bool passwordValid = false;
-            string authMethod = "Unknown";
-
-            WriteLog($"Verifying password...");
-            var pwdStopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-            if (adVerified)
+            // 🔥 步驟 3：建立 UserAccount 物件（從 AD 資訊）
+            var user = new UserAccount
             {
-                // AD 驗證成功，直接通過
-                passwordValid = true;
-                authMethod = "Windows AD";
-                
-                // 🔥 更新本地使用者資訊（從 AD 同步）
-                if (adUserInfo != null)
-                {
-                    user.DisplayName = adUserInfo.DisplayName;
-                    user.Email = adUserInfo.Email;
-                }
-                
-                WriteLog($"Password validated via AD");
-            }
-            else
-            {
-                // 使用本地密碼驗證
-                passwordValid = VerifyPassword(password, user.PasswordHash, user.Salt);
-                authMethod = "Local Database";
-                
-                pwdStopwatch.Stop();
-                WriteLog($"Password verification took {pwdStopwatch.ElapsedMilliseconds}ms - Result: {passwordValid}");
-                
-                if (!passwordValid)
-                {
-                    WriteLog($"Login Failed: Invalid password");
-                    
-                    ComplianceContext.LogSystem(
-                        $"Login Failed: Invalid password for user '{userId}'",
-                        LogLevel.Warning,
-                        showInUi: true
-                    );
-                    
-                    ComplianceContext.LogAuditTrail(
-                        "User Login",
-                        userId,
-                        "N/A",
-                        "Failed (Wrong password)",
-                        "Invalid password",
-                        showInUi: false
-                    );
-                    return false;
-                }
-            }
+                Id = adResult.UserGroups.GetHashCode(), // 🔥 使用 HashCode 作為臨時 ID
+                UserId = userId,
+                DisplayName = adResult.DisplayName,
+                Email = adResult.Email,
+                AccessLevel = accessLevel,
+                IsActive = true,
+                CreatedBy = "Windows AD",
+                CreatedAt = DateTime.Now,
+                Department = string.Join(", ", adResult.UserGroups),
+                Remarks = $"Windows AD User - Groups: {string.Join(", ", adResult.UserGroups)}"
+            };
+
+            WriteLog($"✅ UserAccount created from AD:");
+            WriteLog($"   UserId: {user.UserId}");
+            WriteLog($"   DisplayName: {user.DisplayName}");
+            WriteLog($"   AccessLevel: {user.AccessLevel}");
+            WriteLog($"   Email: {user.Email}");
 
             stopwatch.Stop();
             WriteLog($"========================================");
-            WriteLog($"Login COMPLETED in {stopwatch.ElapsedMilliseconds}ms");
-            WriteLog($"Auth Method: {authMethod}");
+            WriteLog($"✅ Login COMPLETED in {stopwatch.ElapsedMilliseconds}ms");
+            WriteLog($"   Auth Method: Windows AD");
+            WriteLog($"   AccessLevel: {user.AccessLevel}");
             WriteLog($"========================================");
 
             // 🔥 步驟 4：登入成功
@@ -322,12 +282,12 @@ namespace Stackdose.UI.Core.Helpers
                 userId,
                 "Logged Out",
                 $"Logged In (Level {(int)user.AccessLevel} - {user.AccessLevel})",
-                $"Login from {Environment.MachineName} via {authMethod}",
+                $"Login from {Environment.MachineName} via Windows AD (Groups: {string.Join(", ", adResult.UserGroups)})",
                 showInUi: true
             );
 
             ComplianceContext.LogSystem(
-                $"[OK] Login Success: {user.DisplayName} ({user.AccessLevel}) via {authMethod}",
+                $"✅ Login Success: {user.DisplayName} ({user.AccessLevel}) via Windows AD",
                 LogLevel.Success,
                 showInUi: true
             );
@@ -341,11 +301,6 @@ namespace Stackdose.UI.Core.Helpers
             {
                 StartAutoLogoutTimer();
             }
-
-            #if DEBUG
-            stopwatch.Stop();
-            System.Diagnostics.Debug.WriteLine($"[SecurityContext] Login END: {userId} - Duration: {stopwatch.ElapsedMilliseconds}ms");
-            #endif
 
             return true;
         }
@@ -362,17 +317,17 @@ namespace Stackdose.UI.Core.Helpers
             switch (level)
             {
                 case AccessLevel.Admin:
-                    // 嘗試從資料庫載入 Admin
-                    user = LoadUserFromDatabase("Admin");
+                    // 🔥 嘗試從資料庫載入 admin01（改為新預設帳號）
+                    user = LoadUserFromDatabase("admin01");
                     if (user == null)
                     {
-                        System.Diagnostics.Debug.WriteLine("[SecurityContext] QuickLogin: Admin not found in database, creating temporary user");
+                        System.Diagnostics.Debug.WriteLine("[SecurityContext] QuickLogin: admin01 not found in database, creating temporary user");
                         user = new UserAccount
                         {
                             Id = 1,
-                            UserId = "Admin",
+                            UserId = "admin01",
                             DisplayName = "系統管理員 (Admin)",
-                            PasswordHash = HashPassword("admin123"),
+                            PasswordHash = HashPassword("admin01admin01"),
                             AccessLevel = AccessLevel.Admin,
                             IsActive = true,
                             CreatedBy = "System",
@@ -642,15 +597,15 @@ namespace Stackdose.UI.Core.Helpers
             {
                 System.Diagnostics.Debug.WriteLine($"[SecurityContext] LoadUserFromDatabase Error: {ex.Message}");
                 
-                // 🔥 Fallback 到內建帳號
+                // 🔥 Fallback 到內建帳號（改為 admin01 / admin01admin01）
                 var defaultAccounts = new Dictionary<string, UserAccount>
                 {
-                    ["Admin"] = new UserAccount
+                    ["admin01"] = new UserAccount
                     {
                         Id = 1,
-                        UserId = "Admin",
+                        UserId = "admin01",
                         DisplayName = "系統管理員",
-                        PasswordHash = HashPassword("admin123"),
+                        PasswordHash = HashPassword("admin01admin01"),
                         AccessLevel = AccessLevel.Admin,
                         IsActive = true,
                         CreatedBy = "System"

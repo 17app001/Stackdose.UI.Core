@@ -1,0 +1,978 @@
+<Window x:Class="WpfApp1.Views.HomePage"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Stackdose Control System - Home"
+        Height="900" Width="1600"
+        WindowStyle="None"
+        Background="#1a1a2e">
+
+    <!-- 整體 Grid 布局：Header, Content, Footer -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <!-- Header 區域 -->
+            <RowDefinition Height="60"/>
+            <!-- 主內容區域 -->
+            <RowDefinition Height="*"/>
+            <!-- Bottom Bar 區域 -->
+            <RowDefinition Height="35"/>
+        </Grid.RowDefinitions>
+
+        <!-- ==================== -->
+        <!-- Header 區域（類似 CyberFrame） -->
+        <!-- ==================== -->
+        <Border Grid.Row="0" 
+                Background="#16213e" 
+                BorderBrush="#00d4ff" 
+                BorderThickness="0,0,0,2">
+            <Grid Margin="15,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Logo 和標題 -->
+                <StackPanel Grid.Column="0" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center">
+                    <!-- Logo 圖示 -->
+                    <Border Width="38" Height="38" 
+                            Background="#00d4ff" 
+                            CornerRadius="19"
+                            Margin="0,0,12,0">
+                        <TextBlock Text="S" 
+                                   FontSize="22" 
+                                   FontWeight="Bold"
+                                   Foreground="#16213e"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+
+                    <!-- 系統標題 -->
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="STACKDOSE 3D PRINTING SYSTEM" 
+                                   FontSize="16" 
+                                   FontWeight="Bold"
+                                   Foreground="#00d4ff"/>
+                        <TextBlock Text="3D 列印藥錠智慧製程系統" 
+                                   FontSize="10" 
+                                   Foreground="#7f8c8d"
+                                   Margin="0,1,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- 中間 PLC 連線狀態 -->
+                <Border Grid.Column="1"
+                        Background="#16a085" 
+                        CornerRadius="8" 
+                        Padding="10,5"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="8" Height="8" 
+                                 Fill="#1abc9c" 
+                                 Margin="0,0,6,0"/>
+                        <TextBlock Text="PLC 已連線" 
+                                   Foreground="White" 
+                                   FontSize="11"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 右側使用者資訊 -->
+                <StackPanel Grid.Column="2" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center">
+                    <!-- 使用者頭像 -->
+                    <Border Width="36" Height="36" 
+                            Background="#34495e" 
+                            CornerRadius="18"
+                            Margin="0,0,8,0">
+                        <TextBlock Text="??" 
+                                   FontSize="20"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+
+                    <!-- 使用者資訊 -->
+                    <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+                        <TextBlock Text="Admin" 
+                                   FontSize="13" 
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+                        <TextBlock Text="管理員" 
+                                   FontSize="10" 
+                                   Foreground="#95a5a6"/>
+                    </StackPanel>
+
+                    <!-- 登出按鈕 -->
+                    <Button Content="登出" 
+                            Width="70" 
+                            Height="30"
+                            Background="#e74c3c"
+                            Foreground="White"
+                            BorderThickness="0"
+                            FontSize="11"
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="5"
+                                                    BorderThickness="0">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#c0392b"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ==================== -->
+        <!-- 主內容區域：左側導航 + 右側機台總覽 -->
+        <!-- ==================== -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <!-- 左側功能列表 (1/5) -->
+                <ColumnDefinition Width="1*"/>
+                <!-- 右側機台總覽 (4/5) -->
+                <ColumnDefinition Width="4*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ==================== -->
+            <!-- 左側功能導航列表 -->
+            <!-- ==================== -->
+            <Border Grid.Column="0" 
+                    Background="#0f3460" 
+                    BorderBrush="#00d4ff" 
+                    BorderThickness="0,0,2,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,20,0,0">
+                        <!-- 導航標題 -->
+                        <TextBlock Text="功能選單" 
+                                   FontSize="18" 
+                                   FontWeight="Bold"
+                                   Foreground="#00d4ff"
+                                   Margin="20,0,0,20"/>
+
+                        <!-- 製程管理 -->
+                        <Border Background="#16213e" 
+                                Margin="10,5"
+                                CornerRadius="8"
+                                Cursor="Hand">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#1e2a47"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel Margin="15,12">
+                                <TextBlock Text="?? 製程管理" 
+                                           FontSize="16" 
+                                           FontWeight="SemiBold"
+                                           Foreground="White"/>
+                                <TextBlock Text="Process Management" 
+                                           FontSize="10" 
+                                           Foreground="#95a5a6"
+                                           Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Log 檢視 -->
+                        <Border Background="#16213e" 
+                                Margin="10,5"
+                                CornerRadius="8"
+                                Cursor="Hand">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#1e2a47"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel Margin="15,12">
+                                <TextBlock Text="?? Log 檢視" 
+                                           FontSize="16" 
+                                           FontWeight="SemiBold"
+                                           Foreground="White"/>
+                                <TextBlock Text="Log Viewer" 
+                                           FontSize="10" 
+                                           Foreground="#95a5a6"
+                                           Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 使用者管理 -->
+                        <Border Background="#16213e" 
+                                Margin="10,5"
+                                CornerRadius="8"
+                                Cursor="Hand">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#1e2a47"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel Margin="15,12">
+                                <TextBlock Text="?? 使用者管理" 
+                                           FontSize="16" 
+                                           FontWeight="SemiBold"
+                                           Foreground="White"/>
+                                <TextBlock Text="User Management" 
+                                           FontSize="10" 
+                                           Foreground="#95a5a6"
+                                           Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 系統設定 -->
+                        <Border Background="#16213e" 
+                                Margin="10,5"
+                                CornerRadius="8"
+                                Cursor="Hand">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#1e2a47"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel Margin="15,12">
+                                <TextBlock Text="?? 系統設定" 
+                                           FontSize="16" 
+                                           FontWeight="SemiBold"
+                                           Foreground="White"/>
+                                <TextBlock Text="System Settings" 
+                                           FontSize="10" 
+                                           Foreground="#95a5a6"
+                                           Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 分隔線 -->
+                        <Border Height="2" 
+                                Background="#34495e" 
+                                Margin="20,30,20,20"/>
+
+                        <!-- 快速狀態資訊 -->
+                        <TextBlock Text="系統狀態" 
+                                   FontSize="14" 
+                                   FontWeight="Bold"
+                                   Foreground="#95a5a6"
+                                   Margin="20,0,0,15"/>
+
+                        <!-- 當前製程狀態 -->
+                        <Border Background="#16213e" 
+                                Margin="10,5"
+                                CornerRadius="8"
+                                Padding="15,10">
+                            <StackPanel>
+                                <TextBlock Text="當前製程" 
+                                           FontSize="11" 
+                                           Foreground="#95a5a6"/>
+                                <TextBlock Text="待機中" 
+                                           FontSize="14" 
+                                           FontWeight="Bold"
+                                           Foreground="#f39c12"
+                                           Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 今日產量 -->
+                        <Border Background="#16213e" 
+                                Margin="10,5"
+                                CornerRadius="8"
+                                Padding="15,10">
+                            <StackPanel>
+                                <TextBlock Text="今日藥錠產量" 
+                                           FontSize="11" 
+                                           Foreground="#95a5a6"/>
+                                <TextBlock Text="0 錠" 
+                                           FontSize="14" 
+                                           FontWeight="Bold"
+                                           Foreground="#2ecc71"
+                                           Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 警報數量 -->
+                        <Border Background="#16213e" 
+                                Margin="10,5"
+                                CornerRadius="8"
+                                Padding="15,10">
+                            <StackPanel>
+                                <TextBlock Text="警報數量" 
+                                           FontSize="11" 
+                                           Foreground="#95a5a6"/>
+                                <TextBlock Text="0 個" 
+                                           FontSize="14" 
+                                           FontWeight="Bold"
+                                           Foreground="#2ecc71"
+                                           Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- ==================== -->
+            <!-- 右側機台總覽區域 -->
+            <!-- ==================== -->
+            <Border Grid.Column="1" Background="#1a1a2e">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid Margin="30">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 日期資訊 -->
+                        <Border Grid.Row="0"
+                                Background="#16213e"
+                                BorderBrush="#00d4ff"
+                                BorderThickness="2"
+                                CornerRadius="10"
+                                Padding="25,15"
+                                Margin="0,0,0,20">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="當前日期時間" 
+                                           FontSize="12" 
+                                           Foreground="#95a5a6"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,5"/>
+                                <TextBlock Text="2025年01月12日 (日)" 
+                                           FontSize="22" 
+                                           FontWeight="Bold"
+                                           Foreground="#00d4ff"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Text="14:30:25" 
+                                           FontSize="28" 
+                                           FontWeight="Bold"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 機台卡片區域 -->
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 3D列印機 #1 - 就緒狀態 -->
+                            <Border Grid.Column="0"
+                                    Background="#16213e"
+                                    BorderBrush="#2ecc71"
+                                    BorderThickness="2"
+                                    CornerRadius="10"
+                                    Margin="0,0,15,20"
+                                    Padding="20">
+                                <StackPanel>
+                                    <!-- 機台標題 -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                        <TextBlock Text="???" FontSize="20" Margin="0,0,8,0"/>
+                                        <TextBlock Text="3D 列印機 #1" 
+                                                   FontSize="18" 
+                                                   FontWeight="Bold"
+                                                   Foreground="#2ecc71"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Text="Tablet Printer Unit A" 
+                                               FontSize="11" 
+                                               Foreground="#95a5a6"
+                                               Margin="0,0,0,10"/>
+
+                                    <!-- 批號資訊 -->
+                                    <Border Background="#0f3460"
+                                            CornerRadius="8"
+                                            Padding="12,8"
+                                            Margin="0,0,0,15">
+                                        <StackPanel>
+                                            <TextBlock Text="批號 Batch No." 
+                                                       FontSize="10" 
+                                                       Foreground="#95a5a6"
+                                                       Margin="0,0,0,3"/>
+                                            <TextBlock Text="BATCH-2025011201-A" 
+                                                       FontSize="14" 
+                                                       FontWeight="Bold"
+                                                       Foreground="#f39c12"/>
+                                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                                <TextBlock Text="配方: " 
+                                                           FontSize="10" 
+                                                           Foreground="#95a5a6"/>
+                                                <TextBlock Text="Recipe_A_Standard" 
+                                                           FontSize="10" 
+                                                           FontWeight="Bold"
+                                                           Foreground="White"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- 狀態指示器 -->
+                                    <Border Background="#27ae60" 
+                                            CornerRadius="15" 
+                                            Padding="12,6"
+                                            HorizontalAlignment="Left"
+                                            Margin="0,0,0,15">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Ellipse Width="8" Height="8" 
+                                                     Fill="#2ecc71" 
+                                                     Margin="0,0,8,0"/>
+                                            <TextBlock Text="就緒 (Ready)" 
+                                                       Foreground="White" 
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- 機台參數 -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="噴頭溫度" 
+                                                       FontSize="11" 
+                                                       Foreground="#95a5a6"/>
+                                            <TextBlock Text="25.0°C" 
+                                                       FontSize="18" 
+                                                       FontWeight="Bold"
+                                                       Foreground="White"
+                                                       Margin="0,3,0,10"/>
+
+                                            <TextBlock Text="擠出壓力" 
+                                                       FontSize="11" 
+                                                       Foreground="#95a5a6"/>
+                                            <TextBlock Text="0.0 bar" 
+                                                       FontSize="18" 
+                                                       FontWeight="Bold"
+                                                       Foreground="White"
+                                                       Margin="0,3,0,10"/>
+
+                                            <TextBlock Text="Z軸位置" 
+                                                       FontSize="11" 
+                                                       Foreground="#95a5a6"/>
+                                            <TextBlock Text="0.00 mm" 
+                                                       FontSize="18" 
+                                                       FontWeight="Bold"
+                                                       Foreground="White"
+                                                       Margin="0,3,0,0"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="列印速度" 
+                                                       FontSize="11" 
+                                                       Foreground="#95a5a6"/>
+                                            <TextBlock Text="0 mm/s" 
+                                                       FontSize="18" 
+                                                       FontWeight="Bold"
+                                                       Foreground="White"
+                                                       Margin="0,3,0,10"/>
+
+                                            <TextBlock Text="本批產量" 
+                                                       FontSize="11" 
+                                                       Foreground="#95a5a6"/>
+                                            <TextBlock Text="0 錠" 
+                                                       FontSize="18" 
+                                                       FontWeight="Bold"
+                                                       Foreground="White"
+                                                       Margin="0,3,0,10"/>
+
+                                            <TextBlock Text="料倉容量" 
+                                                       FontSize="11" 
+                                                       Foreground="#95a5a6"/>
+                                            <TextBlock Text="100%" 
+                                                       FontSize="18" 
+                                                       FontWeight="Bold"
+                                                       Foreground="#2ecc71"
+                                                       Margin="0,3,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 3D列印機 #2 - 閒置狀態 -->
+                            <Border Grid.Column="1"
+                                    Background="#16213e"
+                                    BorderBrush="#7f8c8d"
+                                    BorderThickness="2"
+                                    CornerRadius="10"
+                                    Margin="15,0,0,20"
+                                    Padding="20">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                        <TextBlock Text="???" FontSize="20" Margin="0,0,8,0"/>
+                                        <TextBlock Text="3D 列印機 #2" 
+                                                   FontSize="18" 
+                                                   FontWeight="Bold"
+                                                   Foreground="#95a5a6"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Text="Tablet Printer Unit B" 
+                                               FontSize="11" 
+                                               Foreground="#7f8c8d"
+                                               Margin="0,0,0,10"/>
+
+                                    <!-- 批號資訊 - 無批號 -->
+                                    <Border Background="#0f3460"
+                                            CornerRadius="8"
+                                            Padding="12,8"
+                                            Margin="0,0,0,15">
+                                        <StackPanel>
+                                            <TextBlock Text="批號 Batch No." 
+                                                       FontSize="10" 
+                                                       Foreground="#7f8c8d"
+                                                       Margin="0,0,0,3"/>
+                                            <TextBlock Text="-- 無批號 --" 
+                                                       FontSize="14" 
+                                                       FontWeight="Bold"
+                                                       Foreground="#7f8c8d"/>
+                                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                                <TextBlock Text="配方: " 
+                                                           FontSize="10" 
+                                                           Foreground="#7f8c8d"/>
+                                                <TextBlock Text="未載入" 
+                                                           FontSize="10" 
+                                                           FontWeight="Bold"
+                                                           Foreground="#7f8c8d"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Background="#5a6c7d" 
+                                            CornerRadius="15" 
+                                            Padding="12,6"
+                                            HorizontalAlignment="Left"
+                                            Margin="0,0,0,15">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Ellipse Width="8" Height="8" 
+                                                     Fill="#95a5a6" 
+                                                     Margin="0,0,8,0"/>
+                                            <TextBlock Text="閒置 (Idle)" 
+                                                       Foreground="White" 
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="噴頭溫度" 
+                                                       FontSize="11" 
+                                                       Foreground="#7f8c8d"/>
+                                            <TextBlock Text="--°C" 
+                                                       FontSize="18" 
+                                                       FontWeight="Bold"
+                                                       Foreground="#7f8c8d"
+                                                       Margin="0,3,0,10"/>
+
+                                            <TextBlock Text="擠出壓力" 
+                                                       FontSize="11" 
+                                                       Foreground="#7f8c8d"/>
+                                            <TextBlock Text="-- bar" 
+                                                       FontSize="18" 
+                                                       FontWeight="Bold"
+                                                       Foreground="#7f8c8d"
+                                                       Margin="0,3,0,10"/>
+
+                                            <TextBlock Text="Z軸位置" 
+                                                       FontSize="11" 
+                                                       Foreground="#7f8c8d"/>
+                                            <TextBlock Text="-- mm" 
+                                                       FontSize="18" 
+                                                       FontWeight="Bold"
+                                                       Foreground="#7f8c8d"
+                                                       Margin="0,3,0,0"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="列印速度" 
+                                                       FontSize="11" 
+                                                       Foreground="#7f8c8d"/>
+                                            <TextBlock Text="-- mm/s" 
+                                                       FontSize="18" 
+                                                       FontWeight="Bold"
+                                                       Foreground="#7f8c8d"
+                                                       Margin="0,3,0,10"/>
+
+                                            <TextBlock Text="本批產量" 
+                                                       FontSize="11" 
+                                                       Foreground="#7f8c8d"/>
+                                            <TextBlock Text="-- 錠" 
+                                                       FontSize="18" 
+                                                       FontWeight="Bold"
+                                                       Foreground="#7f8c8d"
+                                                       Margin="0,3,0,10"/>
+
+                                            <TextBlock Text="料倉容量" 
+                                                       FontSize="11" 
+                                                       Foreground="#7f8c8d"/>
+                                            <TextBlock Text="--" 
+                                                       FontSize="18" 
+                                                       FontWeight="Bold"
+                                                       Foreground="#7f8c8d"
+                                                       Margin="0,3,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- 系統初始化 Log -->
+                        <Border Grid.Row="2"
+                                Background="#16213e"
+                                BorderBrush="#7f8c8d"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="20">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Log 標題 -->
+                                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                                    <TextBlock Text="??" FontSize="18" Margin="0,0,8,0"/>
+                                    <TextBlock Text="系統初始化日誌" 
+                                               FontSize="18" 
+                                               FontWeight="Bold"
+                                               Foreground="White"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Text="System Initialization Log" 
+                                               FontSize="11" 
+                                               Foreground="#95a5a6"
+                                               VerticalAlignment="Bottom"
+                                               Margin="10,0,0,2"/>
+                                </StackPanel>
+
+                                <!-- Log 內容區域 -->
+                                <Border Grid.Row="1"
+                                        Background="#0f3460"
+                                        CornerRadius="8"
+                                        BorderBrush="#34495e"
+                                        BorderThickness="1">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                                                  MaxHeight="350">
+                                        <StackPanel Margin="15">
+                                            <!-- Log 項目 -->
+                                            <StackPanel Orientation="Horizontal" Margin="0,3">
+                                                <TextBlock Text="[14:25:01]" 
+                                                           FontSize="11" 
+                                                           Foreground="#95a5a6"
+                                                           FontFamily="Consolas"
+                                                           Width="80"/>
+                                                <TextBlock Text="[INFO]" 
+                                                           FontSize="11" 
+                                                           Foreground="#3498db"
+                                                           FontWeight="Bold"
+                                                           Width="60"/>
+                                                <TextBlock Text="系統啟動中..." 
+                                                           FontSize="11" 
+                                                           Foreground="White"
+                                                           FontFamily="Consolas"/>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,3">
+                                                <TextBlock Text="[14:25:02]" 
+                                                           FontSize="11" 
+                                                           Foreground="#95a5a6"
+                                                           FontFamily="Consolas"
+                                                           Width="80"/>
+                                                <TextBlock Text="[SUCCESS]" 
+                                                           FontSize="11" 
+                                                           Foreground="#2ecc71"
+                                                           FontWeight="Bold"
+                                                           Width="60"/>
+                                                <TextBlock Text="資料庫連線成功" 
+                                                           FontSize="11" 
+                                                           Foreground="White"
+                                                           FontFamily="Consolas"/>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,3">
+                                                <TextBlock Text="[14:25:03]" 
+                                                           FontSize="11" 
+                                                           Foreground="#95a5a6"
+                                                           FontFamily="Consolas"
+                                                           Width="80"/>
+                                                <TextBlock Text="[SUCCESS]" 
+                                                           FontSize="11" 
+                                                           Foreground="#2ecc71"
+                                                           FontWeight="Bold"
+                                                           Width="60"/>
+                                                <TextBlock Text="PLC 連線成功 (192.168.1.100)" 
+                                                           FontSize="11" 
+                                                           Foreground="White"
+                                                           FontFamily="Consolas"/>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,3">
+                                                <TextBlock Text="[14:25:04]" 
+                                                           FontSize="11" 
+                                                           Foreground="#95a5a6"
+                                                           FontFamily="Consolas"
+                                                           Width="80"/>
+                                                <TextBlock Text="[INFO]" 
+                                                           FontSize="11" 
+                                                           Foreground="#3498db"
+                                                           FontWeight="Bold"
+                                                           Width="60"/>
+                                                <TextBlock Text="初始化 3D 列印機 #1..." 
+                                                           FontSize="11" 
+                                                           Foreground="White"
+                                                           FontFamily="Consolas"/>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,3">
+                                                <TextBlock Text="[14:25:05]" 
+                                                           FontSize="11" 
+                                                           Foreground="#95a5a6"
+                                                           FontFamily="Consolas"
+                                                           Width="80"/>
+                                                <TextBlock Text="[SUCCESS]" 
+                                                           FontSize="11" 
+                                                           Foreground="#2ecc71"
+                                                           FontWeight="Bold"
+                                                           Width="60"/>
+                                                <TextBlock Text="3D 列印機 #1 就緒 (噴頭溫度: 25.0°C)" 
+                                                           FontSize="11" 
+                                                           Foreground="White"
+                                                           FontFamily="Consolas"/>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,3">
+                                                <TextBlock Text="[14:25:06]" 
+                                                           FontSize="11" 
+                                                           Foreground="#95a5a6"
+                                                           FontFamily="Consolas"
+                                                           Width="80"/>
+                                                <TextBlock Text="[SUCCESS]" 
+                                                           FontSize="11" 
+                                                           Foreground="#2ecc71"
+                                                           FontWeight="Bold"
+                                                           Width="60"/>
+                                                <TextBlock Text="批號產生: BATCH-2025011201-A (機台 #1)" 
+                                                           FontSize="11" 
+                                                           Foreground="White"
+                                                           FontFamily="Consolas"/>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,3">
+                                                <TextBlock Text="[14:25:07]" 
+                                                           FontSize="11" 
+                                                           Foreground="#95a5a6"
+                                                           FontFamily="Consolas"
+                                                           Width="80"/>
+                                                <TextBlock Text="[INFO]" 
+                                                           FontSize="11" 
+                                                           Foreground="#3498db"
+                                                           FontWeight="Bold"
+                                                           Width="60"/>
+                                                <TextBlock Text="初始化 3D 列印機 #2..." 
+                                                           FontSize="11" 
+                                                           Foreground="White"
+                                                           FontFamily="Consolas"/>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,3">
+                                                <TextBlock Text="[14:25:08]" 
+                                                           FontSize="11" 
+                                                           Foreground="#95a5a6"
+                                                           FontFamily="Consolas"
+                                                           Width="80"/>
+                                                <TextBlock Text="[WARNING]" 
+                                                           FontSize="11" 
+                                                           Foreground="#f39c12"
+                                                           FontWeight="Bold"
+                                                           Width="60"/>
+                                                <TextBlock Text="3D 列印機 #2 閒置中，無批號載入" 
+                                                           FontSize="11" 
+                                                           Foreground="White"
+                                                           FontFamily="Consolas"/>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,3">
+                                                <TextBlock Text="[14:25:09]" 
+                                                           FontSize="11" 
+                                                           Foreground="#95a5a6"
+                                                           FontFamily="Consolas"
+                                                           Width="80"/>
+                                                <TextBlock Text="[INFO]" 
+                                                           FontSize="11" 
+                                                           Foreground="#3498db"
+                                                           FontWeight="Bold"
+                                                           Width="60"/>
+                                                <TextBlock Text="載入配方: Recipe_A_Standard (機台 #1)" 
+                                                           FontSize="11" 
+                                                           Foreground="White"
+                                                           FontFamily="Consolas"/>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,3">
+                                                <TextBlock Text="[14:25:10]" 
+                                                           FontSize="11" 
+                                                           Foreground="#95a5a6"
+                                                           FontFamily="Consolas"
+                                                           Width="80"/>
+                                                <TextBlock Text="[SUCCESS]" 
+                                                           FontSize="11" 
+                                                           Foreground="#2ecc71"
+                                                           FontWeight="Bold"
+                                                           Width="60"/>
+                                                <TextBlock Text="配方載入完成" 
+                                                           FontSize="11" 
+                                                           Foreground="White"
+                                                           FontFamily="Consolas"/>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,3">
+                                                <TextBlock Text="[14:25:11]" 
+                                                           FontSize="11" 
+                                                           Foreground="#95a5a6"
+                                                           FontFamily="Consolas"
+                                                           Width="80"/>
+                                                <TextBlock Text="[INFO]" 
+                                                           FontSize="11" 
+                                                           Foreground="#3498db"
+                                                           FontWeight="Bold"
+                                                           Width="60"/>
+                                                <TextBlock Text="檢查料倉容量..." 
+                                                           FontSize="11" 
+                                                           Foreground="White"
+                                                           FontFamily="Consolas"/>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,3">
+                                                <TextBlock Text="[14:25:12]" 
+                                                           FontSize="11" 
+                                                           Foreground="#95a5a6"
+                                                           FontFamily="Consolas"
+                                                           Width="80"/>
+                                                <TextBlock Text="[SUCCESS]" 
+                                                           FontSize="11" 
+                                                           Foreground="#2ecc71"
+                                                           FontWeight="Bold"
+                                                           Width="60"/>
+                                                <TextBlock Text="料倉容量充足 (100%)" 
+                                                           FontSize="11" 
+                                                           Foreground="White"
+                                                           FontFamily="Consolas"/>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,3">
+                                                <TextBlock Text="[14:25:13]" 
+                                                           FontSize="11" 
+                                                           Foreground="#95a5a6"
+                                                           FontFamily="Consolas"
+                                                           Width="80"/>
+                                                <TextBlock Text="[SUCCESS]" 
+                                                           FontSize="11" 
+                                                           Foreground="#2ecc71"
+                                                           FontWeight="Bold"
+                                                           Width="60"/>
+                                                <TextBlock Text="系統初始化完成，機台 #1 就緒，機台 #2 閒置" 
+                                                           FontSize="11" 
+                                                           Foreground="#f39c12"
+                                                           FontFamily="Consolas"
+                                                           FontWeight="Bold"/>
+                                            </StackPanel>
+
+                                            <Border Height="1" 
+                                                    Background="#34495e" 
+                                                    Margin="0,10,0,5"/>
+
+                                            <TextBlock Text="? 系統狀態: 機台 #1 就緒可操作 | 機台 #2 閒置中" 
+                                                       FontSize="12" 
+                                                       Foreground="#00d4ff"
+                                                       FontWeight="Bold"
+                                                       HorizontalAlignment="Center"
+                                                       Margin="0,5"/>
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <!-- ==================== -->
+        <!-- Bottom Bar 區域 -->
+        <!-- ==================== -->
+        <Border Grid.Row="2" 
+                Background="#0f3460" 
+                BorderBrush="#00d4ff" 
+                BorderThickness="0,2,0,0">
+            <Grid Margin="15,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 左側版本資訊 -->
+                <StackPanel Grid.Column="0" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center">
+                    <TextBlock Text="Stackdose 3D Printing System" 
+                               FontSize="11" 
+                               Foreground="#7f8c8d"
+                               Margin="0,0,12,0"/>
+                    <TextBlock Text="v2.0.1" 
+                               FontSize="11" 
+                               FontWeight="Bold"
+                               Foreground="#00d4ff"
+                               Margin="0,0,12,0"/>
+                    <TextBlock Text="Build 2025.01.12" 
+                               FontSize="10" 
+                               Foreground="#95a5a6"/>
+                </StackPanel>
+
+                <!-- 右側公司資訊 -->
+                <StackPanel Grid.Column="1" 
+                            Orientation="Horizontal" 
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="? 2025 Stackdose Inc. All Rights Reserved." 
+                               FontSize="10" 
+                               Foreground="#7f8c8d"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

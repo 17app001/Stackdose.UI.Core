@@ -1425,6 +1425,7 @@
                     </Border>
                 </Grid>
             </Border>
+        </Grid>
 
         <!-- ==================== -->
         <!-- Bottom Bar °Ï°ì -->
@@ -1488,6 +1489,5 @@
                 </StackPanel>
             </Grid>
         </Border>
-    </Grid>
     </Grid>
 </Window>

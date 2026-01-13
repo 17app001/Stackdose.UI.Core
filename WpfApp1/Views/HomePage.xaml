@@ -64,22 +64,16 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!-- 中間 PLC 連線狀態 -->
-                <Border Grid.Column="1"
-                        Background="#16a085" 
-                        CornerRadius="8" 
-                        Padding="10,5"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal">
-                        <Ellipse Width="8" Height="8" 
-                                 Fill="#1abc9c" 
-                                 Margin="0,0,6,0"/>
-                        <TextBlock Text="PLC 已連線" 
-                                   Foreground="White" 
-                                   FontSize="11"/>
-                    </StackPanel>
-                </Border>
+                <!-- 中間當前頁面名稱 -->
+                <StackPanel Grid.Column="1"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="?? 首頁" 
+                               FontSize="22" 
+                               FontWeight="Bold"
+                               Foreground="White"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
 
                 <!-- 右側使用者資訊 -->
                 <StackPanel Grid.Column="2" 
@@ -168,6 +162,25 @@
                                    FontWeight="Bold"
                                    Foreground="#00d4ff"
                                    Margin="20,0,0,20"/>
+
+                        <!-- 首頁 Overview - 已選取 -->
+                        <Border Background="#1e2a47" 
+                                Margin="10,5"
+                                CornerRadius="8"
+                                BorderBrush="#00d4ff"
+                                BorderThickness="2"
+                                Cursor="Hand">
+                            <StackPanel Margin="15,12">
+                                <TextBlock Text="?? 首頁 Overview" 
+                                           FontSize="16" 
+                                           FontWeight="SemiBold"
+                                           Foreground="#00d4ff"/>
+                                <TextBlock Text="Home Dashboard" 
+                                           FontSize="10" 
+                                           Foreground="#00d4ff"
+                                           Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Border>
 
                         <!-- 製程管理 -->
                         <Border Background="#16213e" 
@@ -693,7 +706,7 @@
                                             <StackPanel Orientation="Horizontal" Margin="0,3">
                                                 <TextBlock Text="[14:25:01]" 
                                                            FontSize="11" 
-                                                           Foreground="#95a5a6"
+                                                           Foreground="#95a5a5"
                                                            FontFamily="Consolas"
                                                            Width="80"/>
                                                 <TextBlock Text="[INFO]" 
@@ -710,7 +723,7 @@
                                             <StackPanel Orientation="Horizontal" Margin="0,3">
                                                 <TextBlock Text="[14:25:02]" 
                                                            FontSize="11" 
-                                                           Foreground="#95a5a6"
+                                                           Foreground="#95a5a5"
                                                            FontFamily="Consolas"
                                                            Width="80"/>
                                                 <TextBlock Text="[SUCCESS]" 
@@ -727,7 +740,7 @@
                                             <StackPanel Orientation="Horizontal" Margin="0,3">
                                                 <TextBlock Text="[14:25:03]" 
                                                            FontSize="11" 
-                                                           Foreground="#95a5a6"
+                                                           Foreground="#95a5a5"
                                                            FontFamily="Consolas"
                                                            Width="80"/>
                                                 <TextBlock Text="[SUCCESS]" 
@@ -744,7 +757,7 @@
                                             <StackPanel Orientation="Horizontal" Margin="0,3">
                                                 <TextBlock Text="[14:25:04]" 
                                                            FontSize="11" 
-                                                           Foreground="#95a5a6"
+                                                           Foreground="#95a5a5"
                                                            FontFamily="Consolas"
                                                            Width="80"/>
                                                 <TextBlock Text="[INFO]" 
@@ -761,7 +774,7 @@
                                             <StackPanel Orientation="Horizontal" Margin="0,3">
                                                 <TextBlock Text="[14:25:05]" 
                                                            FontSize="11" 
-                                                           Foreground="#95a5a6"
+                                                           Foreground="#95a5a5"
                                                            FontFamily="Consolas"
                                                            Width="80"/>
                                                 <TextBlock Text="[SUCCESS]" 
@@ -778,7 +791,7 @@
                                             <StackPanel Orientation="Horizontal" Margin="0,3">
                                                 <TextBlock Text="[14:25:06]" 
                                                            FontSize="11" 
-                                                           Foreground="#95a5a6"
+                                                           Foreground="#95a5a5"
                                                            FontFamily="Consolas"
                                                            Width="80"/>
                                                 <TextBlock Text="[SUCCESS]" 
@@ -795,7 +808,7 @@
                                             <StackPanel Orientation="Horizontal" Margin="0,3">
                                                 <TextBlock Text="[14:25:07]" 
                                                            FontSize="11" 
-                                                           Foreground="#95a5a6"
+                                                           Foreground="#95a5a5"
                                                            FontFamily="Consolas"
                                                            Width="80"/>
                                                 <TextBlock Text="[INFO]" 
@@ -812,7 +825,7 @@
                                             <StackPanel Orientation="Horizontal" Margin="0,3">
                                                 <TextBlock Text="[14:25:08]" 
                                                            FontSize="11" 
-                                                           Foreground="#95a5a6"
+                                                           Foreground="#95a5a5"
                                                            FontFamily="Consolas"
                                                            Width="80"/>
                                                 <TextBlock Text="[WARNING]" 
@@ -829,7 +842,7 @@
                                             <StackPanel Orientation="Horizontal" Margin="0,3">
                                                 <TextBlock Text="[14:25:09]" 
                                                            FontSize="11" 
-                                                           Foreground="#95a5a6"
+                                                           Foreground="#95a5a5"
                                                            FontFamily="Consolas"
                                                            Width="80"/>
                                                 <TextBlock Text="[INFO]" 
@@ -846,7 +859,7 @@
                                             <StackPanel Orientation="Horizontal" Margin="0,3">
                                                 <TextBlock Text="[14:25:10]" 
                                                            FontSize="11" 
-                                                           Foreground="#95a5a6"
+                                                           Foreground="#95a5a5"
                                                            FontFamily="Consolas"
                                                            Width="80"/>
                                                 <TextBlock Text="[SUCCESS]" 
@@ -863,7 +876,7 @@
                                             <StackPanel Orientation="Horizontal" Margin="0,3">
                                                 <TextBlock Text="[14:25:11]" 
                                                            FontSize="11" 
-                                                           Foreground="#95a5a6"
+                                                           Foreground="#95a5a5"
                                                            FontFamily="Consolas"
                                                            Width="80"/>
                                                 <TextBlock Text="[INFO]" 
@@ -880,7 +893,7 @@
                                             <StackPanel Orientation="Horizontal" Margin="0,3">
                                                 <TextBlock Text="[14:25:12]" 
                                                            FontSize="11" 
-                                                           Foreground="#95a5a6"
+                                                           Foreground="#95a5a5"
                                                            FontFamily="Consolas"
                                                            Width="80"/>
                                                 <TextBlock Text="[SUCCESS]" 
@@ -897,7 +910,7 @@
                                             <StackPanel Orientation="Horizontal" Margin="0,3">
                                                 <TextBlock Text="[14:25:13]" 
                                                            FontSize="11" 
-                                                           Foreground="#95a5a6"
+                                                           Foreground="#95a5a5"
                                                            FontFamily="Consolas"
                                                            Width="80"/>
                                                 <TextBlock Text="[SUCCESS]" 
@@ -942,6 +955,7 @@
             <Grid Margin="15,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
@@ -963,8 +977,27 @@
                                Foreground="#95a5a6"/>
                 </StackPanel>
 
-                <!-- 右側公司資訊 -->
+                <!-- 中間日期時間 -->
                 <StackPanel Grid.Column="1" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center">
+                    <TextBlock Text="??" 
+                               FontSize="12" 
+                               Margin="0,0,5,0"/>
+                    <TextBlock Text="2025-01-12" 
+                               FontSize="11" 
+                               Foreground="#95a5a6"
+                               Margin="0,0,10,0"/>
+                    <TextBlock Text="??" 
+                               FontSize="12" 
+                               Margin="0,0,5,0"/>
+                    <TextBlock Text="14:30:25" 
+                               FontSize="11" 
+                               Foreground="#95a5a6"/>
+                </StackPanel>
+
+                <!-- 右側公司資訊 -->
+                <StackPanel Grid.Column="2" 
                             Orientation="Horizontal" 
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center">

@@ -68,7 +68,7 @@
                 <StackPanel Grid.Column="1"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                    <TextBlock Text="?? Log 檢視" 
+                    <TextBlock Text="Log 檢視" 
                                FontSize="22" 
                                FontWeight="Bold"
                                Foreground="White"
@@ -84,8 +84,9 @@
                             Background="#34495e" 
                             CornerRadius="18"
                             Margin="0,0,8,0">
-                        <TextBlock Text="??" 
+                        <TextBlock Text="A" 
                                    FontSize="20"
+                                   FontWeight="Bold"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
                     </Border>
@@ -163,6 +164,32 @@
                                    Foreground="#00d4ff"
                                    Margin="20,0,0,20"/>
 
+                        <!-- 首頁 Overview -->
+                        <Border Background="#16213e" 
+                                Margin="10,5"
+                                CornerRadius="8"
+                                Cursor="Hand">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#1e2a47"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel Margin="15,12">
+                                <TextBlock Text="首頁 Overview" 
+                                           FontSize="15" 
+                                           FontWeight="SemiBold"
+                                           Foreground="White"/>
+                                <TextBlock Text="Home Dashboard" 
+                                           FontSize="9" 
+                                           Foreground="#95a5a6"
+                                           Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+
                         <!-- 製程管理 -->
                         <Border Background="#16213e" 
                                 Margin="10,5"
@@ -178,14 +205,14 @@
                                 </Style>
                             </Border.Style>
                             <StackPanel Margin="15,12">
-                                <TextBlock Text="?? 首頁 Overview" 
-                                           FontSize="16" 
+                                <TextBlock Text="製程管理" 
+                                           FontSize="15" 
                                            FontWeight="SemiBold"
                                            Foreground="White"/>
-                                <TextBlock Text="Home Dashboard" 
-                                           FontSize="10" 
+                                <TextBlock Text="Process Management" 
+                                           FontSize="9" 
                                            Foreground="#95a5a6"
-                                           Margin="0,3,0,0"/>
+                                           Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
 
@@ -197,14 +224,14 @@
                                 BorderThickness="2"
                                 Cursor="Hand">
                             <StackPanel Margin="15,12">
-                                <TextBlock Text="?? Log 檢視" 
-                                           FontSize="16" 
+                                <TextBlock Text="Log 檢視" 
+                                           FontSize="15" 
                                            FontWeight="SemiBold"
                                            Foreground="#00d4ff"/>
                                 <TextBlock Text="Log Viewer" 
-                                           FontSize="10" 
+                                           FontSize="9" 
                                            Foreground="#00d4ff"
-                                           Margin="0,3,0,0"/>
+                                           Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
 
@@ -223,14 +250,14 @@
                                 </Style>
                             </Border.Style>
                             <StackPanel Margin="15,12">
-                                <TextBlock Text="?? 使用者管理" 
-                                           FontSize="16" 
+                                <TextBlock Text="使用者管理" 
+                                           FontSize="15" 
                                            FontWeight="SemiBold"
                                            Foreground="White"/>
                                 <TextBlock Text="User Management" 
-                                           FontSize="10" 
+                                           FontSize="9" 
                                            Foreground="#95a5a6"
-                                           Margin="0,3,0,0"/>
+                                           Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
 
@@ -249,14 +276,14 @@
                                 </Style>
                             </Border.Style>
                             <StackPanel Margin="15,12">
-                                <TextBlock Text="?? 系統設定" 
-                                           FontSize="16" 
+                                <TextBlock Text="系統設定" 
+                                           FontSize="15" 
                                            FontWeight="SemiBold"
                                            Foreground="White"/>
                                 <TextBlock Text="System Settings" 
-                                           FontSize="10" 
+                                           FontSize="9" 
                                            Foreground="#95a5a6"
-                                           Margin="0,3,0,0"/>
+                                           Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
 
@@ -391,7 +418,7 @@
                                     </Style>
                                 </Border.Style>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="??" FontSize="12" Margin="0,0,5,0"/>
+                                    <TextBlock Text="" FontSize="12" Margin="0,0,5,0"/>
                                     <TextBlock Text="Audit Trail" 
                                                Foreground="White" 
                                                FontSize="11"
@@ -416,7 +443,7 @@
                                     </Style>
                                 </Border.Style>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="??" FontSize="12" Margin="0,0,5,0"/>
+                                    <TextBlock Text="" FontSize="12" Margin="0,0,5,0"/>
                                     <TextBlock Text="Operation" 
                                                Foreground="White" 
                                                FontSize="11"
@@ -441,7 +468,7 @@
                                     </Style>
                                 </Border.Style>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="??" FontSize="12" Margin="0,0,5,0"/>
+                                    <TextBlock Text="?" FontSize="12" Margin="0,0,5,0"/>
                                     <TextBlock Text="Event" 
                                                Foreground="White" 
                                                FontSize="11"
@@ -466,7 +493,7 @@
                                     </Style>
                                 </Border.Style>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="??" FontSize="12" Margin="0,0,5,0"/>
+                                    <TextBlock Text="" FontSize="12" Margin="0,0,5,0"/>
                                     <TextBlock Text="Process" 
                                                Foreground="White" 
                                                FontSize="11"
@@ -521,7 +548,7 @@
 
                             <!-- 查詢按鈕 -->
                             <Button Grid.Column="6"
-                                    Content="?? 查詢" 
+                                    Content=" 查詢" 
                                     Width="80" 
                                     Height="28"
                                     Background="#00d4ff"
@@ -556,7 +583,7 @@
 
                             <!-- 匯出按鈕 -->
                             <Button Grid.Column="7"
-                                    Content="?? 匯出 PDF" 
+                                    Content=" 匯出 PDF" 
                                     Width="100" 
                                     Height="28"
                                     Background="#9b59b6"
@@ -1280,14 +1307,14 @@
                 <StackPanel Grid.Column="1" 
                             Orientation="Horizontal" 
                             VerticalAlignment="Center">
-                    <TextBlock Text="??" 
+                    <TextBlock Text="" 
                                FontSize="12" 
                                Margin="0,0,5,0"/>
                     <TextBlock Text="2025-01-12" 
                                FontSize="11" 
                                Foreground="#95a5a6"
                                Margin="0,0,10,0"/>
-                    <TextBlock Text="??" 
+                    <TextBlock Text="" 
                                FontSize="12" 
                                Margin="0,0,5,0"/>
                     <TextBlock Text="14:30:25" 

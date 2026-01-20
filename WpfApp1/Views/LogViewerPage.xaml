@@ -1,4 +1,4 @@
-<Window x:Class="WpfApp1.Views.LogViewerPage"
+ï»¿<Window x:Class="WpfApp1.Views.LogViewerPage"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,19 +9,19 @@
         WindowStyle="None"
         Background="#1a1a2e">
 
-    <!-- ¾ãÅé Grid ¥¬§½¡GHeader, Content, Footer -->
+    <!-- ï¿½ï¿½ï¿½ï¿½ Grid ï¿½ï¿½ï¿½ï¿½ï¿½GHeader, Content, Footer -->
     <Grid>
         <Grid.RowDefinitions>
-            <!-- Header °Ï°ì -->
+            <!-- Header ï¿½Ï°ï¿½ -->
             <RowDefinition Height="60"/>
-            <!-- ¥D¤º®e°Ï°ì -->
+            <!-- ï¿½Dï¿½ï¿½ï¿½eï¿½Ï°ï¿½ -->
             <RowDefinition Height="*"/>
-            <!-- Bottom Bar °Ï°ì -->
+            <!-- Bottom Bar ï¿½Ï°ï¿½ -->
             <RowDefinition Height="35"/>
         </Grid.RowDefinitions>
 
         <!-- ==================== -->
-        <!-- Header °Ï°ì¡]Ãþ¦ü CyberFrame¡^ -->
+        <!-- Header ï¿½Ï°ï¿½]ï¿½ï¿½ï¿½ï¿½ CyberFrameï¿½^ -->
         <!-- ==================== -->
         <Border Grid.Row="0" 
                 Background="#16213e" 
@@ -34,11 +34,11 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Logo ©M¼ÐÃD -->
+                <!-- Logo ï¿½Mï¿½ï¿½ï¿½D -->
                 <StackPanel Grid.Column="0" 
                             Orientation="Horizontal" 
                             VerticalAlignment="Center">
-                    <!-- Logo ¹Ï¥Ü -->
+                    <!-- Logo ï¿½Ï¥ï¿½ -->
                     <Border Width="38" Height="38" 
                             Background="#00d4ff" 
                             CornerRadius="19"
@@ -51,35 +51,35 @@
                                    VerticalAlignment="Center"/>
                     </Border>
 
-                    <!-- ¨t²Î¼ÐÃD -->
+                    <!-- ï¿½tï¿½Î¼ï¿½ï¿½D -->
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="STACKDOSE 3D PRINTING SYSTEM" 
                                    FontSize="16" 
                                    FontWeight="Bold"
                                    Foreground="#00d4ff"/>
-                        <TextBlock Text="3D ¦C¦LÃÄ¿õ´¼¼z»sµ{¨t²Î" 
+                        <TextBlock Text="3D ï¿½Cï¿½Lï¿½Ä¿ï¿½ï¿½ï¿½ï¿½zï¿½sï¿½{ï¿½tï¿½ï¿½" 
                                    FontSize="10" 
                                    Foreground="#7f8c8d"
                                    Margin="0,1,0,0"/>
                     </StackPanel>
                 </StackPanel>
 
-                <!-- ¤¤¶¡·í«e­¶­±¦WºÙ -->
+                <!-- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½eï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½ï¿½ -->
                 <StackPanel Grid.Column="1"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                    <TextBlock Text="Log ÀËµø" 
+                    <TextBlock Text="Log ï¿½Ëµï¿½" 
                                FontSize="22" 
                                FontWeight="Bold"
                                Foreground="White"
                                HorizontalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- ¥k°¼¨Ï¥ÎªÌ¸ê°T -->
+                <!-- ï¿½kï¿½ï¿½ï¿½Ï¥ÎªÌ¸ï¿½T -->
                 <StackPanel Grid.Column="2" 
                             Orientation="Horizontal" 
                             VerticalAlignment="Center">
-                    <!-- ¨Ï¥ÎªÌÀY¹³ -->
+                    <!-- ï¿½Ï¥Îªï¿½ï¿½Yï¿½ï¿½ -->
                     <Border Width="36" Height="36" 
                             Background="#34495e" 
                             CornerRadius="18"
@@ -91,19 +91,19 @@
                                    VerticalAlignment="Center"/>
                     </Border>
 
-                    <!-- ¨Ï¥ÎªÌ¸ê°T -->
+                    <!-- ï¿½Ï¥ÎªÌ¸ï¿½T -->
                     <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
                         <TextBlock Text="Admin" 
                                    FontSize="13" 
                                    FontWeight="Bold"
                                    Foreground="White"/>
-                        <TextBlock Text="ºÞ²z­û" 
+                        <TextBlock Text="ï¿½Þ²zï¿½ï¿½" 
                                    FontSize="10" 
                                    Foreground="#95a5a6"/>
                     </StackPanel>
 
-                    <!-- µn¥X«ö¶s -->
-                    <Button Content="µn¥X" 
+                    <!-- ï¿½nï¿½Xï¿½ï¿½ï¿½s -->
+                    <Button Content="ï¿½nï¿½X" 
                             Width="70" 
                             Height="30"
                             Background="#e74c3c"
@@ -138,18 +138,18 @@
         </Border>
 
         <!-- ==================== -->
-        <!-- ¥D¤º®e°Ï°ì¡G¥ª°¼¾É¯è + ¥k°¼ Log ÀËµø -->
+        <!-- ï¿½Dï¿½ï¿½ï¿½eï¿½Ï°ï¿½Gï¿½ï¿½ï¿½ï¿½ï¿½É¯ï¿½ + ï¿½kï¿½ï¿½ Log ï¿½Ëµï¿½ -->
         <!-- ==================== -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <!-- ¥ª°¼¥\¯à¦Cªí (1/5) -->
+                <!-- ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½Cï¿½ï¿½ (1/5) -->
                 <ColumnDefinition Width="1*"/>
-                <!-- ¥k°¼ Log ÀËµø (4/5) -->
+                <!-- ï¿½kï¿½ï¿½ Log ï¿½Ëµï¿½ (4/5) -->
                 <ColumnDefinition Width="4*"/>
             </Grid.ColumnDefinitions>
 
             <!-- ==================== -->
-            <!-- ¥ª°¼¥\¯à¾É¯è¦Cªí -->
+            <!-- ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½É¯ï¿½Cï¿½ï¿½ -->
             <!-- ==================== -->
             <Border Grid.Column="0" 
                     Background="#0f3460" 
@@ -157,14 +157,14 @@
                     BorderThickness="0,0,2,0">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="0,20,0,0">
-                        <!-- ¾É¯è¼ÐÃD -->
-                        <TextBlock Text="¥\¯à¿ï³æ" 
+                        <!-- ï¿½É¯ï¿½ï¿½ï¿½D -->
+                        <TextBlock Text="ï¿½\ï¿½ï¿½ï¿½ï¿½" 
                                    FontSize="18" 
                                    FontWeight="Bold"
                                    Foreground="#00d4ff"
                                    Margin="20,0,0,20"/>
 
-                        <!-- ­º­¶ Overview -->
+                        <!-- ï¿½ï¿½ï¿½ï¿½ Overview -->
                         <Border Background="#16213e" 
                                 Margin="10,5"
                                 CornerRadius="8"
@@ -179,7 +179,7 @@
                                 </Style>
                             </Border.Style>
                             <StackPanel Margin="15,12">
-                                <TextBlock Text="­º­¶ Overview" 
+                                <TextBlock Text="ï¿½ï¿½ï¿½ï¿½ Overview" 
                                            FontSize="15" 
                                            FontWeight="SemiBold"
                                            Foreground="White"/>
@@ -190,7 +190,7 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- »sµ{ºÞ²z -->
+                        <!-- ï¿½sï¿½{ï¿½Þ²z -->
                         <Border Background="#16213e" 
                                 Margin="10,5"
                                 CornerRadius="8"
@@ -205,7 +205,7 @@
                                 </Style>
                             </Border.Style>
                             <StackPanel Margin="15,12">
-                                <TextBlock Text="»sµ{ºÞ²z" 
+                                <TextBlock Text="ï¿½sï¿½{ï¿½Þ²z" 
                                            FontSize="15" 
                                            FontWeight="SemiBold"
                                            Foreground="White"/>
@@ -216,7 +216,7 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Log ÀËµø - ¤w¿ï¨ú -->
+                        <!-- Log ï¿½Ëµï¿½ - ï¿½wï¿½ï¿½ï¿½ -->
                         <Border Background="#1e2a47" 
                                 Margin="10,5"
                                 CornerRadius="8"
@@ -224,7 +224,7 @@
                                 BorderThickness="2"
                                 Cursor="Hand">
                             <StackPanel Margin="15,12">
-                                <TextBlock Text="Log ÀËµø" 
+                                <TextBlock Text="Log ï¿½Ëµï¿½" 
                                            FontSize="15" 
                                            FontWeight="SemiBold"
                                            Foreground="#00d4ff"/>
@@ -235,7 +235,7 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- ¨Ï¥ÎªÌºÞ²z -->
+                        <!-- ï¿½Ï¥ÎªÌºÞ²z -->
                         <Border Background="#16213e" 
                                 Margin="10,5"
                                 CornerRadius="8"
@@ -250,7 +250,7 @@
                                 </Style>
                             </Border.Style>
                             <StackPanel Margin="15,12">
-                                <TextBlock Text="¨Ï¥ÎªÌºÞ²z" 
+                                <TextBlock Text="ï¿½Ï¥ÎªÌºÞ²z" 
                                            FontSize="15" 
                                            FontWeight="SemiBold"
                                            Foreground="White"/>
@@ -261,7 +261,7 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- ¨t²Î³]©w -->
+                        <!-- ï¿½tï¿½Î³]ï¿½w -->
                         <Border Background="#16213e" 
                                 Margin="10,5"
                                 CornerRadius="8"
@@ -276,7 +276,7 @@
                                 </Style>
                             </Border.Style>
                             <StackPanel Margin="15,12">
-                                <TextBlock Text="¨t²Î³]©w" 
+                                <TextBlock Text="ï¿½tï¿½Î³]ï¿½w" 
                                            FontSize="15" 
                                            FontWeight="SemiBold"
                                            Foreground="White"/>
@@ -287,19 +287,19 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- ¤À¹j½u -->
+                        <!-- ï¿½ï¿½ï¿½jï¿½u -->
                         <Border Height="2" 
                                 Background="#34495e" 
                                 Margin="20,30,20,20"/>
 
-                        <!-- Log ²Î­p¸ê°T -->
-                        <TextBlock Text="Log ²Î­p" 
+                        <!-- Log ï¿½Î­pï¿½ï¿½T -->
+                        <TextBlock Text="Log ï¿½Î­p" 
                                    FontSize="14" 
                                    FontWeight="Bold"
                                    Foreground="#95a5a6"
                                    Margin="20,0,0,15"/>
 
-                        <!-- Audit Trail ¼Æ¶q -->
+                        <!-- Audit Trail ï¿½Æ¶q -->
                         <Border Background="#16213e" 
                                 Margin="10,5"
                                 CornerRadius="8"
@@ -308,7 +308,7 @@
                                 <TextBlock Text="Audit Trail" 
                                            FontSize="11" 
                                            Foreground="#95a5a6"/>
-                                <TextBlock Text="1,234 µ§" 
+                                <TextBlock Text="1,234 ï¿½ï¿½" 
                                            FontSize="14" 
                                            FontWeight="Bold"
                                            Foreground="#e74c3c"
@@ -316,7 +316,7 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Operation Log ¼Æ¶q -->
+                        <!-- Operation Log ï¿½Æ¶q -->
                         <Border Background="#16213e" 
                                 Margin="10,5"
                                 CornerRadius="8"
@@ -325,7 +325,7 @@
                                 <TextBlock Text="Operation Log" 
                                            FontSize="11" 
                                            Foreground="#95a5a6"/>
-                                <TextBlock Text="856 µ§" 
+                                <TextBlock Text="856 ï¿½ï¿½" 
                                            FontSize="14" 
                                            FontWeight="Bold"
                                            Foreground="#3498db"
@@ -333,7 +333,7 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Event Log ¼Æ¶q -->
+                        <!-- Event Log ï¿½Æ¶q -->
                         <Border Background="#16213e" 
                                 Margin="10,5"
                                 CornerRadius="8"
@@ -342,7 +342,7 @@
                                 <TextBlock Text="Event Log" 
                                            FontSize="11" 
                                            Foreground="#95a5a6"/>
-                                <TextBlock Text="342 µ§" 
+                                <TextBlock Text="342 ï¿½ï¿½" 
                                            FontSize="14" 
                                            FontWeight="Bold"
                                            Foreground="#f39c12"
@@ -350,7 +350,7 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Process Data Log ¼Æ¶q -->
+                        <!-- Process Data Log ï¿½Æ¶q -->
                         <Border Background="#16213e" 
                                 Margin="10,5"
                                 CornerRadius="8"
@@ -359,7 +359,7 @@
                                 <TextBlock Text="Process Data" 
                                            FontSize="11" 
                                            Foreground="#95a5a6"/>
-                                <TextBlock Text="5,678 µ§" 
+                                <TextBlock Text="5,678 ï¿½ï¿½" 
                                            FontSize="14" 
                                            FontWeight="Bold"
                                            Foreground="#2ecc71"
@@ -371,7 +371,7 @@
             </Border>
 
             <!-- ==================== -->
-            <!-- ¥k°¼ Log ÀËµø°Ï°ì -->
+            <!-- ï¿½kï¿½ï¿½ Log ï¿½Ëµï¿½ï¿½Ï°ï¿½ -->
             <!-- ==================== -->
             <Border Grid.Column="1" Background="#1a1a2e">
                 <Grid Margin="20">
@@ -380,7 +380,7 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- ¿z¿ï»P¾Þ§@°Ï°ì -->
+                    <!-- ï¿½zï¿½ï¿½Pï¿½Þ§@ï¿½Ï°ï¿½ -->
                     <Border Grid.Row="0"
                             Background="#16213e"
                             BorderBrush="#00d4ff"
@@ -400,7 +400,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Log Ãþ«¬¿ï¾Ü -->
+                            <!-- Log ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ -->
                             <!-- Audit Trail -->
                             <Border Grid.Column="0"
                                     Background="#e74c3c" 
@@ -501,15 +501,15 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- ¤À¹j½u -->
+                            <!-- ï¿½ï¿½ï¿½jï¿½u -->
                             <Border Grid.Column="4"
                                     Width="2"
                                     Background="#34495e"
                                     Margin="0,2,20,2"/>
 
-                            <!-- ¤é´Á¿z¿ï -->
+                            <!-- ï¿½ï¿½ï¿½ï¿½zï¿½ï¿½ -->
                             <StackPanel Grid.Column="5" Orientation="Horizontal">
-                                <!-- ¶}©l¤é´Á -->
+                                <!-- ï¿½}ï¿½lï¿½ï¿½ï¿½ -->
                                 <Border Background="#0f3460"
                                         BorderBrush="#00d4ff"
                                         BorderThickness="1"
@@ -530,7 +530,7 @@
                                            VerticalAlignment="Center"
                                            Margin="0,0,8,0"/>
 
-                                <!-- µ²§ô¤é´Á -->
+                                <!-- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ -->
                                 <Border Background="#0f3460"
                                         BorderBrush="#00d4ff"
                                         BorderThickness="1"
@@ -546,9 +546,9 @@
                                 </Border>
                             </StackPanel>
 
-                            <!-- ¬d¸ß«ö¶s -->
+                            <!-- ï¿½dï¿½ß«ï¿½ï¿½s -->
                             <Button Grid.Column="6"
-                                    Content=" ¬d¸ß" 
+                                    Content=" ï¿½dï¿½ï¿½" 
                                     Width="80" 
                                     Height="28"
                                     Background="#00d4ff"
@@ -581,9 +581,9 @@
                                 </Button.Style>
                             </Button>
 
-                            <!-- ¶×¥X«ö¶s -->
+                            <!-- ï¿½×¥Xï¿½ï¿½ï¿½s -->
                             <Button Grid.Column="7"
-                                    Content=" ¶×¥X PDF" 
+                                    Content=" ï¿½×¥X PDF" 
                                     Width="100" 
                                     Height="28"
                                     Background="#9b59b6"
@@ -617,14 +617,14 @@
                         </Grid>
                     </Border>
 
-                    <!-- Log ¤º®eÅã¥Ü°Ï°ì -->
+                    <!-- Log ï¿½ï¿½ï¿½eï¿½ï¿½Ü°Ï°ï¿½ -->
                     <Grid Grid.Row="1">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="300"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- ¥ª°¼¡G¤é´Á¦Cªí -->
+                        <!-- ï¿½ï¿½ï¿½ï¿½ï¿½Gï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ -->
                         <Border Grid.Column="0"
                                 Background="#16213e"
                                 BorderBrush="#00d4ff"
@@ -637,18 +637,18 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
-                                <!-- ¼ÐÃD -->
+                                <!-- ï¿½ï¿½ï¿½D -->
                                 <Border Grid.Row="0"
                                         Background="#0f3460"
                                         Padding="15,12"
                                         CornerRadius="10,10,0,0">
-                                    <TextBlock Text="¤é´Á¦Cªí" 
+                                    <TextBlock Text="ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½" 
                                                FontSize="14" 
                                                FontWeight="Bold"
                                                Foreground="#00d4ff"/>
                                 </Border>
 
-                                <!-- ¤é´Á²M³æ -->
+                                <!-- ï¿½ï¿½ï¿½ï¿½Mï¿½ï¿½ -->
                                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                                     <StackPanel Margin="10">
                                         <!-- 2025-01-12 -->
@@ -665,11 +665,11 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel Grid.Column="0">
-                                                    <TextBlock Text="2025-01-12 (¤é)" 
+                                                    <TextBlock Text="2025-01-12 (ï¿½ï¿½)" 
                                                                FontSize="13" 
                                                                FontWeight="Bold"
                                                                Foreground="#00d4ff"/>
-                                                    <TextBlock Text="¤µ¤Ñ ¡P 128 µ§°O¿ý" 
+                                                    <TextBlock Text="ï¿½ï¿½ï¿½ï¿½ ï¿½P 128 ï¿½ï¿½ï¿½Oï¿½ï¿½" 
                                                                FontSize="10" 
                                                                Foreground="#95a5a6"
                                                                Margin="0,3,0,0"/>
@@ -706,11 +706,11 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel Grid.Column="0">
-                                                    <TextBlock Text="2025-01-11 (¤»)" 
+                                                    <TextBlock Text="2025-01-11 (ï¿½ï¿½)" 
                                                                FontSize="13" 
                                                                FontWeight="SemiBold"
                                                                Foreground="White"/>
-                                                    <TextBlock Text="¬Q¤Ñ ¡P 234 µ§°O¿ý" 
+                                                    <TextBlock Text="ï¿½Qï¿½ï¿½ ï¿½P 234 ï¿½ï¿½ï¿½Oï¿½ï¿½" 
                                                                FontSize="10" 
                                                                Foreground="#7f8c8d"
                                                                Margin="0,3,0,0"/>
@@ -742,11 +742,11 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel Grid.Column="0">
-                                                    <TextBlock Text="2025-01-10 (¤­)" 
+                                                    <TextBlock Text="2025-01-10 (ï¿½ï¿½)" 
                                                                FontSize="13" 
                                                                FontWeight="SemiBold"
                                                                Foreground="White"/>
-                                                    <TextBlock Text="2 ¤Ñ«e ¡P 198 µ§°O¿ý" 
+                                                    <TextBlock Text="2 ï¿½Ñ«e ï¿½P 198 ï¿½ï¿½ï¿½Oï¿½ï¿½" 
                                                                FontSize="10" 
                                                                Foreground="#7f8c8d"
                                                                Margin="0,3,0,0"/>
@@ -778,11 +778,11 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel Grid.Column="0">
-                                                    <TextBlock Text="2025-01-09 (¥|)" 
+                                                    <TextBlock Text="2025-01-09 (ï¿½|)" 
                                                                FontSize="13" 
                                                                FontWeight="SemiBold"
                                                                Foreground="White"/>
-                                                    <TextBlock Text="3 ¤Ñ«e ¡P 176 µ§°O¿ý" 
+                                                    <TextBlock Text="3 ï¿½Ñ«e ï¿½P 176 ï¿½ï¿½ï¿½Oï¿½ï¿½" 
                                                                FontSize="10" 
                                                                Foreground="#7f8c8d"
                                                                Margin="0,3,0,0"/>
@@ -814,11 +814,11 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel Grid.Column="0">
-                                                    <TextBlock Text="2025-01-08 (¤T)" 
+                                                    <TextBlock Text="2025-01-08 (ï¿½T)" 
                                                                FontSize="13" 
                                                                FontWeight="SemiBold"
                                                                Foreground="White"/>
-                                                    <TextBlock Text="4 ¤Ñ«e ¡P 145 µ§°O¿ý" 
+                                                    <TextBlock Text="4 ï¿½Ñ«e ï¿½P 145 ï¿½ï¿½ï¿½Oï¿½ï¿½" 
                                                                FontSize="10" 
                                                                Foreground="#7f8c8d"
                                                                Margin="0,3,0,0"/>
@@ -830,7 +830,7 @@
                             </Grid>
                         </Border>
 
-                        <!-- ¥k°¼¡GLog ¸Ô²Ó¤º®e -->
+                        <!-- ï¿½kï¿½ï¿½ï¿½GLog ï¿½Ô²Ó¤ï¿½ï¿½e -->
                         <Border Grid.Column="1"
                                 Background="#16213e"
                                 BorderBrush="#00d4ff"
@@ -843,7 +843,7 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
-                                <!-- ¼ÐÃD -->
+                                <!-- ï¿½ï¿½ï¿½D -->
                                 <Border Grid.Row="0"
                                         Background="#0f3460"
                                         Padding="15,12"
@@ -855,7 +855,7 @@
                                                        FontSize="14" 
                                                        FontWeight="Bold"
                                                        Foreground="#00d4ff"/>
-                                            <TextBlock Text="(¦@ 45 µ§°O¿ý)" 
+                                            <TextBlock Text="(ï¿½@ 45 ï¿½ï¿½ï¿½Oï¿½ï¿½)" 
                                                        FontSize="11" 
                                                        Foreground="#95a5a6"
                                                        VerticalAlignment="Center"
@@ -864,10 +864,10 @@
                                     </Grid>
                                 </Border>
 
-                                <!-- Log ªí®æ -->
+                                <!-- Log ï¿½ï¿½ï¿½ -->
                                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                                     <StackPanel Margin="15">
-                                        <!-- Log ¶µ¥Ø 1 - Start Process -->
+                                        <!-- Log ï¿½ï¿½ï¿½ï¿½ 1 - Start Process -->
                                         <Border Background="#0f3460"
                                                 BorderBrush="#e74c3c"
                                                 BorderThickness="0,0,0,3"
@@ -911,7 +911,7 @@
                                                            Foreground="#95a5a6"
                                                            Margin="0,0,0,8"/>
                                                 <TextBlock Grid.Row="1" Grid.Column="1" 
-                                                           Text="Admin (ºÞ²z­û)" 
+                                                           Text="Admin (ï¿½Þ²zï¿½ï¿½)" 
                                                            FontSize="11" 
                                                            Foreground="White"
                                                            Margin="0,0,0,8"/>
@@ -965,7 +965,7 @@
                                                            Foreground="#95a5a6"
                                                            Margin="0,0,0,8"/>
                                                 <TextBlock Grid.Row="5" Grid.Column="1" 
-                                                           Text="¶}©l·s§å¦¸¥Í²£" 
+                                                           Text="ï¿½}ï¿½lï¿½sï¿½å¦¸ï¿½Í²ï¿½" 
                                                            FontSize="11" 
                                                            Foreground="White"
                                                            Margin="0,0,0,8"/>
@@ -1008,7 +1008,7 @@
                                             </Grid>
                                         </Border>
 
-                                        <!-- Log ¶µ¥Ø 2 - °Ñ¼ÆÅÜ§ó -->
+                                        <!-- Log ï¿½ï¿½ï¿½ï¿½ 2 - ï¿½Ñ¼ï¿½ï¿½Ü§ï¿½ -->
                                         <Border Background="#0f3460"
                                                 BorderBrush="#e74c3c"
                                                 BorderThickness="0,0,0,3"
@@ -1050,7 +1050,7 @@
                                                            Foreground="#95a5a6"
                                                            Margin="0,0,0,8"/>
                                                 <TextBlock Grid.Row="1" Grid.Column="1" 
-                                                           Text="Engineer01 (¤uµ{®v)" 
+                                                           Text="Engineer01 (ï¿½uï¿½{ï¿½v)" 
                                                            FontSize="11" 
                                                            Foreground="White"
                                                            Margin="0,0,0,8"/>
@@ -1064,7 +1064,7 @@
                                                     <Border Background="#e74c3c"
                                                             CornerRadius="4"
                                                             Padding="6,3">
-                                                        <TextBlock Text="°Ñ¼ÆÅÜ§ó" 
+                                                        <TextBlock Text="ï¿½Ñ¼ï¿½ï¿½Ü§ï¿½" 
                                                                    FontSize="10" 
                                                                    FontWeight="Bold"
                                                                    Foreground="White"/>
@@ -1077,7 +1077,7 @@
                                                            Foreground="#95a5a6"
                                                            Margin="0,0,0,8"/>
                                                 <TextBlock Grid.Row="3" Grid.Column="1" 
-                                                           Text="75.0¢XC" 
+                                                           Text="75.0ï¿½XC" 
                                                            FontSize="11" 
                                                            Foreground="#7f8c8d"
                                                            Margin="0,0,0,8"/>
@@ -1088,7 +1088,7 @@
                                                            Foreground="#95a5a6"
                                                            Margin="0,0,0,8"/>
                                                 <TextBlock Grid.Row="4" Grid.Column="1" 
-                                                           Text="80.0¢XC" 
+                                                           Text="80.0ï¿½XC" 
                                                            FontSize="11" 
                                                            FontWeight="Bold"
                                                            Foreground="#f39c12"
@@ -1100,7 +1100,7 @@
                                                            Foreground="#95a5a6"
                                                            Margin="0,0,0,8"/>
                                                 <TextBlock Grid.Row="5" Grid.Column="1" 
-                                                           Text="´£¤É¼QÀY·Å«×¥H§ïµ½ÃÄ¿õ¦¨«¬«~½è" 
+                                                           Text="ï¿½ï¿½ï¿½É¼Qï¿½Yï¿½Å«×¥Hï¿½ïµ½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½" 
                                                            FontSize="11" 
                                                            Foreground="White"
                                                            Margin="0,0,0,8"/>
@@ -1140,7 +1140,7 @@
                                             </Grid>
                                         </Border>
 
-                                        <!-- Log ¶µ¥Ø 3 - µn¤J -->
+                                        <!-- Log ï¿½ï¿½ï¿½ï¿½ 3 - ï¿½nï¿½J -->
                                         <Border Background="#0f3460"
                                                 BorderBrush="#e74c3c"
                                                 BorderThickness="0,0,0,3"
@@ -1180,7 +1180,7 @@
                                                            Foreground="#95a5a6"
                                                            Margin="0,0,0,8"/>
                                                 <TextBlock Grid.Row="1" Grid.Column="1" 
-                                                           Text="Admin (ºÞ²z­û)" 
+                                                           Text="Admin (ï¿½Þ²zï¿½ï¿½)" 
                                                            FontSize="11" 
                                                            Foreground="White"
                                                            Margin="0,0,0,8"/>
@@ -1194,7 +1194,7 @@
                                                     <Border Background="#2ecc71"
                                                             CornerRadius="4"
                                                             Padding="6,3">
-                                                        <TextBlock Text="µn¤J" 
+                                                        <TextBlock Text="ï¿½nï¿½J" 
                                                                    FontSize="10" 
                                                                    FontWeight="Bold"
                                                                    Foreground="White"/>
@@ -1247,7 +1247,7 @@
                                             </Grid>
                                         </Border>
 
-                                        <!-- §ó¦h°O¿ý´£¥Ü -->
+                                        <!-- ï¿½ï¿½hï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ -->
                                         <Border Background="#0f3460"
                                                 BorderBrush="#34495e"
                                                 BorderThickness="1"
@@ -1255,7 +1255,7 @@
                                                 Padding="15"
                                                 Margin="0,10,0,0">
                                             <StackPanel HorizontalAlignment="Center">
-                                                <TextBlock Text="?? Åã¥Ü§ó¦h°O¿ý (ÁÙ¦³ 42 µ§)" 
+                                                <TextBlock Text="?? ï¿½ï¿½Ü§ï¿½hï¿½Oï¿½ï¿½ (ï¿½Ù¦ï¿½ 42 ï¿½ï¿½)" 
                                                            FontSize="12" 
                                                            Foreground="#00d4ff"
                                                            HorizontalAlignment="Center"
@@ -1272,7 +1272,7 @@
         </Grid>
 
         <!-- ==================== -->
-        <!-- Bottom Bar °Ï°ì -->
+        <!-- Bottom Bar ï¿½Ï°ï¿½ -->
         <!-- ==================== -->
         <Border Grid.Row="2" 
                 Background="#0f3460" 
@@ -1285,7 +1285,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- ¥ª°¼ª©¥»¸ê°T -->
+                <!-- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½T -->
                 <StackPanel Grid.Column="0" 
                             Orientation="Horizontal" 
                             VerticalAlignment="Center">
@@ -1303,7 +1303,7 @@
                                Foreground="#95a5a6"/>
                 </StackPanel>
 
-                <!-- ¤¤¶¡¤é´Á®É¶¡ -->
+                <!-- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¶ï¿½ -->
                 <StackPanel Grid.Column="1" 
                             Orientation="Horizontal" 
                             VerticalAlignment="Center">
@@ -1322,7 +1322,7 @@
                                Foreground="#95a5a6"/>
                 </StackPanel>
 
-                <!-- ¥k°¼¤½¥q¸ê°T -->
+                <!-- ï¿½kï¿½ï¿½ï¿½ï¿½ï¿½qï¿½ï¿½T -->
                 <StackPanel Grid.Column="2" 
                             Orientation="Horizontal" 
                             HorizontalAlignment="Right"

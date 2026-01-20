@@ -198,6 +198,38 @@ namespace Stackdose.UI.Core.Controls
             #endif
         }
 
+        private void ForgotPasswordButton_Click(object sender, RoutedEventArgs e)
+        {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] ForgotPasswordButton_Click called");
+            #endif
+
+            // 顯示密碼重置說明
+            string message = "密碼重置說明\n\n" +
+                           "此系統使用 Windows AD (Active Directory) 驗證\n\n" +
+                           "密碼重置步驟：\n" +
+                           "1. 聯繫 IT 部門或系統管理員\n" +
+                           "2. 提供您的 Windows 帳戶名稱\n" +
+                           "3. 遵循公司密碼重置流程\n\n" +
+                           "開發/測試環境：\n" +
+                           "? 使用者名稱：admin01\n" +
+                           "? 密碼：admin01admin01\n\n" +
+                           "注意：實際密碼取決於您的 Windows 域帳戶";
+
+            MessageBox.Show(
+                message,
+                "忘記密碼說明",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information
+            );
+
+            ComplianceContext.LogSystem(
+                $"[LoginDialog] User clicked 'Forgot Password' - {UserIdTextBox.Text}",
+                Models.LogLevel.Info,
+                showInUi: false
+            );
+        }
+        
         /// <summary>
         /// 顯示登入對話視窗
         /// </summary>

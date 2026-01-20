@@ -27,6 +27,7 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Header -->
@@ -214,6 +215,33 @@
                     </Button.Style>
                 </Button>
             </Grid>
+
+            <!-- Forgot Password Link -->
+            <Button x:Name="ForgotPasswordButton" 
+                    Content="Forgot Password" 
+                    HorizontalAlignment="Center" 
+                    Margin="0,10,0,0" 
+                    FontSize="11" 
+                    Foreground="#00BCD4" 
+                    Background="Transparent" 
+                    BorderThickness="0" 
+                    Cursor="Hand"
+                    Click="ForgotPasswordButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <TextBlock Text="{TemplateBinding Content}" 
+                                             Foreground="{TemplateBinding Foreground}" 
+                                             FontSize="{TemplateBinding FontSize}"
+                                             TextDecorations="Underline"/>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+            </Button>
         </Grid>
     </Border>
 </Window>

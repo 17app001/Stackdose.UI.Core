@@ -4,51 +4,18 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
-        xmlns:panels="clr-namespace:WpfApp1.Panels"
-        xmlns:Controls="http://schemas.stackdose.com/wpf"
+        xmlns:views="clr-namespace:WpfApp1.Views"
+        xmlns:Custom="http://schemas.stackdose.com/wpf"
         x:Class="WpfApp1.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="900" Width="1600"
+        Title="UBI System Control" Height="900" Width="1600"
+        WindowStyle="None"
+        WindowStartupLocation="CenterScreen"
         Closing="Window_Closing">
-    
-    <!-- CyberFrame as Main Container -->
-    <Controls:CyberFrame Title="UBI SYSTEM">
-        <Controls:CyberFrame.MainContent>
-            <Grid>
-                <!-- TabControl for organized layout -->
-                <!-- 🔥 加入虛擬化以加速載入 -->
-                <TabControl Background="#0D0D1A" BorderBrush="#00E5FF" BorderThickness="1"
-                            Foreground="White"
-                            VirtualizingPanel.IsVirtualizing="True"
-                            VirtualizingPanel.VirtualizationMode="Recycling">
 
-                    <!-- Tab 1: Main Control Panel -->
-                    <TabItem Header="Main">
-                        <panels:MainPanel/>
-                    </TabItem>
-                    
-                    <!-- Tab 2: System Test (Development) -->
-                    <TabItem Header="System Test">
-                        <panels:SystemTestPanel/>
-                    </TabItem>
+    <!-- Use MainContainer for navigation -->
+    <!--<views:MainContainer/>-->
 
-                </TabControl>
+    <Custom:CyberFrame HorizontalAlignment="Center" VerticalAlignment="Center" Height="900" Width="1600"/>
 
-                <!-- PlcEventTrigger (invisible, kept for functionality) -->
-                <Controls:PlcEventTrigger Address="M237" 
-                                          EventName="Recipe1Selected"
-                                          AutoClear="True"
-                                          ClearDelay="0"
-                                          TriggerCondition="OnRising"
-                                          Visibility="Collapsed"/>
-
-                <Controls:PlcEventTrigger Address="M238" 
-                                          EventName="Recipe2Selected"
-                                          AutoClear="True"
-                                          ClearDelay="0"
-                                          TriggerCondition="OnRising"
-                                          Visibility="Collapsed"/>
-            </Grid>
-        </Controls:CyberFrame.MainContent>
-    </Controls:CyberFrame>
 </Window>

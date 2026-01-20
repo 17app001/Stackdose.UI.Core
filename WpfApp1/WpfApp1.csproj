@@ -50,6 +50,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\FeiyangWrapper.vcxproj" />
     <ProjectReference Include="..\Stackdose.UI.Core\Stackdose.UI.Core.csproj" />
+    <ProjectReference Include="..\Stackdose.UI.Templates\Stackdose.UI.Templates.csproj" />
   </ItemGroup>
 
   <ItemGroup>

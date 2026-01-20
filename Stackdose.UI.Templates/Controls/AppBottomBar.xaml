@@ -1,0 +1,72 @@
+<UserControl x:Class="Stackdose.UI.Templates.Controls.AppBottomBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="35" d:DesignWidth="1600">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Stackdose.UI.Templates;component/Resources/CommonColors.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource DarkBackgroundBrush}" 
+            BorderBrush="{StaticResource BorderBrush}" 
+            BorderThickness="0,2,0,0"
+            Height="35">
+        <Grid Margin="15,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Version Info -->
+            <StackPanel Grid.Column="0" 
+                        Orientation="Horizontal" 
+                        VerticalAlignment="Center">
+                <TextBlock Text="Stackdose 3D Printing System" 
+                           FontSize="11" 
+                           Foreground="{StaticResource TextTertiaryBrush}"
+                           Margin="0,0,12,0"/>
+                <TextBlock Text="v2.0.1" 
+                           FontSize="11" 
+                           FontWeight="Bold"
+                           Foreground="{StaticResource PrimaryBrush}"
+                           Margin="0,0,12,0"/>
+                <TextBlock Text="Build 2025.01.12" 
+                           FontSize="10" 
+                           Foreground="{StaticResource TextSecondaryBrush}"/>
+            </StackPanel>
+
+            <!-- Center: Date Time -->
+            <StackPanel Grid.Column="1" 
+                        Orientation="Horizontal" 
+                        VerticalAlignment="Center">
+                <TextBlock x:Name="DateText"
+                           Text="2025-01-14" 
+                           FontSize="11" 
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           Margin="0,0,10,0"/>
+                <TextBlock x:Name="TimeText"
+                           Text="14:30:25" 
+                           FontSize="11" 
+                           Foreground="{StaticResource TextSecondaryBrush}"/>
+            </StackPanel>
+
+            <!-- Right: Copyright -->
+            <StackPanel Grid.Column="2" 
+                        Orientation="Horizontal" 
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center">
+                <TextBlock Text="? 2025 Stackdose Inc. All Rights Reserved." 
+                           FontSize="10" 
+                           Foreground="{StaticResource TextTertiaryBrush}"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

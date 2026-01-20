@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Examples;

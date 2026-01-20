@@ -1,0 +1,227 @@
+<UserControl x:Class="WpfApp.Demo.Views.DemoPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:pages="clr-namespace:Stackdose.UI.Templates.Pages;assembly=Stackdose.UI.Templates"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="900" d:DesignWidth="1600">
+
+    <pages:BasePage PageTitle="Demo Page"
+                    LogoutRequested="OnLogout"
+                    MinimizeRequested="OnMinimize"
+                    CloseRequested="OnClose"
+                    NavigationRequested="OnNavigate">
+        <pages:BasePage.ContentArea>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Grid Margin="30">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Welcome Section -->
+                    <Border Grid.Row="0"
+                            Background="{StaticResource CardBackgroundBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="2"
+                            CornerRadius="10"
+                            Padding="30"
+                            Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="Welcome to Stackdose UI Templates Demo" 
+                                       FontSize="32"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource PrimaryBrush}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,10"/>
+                            
+                            <TextBlock Text="This demonstrates the BasePage template with shared components" 
+                                       FontSize="14"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Feature Cards -->
+                    <Grid Grid.Row="1" Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0"
+                                Background="{StaticResource DarkBackgroundBrush}"
+                                BorderBrush="{StaticResource SuccessBrush}"
+                                BorderThickness="2"
+                                CornerRadius="10"
+                                Padding="20"
+                                Margin="0,0,10,0">
+                            <StackPanel>
+                                <TextBlock Text="Shared Header" 
+                                           FontSize="18"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource SuccessBrush}"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,10"/>
+                                <TextBlock Text="Logo, Title, User Info, Window Controls" 
+                                           FontSize="12"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           TextAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="1"
+                                Background="{StaticResource DarkBackgroundBrush}"
+                                BorderBrush="{StaticResource InfoBrush}"
+                                BorderThickness="2"
+                                CornerRadius="10"
+                                Padding="20"
+                                Margin="5,0">
+                            <StackPanel>
+                                <TextBlock Text="Navigation" 
+                                           FontSize="18"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource InfoBrush}"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,10"/>
+                                <TextBlock Text="Left menu with selection" 
+                                           FontSize="12"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           TextAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="2"
+                                Background="{StaticResource DarkBackgroundBrush}"
+                                BorderBrush="{StaticResource WarningBrush}"
+                                BorderThickness="2"
+                                CornerRadius="10"
+                                Padding="20"
+                                Margin="10,0,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Bottom Bar" 
+                                           FontSize="18"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource WarningBrush}"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,10"/>
+                                <TextBlock Text="Version, Date, Copyright" 
+                                           FontSize="12"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           TextAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Interactive Demo -->
+                    <Border Grid.Row="2"
+                            Background="{StaticResource CardBackgroundBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="2"
+                            CornerRadius="10"
+                            Padding="30">
+                        <StackPanel>
+                            <TextBlock Text="Interactive Demo" 
+                                       FontSize="24"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource PrimaryBrush}"
+                                       Margin="0,0,0,20"/>
+
+                            <Button Content="Click Me" 
+                                    Width="200"
+                                    Height="50"
+                                    Background="{StaticResource SuccessBrush}"
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Cursor="Hand"
+                                    Click="DemoButton_Click"
+                                    HorizontalAlignment="Center">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                            CornerRadius="8">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                          VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#27ae60"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+
+                            <TextBlock Text="Try these interactions:" 
+                                       FontSize="14"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,20,0,10"/>
+                            
+
+                            <!-- Tips -->
+                            <StackPanel Margin="0,25,0,0">
+                                <TextBlock Text="More interactions to try:" 
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Margin="0,0,0,10"/>
+                                
+
+                                    <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="- Click items in the left navigation menu" 
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                                   Margin="0,2"/>
+                                        <TextBlock Text="- Try the Logout button (top right)" 
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                                   Margin="0,2"/>
+                                        <TextBlock Text="- Try Minimize (-) and Close (X) buttons" 
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                                   Margin="0,2"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="- Hover over navigation items to see effects" 
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                                   Margin="0,2"/>
+                                        <TextBlock Text="- Check the bottom bar for version info" 
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                                   Margin="0,2"/>
+                                        <TextBlock Text="- All buttons use shared color system" 
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                                   Margin="0,2"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+        </pages:BasePage.ContentArea>
+    </pages:BasePage>
+</UserControl>

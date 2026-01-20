@@ -1,4 +1,4 @@
-using System.Windows.Controls;
+ï»¿using System.Windows.Controls;
 
 namespace WpfApp1.Panels
 {
@@ -14,8 +14,8 @@ namespace WpfApp1.Panels
         {
             InitializeComponent();
 
-            // ?? PrintHeadPanel ²{¦b·|¦Û°Ê±½´y Resources ¥Ø¿ý
-            // ¤£¦A»Ý­n¤â°Ê³]©w PrintHeadConfigs
+            // ?? PrintHeadPanel ï¿½{ï¿½bï¿½|ï¿½Û°Ê±ï¿½ï¿½y Resources ï¿½Ø¿ï¿½
+            // ï¿½ï¿½ï¿½Aï¿½Ý­nï¿½ï¿½Ê³]ï¿½w PrintHeadConfigs
             
             #if DEBUG
             System.Diagnostics.Debug.WriteLine($"[MainPanel] Initialized - PrintHeadPanel will auto-load configurations");

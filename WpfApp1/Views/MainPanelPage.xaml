@@ -1,0 +1,266 @@
+<UserControl x:Class="WpfApp1.Views.MainPanelPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="800" d:DesignWidth="1200">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Main Panel Header -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource CardBackgroundBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="2"
+                    CornerRadius="10"
+                    Padding="30"
+                    Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="??? Main Control Panel"
+                               FontSize="28"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource PrimaryBrush}"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,10"/>
+
+                    <TextBlock Text="UBI System - Unified Biological Interface Control Center"
+                               FontSize="16"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!-- System Status -->
+            <Grid Grid.Row="1" Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- PLC Status -->
+                <Border Grid.Column="0"
+                        Background="{StaticResource CardBackgroundBrush}"
+                        BorderBrush="{StaticResource SuccessBrush}"
+                        BorderThickness="2"
+                        CornerRadius="10"
+                        Padding="20"
+                        Margin="0,0,10,0">
+                    <StackPanel>
+                        <TextBlock Text="PLC Connection"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource SuccessBrush}"
+                                   Margin="0,0,0,10"/>
+                        <TextBlock Text="Connected"
+                                   FontSize="24"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource SuccessBrush}"
+                                   Margin="0,0,0,5"/>
+                        <TextBlock Text="Mitsubishi FX5U"
+                                   FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- System Health -->
+                <Border Grid.Column="1"
+                        Background="{StaticResource CardBackgroundBrush}"
+                        BorderBrush="{StaticResource InfoBrush}"
+                        BorderThickness="2"
+                        CornerRadius="10"
+                        Padding="20"
+                        Margin="5,0">
+                    <StackPanel>
+                        <TextBlock Text="System Health"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource InfoBrush}"
+                                   Margin="0,0,0,10"/>
+                        <TextBlock Text="98.5%"
+                                   FontSize="24"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource SuccessBrush}"
+                                   Margin="0,0,0,5"/>
+                        <TextBlock Text="All systems normal"
+                                   FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Active Processes -->
+                <Border Grid.Column="2"
+                        Background="{StaticResource CardBackgroundBrush}"
+                        BorderBrush="{StaticResource WarningBrush}"
+                        BorderThickness="2"
+                        CornerRadius="10"
+                        Padding="20"
+                        Margin="10,0,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Active Processes"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource WarningBrush}"
+                                   Margin="0,0,0,10"/>
+                        <TextBlock Text="2 running"
+                                   FontSize="24"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource WarningBrush}"
+                                   Margin="0,0,0,5"/>
+                        <TextBlock Text="Recipe 1 &amp; Recipe 2"
+                                   FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Control Actions -->
+            <Border Grid.Row="2"
+                    Background="{StaticResource DarkBackgroundBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="2"
+                    CornerRadius="10"
+                    Padding="30">
+                <StackPanel>
+                    <TextBlock Text="Quick Actions"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource PrimaryBrush}"
+                               Margin="0,0,0,20"/>
+
+                    <TextBlock Text="System control operations:"
+                               FontSize="14"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Margin="0,0,0,15"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                            <Button Content="Start Process"
+                                    Width="150"
+                                    Height="45"
+                                    Background="{StaticResource SuccessBrush}"
+                                    Foreground="{StaticResource TextPrimaryBrush}"
+                                    BorderThickness="0"
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Cursor="Hand"
+                                    Margin="0,0,0,10"
+                                    Click="StartProcess_Click">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                            CornerRadius="8">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                          VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+
+                            <Button Content="Load Recipe 1"
+                                    Width="150"
+                                    Height="45"
+                                    Background="{StaticResource InfoBrush}"
+                                    Foreground="{StaticResource TextPrimaryBrush}"
+                                    BorderThickness="0"
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Cursor="Hand"
+                                    Margin="0,0,0,10">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                            CornerRadius="8">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                          VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <Button Content="Emergency Stop"
+                                    Width="150"
+                                    Height="45"
+                                    Background="{StaticResource ErrorBrush}"
+                                    Foreground="{StaticResource TextPrimaryBrush}"
+                                    BorderThickness="0"
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Cursor="Hand"
+                                    Margin="0,0,0,10">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                            CornerRadius="8">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                          VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+
+                            <Button Content="Load Recipe 2"
+                                    Width="150"
+                                    Height="45"
+                                    Background="{StaticResource WarningBrush}"
+                                    Foreground="{StaticResource TextPrimaryBrush}"
+                                    BorderThickness="0"
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Cursor="Hand"
+                                    Margin="0,0,0,10">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                            CornerRadius="8">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                          VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

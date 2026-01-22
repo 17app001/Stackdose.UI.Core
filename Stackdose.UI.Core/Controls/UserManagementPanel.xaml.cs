@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using Stackdose.Abstractions.Logging;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
 using Stackdose.UI.Core.Services;

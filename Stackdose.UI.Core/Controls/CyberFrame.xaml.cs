@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.ComponentModel;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
+using Stackdose.Abstractions.Logging;
 
 namespace Stackdose.UI.Core.Controls
 {
@@ -195,7 +196,7 @@ namespace Stackdose.UI.Core.Controls
             // ✅ 強制輸出（Console + Debug + LiveLogViewer）
             Console.WriteLine("========== CyberFrame_Loaded ==========");
             System.Diagnostics.Debug.WriteLine("========== CyberFrame_Loaded ==========");
-            ComplianceContext.LogSystem("========== CyberFrame_Loaded ==========", Models.LogLevel.Info);
+            ComplianceContext.LogSystem("========== CyberFrame_Loaded ==========", LogLevel.Info);
 
             try
             {
@@ -208,7 +209,7 @@ namespace Stackdose.UI.Core.Controls
 
                 // 確保 ComplianceContext 已初始化（觸發靜態建構函數）
                 ComplianceContext.LogSystem("[CyberFrame] Loaded, initializing batch write indicator...",
-                    Models.LogLevel.Info, showInUi: true); // ✅ showInUi 改為 true
+                    LogLevel.Info, showInUi: true); // ✅ showInUi 改為 true
 
                 Console.WriteLine("[CyberFrame] 訂閱前...");
 
@@ -218,7 +219,7 @@ namespace Stackdose.UI.Core.Controls
                 Console.WriteLine("[CyberFrame] 訂閱後...");
 
                 ComplianceContext.LogSystem("[CyberFrame] 批次寫入事件已訂閱",
-                    Models.LogLevel.Success, showInUi: true); // ✅ 顯示在 LiveLogViewer
+                    LogLevel.Success, showInUi: true); // ✅ 顯示在 LiveLogViewer
 
                 System.Diagnostics.Debug.WriteLine("[CyberFrame] 批次寫入事件已訂閱");
             }
@@ -226,7 +227,7 @@ namespace Stackdose.UI.Core.Controls
             {
                 Console.WriteLine($"[CyberFrame] CyberFrame_Loaded ERROR: {ex.Message}");
                 ComplianceContext.LogSystem($"[CyberFrame] ERROR: {ex.Message}",
-                    Models.LogLevel.Error, showInUi: true);
+                    LogLevel.Error, showInUi: true);
                 System.Diagnostics.Debug.WriteLine($"[CyberFrame] CyberFrame_Loaded Error: {ex.Message}");
             }
         }
@@ -635,7 +636,7 @@ namespace Stackdose.UI.Core.Controls
 
             // ✅ 顯示在 LiveLogViewer
             ComplianceContext.LogSystem($"🟢 批次寫入開始: {dataCount} DataLogs + {auditCount} AuditLogs",
-                Models.LogLevel.Success, showInUi: true);
+                LogLevel.Success, showInUi: true);
 
             try
             {
@@ -660,7 +661,7 @@ namespace Stackdose.UI.Core.Controls
                     {
                         Console.WriteLine("[CyberFrame] 警告：找不到 BatchWriteIndicator 控制項！");
                         ComplianceContext.LogSystem("[CyberFrame] 警告：找不到 BatchWriteIndicator 控制項！",
-                            Models.LogLevel.Warning, showInUi: true);
+                            LogLevel.Warning, showInUi: true);
                     }
                 }, System.Windows.Threading.DispatcherPriority.Send); // ✅ 使用 Send 優先級，立即執行
             }
@@ -668,7 +669,7 @@ namespace Stackdose.UI.Core.Controls
             {
                 Console.WriteLine($"[CyberFrame] OnBatchFlushStarted Error: {ex.Message}");
                 ComplianceContext.LogSystem($"[CyberFrame] 批次寫入開始錯誤: {ex.Message}",
-                    Models.LogLevel.Error, showInUi: true);
+                    LogLevel.Error, showInUi: true);
                 System.Diagnostics.Debug.WriteLine($"[CyberFrame] OnBatchFlushStarted Error: {ex.Message}");
             }
         }
@@ -687,7 +688,7 @@ namespace Stackdose.UI.Core.Controls
 
             // ✅ 顯示在 LiveLogViewer
             ComplianceContext.LogSystem($"🔴 批次寫入完成: {dataCount} DataLogs + {auditCount} AuditLogs",
-                Models.LogLevel.Info, showInUi: true);
+                LogLevel.Info, showInUi: true);
 
             try
             {
@@ -717,7 +718,7 @@ namespace Stackdose.UI.Core.Controls
                         {
                             Console.WriteLine("[CyberFrame] 警告：找不到 BatchWriteIndicator 控制項！");
                             ComplianceContext.LogSystem("[CyberFrame] 警告：找不到 BatchWriteIndicator 控制項！",
-                                Models.LogLevel.Warning, showInUi: true);
+                                LogLevel.Warning, showInUi: true);
                         }
                     }, System.Windows.Threading.DispatcherPriority.Send);
                 });
@@ -726,7 +727,7 @@ namespace Stackdose.UI.Core.Controls
             {
                 Console.WriteLine($"[CyberFrame] OnBatchFlushCompleted Error: {ex.Message}");
                 ComplianceContext.LogSystem($"[CyberFrame] 批次寫入完成錯誤: {ex.Message}",
-                    Models.LogLevel.Error, showInUi: true);
+                    LogLevel.Error, showInUi: true);
                 System.Diagnostics.Debug.WriteLine($"[CyberFrame] OnBatchFlushCompleted Error: {ex.Message}");
             }
         }

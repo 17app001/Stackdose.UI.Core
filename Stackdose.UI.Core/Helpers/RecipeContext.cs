@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Stackdose.Abstractions.Hardware;
 using System.Text.RegularExpressions;
+using Stackdose.Abstractions.Logging;
 
 namespace Stackdose.UI.Core.Helpers
 {

@@ -1,4 +1,5 @@
 ﻿using Stackdose.Abstractions.Hardware;
+using Stackdose.Abstractions.Logging;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
 using System.Text.RegularExpressions;
@@ -474,7 +475,7 @@ namespace Stackdose.UI.Core.Controls
             var status = PlcContext.GlobalStatus;
             if (status == null)
             {
-                ComplianceContext.LogSystem("[SensorViewer] PlcStatus not found in PlcContext.", Models.LogLevel.Warning, showInUi: false);
+                ComplianceContext.LogSystem("[SensorViewer] PlcStatus not found in PlcContext.",LogLevel.Warning, showInUi: false);
                 return;
             }
 
@@ -502,20 +503,20 @@ namespace Stackdose.UI.Core.Controls
                 // 🔥 如果已經初始化過，不重複執行
                 if (_isInitialized)
                 {
-                    ComplianceContext.LogSystem("[SensorViewer] Already initialized, skipping OnPlcConnectionEstablished logic.", Models.LogLevel.Info, showInUi: false);
+                    ComplianceContext.LogSystem("[SensorViewer] Already initialized, skipping OnPlcConnectionEstablished logic.",LogLevel.Info, showInUi: false);
                     return;
                 }
                 
                 // 🔥 如果已經註冊過，不重複註冊
                 if (SensorContext.IsMonitorRegistered)
                 {
-                    ComplianceContext.LogSystem("[SensorViewer] Monitor addresses already registered, skipping.", Models.LogLevel.Info, showInUi: false);
+                    ComplianceContext.LogSystem("[SensorViewer] Monitor addresses already registered, skipping.",LogLevel.Info, showInUi: false);
                     return;
                 }
 
                 if (manager.Monitor == null)
                 {
-                    ComplianceContext.LogSystem("[SensorViewer] Monitor not available.", Models.LogLevel.Warning, showInUi: false);
+                    ComplianceContext.LogSystem("[SensorViewer] Monitor not available.",LogLevel.Warning, showInUi: false);
                     return;
                 }
 
@@ -524,18 +525,18 @@ namespace Stackdose.UI.Core.Controls
 
                 if (string.IsNullOrEmpty(monitorAddresses))
                 {
-                    ComplianceContext.LogSystem("[SensorViewer] No monitor addresses generated.", Models.LogLevel.Warning, showInUi: false);
+                    ComplianceContext.LogSystem("[SensorViewer] No monitor addresses generated.",LogLevel.Warning, showInUi: false);
                     return;
                 }
 
-                ComplianceContext.LogSystem($"[SensorViewer] Monitor addresses prepared: {monitorAddresses}", Models.LogLevel.Info, showInUi: false);
+                ComplianceContext.LogSystem($"[SensorViewer] Monitor addresses prepared: {monitorAddresses}",LogLevel.Info, showInUi: false);
                 
                 // 🔥 註冊監控位址（SensorContext.GenerateMonitorAddresses 會設定 IsMonitorRegistered）
                 // 由 PlcStatus 的 ConnectAsync 自動呼叫 RegisterMonitors
             }
             catch (Exception ex)
             {
-                ComplianceContext.LogSystem($"[SensorViewer] Failed to prepare monitors: {ex.Message}", Models.LogLevel.Error, showInUi: true);
+                ComplianceContext.LogSystem($"[SensorViewer] Failed to prepare monitors: {ex.Message}",LogLevel.Error, showInUi: true);
             }
         }
 
@@ -546,7 +547,7 @@ namespace Stackdose.UI.Core.Controls
         {
             if (manager == null || !manager.IsConnected)
             {
-                ComplianceContext.LogSystem("[SensorViewer] Cannot initialize sensor states: PLC not connected.", Models.LogLevel.Warning, showInUi: false);
+                ComplianceContext.LogSystem("[SensorViewer] Cannot initialize sensor states: PLC not connected.",LogLevel.Warning, showInUi: false);
                 return;
             }
 
@@ -554,7 +555,7 @@ namespace Stackdose.UI.Core.Controls
             System.Diagnostics.Debug.WriteLine("[SensorViewer] InitializeSensorStates starting...");
             #endif
 
-            ComplianceContext.LogSystem("[SensorViewer] Initializing sensor states (silent)...", Models.LogLevel.Info, showInUi: false);
+            ComplianceContext.LogSystem("[SensorViewer] Initializing sensor states (silent)...",LogLevel.Info, showInUi: false);
 
             var alarmSensors = new List<SensorConfig>(); // 🔥 收集異常 Sensor
 
@@ -576,7 +577,7 @@ namespace Stackdose.UI.Core.Controls
                         
                         ComplianceContext.LogSystem(
                             $"[Sensor] 初始狀態異常: {sensor.OperationDescription} ({sensor.Device}) = {currentValue}",
-                            Models.LogLevel.Warning,
+                           LogLevel.Warning,
                             showInUi: true
                         );
                     }
@@ -590,7 +591,7 @@ namespace Stackdose.UI.Core.Controls
             // 更新統計
             UpdateStatistics();
 
-            ComplianceContext.LogSystem($"[SensorViewer] Sensor states initialized. Total alarms: {alarmSensors.Count}", Models.LogLevel.Success, showInUi: false);
+            ComplianceContext.LogSystem($"[SensorViewer] Sensor states initialized. Total alarms: {alarmSensors.Count}",LogLevel.Success, showInUi: false);
 
             #if DEBUG
             System.Diagnostics.Debug.WriteLine($"[SensorViewer] InitializeSensorStates completed.");

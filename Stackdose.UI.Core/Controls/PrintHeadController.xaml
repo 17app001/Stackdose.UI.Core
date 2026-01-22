@@ -345,6 +345,7 @@
                                 Foreground="White"
                                 BorderBrush="#C0392B"
                                 x:Name="CancelTaskButton"
+                                Click="CancelTaskButton_Click"
                                 Style="{StaticResource ModernButtonStyle}"/>
 
 						<!-- 列印方向 -->

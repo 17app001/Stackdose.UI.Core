@@ -1,3 +1,4 @@
+using Stackdose.Abstractions.Logging;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Services;
 using System.Windows;
@@ -127,7 +128,7 @@ namespace Stackdose.UI.Core.Controls
 
                     ComplianceContext.LogSystem(
                         $"[LoginDialog] Login successful: {user?.DisplayName} ({user?.AccessLevel})",
-                        Models.LogLevel.Success,
+                        LogLevel.Success,
                         showInUi: false
                     );
 
@@ -225,7 +226,7 @@ namespace Stackdose.UI.Core.Controls
 
             ComplianceContext.LogSystem(
                 $"[LoginDialog] User clicked 'Forgot Password' - {UserIdTextBox.Text}",
-                Models.LogLevel.Info,
+                LogLevel.Info,
                 showInUi: false
             );
         }

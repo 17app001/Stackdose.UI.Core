@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Stackdose.Abstractions.Logging;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
 

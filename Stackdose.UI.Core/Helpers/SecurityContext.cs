@@ -6,6 +6,7 @@ using System.Windows;
 using System.IO;
 using Microsoft.Data.Sqlite;
 using Dapper;
+using Stackdose.Abstractions.Logging;
 
 namespace Stackdose.UI.Core.Helpers
 {

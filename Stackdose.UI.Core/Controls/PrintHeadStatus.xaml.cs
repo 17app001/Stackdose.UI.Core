@@ -1,4 +1,5 @@
-﻿using Stackdose.Abstractions.Models;
+﻿using Stackdose.Abstractions.Logging;
+using Stackdose.Abstractions.Models;
 using Stackdose.Abstractions.Print;
 using Stackdose.PrintHead.Feiyang;
 using Stackdose.UI.Core.Helpers;
@@ -98,19 +99,7 @@ namespace Stackdose.UI.Core.Controls
 
         private async void OnControlLoaded(object sender, RoutedEventArgs e)
         {
-            #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[PrintHeadStatus] OnControlLoaded called. IsInitialized={_isInitialized}, IsConnected={_isConnected}");
-            #endif
-            
-            // 🔥 避免重複初始化
-            if (_isInitialized)
-            {
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[PrintHeadStatus] Already initialized, skipping.");
-                #endif
-                return;
-            }
-            
+                     
             // 設定為已初始化
             _isInitialized = true;
             
@@ -613,11 +602,11 @@ namespace Stackdose.UI.Core.Controls
                     VoltagesPanel.ItemsSource = voltages;
                 }
 
-                // 3. 编码器 DPI (⭐ 修正：使用 EncoderDPI 而不是 Encoder)
-                if (status.EncoderDPI != null)
+                // 3. 编码器 (⭐ 修正：使用 GratingCount 而不是 EncoderDPI，因為 Reset 影響的是 Counter)
+                if (status.GratingCount != null)
                 {
-                    int encoderDpi = (int)status.EncoderDPI;
-                    EncoderText.Text = encoderDpi.ToString();
+                    double gratingCount = (double)status.GratingCount;
+                    EncoderText.Text = gratingCount.ToString("F0");
                 }
 
                 // 4. PrintIndex (⭐ 修正：使用 unsigned int，需要轉換)
@@ -677,11 +666,7 @@ namespace Stackdose.UI.Core.Controls
 
         #endregion
 
-        public void StartSpit(SpitParams spitParams)
-        {
-            _printHead?.Spit(spitParams);
-        }
-        
+           
         /// <summary>
         /// ⭐ 新增：處理噴頭狀態變更事件
         /// </summary>

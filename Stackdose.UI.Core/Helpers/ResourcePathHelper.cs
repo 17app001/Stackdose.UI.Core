@@ -1,4 +1,5 @@
 using System.IO;
+using Stackdose.Abstractions.Logging;
 using Stackdose.UI.Core.Models;
 
 namespace Stackdose.UI.Core.Helpers

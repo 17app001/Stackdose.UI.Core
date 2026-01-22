@@ -1,4 +1,5 @@
-﻿using Stackdose.UI.Core.Controls;
+﻿using Stackdose.Abstractions.Logging;
+using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Models;
 using System;
 using System.Collections.ObjectModel;

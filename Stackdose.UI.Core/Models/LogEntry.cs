@@ -2,11 +2,12 @@
 using System;
 using System.Windows;
 using System.Windows.Media;
+using Stackdose.Abstractions.Logging;
 using Stackdose.UI.Core.Helpers;
 
 namespace Stackdose.UI.Core.Models
 {
-    public enum LogLevel { Info, Warning, Error, Success }
+    //public enum LogLevel { Info, Warning, Error, Success }
 
     public class LogEntry
     {

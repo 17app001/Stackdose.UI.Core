@@ -1,4 +1,5 @@
-﻿using Stackdose.UI.Core.Helpers;
+﻿using Stackdose.Abstractions.Logging;
+using Stackdose.UI.Core.Helpers;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -177,7 +178,7 @@ namespace Stackdose.UI.Core.Controls
             // 🔥 如果都找不到，記錄警告
             ComplianceContext.LogSystem(
                 $"[PlcEventTrigger] {_cachedEventName} ({_cachedAddress}) 警告：找不到 PlcStatus",
-                Models.LogLevel.Warning,
+                LogLevel.Warning,
                 showInUi: true
             );
         }
@@ -261,7 +262,7 @@ namespace Stackdose.UI.Core.Controls
                     //// 🔥 日誌：觸發條件滿足
                     //ComplianceContext.LogSystem(
                     //    $"[PlcEventTrigger] {eventName} ({address}) 條件滿足！觸發事件（{condition}）",
-                    //    Models.LogLevel.Info,
+                    //    LogLevel.Info,
                     //    showInUi: true
                     //);
 
@@ -282,7 +283,7 @@ namespace Stackdose.UI.Core.Controls
             // 1. 記錄觸發日誌
             ComplianceContext.LogSystem(
                 $"[PlcEvent] {EventName} ({Address}) 觸發",
-                Models.LogLevel.Info,
+                LogLevel.Info,
                 showInUi: true
             );
 
@@ -292,7 +293,7 @@ namespace Stackdose.UI.Core.Controls
             // 3. 記錄事件處理完成
             ComplianceContext.LogSystem(
                 $"[PlcEvent] {EventName} ({Address}) 事件處理完成",
-                Models.LogLevel.Info,
+                LogLevel.Info,
                 showInUi: false
             );
 
@@ -312,7 +313,7 @@ namespace Stackdose.UI.Core.Controls
 
                     ComplianceContext.LogSystem(
                         $"[PlcEvent] {EventName} ({Address}) 自動清零",
-                        Models.LogLevel.Info,
+                        LogLevel.Info,
                         showInUi: true
                     );
                 }
@@ -320,7 +321,7 @@ namespace Stackdose.UI.Core.Controls
                 {
                     ComplianceContext.LogSystem(
                         $"[PlcEvent] 清空失敗: {ex.Message}",
-                        Models.LogLevel.Error,
+                        LogLevel.Error,
                         showInUi: true
                     );
                 }

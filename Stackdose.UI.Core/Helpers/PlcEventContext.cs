@@ -3,6 +3,7 @@ using System.Windows;
 using Stackdose.UI.Core.Controls;
 using System.Collections.Generic;
 using System.Linq;
+using Stackdose.Abstractions.Logging;
 
 namespace Stackdose.UI.Core.Helpers
 {
@@ -213,7 +214,7 @@ namespace Stackdose.UI.Core.Helpers
         {
             ComplianceContext.LogSystem(
                 $"[PlcEvent] {trigger.EventName} ({trigger.Address}) = {value}",
-                Models.LogLevel.Info,
+                LogLevel.Info,
                 showInUi: false
             );
         }

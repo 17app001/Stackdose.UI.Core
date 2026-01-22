@@ -1,4 +1,5 @@
 ﻿using Stackdose.Abstractions.Hardware;
+using Stackdose.Abstractions.Logging;
 using Stackdose.Hardware.Plc;
 using Stackdose.Mitsubishi.Plc;
 using Stackdose.UI.Core.Helpers;
@@ -87,7 +88,7 @@ namespace Stackdose.UI.Core.Controls
             if (IsGlobal)
             {
                 PlcContext.GlobalStatus = this;
-                ComplianceContext.LogSystem("System initialized. Main PLC set.", Stackdose.UI.Core.Models.LogLevel.Info);
+                ComplianceContext.LogSystem("System initialized. Main PLC set.", LogLevel.Info);
             }
 
             if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(this)) return;
@@ -173,7 +174,7 @@ namespace Stackdose.UI.Core.Controls
                 try
                 {
                     string retryMsg = attempt > 1 ? $" (Attempt {attempt}/{MaxRetryCount})" : "";
-                    ComplianceContext.LogSystem($"Connecting to PLC ({IpAddress}:{Port}){retryMsg}...", Stackdose.UI.Core.Models.LogLevel.Info);
+                    ComplianceContext.LogSystem($"Connecting to PLC ({IpAddress}:{Port}){retryMsg}...", LogLevel.Info);
 
                     if (attempt > 1) StatusText.Text = $"RETRYING ({attempt}/{MaxRetryCount})...";
 
@@ -183,7 +184,7 @@ namespace Stackdose.UI.Core.Controls
                     if (success)
                     {
                         StatusText.Text = "CONNECTED";
-                        ComplianceContext.LogSystem($"PLC Connection Established ({IpAddress})", Stackdose.UI.Core.Models.LogLevel.Success);
+                        ComplianceContext.LogSystem($"PLC Connection Established ({IpAddress})", LogLevel.Success);
 
                         // 🔥 1. 先註冊手動設定的 MonitorAddress（如果有）
                         if (!string.IsNullOrWhiteSpace(MonitorAddress)) 
@@ -196,7 +197,7 @@ namespace Stackdose.UI.Core.Controls
                             RegisterMonitors(sensorAddresses);
                             ComplianceContext.LogSystem(
                                 $"[AutoRegister] Sensor: {sensorAddresses}", 
-                                Stackdose.UI.Core.Models.LogLevel.Info,
+                                LogLevel.Info,
                                 showInUi: false
                             );
                         }
@@ -208,7 +209,7 @@ namespace Stackdose.UI.Core.Controls
                             RegisterMonitors(labelAddresses);
                             ComplianceContext.LogSystem(
                                 $"[AutoRegister] PlcLabel: {labelAddresses}", 
-                                Stackdose.UI.Core.Models.LogLevel.Info,
+                                LogLevel.Info,
                                 showInUi: false
                             );
                         }
@@ -220,7 +221,7 @@ namespace Stackdose.UI.Core.Controls
                             RegisterMonitors(eventAddresses);
                             ComplianceContext.LogSystem(
                                 $"[AutoRegister] PlcEvent: {eventAddresses}", 
-                                Stackdose.UI.Core.Models.LogLevel.Info,
+                                LogLevel.Info,
                                 showInUi: false
                             );
                         }
@@ -232,7 +233,7 @@ namespace Stackdose.UI.Core.Controls
                             RegisterMonitors(recipeAddresses);
                             ComplianceContext.LogSystem(
                                 $"[AutoRegister] Recipe: {recipeAddresses}", 
-                                Stackdose.UI.Core.Models.LogLevel.Info,
+                                LogLevel.Info,
                                 showInUi: false
                             );
                         }
@@ -240,7 +241,7 @@ namespace Stackdose.UI.Core.Controls
                         // 🔥 觸發連線成功事件（讓訂閱者可以執行自訂邏輯，例如下載 Recipe）
                         ComplianceContext.LogSystem(
                             "[PlcStatus] Triggering ConnectionEstablished event...",
-                            Stackdose.UI.Core.Models.LogLevel.Info,
+                            LogLevel.Info,
                             showInUi: false
                         );
                         
@@ -248,7 +249,7 @@ namespace Stackdose.UI.Core.Controls
                         
                         ComplianceContext.LogSystem(
                             $"[PlcStatus] ConnectionEstablished event triggered. Subscriber count: {ConnectionEstablished?.GetInvocationList().Length ?? 0}",
-                            Stackdose.UI.Core.Models.LogLevel.Info,
+                            LogLevel.Info,
                             showInUi: false
                         );
 
@@ -260,7 +261,7 @@ namespace Stackdose.UI.Core.Controls
                         // 連線失敗
                         if (attempt <= MaxRetryCount)
                         {
-                            ComplianceContext.LogSystem($"Connection failed. Retrying in 2s... ({attempt}/{MaxRetryCount})", Stackdose.UI.Core.Models.LogLevel.Warning);
+                            ComplianceContext.LogSystem($"Connection failed. Retrying in 2s... ({attempt}/{MaxRetryCount})", LogLevel.Warning);
                             // 等待 2 秒後重試
                             await Task.Delay(2000);
                         }
@@ -268,13 +269,13 @@ namespace Stackdose.UI.Core.Controls
                         {
                             // 超過次數，放棄
                             StatusText.Text = "DISCONNECTED";
-                            ComplianceContext.LogSystem($"PLC Connection Failed after {MaxRetryCount} attempts.", Stackdose.UI.Core.Models.LogLevel.Error);
+                            ComplianceContext.LogSystem($"PLC Connection Failed after {MaxRetryCount} attempts.", LogLevel.Error);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    ComplianceContext.LogSystem($"PLC Error: {ex.Message}", Stackdose.UI.Core.Models.LogLevel.Error);
+                    ComplianceContext.LogSystem($"PLC Error: {ex.Message}", LogLevel.Error);
                     if (attempt <= MaxRetryCount) await Task.Delay(2000);
                 }
             }
@@ -290,7 +291,7 @@ namespace Stackdose.UI.Core.Controls
             if (_plcManager != null) await _plcManager.DisconnectAsync();
             UpdateUiState(ConnectionState.Failed);
             StatusText.Text = "Click To Connecting";
-            ComplianceContext.LogSystem($"PLC Disconnected by User", Stackdose.UI.Core.Models.LogLevel.Warning);
+            ComplianceContext.LogSystem($"PLC Disconnected by User", LogLevel.Warning);
         }
 
         // 🔥 新增：斷線偵測看門狗 (Watchdog)
@@ -316,7 +317,7 @@ namespace Stackdose.UI.Core.Controls
                         // 切回 UI 執行緒處理重連
                         Dispatcher.Invoke(async () =>
                         {
-                            ComplianceContext.LogSystem("⚠️ Connection lost detected! Attempting to reconnect...", Stackdose.UI.Core.Models.LogLevel.Error);
+                            ComplianceContext.LogSystem("⚠️ Connection lost detected! Attempting to reconnect...", LogLevel.Error);
 
                             // 停止這個看門狗迴圈 (ConnectAsync 成功後會再起一個新的)
                             CancelWatchdog();

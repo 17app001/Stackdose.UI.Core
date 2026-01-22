@@ -10,6 +10,10 @@
              VerticalAlignment="Stretch"
              x:Name="Root">
 
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </UserControl.Resources>
+
     <!-- Main Window Frame -->
     <Border Background="{DynamicResource Cyber.Bg.Dark}" 
             BorderBrush="{DynamicResource Cyber.Border}" 
@@ -61,7 +65,13 @@
                         <!-- 🔥 PLC Status Indicator (Integrated) -->
                         <local:PlcStatus x:Name="IntegratedPlcStatus"                                                
                                                  Width="220"
-                                                 Margin="0,0,15,0" IpAddress="192.168.22.39" Port="3000" ShowBorder="False"/>
+                                                 Margin="0,0,15,0" 
+                                                 IpAddress="{Binding PlcIpAddress, ElementName=Root}" 
+                                                 Port="{Binding PlcPort, ElementName=Root}" 
+                                                 ScanInterval="{Binding PlcScanInterval, ElementName=Root}"
+                                                 AutoConnect="{Binding PlcAutoConnect, ElementName=Root}"
+                                                 Visibility="{Binding ShowPlcStatus, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                 ShowBorder="False"/>
                         
                         <!-- Theme Toggle Button -->
                         <Button x:Name="ThemeToggleButton" 

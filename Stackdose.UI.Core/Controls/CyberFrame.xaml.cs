@@ -35,7 +35,7 @@ namespace Stackdose.UI.Core.Controls
 
         /// <summary>時鐘計時器</summary>
         private DispatcherTimer? _clockTimer;
-        
+
         /// <summary>🔥 全域 PLC 連線管理器</summary>
         private PlcStatus? _globalPlcStatus;
 
@@ -90,28 +90,17 @@ namespace Stackdose.UI.Core.Controls
             SecurityContext.LoginSuccess += OnLoginSuccess;
             SecurityContext.LogoutOccurred += OnLogoutOccurred;
         }
-        
+
         /// <summary>
         /// 🔥 初始化批次寫入狀態燈號
         /// </summary>
         private void InitializeBatchWriteIndicator()
         {
-            try
-            {
-                // 訂閱批次刷新事件
-                SqliteLogger.BatchFlushStarted += OnBatchFlushStarted;
-                SqliteLogger.BatchFlushCompleted += OnBatchFlushCompleted;
-                
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine("[CyberFrame] 批次寫入狀態燈號已初始化");
-                #endif
-            }
-            catch (Exception ex)
-            {
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[CyberFrame] InitializeBatchWriteIndicator Error: {ex.Message}");
-                #endif
-            }
+
+            // 訂閱批次刷新事件
+            SqliteLogger.BatchFlushStarted += OnBatchFlushStarted;
+            SqliteLogger.BatchFlushCompleted += OnBatchFlushCompleted;
+
         }
 
         /// <summary>
@@ -119,17 +108,6 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         private void InitializeGlobalPlcConnection()
         {
-            #if DEBUG
-            // 🔥 DEBUG 模式：不自動連線 PLC（避免長時間等待）
-            System.Diagnostics.Debug.WriteLine("[CyberFrame] DEBUG Mode: PLC auto-connect disabled");
-            ComplianceContext.LogSystem(
-                "[CyberFrame] DEBUG Mode: PLC auto-connect disabled (click status to connect manually)",
-                LogLevel.Info,
-                showInUi: true
-            );
-            return; // 直接返回，不建立 PlcStatus
-            #endif
-
             try
             {
                 // 創建隱藏的 PlcStatus 實例作為全域連線管理器
@@ -139,12 +117,12 @@ namespace Stackdose.UI.Core.Controls
                     Port = PlcPort,
                     AutoConnect = false,  // 🔥 禁用自動連線
                     IsGlobal = true,
-                    MonitorAddress = "",
+                    MonitorAddress = MonitorAddress,
                     MonitorLength = 1,
-                    ScanInterval = 120,
+                    ScanInterval = PlcScanInterval,
                     Visibility = Visibility.Collapsed
                 };
-                
+
                 // 將其添加到 CyberFrame 的視覺樹中（但不顯示）
                 var rootGrid = this.FindName("Root") as Grid;
                 if (rootGrid != null && rootGrid.Parent is Border rootBorder && rootBorder.Child is Grid mainGrid)
@@ -156,7 +134,7 @@ namespace Stackdose.UI.Core.Controls
                         LogLevel.Info,
                         showInUi: false
                     );
-                    
+
                     // 🔥 延遲 2 秒後才開始背景連線（確保 MainWindow 已完全顯示）
                     Task.Delay(2000).ContinueWith(_ =>
                     {
@@ -165,11 +143,11 @@ namespace Stackdose.UI.Core.Controls
                             try
                             {
                                 System.Diagnostics.Debug.WriteLine("[CyberFrame] 開始背景連線 PLC (delayed)...");
-                                
+
                                 // 透過反射呼叫 ConnectAsync
-                                var connectMethod = _globalPlcStatus.GetType().GetMethod("ConnectAsync", 
+                                var connectMethod = _globalPlcStatus.GetType().GetMethod("ConnectAsync",
                                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                                    
+
                                 if (connectMethod != null)
                                 {
                                     var task = connectMethod.Invoke(_globalPlcStatus, null) as Task;
@@ -213,41 +191,41 @@ namespace Stackdose.UI.Core.Controls
             {
                 return;
             }
-            
+
             // ✅ 強制輸出（Console + Debug + LiveLogViewer）
             Console.WriteLine("========== CyberFrame_Loaded ==========");
             System.Diagnostics.Debug.WriteLine("========== CyberFrame_Loaded ==========");
             ComplianceContext.LogSystem("========== CyberFrame_Loaded ==========", Models.LogLevel.Info);
-            
+
             try
             {
                 // 🔥 初始化使用者管理服務（會自動建立預設 Admin）
                 var _ = new Services.UserManagementService();
                 System.Diagnostics.Debug.WriteLine("[CyberFrame] UserManagementService initialized");
-                
+
                 // 🔥 NEW: 初始化全域 PLC 連線
                 InitializeGlobalPlcConnection();
-                
+
                 // 確保 ComplianceContext 已初始化（觸發靜態建構函數）
-                ComplianceContext.LogSystem("[CyberFrame] Loaded, initializing batch write indicator...", 
+                ComplianceContext.LogSystem("[CyberFrame] Loaded, initializing batch write indicator...",
                     Models.LogLevel.Info, showInUi: true); // ✅ showInUi 改為 true
-                
+
                 Console.WriteLine("[CyberFrame] 訂閱前...");
-                
+
                 // 訂閱批次寫入事件
                 InitializeBatchWriteIndicator();
-                
+
                 Console.WriteLine("[CyberFrame] 訂閱後...");
-                
-                ComplianceContext.LogSystem("[CyberFrame] 批次寫入事件已訂閱", 
+
+                ComplianceContext.LogSystem("[CyberFrame] 批次寫入事件已訂閱",
                     Models.LogLevel.Success, showInUi: true); // ✅ 顯示在 LiveLogViewer
-                
+
                 System.Diagnostics.Debug.WriteLine("[CyberFrame] 批次寫入事件已訂閱");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[CyberFrame] CyberFrame_Loaded ERROR: {ex.Message}");
-                ComplianceContext.LogSystem($"[CyberFrame] ERROR: {ex.Message}", 
+                ComplianceContext.LogSystem($"[CyberFrame] ERROR: {ex.Message}",
                     Models.LogLevel.Error, showInUi: true);
                 System.Diagnostics.Debug.WriteLine($"[CyberFrame] CyberFrame_Loaded Error: {ex.Message}");
             }
@@ -261,11 +239,11 @@ namespace Stackdose.UI.Core.Controls
             // 取消訂閱事件avoiding記憶體洩漏
             SecurityContext.LoginSuccess -= OnLoginSuccess;
             SecurityContext.LogoutOccurred -= OnLogoutOccurred;
-            
+
             // 🔥 取消訂閱批次寫入事件
             SqliteLogger.BatchFlushStarted -= OnBatchFlushStarted;
             SqliteLogger.BatchFlushCompleted -= OnBatchFlushCompleted;
-            
+
             // 停止並清理計時器
             if (_clockTimer != null)
             {
@@ -284,8 +262,8 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         public static readonly DependencyProperty TitleProperty =
             DependencyProperty.Register(
-                nameof(Title), 
-                typeof(string), 
+                nameof(Title),
+                typeof(string),
                 typeof(CyberFrame),
                 new PropertyMetadata("SYSTEM"));
 
@@ -303,9 +281,9 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         public static readonly DependencyProperty ShowStatusIndicatorsProperty =
             DependencyProperty.Register(
-                nameof(ShowStatusIndicators), 
-                typeof(bool), 
-                typeof(CyberFrame), 
+                nameof(ShowStatusIndicators),
+                typeof(bool),
+                typeof(CyberFrame),
                 new PropertyMetadata(false, OnShowStatusIndicatorsChanged));
 
         /// <summary>
@@ -329,12 +307,17 @@ namespace Stackdose.UI.Core.Controls
         }
 
         /// <summary>
+        /// BooleanToVisibilityConverter
+        /// </summary>
+        private static readonly System.Windows.Controls.BooleanToVisibilityConverter BooleanToVisibilityConverter = new System.Windows.Controls.BooleanToVisibilityConverter();
+
+        /// <summary>
         /// 是否使用淺色主題 (Light Theme)
         /// </summary>
         public static readonly DependencyProperty UseLightThemeProperty =
             DependencyProperty.Register(
-                nameof(UseLightTheme), 
-                typeof(bool), 
+                nameof(UseLightTheme),
+                typeof(bool),
                 typeof(CyberFrame),
                 new PropertyMetadata(false, OnUseLightThemeChanged));
 
@@ -362,6 +345,30 @@ namespace Stackdose.UI.Core.Controls
         }
 
         /// <summary>
+        /// 是否顯示 PLC 狀態指示器
+        /// </summary>
+        public static readonly DependencyProperty ShowPlcStatusProperty =
+            DependencyProperty.Register(
+                nameof(ShowPlcStatus),
+                typeof(bool),
+                typeof(CyberFrame),
+                new PropertyMetadata(true, OnShowPlcStatusChanged));
+
+        public bool ShowPlcStatus
+        {
+            get => (bool)GetValue(ShowPlcStatusProperty);
+            set => SetValue(ShowPlcStatusProperty, value);
+        }
+
+        private static void OnShowPlcStatusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is CyberFrame frame && frame.FindName("IntegratedPlcStatus") is PlcStatus plcStatus)
+            {
+                plcStatus.Visibility = (bool)e.NewValue ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        /// <summary>
         /// 主內容區域
         /// </summary>
         public static readonly DependencyProperty MainContentProperty =
@@ -379,7 +386,7 @@ namespace Stackdose.UI.Core.Controls
             get => GetValue(MainContentProperty);
             set => SetValue(MainContentProperty, value);
         }
-        
+
         /// <summary>
         /// PLC IP 位址
         /// </summary>
@@ -399,6 +406,23 @@ namespace Stackdose.UI.Core.Controls
             set => SetValue(PlcIpAddressProperty, value);
         }
 
+
+        /// <summary>
+        /// PLC IP 位址
+        /// </summary>
+        public static readonly DependencyProperty MonitorAddressProperty =
+            DependencyProperty.Register(
+                nameof(MonitorAddress),
+                typeof(string),
+                typeof(CyberFrame),
+                new PropertyMetadata(""));
+
+        public string MonitorAddress
+        {
+            get => (string)GetValue(MonitorAddressProperty);
+            set => SetValue(MonitorAddressProperty, value);
+        }
+
         /// <summary>
         /// PLC 連接埠
         /// </summary>
@@ -416,6 +440,22 @@ namespace Stackdose.UI.Core.Controls
         {
             get => (int)GetValue(PlcPortProperty);
             set => SetValue(PlcPortProperty, value);
+        }
+
+        /// <summary>
+        /// PLC 掃描間隔 (ms)
+        /// </summary>
+        public static readonly DependencyProperty PlcScanIntervalProperty =
+            DependencyProperty.Register(
+                nameof(PlcScanInterval),
+                typeof(int),
+                typeof(CyberFrame),
+                new PropertyMetadata(150));
+
+        public int PlcScanInterval
+        {
+            get => (int)GetValue(PlcScanIntervalProperty);
+            set => SetValue(PlcScanIntervalProperty, value);
         }
 
         /// <summary>
@@ -487,7 +527,7 @@ namespace Stackdose.UI.Core.Controls
             Dispatcher.BeginInvoke(() =>
             {
                 UpdateUserInfo();
-                
+
                 // 🔥 新增：登入成功後自動切回首頁（避免某些角色卡在使用者管理頁面）
                 if (ViewMode == CyberFrameViewMode.UserManagement)
                 {
@@ -534,10 +574,10 @@ namespace Stackdose.UI.Core.Controls
         {
             System.Diagnostics.Debug.WriteLine("========== Theme Toggle START ==========");
             System.Diagnostics.Debug.WriteLine($"Current UseLightTheme: {UseLightTheme}");
-            
+
             // 🔥 使用 ThemeManager 統一切換主題
             ToggleTheme();
-            
+
             System.Diagnostics.Debug.WriteLine($"New UseLightTheme: {UseLightTheme}");
             System.Diagnostics.Debug.WriteLine("========== Theme Toggle END ==========");
         }
@@ -548,11 +588,11 @@ namespace Stackdose.UI.Core.Controls
         private void UserManagementToggleButton_Click(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("========== UserManagementToggleButton_Click START ==========");
-            
+
             // 檢查權限 (只有 Admin 和 Supervisor 可進入)
             var session = SecurityContext.CurrentSession;
             System.Diagnostics.Debug.WriteLine($"[CyberFrame] Current User: {session.CurrentUserName}, Level: {session.CurrentLevel}");
-            
+
             if (session.CurrentLevel < AccessLevel.Supervisor)
             {
                 System.Diagnostics.Debug.WriteLine("[CyberFrame] ❌ Permission denied");
@@ -565,10 +605,10 @@ namespace Stackdose.UI.Core.Controls
             }
 
             System.Diagnostics.Debug.WriteLine($"[CyberFrame] Current ViewMode BEFORE: {ViewMode}");
-            
+
             // 切換視圖模式
-            ViewMode = ViewMode == CyberFrameViewMode.Normal 
-                ? CyberFrameViewMode.UserManagement 
+            ViewMode = ViewMode == CyberFrameViewMode.Normal
+                ? CyberFrameViewMode.UserManagement
                 : CyberFrameViewMode.Normal;
 
             System.Diagnostics.Debug.WriteLine($"[CyberFrame] Current ViewMode AFTER: {ViewMode}");
@@ -577,7 +617,7 @@ namespace Stackdose.UI.Core.Controls
             ComplianceContext.LogSystem(
                 $"使用者 {session.CurrentUserName} {(ViewMode == CyberFrameViewMode.UserManagement ? "進入" : "離開")}使用者管理介面",
                 LogLevel.Info);
-            
+
             System.Diagnostics.Debug.WriteLine("========== UserManagementToggleButton_Click END ==========");
         }
 
@@ -589,26 +629,26 @@ namespace Stackdose.UI.Core.Controls
             // ✅ 最優先輸出（確認事件有被觸發）
             Console.WriteLine($"========== OnBatchFlushStarted ==========");
             Console.WriteLine($"[CyberFrame] dataCount={dataCount}, auditCount={auditCount}");
-            
+
             System.Diagnostics.Debug.WriteLine($"========== OnBatchFlushStarted ==========");
             System.Diagnostics.Debug.WriteLine($"[CyberFrame] 批次寫入開始: {dataCount}+{auditCount}");
-            
+
             // ✅ 顯示在 LiveLogViewer
-            ComplianceContext.LogSystem($"🟢 批次寫入開始: {dataCount} DataLogs + {auditCount} AuditLogs", 
+            ComplianceContext.LogSystem($"🟢 批次寫入開始: {dataCount} DataLogs + {auditCount} AuditLogs",
                 Models.LogLevel.Success, showInUi: true);
-            
+
             try
             {
                 // ✅ 使用 Invoke 而非 InvokeAsync，確保立即執行
                 Dispatcher.Invoke(() =>
                 {
                     Console.WriteLine("[CyberFrame] Dispatcher.Invoke 執行中...");
-                    
+
                     // 變綠色 - 寫入中
                     SetBatchWriteIndicatorColor(Colors.LimeGreen);
-                    
+
                     Console.WriteLine("[CyberFrame] 顏色已設定為綠色");
-                    
+
                     // 更新 Tooltip
                     var batchWriteIndicator = this.FindName("BatchWriteIndicator") as Border;
                     if (batchWriteIndicator != null)
@@ -619,7 +659,7 @@ namespace Stackdose.UI.Core.Controls
                     else
                     {
                         Console.WriteLine("[CyberFrame] 警告：找不到 BatchWriteIndicator 控制項！");
-                        ComplianceContext.LogSystem("[CyberFrame] 警告：找不到 BatchWriteIndicator 控制項！", 
+                        ComplianceContext.LogSystem("[CyberFrame] 警告：找不到 BatchWriteIndicator 控制項！",
                             Models.LogLevel.Warning, showInUi: true);
                     }
                 }, System.Windows.Threading.DispatcherPriority.Send); // ✅ 使用 Send 優先級，立即執行
@@ -627,7 +667,7 @@ namespace Stackdose.UI.Core.Controls
             catch (Exception ex)
             {
                 Console.WriteLine($"[CyberFrame] OnBatchFlushStarted Error: {ex.Message}");
-                ComplianceContext.LogSystem($"[CyberFrame] 批次寫入開始錯誤: {ex.Message}", 
+                ComplianceContext.LogSystem($"[CyberFrame] 批次寫入開始錯誤: {ex.Message}",
                     Models.LogLevel.Error, showInUi: true);
                 System.Diagnostics.Debug.WriteLine($"[CyberFrame] OnBatchFlushStarted Error: {ex.Message}");
             }
@@ -641,14 +681,14 @@ namespace Stackdose.UI.Core.Controls
             // ✅ 最優先輸出
             Console.WriteLine($"========== OnBatchFlushCompleted ==========");
             Console.WriteLine($"[CyberFrame] dataCount={dataCount}, auditCount={auditCount}");
-            
+
             System.Diagnostics.Debug.WriteLine($"========== OnBatchFlushCompleted ==========");
             System.Diagnostics.Debug.WriteLine($"[CyberFrame] 批次寫入完成: {dataCount}+{auditCount}");
-            
+
             // ✅ 顯示在 LiveLogViewer
-            ComplianceContext.LogSystem($"🔴 批次寫入完成: {dataCount} DataLogs + {auditCount} AuditLogs", 
+            ComplianceContext.LogSystem($"🔴 批次寫入完成: {dataCount} DataLogs + {auditCount} AuditLogs",
                 Models.LogLevel.Info, showInUi: true);
-            
+
             try
             {
                 // ✅ 延遲 500ms 再變回紅色，讓綠色更明顯
@@ -657,12 +697,12 @@ namespace Stackdose.UI.Core.Controls
                     Dispatcher.Invoke(() =>
                     {
                         Console.WriteLine("[CyberFrame] Dispatcher.Invoke 執行中...");
-                        
+
                         // 變紅色 - 閒置
                         SetBatchWriteIndicatorColor(Colors.Red);
-                        
+
                         Console.WriteLine("[CyberFrame] 顏色已設定為紅色");
-                        
+
                         // 更新 Tooltip
                         var batchWriteIndicator = this.FindName("BatchWriteIndicator") as Border;
                         if (batchWriteIndicator != null)
@@ -676,7 +716,7 @@ namespace Stackdose.UI.Core.Controls
                         else
                         {
                             Console.WriteLine("[CyberFrame] 警告：找不到 BatchWriteIndicator 控制項！");
-                            ComplianceContext.LogSystem("[CyberFrame] 警告：找不到 BatchWriteIndicator 控制項！", 
+                            ComplianceContext.LogSystem("[CyberFrame] 警告：找不到 BatchWriteIndicator 控制項！",
                                 Models.LogLevel.Warning, showInUi: true);
                         }
                     }, System.Windows.Threading.DispatcherPriority.Send);
@@ -685,7 +725,7 @@ namespace Stackdose.UI.Core.Controls
             catch (Exception ex)
             {
                 Console.WriteLine($"[CyberFrame] OnBatchFlushCompleted Error: {ex.Message}");
-                ComplianceContext.LogSystem($"[CyberFrame] 批次寫入完成錯誤: {ex.Message}", 
+                ComplianceContext.LogSystem($"[CyberFrame] 批次寫入完成錯誤: {ex.Message}",
                     Models.LogLevel.Error, showInUi: true);
                 System.Diagnostics.Debug.WriteLine($"[CyberFrame] OnBatchFlushCompleted Error: {ex.Message}");
             }
@@ -699,12 +739,12 @@ namespace Stackdose.UI.Core.Controls
             try
             {
                 Console.WriteLine($"[CyberFrame] SetBatchWriteIndicatorColor: {color}");
-                
+
                 // 使用 FindName 取得控制項
                 var batchWriteIndicator = this.FindName("BatchWriteIndicator") as Border;
-                
+
                 Console.WriteLine($"[CyberFrame] BatchWriteIndicator found: {batchWriteIndicator != null}");
-                
+
                 if (batchWriteIndicator == null)
                 {
                     Console.WriteLine("[CyberFrame] 錯誤：找不到 BatchWriteIndicator 控制項！");
@@ -714,7 +754,7 @@ namespace Stackdose.UI.Core.Controls
                 // ✅ 直接設定顏色（不使用動畫，確保立即生效）
                 batchWriteIndicator.Background = new SolidColorBrush(color);
                 Console.WriteLine($"[CyberFrame] 背景顏色已直接設定: {color}");
-                
+
                 // 更新發光效果
                 if (batchWriteIndicator.Effect is System.Windows.Media.Effects.DropShadowEffect shadow)
                 {
@@ -725,7 +765,7 @@ namespace Stackdose.UI.Core.Controls
                 {
                     Console.WriteLine("[CyberFrame] 警告：Effect 不是 DropShadowEffect");
                 }
-                
+
                 // ✅ 強制刷新 UI
                 batchWriteIndicator.InvalidateVisual();
                 batchWriteIndicator.UpdateLayout();
@@ -749,7 +789,7 @@ namespace Stackdose.UI.Core.Controls
         private void UpdateUserInfo()
         {
             var session = SecurityContext.CurrentSession;
-            
+
             // 使用 FindName 查找控制項
             var userNameText = this.FindName("UserNameText") as TextBlock;
             var userLevelText = this.FindName("UserLevelText") as TextBlock;
@@ -781,20 +821,20 @@ namespace Stackdose.UI.Core.Controls
             {
                 // 取得應用程式層級的資源字典
                 var appResources = Application.Current.Resources;
-                
+
                 // 載入對應的主題檔案
                 var themeUri = new Uri(
-                    useLightTheme 
-                        ? "/Stackdose.UI.Core;component/Themes/LightColors.xaml" 
+                    useLightTheme
+                        ? "/Stackdose.UI.Core;component/Themes/LightColors.xaml"
                         : "/Stackdose.UI.Core;component/Themes/Colors.xaml",
                     UriKind.Relative);
 
                 var newThemeDict = new ResourceDictionary { Source = themeUri };
-                
+
                 // 找到並移除所有包含 Colors.xaml 或 LightColors.xaml 的字典
                 var toRemove = appResources.MergedDictionaries
-                    .Where(d => d.Source != null && 
-                               (d.Source.ToString().Contains("Colors.xaml") || 
+                    .Where(d => d.Source != null &&
+                               (d.Source.ToString().Contains("Colors.xaml") ||
                                 d.Source.ToString().Contains("LightColors.xaml")))
                     .ToList();
 
@@ -806,23 +846,23 @@ namespace Stackdose.UI.Core.Controls
 
                 // 加入新的主題字典
                 appResources.MergedDictionaries.Add(newThemeDict);
-                
+
                 System.Diagnostics.Debug.WriteLine($"[CyberFrame] Theme Applied Successfully: {themeUri}");
-                
+
                 // 🔥 讀取主題顏色
                 Color? bgColor = null;
                 Color? fgColor = null;
-                
+
                 if (Application.Current?.TryFindResource("Plc.Bg.Main") is SolidColorBrush bgBrush)
                 {
                     bgColor = bgBrush.Color;
                 }
-                
+
                 if (Application.Current?.TryFindResource("Plc.Fg.Main") is SolidColorBrush fgBrush)
                 {
                     fgColor = fgBrush.Color;
                 }
-                
+
                 // 🔥 使用 ThemeManager 統一通知所有已註冊的控制項
                 ThemeManager.SwitchTheme(
                     useLightTheme,
@@ -830,11 +870,11 @@ namespace Stackdose.UI.Core.Controls
                     bgColor,
                     fgColor
                 );
-                
+
                 System.Diagnostics.Debug.WriteLine("[CyberFrame] ThemeManager.SwitchTheme 已呼叫");
-                
+
                 // 強制刷新 UI
-                Application.Current.Dispatcher.Invoke(() => 
+                Application.Current.Dispatcher.Invoke(() =>
                 {
                     // 觸發視覺樹重繪
                     foreach (Window window in Application.Current.Windows)
@@ -843,7 +883,7 @@ namespace Stackdose.UI.Core.Controls
                         window.UpdateLayout();
                     }
                 }, System.Windows.Threading.DispatcherPriority.Render);
-                
+
                 // 記錄日誌
                 ComplianceContext.LogSystem(
                     $"主題已切換為 {(useLightTheme ? "Light" : "Dark")} 模式",
@@ -900,7 +940,7 @@ namespace Stackdose.UI.Core.Controls
         {
             System.Diagnostics.Debug.WriteLine($"========== UpdateViewMode START ==========");
             System.Diagnostics.Debug.WriteLine($"[CyberFrame] Mode: {mode}");
-            
+
             // 方法1: 使用 FindName
             var normalContent = this.FindName("NormalContentPresenter") as ContentControl;
             var userManagementPanel = this.FindName("UserManagementPanel") as FrameworkElement;
@@ -912,17 +952,17 @@ namespace Stackdose.UI.Core.Controls
             if (normalContent == null || userManagementPanel == null)
             {
                 System.Diagnostics.Debug.WriteLine("[CyberFrame] FindName failed, searching visual tree...");
-                
+
                 // 搜尋整個視覺樹
                 var contentGrid = FindVisualChild<Grid>(this, g => g.Parent is Border);
                 if (contentGrid != null)
                 {
                     System.Diagnostics.Debug.WriteLine($"[CyberFrame] Found content grid with {contentGrid.Children.Count} children");
-                    
+
                     foreach (var child in contentGrid.Children)
                     {
                         System.Diagnostics.Debug.WriteLine($"[CyberFrame] Child type: {child.GetType().Name}");
-                        
+
                         if (child is ContentControl cc)
                         {
                             normalContent = cc;
@@ -940,7 +980,7 @@ namespace Stackdose.UI.Core.Controls
             if (normalContent != null && userManagementPanel != null)
             {
                 System.Diagnostics.Debug.WriteLine("[CyberFrame] Both controls found, switching view...");
-                
+
                 switch (mode)
                 {
                     case CyberFrameViewMode.Normal:
@@ -959,13 +999,13 @@ namespace Stackdose.UI.Core.Controls
                         System.Diagnostics.Debug.WriteLine($"[CyberFrame] UserMgmt.Visibility = {userManagementPanel.Visibility}");
                         break;
                 }
-                
+
                 // 強制刷新 UI
                 normalContent.InvalidateVisual();
                 normalContent.UpdateLayout();
                 userManagementPanel.InvalidateVisual();
                 userManagementPanel.UpdateLayout();
-                
+
                 System.Diagnostics.Debug.WriteLine("[CyberFrame] UI refreshed");
             }
             else
@@ -974,10 +1014,10 @@ namespace Stackdose.UI.Core.Controls
                 System.Diagnostics.Debug.WriteLine($"[CyberFrame] NormalContent: {normalContent != null}");
                 System.Diagnostics.Debug.WriteLine($"[CyberFrame] UserManagementPanel: {userManagementPanel != null}");
             }
-            
+
             System.Diagnostics.Debug.WriteLine($"========== UpdateViewMode END ==========");
         }
-        
+
         /// <summary>
         /// 搜尋視覺樹中的子元素
         /// </summary>
@@ -989,7 +1029,7 @@ namespace Stackdose.UI.Core.Controls
             for (int i = 0; i < childCount; i++)
             {
                 var child = VisualTreeHelper.GetChild(parent, i);
-                
+
                 if (child is T typedChild)
                 {
                     if (predicate == null || predicate(typedChild))

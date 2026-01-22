@@ -17,7 +17,7 @@ namespace Stackdose.UI.Core.Models
         public double IdleDuration { get; set; } = 1.0;
 
         /// <summary>²Gºw¼Æ</summary>
-        public int Drops { get; set; } = 1;
+        public byte Drops { get; set; } = 1;
     }
 
     /// <summary>

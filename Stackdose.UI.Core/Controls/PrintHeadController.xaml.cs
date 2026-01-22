@@ -126,7 +126,7 @@ namespace Stackdose.UI.Core.Controls
             if (!double.TryParse(parts[0].Trim(), out double frequency) ||
                 !double.TryParse(parts[1].Trim(), out double workDuration) ||
                 !double.TryParse(parts[2].Trim(), out double idleDuration) ||
-                !int.TryParse(parts[3].Trim(), out int drops))
+                !byte.TryParse(parts[3].Trim(), out byte drops))
             {
                 ShowError("Frequency 必須是有效的數字 (ex. 0.1,1,1,1)");
                 return;
@@ -163,6 +163,7 @@ namespace Stackdose.UI.Core.Controls
                     {
                         dynamic printHead = kvp.Value;
                         string name = kvp.Key;
+
 
                         bool result = await printHead.Spit(spitParams);
 

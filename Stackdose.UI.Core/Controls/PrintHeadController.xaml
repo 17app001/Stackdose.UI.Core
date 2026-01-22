@@ -267,6 +267,7 @@
                             Background="#C228CA"
                             Foreground="White"
                             BorderBrush="#8E44AD"
+                            Click="EncoderReset_Click"
                             Style="{StaticResource ModernButtonStyle}"/>
 
 					<!-- 連線狀態 -->

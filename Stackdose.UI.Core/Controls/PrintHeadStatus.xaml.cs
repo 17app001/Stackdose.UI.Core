@@ -1,4 +1,6 @@
-﻿using Stackdose.PrintHead.Feiyang;
+﻿using Stackdose.Abstractions.Models;
+using Stackdose.Abstractions.Print;
+using Stackdose.PrintHead.Feiyang;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
 using System.IO;
@@ -88,6 +90,8 @@ namespace Stackdose.UI.Core.Controls
 
             this.Loaded += OnControlLoaded;
             this.Unloaded += OnControlUnloaded;
+
+            
         }
 
         #region 初始化
@@ -336,6 +340,9 @@ namespace Stackdose.UI.Core.Controls
                     ComplianceContext.LogSystem(msg, LogLevel.Info, showInUi: false);
                 };
                 
+                // ⭐ 訂閱狀態變更事件
+                _printHead.ConnectionStateChanged += OnPrintHeadStateChanged;
+
                 bool connected = await _printHead.Connect();
 
                 if (!connected)
@@ -589,26 +596,35 @@ namespace Stackdose.UI.Core.Controls
 
                 // 2. 电压（4个通道）- 假设有 VoltageA, VoltageB, VoltageC, VoltageD
                 var voltages = new System.Collections.Generic.List<string>();
-                if (status.VoltageA != null) voltages.Add($"V1: {status.VoltageA:F1}V");
-                if (status.VoltageB != null) voltages.Add($"V2: {status.VoltageB:F1}V");
-                if (status.VoltageC != null) voltages.Add($"V3: {status.VoltageC:F1}V");
-                if (status.VoltageD != null) voltages.Add($"V4: {status.VoltageD:F1}V");
+                if (status.VoltageActualA != null) 
+                {
+                    double v = (double)status.VoltageActualA;
+                    voltages.Add($"V1: {v:F1}V");
+                }
+                if (status.DriveVoltages != null && status.DriveVoltages.Length >= 4)
+                {
+                    voltages.Add($"V2: {status.DriveVoltages[1]:F1}V");
+                    voltages.Add($"V3: {status.DriveVoltages[2]:F1}V");
+                    voltages.Add($"V4: {status.DriveVoltages[3]:F1}V");
+                }
                 
                 if (voltages.Count > 0)
                 {
                     VoltagesPanel.ItemsSource = voltages;
                 }
 
-                // 3. 编码器
-                if (status.Encoder != null)
+                // 3. 编码器 DPI (⭐ 修正：使用 EncoderDPI 而不是 Encoder)
+                if (status.EncoderDPI != null)
                 {
-                    EncoderText.Text = status.Encoder.ToString();
+                    int encoderDpi = (int)status.EncoderDPI;
+                    EncoderText.Text = encoderDpi.ToString();
                 }
 
-                // 4. PrintIndex
+                // 4. PrintIndex (⭐ 修正：使用 unsigned int，需要轉換)
                 if (status.PrintIndex != null)
                 {
-                    PrintIndexText.Text = status.PrintIndex.ToString();
+                    uint printIndex = (uint)status.PrintIndex;
+                    PrintIndexText.Text = printIndex.ToString();
                 }
             }
             catch (Exception ex)
@@ -656,8 +672,64 @@ namespace Stackdose.UI.Core.Controls
             {
                 StatusGlow.Color = color;
             }
-        }
+        }      
+      
 
         #endregion
+
+        public void StartSpit(SpitParams spitParams)
+        {
+            _printHead?.Spit(spitParams);
+        }
+        
+        /// <summary>
+        /// ⭐ 新增：處理噴頭狀態變更事件
+        /// </summary>
+        private void OnPrintHeadStateChanged(PrintHeadConnectionState newState)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                UpdateConnectionStateDisplay(newState);
+            });
+        }
+        
+        /// <summary>
+        /// ⭐ 新增：更新連線狀態文字顯示
+        /// </summary>
+        private void UpdateConnectionStateDisplay(PrintHeadConnectionState state)
+        {
+            // 找到狀態文字控制項
+            var stateText = this.FindName("StateText") as TextBlock;
+            if (stateText != null)
+            {
+                switch (state)
+                {
+                    case PrintHeadConnectionState.Idle:
+                        stateText.Text = "IDLE";
+                        stateText.Foreground = new SolidColorBrush(Color.FromRgb(200, 200, 200));
+                        break;
+                    case PrintHeadConnectionState.Ready:
+                        stateText.Text = "READY";
+                        stateText.Foreground = new SolidColorBrush(Color.FromRgb(46, 204, 113));
+                        break;
+                    case PrintHeadConnectionState.Printing:
+                        stateText.Text = "PRINTING";
+                        stateText.Foreground = new SolidColorBrush(Color.FromRgb(0, 230, 118));
+                        break;
+                    case PrintHeadConnectionState.Spit:
+                        stateText.Text = "SPITTING";
+                        stateText.Foreground = new SolidColorBrush(Color.FromRgb(255, 235, 59));
+                        break;
+                    case PrintHeadConnectionState.Error:
+                        stateText.Text = "ERROR";
+                        stateText.Foreground = new SolidColorBrush(Color.FromRgb(244, 67, 54));
+                        break;
+                    default:
+                        stateText.Text = state.ToString().ToUpper();
+                        stateText.Foreground = new SolidColorBrush(Color.FromRgb(158, 158, 158));
+                        break;
+                }
+            }
+        }
     }
 }

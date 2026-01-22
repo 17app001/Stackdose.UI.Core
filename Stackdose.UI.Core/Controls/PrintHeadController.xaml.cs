@@ -1,19 +1,18 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+ï»¿using Microsoft.Win32;
+using Stackdose.Abstractions.Models;
+using Stackdose.PrintHead.Feiyang;  // â­ åŠ å…¥é€™è¡Œä»¥ä½¿ç”¨ FeiyangPrintHead
+using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Models;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
-using Microsoft.Win32;
-using Stackdose.UI.Core.Helpers;
-using Stackdose.UI.Core.Models;
-using Stackdose.PrintHead.Feiyang;
-using System.IO;
+
 
 namespace Stackdose.UI.Core.Controls
 {
     /// <summary>
-    /// ¼QÀY±±¨î¾¹ - ²Î¤@±±¨î©Ò¦³¤w³s±µªº¼QÀY
+    /// å™´é ­æ§åˆ¶å™¨ - çµ±ä¸€æ§åˆ¶æ‰€æœ‰å·²é€£æ¥çš„å™´é ­
     /// </summary>
     public partial class PrintHeadController : UserControl
     {
@@ -27,27 +26,27 @@ namespace Stackdose.UI.Core.Controls
             this.Unloaded += PrintHeadController_Unloaded;
         }
 
-        #region ªì©l¤Æ
+        #region åˆå§‹åŒ–
 
         private void PrintHeadController_Loaded(object sender, RoutedEventArgs e)
         {
-            // ­q¾\ PrintHead ³s½u/Â_½u¨Æ¥ó
+            // è¨‚é–± PrintHead é€£ç·š/æ–·ç·šäº‹ä»¶
             PrintHeadContext.PrintHeadConnected += OnPrintHeadConnected;
             PrintHeadContext.PrintHeadDisconnected += OnPrintHeadDisconnected;
 
-            // ­q¾\Åv­­ÅÜ§ó¨Æ¥ó
+            // è¨‚é–±æ¬Šé™è®Šæ›´äº‹ä»¶
             SecurityContext.AccessLevelChanged += OnAccessLevelChanged;
 
-            // §ó·s³s±µ¼Æ¶qÅã¥Ü
+            // æ›´æ–°é€£æ¥æ•¸é‡é¡¯ç¤º
             UpdateConnectedCount();
 
-            // §ó·s«ö¶sÅv­­ª¬ºA
+            // æ›´æ–°æŒ‰éˆ•æ¬Šé™ç‹€æ…‹
             UpdateButtonPermissions();
         }
 
         private void PrintHeadController_Unloaded(object sender, RoutedEventArgs e)
         {
-            // ¨ú®ø­q¾\
+            // å–æ¶ˆè¨‚é–±
             PrintHeadContext.PrintHeadConnected -= OnPrintHeadConnected;
             PrintHeadContext.PrintHeadDisconnected -= OnPrintHeadDisconnected;
             SecurityContext.AccessLevelChanged -= OnAccessLevelChanged;
@@ -75,40 +74,127 @@ namespace Stackdose.UI.Core.Controls
         }
 
         /// <summary>
-        /// §ó·s«ö¶sÅv­­ª¬ºA
+        /// æ›´æ–°æŒ‰éˆ•æ¬Šé™ç‹€æ…‹
         /// </summary>
         private void UpdateButtonPermissions()
         {
             bool hasAdminAccess = SecurityContext.HasAccess(AccessLevel.Admin);
 
-            // ¹Ï¤ù¾Ş§@«ö¶s¥u¦³ Engineer ¥i¥H¨Ï¥Î
+            // åœ–ç‰‡æ“ä½œæŒ‰éˆ•åªæœ‰ Engineer å¯ä»¥ä½¿ç”¨
             BrowseImageButton.IsEnabled = hasAdminAccess;
             LoadImageButton.IsEnabled = hasAdminAccess;
             CancelTaskButton.IsEnabled = hasAdminAccess;
 
-            // ³]¸m´£¥Ü¤å¦r
+            // è¨­ç½®æç¤ºæ–‡å­—
             if (!hasAdminAccess)
             {
-                string tooltip = $"»İ­n Engineer Åv­­\n¥Ø«eÅv­­: {SecurityContext.CurrentSession.CurrentLevel}";
+                string tooltip = $"éœ€è¦ Engineer æ¬Šé™\nç›®å‰æ¬Šé™: {SecurityContext.CurrentSession.CurrentLevel}";
                 BrowseImageButton.ToolTip = tooltip;
                 LoadImageButton.ToolTip = tooltip;
                 CancelTaskButton.ToolTip = tooltip;
             }
             else
             {
-                BrowseImageButton.ToolTip = "Åª¨ú¹Ï¤ù";
-                LoadImageButton.ToolTip = "¸ü¤J¥ô°È";
-                CancelTaskButton.ToolTip = "¨ú®ø¥ô°È";
+                BrowseImageButton.ToolTip = "è®€å–åœ–ç‰‡";
+                LoadImageButton.ToolTip = "è¼‰å…¥ä»»å‹™";
+                CancelTaskButton.ToolTip = "å–æ¶ˆä»»å‹™";
             }
         }
 
         #endregion
 
-        #region °{¼Q±±¨î (Spit)
+        private void EncoderReset_Click(object sender, EventArgs e)
+        {
+            // æ›´æ–°æ´»å‹•æ™‚é–“
+            SecurityContext.UpdateActivity();
+
+            if (!ValidatePrintHeads()) return;
+
+            // ç¦ç”¨æŒ‰éˆ•
+            var button = sender as Button;
+            if (button != null) button.IsEnabled = false;
+
+            try
+            {
+                ComplianceContext.LogSystem(
+                    $"[PrintHeadController] Starting Encoder Reset on all heads (default:1000)",
+                    LogLevel.Info,
+                    showInUi: true
+                );
+
+                int successCount = 0;
+                int failCount = 0;
+
+                // å°æ‰€æœ‰å·²é€£æ¥çš„å™´å¤´åŸ·è¡Œé–ƒå™´
+                foreach (var kvp in PrintHeadContext.ConnectedPrintHeads)
+                {
+                    try
+                    {
+                        // â­ å¼·åˆ¶è½‰å‹ç‚ºå¯¦éš›é¡å‹ï¼Œæ–¹ä¾¿ Debug å’Œ IntelliSense
+                        if (kvp.Value is not FeiyangPrintHead printHead)
+                        {
+                            ComplianceContext.LogSystem(
+                                $"[PrintHeadController] {kvp.Key}: Invalid PrintHead type",
+                                LogLevel.Error,
+                                showInUi: true
+                            );
+                            failCount++;
+                            continue;
+                        }
+
+                        string name = kvp.Key;
+
+                        // ç¾åœ¨å¯ä»¥æ­£å¸¸ Debugï¼Œæœ‰å®Œæ•´çš„ IntelliSense æ”¯æ´
+                        bool result = printHead.GratingReset(1000);
+
+                        if (result)
+                        {
+                            successCount++;
+                            ComplianceContext.LogSystem(
+                                $"[PrintHeadController] {name}:Encoder Reset successfully",
+                                LogLevel.Success,
+                                showInUi: true
+                            );
+                        }
+                        else
+                        {
+                            failCount++;
+                            ComplianceContext.LogSystem(
+                                $"[PrintHeadController] {name}: :Encoder Rese failed",
+                                LogLevel.Error,
+                                showInUi: true
+                            );
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        failCount++;
+                        ComplianceContext.LogSystem(
+                            $"[PrintHeadController] {kvp.Key}: :Encoder Rese error - {ex.Message}",
+                            LogLevel.Error,
+                            showInUi: true
+                        );
+                    }
+                }
+
+                ComplianceContext.LogSystem(
+                    $"[PrintHeadController] :Encoder Rese completed: {successCount} success, {failCount} failed",
+                    successCount > 0 ? LogLevel.Success : LogLevel.Error,
+                    showInUi: true
+                );
+            }
+            finally
+            {
+                // é‡æ–°å•Ÿç”¨æŒ‰éˆ•
+                if (button != null) button.IsEnabled = true;
+            }
+        }
+
+        #region é–ƒå™´æ§åˆ¶ (Spit)
 
         private async void SpitButton_Click(object sender, RoutedEventArgs e)
         {
-            // §ó·s¬¡°Ê®É¶¡
+            // æ›´æ–°æ´»å‹•æ™‚é–“
             SecurityContext.UpdateActivity();
 
             if (!ValidatePrintHeads()) return;
@@ -117,7 +203,7 @@ namespace Stackdose.UI.Core.Controls
             var parts = FrequencyBox.Text.Trim().Split(',');
             if (parts.Length != 4)
             {
-                ShowError("Frequency ¥²¶·¬O 4 ­Ó¼Æ¦r (ex. 0.1,1,1,1)");
+                ShowError("Frequency å¿…é ˆæ˜¯ 4 å€‹æ•¸å­— (ex. 0.1,1,1,1)");
                 return;
             }
 
@@ -128,7 +214,7 @@ namespace Stackdose.UI.Core.Controls
                 !double.TryParse(parts[2].Trim(), out double idleDuration) ||
                 !byte.TryParse(parts[3].Trim(), out byte drops))
             {
-                ShowError("Frequency ¥²¶·¬O¦³®Äªº¼Æ¦r (ex. 0.1,1,1,1)");
+                ShowError("Frequency å¿…é ˆæ˜¯æœ‰æ•ˆçš„æ•¸å­— (ex. 0.1,1,1,1)");
                 return;
             }
 
@@ -141,7 +227,7 @@ namespace Stackdose.UI.Core.Controls
             };
 
 
-            // ¸T¥Î«ö¶s
+            // ç¦ç”¨æŒ‰éˆ•
             var button = sender as Button;
             if (button != null) button.IsEnabled = false;
 
@@ -156,15 +242,26 @@ namespace Stackdose.UI.Core.Controls
                 int successCount = 0;
                 int failCount = 0;
 
-                // ¹ï©Ò¦³¤w³s±µªº¼QÀY°õ¦æ°{¼Q
+                // å°æ‰€æœ‰å·²é€£æ¥çš„å™´å¤´åŸ·è¡Œé–ƒå™´
                 foreach (var kvp in PrintHeadContext.ConnectedPrintHeads)
                 {
                     try
                     {
-                        dynamic printHead = kvp.Value;
+                        // â­ å¼·åˆ¶è½‰å‹ç‚ºå¯¦éš›é¡å‹ï¼Œæ–¹ä¾¿ Debug å’Œ IntelliSense
+                        if (kvp.Value is not FeiyangPrintHead printHead)
+                        {
+                            ComplianceContext.LogSystem(
+                                $"[PrintHeadController] {kvp.Key}: Invalid PrintHead type",
+                                LogLevel.Error,
+                                showInUi: true
+                            );
+                            failCount++;
+                            continue;
+                        }
+
                         string name = kvp.Key;
-
-
+                        
+                        // ç¾åœ¨å¯ä»¥æ­£å¸¸ Debugï¼Œæœ‰å®Œæ•´çš„ IntelliSense æ”¯æ´
                         bool result = await printHead.Spit(spitParams);
 
                         if (result)
@@ -205,30 +302,30 @@ namespace Stackdose.UI.Core.Controls
             }
             finally
             {
-                // ­«·s±Ò¥Î«ö¶s
+                // é‡æ–°å•Ÿç”¨æŒ‰éˆ•
                 if (button != null) button.IsEnabled = true;
             }
         }
 
         #endregion
 
-        #region ¹Ï§Î±±¨î (Image)
+        #region åœ–å½¢æ§åˆ¶ (Image)
 
         private void BrowseImageButton_Click(object sender, RoutedEventArgs e)
         {
-            // §ó·s¬¡°Ê®É¶¡
+            // æ›´æ–°æ´»å‹•æ™‚é–“
             SecurityContext.UpdateActivity();
 
-            // ÀË¬dÅv­­
-            if (!SecurityContext.CheckAccess(AccessLevel.Admin, "Åª¨ú¹Ï¤ù"))
+            // æª¢æŸ¥æ¬Šé™
+            if (!SecurityContext.CheckAccess(AccessLevel.Admin, "è®€å–åœ–ç‰‡"))
             {
                 return;
             }
 
             var dialog = new OpenFileDialog
             {
-                Filter = "¹Ï¤ùÀÉ®× (*.bmp;*.png;*.jpg)|*.bmp;*.png;*.jpg|©Ò¦³ÀÉ®× (*.*)|*.*",
-                Title = "¿ï¾Ü¹Ï¤ùÀÉ®×"
+                Filter = "åœ–ç‰‡æª”æ¡ˆ (*.bmp;*.png;*.jpg)|*.bmp;*.png;*.jpg|æ‰€æœ‰æª”æ¡ˆ (*.*)|*.*",
+                Title = "é¸æ“‡åœ–ç‰‡æª”æ¡ˆ"
             };
 
             if (dialog.ShowDialog() == true)
@@ -252,7 +349,7 @@ namespace Stackdose.UI.Core.Controls
                     XDpiText.Text = ((int)image.HorizontalResolution).ToString();
                     YDpiText.Text = ((int)image.VerticalResolution).ToString();
 
-                    // Update file info (©³³¡ª¬ºA¦C)
+                    // Update file info (åº•éƒ¨ç‹€æ…‹åˆ—)
                     FilePathText.Text = $"{Path.GetFileName(imagePath)}";
 
                     // Load preview
@@ -263,11 +360,11 @@ namespace Stackdose.UI.Core.Controls
                     bitmap.EndInit();
                     PreviewImage.Source = bitmap;
 
-                    // ? ¹Ï¤ù¸ü¤J¦¨¥\«áÁôÂÃ´£¥Ü¤å¦r
+                    // ? åœ–ç‰‡è¼‰å…¥æˆåŠŸå¾Œéš±è—æç¤ºæ–‡å­—
                     ImageInfoText.Visibility = Visibility.Collapsed;
 
                     ComplianceContext.LogSystem(
-                        $"[PrintHeadController] Image loaded: {Path.GetFileName(imagePath)} ({image.Width}¡Ñ{image.Height}, {(int)image.HorizontalResolution} DPI)",
+                        $"[PrintHeadController] Image loaded: {Path.GetFileName(imagePath)} ({image.Width}Ã—{image.Height}, {(int)image.HorizontalResolution} DPI)",
                         LogLevel.Info,
                         showInUi: false
                     );
@@ -279,11 +376,11 @@ namespace Stackdose.UI.Core.Controls
                 ImageHeightText.Text = "-";
                 XDpiText.Text = "-";
                 YDpiText.Text = "-";
-                FilePathText.Text = "©|¥¼¿ï¾ÜÀÉ®×";
+                FilePathText.Text = "å°šæœªé¸æ“‡æª”æ¡ˆ";
                 PreviewImage.Source = null;
 
-                // ? ¸ü¤J¥¢±Ñ®ÉÅã¥Ü¿ù»~´£¥Ü
-                ImageInfoText.Text = "¹Ï¤ù¸ü¤J¥¢±Ñ";
+                // ? è¼‰å…¥å¤±æ•—æ™‚é¡¯ç¤ºéŒ¯èª¤æç¤º
+                ImageInfoText.Text = "åœ–ç‰‡è¼‰å…¥å¤±æ•—";
                 ImageInfoText.Visibility = Visibility.Visible;
 
                 ComplianceContext.LogSystem(
@@ -296,11 +393,11 @@ namespace Stackdose.UI.Core.Controls
 
         private void LoadImageButton_Click(object sender, RoutedEventArgs e)
         {
-            // §ó·s¬¡°Ê®É¶¡
+            // æ›´æ–°æ´»å‹•æ™‚é–“
             SecurityContext.UpdateActivity();
 
-            // ÀË¬dÅv­­
-            if (!SecurityContext.CheckAccess(AccessLevel.Admin, "¸ü¤J¥ô°È"))
+            // æª¢æŸ¥æ¬Šé™
+            if (!SecurityContext.CheckAccess(AccessLevel.Admin, "è¼‰å…¥ä»»å‹™"))
             {
                 return;
             }
@@ -309,13 +406,13 @@ namespace Stackdose.UI.Core.Controls
 
             if (string.IsNullOrWhiteSpace(_currentImagePath))
             {
-                ShowError("½Ğ¥ı¿ï¾Ü¹Ï¤ùÀÉ®×");
+                ShowError("è«‹å…ˆé¸æ“‡åœ–ç‰‡æª”æ¡ˆ");
                 return;
             }
 
             if (!File.Exists(_currentImagePath))
             {
-                ShowError($"¹Ï¤ùÀÉ®×¤£¦s¦b: {_currentImagePath}");
+                ShowError($"åœ–ç‰‡æª”æ¡ˆä¸å­˜åœ¨: {_currentImagePath}");
                 return;
             }
 
@@ -337,7 +434,18 @@ namespace Stackdose.UI.Core.Controls
                 {
                     try
                     {
-                        dynamic printHead = kvp.Value;
+                        // â­ å¼·åˆ¶è½‰å‹ç‚ºå¯¦éš›é¡å‹ï¼Œæ–¹ä¾¿ Debug å’Œ IntelliSense
+                        if (kvp.Value is not FeiyangPrintHead printHead)
+                        {
+                            ComplianceContext.LogSystem(
+                                $"[PrintHeadController] {kvp.Key}: Invalid PrintHead type",
+                                LogLevel.Error,
+                                showInUi: true
+                            );
+                            failCount++;
+                            continue;
+                        }
+
                         string name = kvp.Key;
 
                         bool result = printHead.LoadImage(_currentImagePath);
@@ -386,13 +494,13 @@ namespace Stackdose.UI.Core.Controls
 
         #endregion
 
-        #region »²§U¤èªk
+        #region è¼”åŠ©æ–¹æ³•
 
         private bool ValidatePrintHeads()
         {
             if (!PrintHeadContext.HasConnectedPrintHead)
             {
-                ShowError("¨S¦³¤w³s±µªº¼QÀY");
+                ShowError("æ²’æœ‰å·²é€£æ¥çš„å™´é ­");
                 return false;
             }
 

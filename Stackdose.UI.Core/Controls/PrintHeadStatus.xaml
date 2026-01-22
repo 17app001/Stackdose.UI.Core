@@ -62,6 +62,14 @@
                                FontSize="8" 
                                Foreground="Gray"
                                Margin="0,1,0,0"/>
+                    <!-- Status display -->
+                    <TextBlock x:Name="StateText"
+                               Text="IDLE"
+                               FontSize="9"
+                               FontWeight="Bold"
+                               Foreground="#808080"
+                               Margin="0,2,0,0"
+                               HorizontalAlignment="Left"/>
                 </StackPanel>
 
                 <!-- Temperature -->

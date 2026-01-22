@@ -1,4 +1,5 @@
-﻿using Stackdose.UI.Core.Helpers;
+﻿using Stackdose.Abstractions.Models;
+using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
 using System;
 using System.Collections.ObjectModel;
@@ -374,10 +375,10 @@ namespace Stackdose.UI.Core.Controls
                                 double frequency = double.Parse(paramParts[0].Trim());
                                 double workDuration = double.Parse(paramParts[1].Trim());
                                 double idleDuration = double.Parse(paramParts[2].Trim());
-                                int drops = (int)double.Parse(paramParts[3].Trim());
+                                byte drops = byte.Parse(paramParts[3].Trim());
 
                                 // 🔥 建立 SpitParams 物件
-                                var spitParams = new Stackdose.Abstractions.Models.SpitParams
+                                var spitParams = new SpitParams
                                 {
                                     Frequency = frequency,
                                     WorkDuration = workDuration,

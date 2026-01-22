@@ -22,7 +22,7 @@ namespace Stackdose.UI.Core.Controls
         public PrintHeadController()
         {
             InitializeComponent();
-            
+
             this.Loaded += PrintHeadController_Loaded;
             this.Unloaded += PrintHeadController_Unloaded;
         }
@@ -113,20 +113,33 @@ namespace Stackdose.UI.Core.Controls
 
             if (!ValidatePrintHeads()) return;
 
-            // 解析參數
-            if (!double.TryParse(FrequencyBox.Text, out double frequency))
+
+            var parts = FrequencyBox.Text.Trim().Split(',');
+            if (parts.Length != 4)
             {
-                ShowError("Frequency 必須是有效的數字");
+                ShowError("Frequency 必須是 4 個數字 (ex. 0.1,1,1,1)");
+                return;
+            }
+
+            //double[] dataParams = frequencyText.Select(v => double.Parse(v.Trim())).ToArray();
+
+            if (!double.TryParse(parts[0].Trim(), out double frequency) ||
+                !double.TryParse(parts[1].Trim(), out double workDuration) ||
+                !double.TryParse(parts[2].Trim(), out double idleDuration) ||
+                !int.TryParse(parts[3].Trim(), out int drops))
+            {
+                ShowError("Frequency 必須是有效的數字 (ex. 0.1,1,1,1)");
                 return;
             }
 
             var spitParams = new SpitParams
             {
                 Frequency = frequency,
-                WorkDuration = 1.0,
-                IdleDuration = 1.0,
-                Drops = 1
+                WorkDuration = workDuration,
+                IdleDuration = idleDuration,
+                Drops = drops
             };
+
 
             // 禁用按鈕
             var button = sender as Button;
@@ -233,11 +246,11 @@ namespace Stackdose.UI.Core.Controls
                     // Update dimensions
                     ImageWidthText.Text = image.Width.ToString();
                     ImageHeightText.Text = image.Height.ToString();
-                    
+
                     // Update DPI
                     XDpiText.Text = ((int)image.HorizontalResolution).ToString();
                     YDpiText.Text = ((int)image.VerticalResolution).ToString();
-                    
+
                     // Update file info (底部狀態列)
                     FilePathText.Text = $"{Path.GetFileName(imagePath)}";
 
@@ -267,11 +280,11 @@ namespace Stackdose.UI.Core.Controls
                 YDpiText.Text = "-";
                 FilePathText.Text = "尚未選擇檔案";
                 PreviewImage.Source = null;
-                
+
                 // ? 載入失敗時顯示錯誤提示
                 ImageInfoText.Text = "圖片載入失敗";
                 ImageInfoText.Visibility = Visibility.Visible;
-                
+
                 ComplianceContext.LogSystem(
                     $"[PrintHeadController] Failed to read image info: {ex.Message}",
                     LogLevel.Error,

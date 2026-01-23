@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using System.Windows.Media;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
 using Stackdose.Abstractions.Logging;
@@ -1043,6 +1044,61 @@ namespace Stackdose.UI.Core.Controls
             }
 
             return null;
+        }
+
+        // Drag/drop handlers to accept DraggableTabContainer or Tab payloads
+        private void NormalContentPresenter_PreviewDragOver(object sender, DragEventArgs e)
+        {
+            // Indicate copy/move allowed when payload matches
+            if (e.Data.GetDataPresent(typeof(DragPayload)) || e.Data.GetDataPresent("DraggableControl"))
+            {
+                e.Effects = DragDropEffects.Move;
+                e.Handled = true;
+            }
+        }
+
+        private void NormalContentPresenter_Drop(object sender, DragEventArgs e)
+        {
+            try
+            {
+                // If dropped a whole DraggableTabContainer (control)
+                if (e.Data.GetData("DraggableControl") is DragPayload payload && payload?.Source == null)
+                {
+                    // Accept as a control - set as MainContent
+                    MainContent = payload.Tab?.Content ?? payload;
+                    return;
+                }
+
+                // If dropped a Tab from another DraggableTabContainer
+                if (e.Data.GetData(typeof(DragPayload)) is DragPayload dp && dp.Tab != null && dp.Source != null)
+                {
+                    // Remove from source and add to new container inside CyberFrame
+                    var tab = dp.Tab;
+
+                    // Remove from source
+                    bool removed = dp.Source.RemoveTab(tab);
+
+                    // Create a new DraggableTabContainer and add the tab
+                    var container = new DraggableTabContainer();
+                    container.AddExternalTab(tab);
+
+                    // Set as MainContent
+                    MainContent = container;
+
+                    dp.HandledByTarget = true;
+                    return;
+                }
+
+                // Fallback: raw control/object
+                if (e.Data.GetData("DraggableControl") is object raw)
+                {
+                    MainContent = raw;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CyberFrame] Drop Error: {ex.Message}");
+            }
         }
 
         #endregion

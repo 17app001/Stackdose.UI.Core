@@ -48,13 +48,13 @@
                                    Margin="0,0,8,0"/>
                         <TextBlock Text="{Binding Title, ElementName=Root}" 
                                    Foreground="{DynamicResource Cyber.Text.Bright}" 
-								   d:Text="MODEL NAME"
+		                           d:Text="MODEL NAME"
                                    FontSize="14" 
                                    FontWeight="Medium"
                                    VerticalAlignment="Center" 
                                    Margin="0,0,15,0"
-								   Padding="6,0,0,0"
-								   />
+		                           Padding="6,0,0,0"
+		                           />
                         
                         <!-- 🔥 Separator -->
                         <Border Width="1" 
@@ -402,7 +402,7 @@
                                                                       StrokeThickness="2.5"/>
                                                             </Canvas>
                                                         </Viewbox>
-                                
+                                        
                                                         <Border.Effect>
                                                             <DropShadowEffect x:Name="ButtonShadow"
                                                                               Color="#FF5252" 
@@ -509,7 +509,10 @@
                                Panel.ZIndex="1"
                                Visibility="Visible"
                                HorizontalAlignment="Stretch"
-                               VerticalAlignment="Stretch"/>
+                               VerticalAlignment="Stretch"
+                               AllowDrop="True"
+                               PreviewDragOver="NormalContentPresenter_PreviewDragOver"
+                               Drop="NormalContentPresenter_Drop"/>
                 
                 <!-- User Management Panel -->
                 <local:UserManagementPanel x:Name="UserManagementPanel" 

@@ -201,6 +201,9 @@ namespace Stackdose.UI.Core.Controls
 
             try
             {
+                // 🔥 初始化安全狀態
+                UpdateSecurityState(ShowSecurityButtons);
+
                 // 🔥 初始化使用者管理服務（會自動建立預設 Admin）
                 var _ = new Services.UserManagementService();
                 System.Diagnostics.Debug.WriteLine("[CyberFrame] UserManagementService initialized");
@@ -509,6 +512,30 @@ namespace Stackdose.UI.Core.Controls
         {
             get => (bool)GetValue(ShowMaximizeButtonProperty);
             set => SetValue(ShowMaximizeButtonProperty, value);
+        }
+
+        /// <summary>
+        /// 是否顯示安全相關按鈕 (登錄、登出、使用者管理)
+        /// </summary>
+        public static readonly DependencyProperty ShowSecurityButtonsProperty =
+            DependencyProperty.Register(
+                nameof(ShowSecurityButtons),
+                typeof(bool),
+                typeof(CyberFrame),
+                new PropertyMetadata(true, OnShowSecurityButtonsChanged));
+
+        public bool ShowSecurityButtons
+        {
+            get => (bool)GetValue(ShowSecurityButtonsProperty);
+            set => SetValue(ShowSecurityButtonsProperty, value);
+        }
+
+        private static void OnShowSecurityButtonsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is CyberFrame frame)
+            {
+                frame.UpdateSecurityState((bool)e.NewValue);
+            }
         }
 
         /// <summary>
@@ -860,6 +887,31 @@ namespace Stackdose.UI.Core.Controls
         #endregion
 
         #region Helper Methods
+
+        /// <summary>
+        /// 更新安全功能狀態
+        /// </summary>
+        private void UpdateSecurityState(bool enabled)
+        {
+            if (!enabled)
+            {
+                // 🔥 禁用自動登出
+                SecurityContext.EnableAutoLogout = false;
+                
+                // 🔥 強制以管理員權限登入 (且不觸發額外 UI)
+                if (SecurityContext.CurrentSession.CurrentLevel < AccessLevel.Admin)
+                {
+                    SecurityContext.QuickLogin(AccessLevel.Admin);
+                }
+            }
+            else
+            {
+                // 恢復自動登出設定
+                SecurityContext.EnableAutoLogout = true;
+            }
+
+            UpdateUserInfo();
+        }
 
         /// <summary>
         /// 更新使用者資訊顯示

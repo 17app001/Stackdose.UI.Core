@@ -183,6 +183,7 @@
                                 Cursor="Hand"
                                 ToolTip="User Management (Supervisor/Admin)"
                                 Margin="10,0,0,0"
+                                Visibility="{Binding ShowSecurityButtons, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"
                                 WindowChrome.IsHitTestVisibleInChrome="True">
                             <Button.Style>
                                 <Style TargetType="Button">
@@ -383,6 +384,7 @@
                                 Cursor="Hand"
                                 ToolTip="登出系統"
                                 Margin="0,0,10,0"
+                                Visibility="{Binding ShowSecurityButtons, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"
                                 WindowChrome.IsHitTestVisibleInChrome="True">
                             <Button.Style>
                                 <Style TargetType="Button">

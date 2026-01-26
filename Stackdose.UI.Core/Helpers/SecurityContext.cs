@@ -27,7 +27,7 @@ namespace Stackdose.UI.Core.Helpers
         /// <summary>
         /// 自動登出時間（分鐘，預設 15）
         /// </summary>
-        public static int AutoLogoutMinutes { get; set; } = 15;
+        public static int AutoLogoutMinutes { get; set; } = 1;
 
         /// <summary>
         /// 是否啟用自動登出功能

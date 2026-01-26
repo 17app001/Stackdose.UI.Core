@@ -2,6 +2,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives; // ?? 加入這個引用
 using System.Windows.Media;
+using System.Windows.Data;
+using System.Globalization;
 
 namespace Stackdose.UI.Core.Controls
 {
@@ -71,7 +73,10 @@ namespace Stackdose.UI.Core.Controls
             
             // ContentPresenter
             var contentPresenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
-            contentPresenterFactory.SetValue(ContentPresenter.ContentSourceProperty, "SelectedContent");
+            var converter = new NullToDefaultContentConverter();
+            var binding = new Binding("SelectedContent") { RelativeSource = RelativeSource.TemplatedParent, Converter = converter };
+            contentPresenterFactory.SetValue(ContentPresenter.ContentProperty, binding);
+            
             contentBorderFactory.AppendChild(contentPresenterFactory);
             
             gridFactory.AppendChild(contentBorderFactory);
@@ -155,6 +160,24 @@ namespace Stackdose.UI.Core.Controls
             style.Triggers.Add(selectedTrigger);
             
             return style;
+        }
+
+        private class NullToDefaultContentConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                if (value != null) return value;
+                var grid = new Grid();
+                grid.SetResourceReference(Grid.BackgroundProperty, "Cyber.Bg.Panel");
+                var stackPanel = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                grid.Children.Add(stackPanel);
+                return grid;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

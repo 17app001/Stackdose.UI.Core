@@ -3,7 +3,7 @@ using Stackdose.UI.Core.Controls;
 
 namespace Stackdose.UI.Core.Helpers
 {
-    public class PlcContext
+    public static class PlcContext
     {
         // 1. 全域靜態參考 (懶人模式核心)
         // 當 PlcStatus 設定 IsGlobal="True" 時，會自動填入這裡

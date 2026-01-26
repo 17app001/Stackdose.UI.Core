@@ -511,8 +511,7 @@
                                HorizontalAlignment="Stretch"
                                VerticalAlignment="Stretch"
                                AllowDrop="True"
-                               PreviewDragOver="NormalContentPresenter_PreviewDragOver"
-                               Drop="NormalContentPresenter_Drop"/>
+                             />
                 
                 <!-- User Management Panel -->
                 <local:UserManagementPanel x:Name="UserManagementPanel" 

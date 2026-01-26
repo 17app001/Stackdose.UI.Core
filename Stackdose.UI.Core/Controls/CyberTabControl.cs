@@ -107,6 +107,32 @@ namespace Stackdose.UI.Core.Controls
             // Foreground - Dark gray for unselected tabs
             var unselectedBrush = new SolidColorBrush(Color.FromRgb(0x70, 0x70, 0x70));
             style.Setters.Add(new Setter(TabItem.ForegroundProperty, unselectedBrush));
+
+            // Setup a custom Template for TabItem to override the default white background on selection
+            var template = new ControlTemplate(typeof(TabItem));
+            var borderFactory = new FrameworkElementFactory(typeof(Border));
+            borderFactory.Name = "TabItemBorder";
+            borderFactory.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(TabItem.BackgroundProperty));
+            borderFactory.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(TabItem.BorderBrushProperty));
+            borderFactory.SetValue(Border.BorderThicknessProperty, new TemplateBindingExtension(TabItem.BorderThicknessProperty));
+            borderFactory.SetValue(Border.PaddingProperty, new TemplateBindingExtension(TabItem.PaddingProperty));
+
+            var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
+            contentPresenter.SetValue(ContentPresenter.ContentSourceProperty, "Header");
+            contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            contentPresenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+            borderFactory.AppendChild(contentPresenter);
+
+            template.VisualTree = borderFactory;
+
+            // Trigger for IsSelected to change background and foreground
+            var selectedTriggerTemplate = new Trigger { Property = TabItem.IsSelectedProperty, Value = true };
+            selectedTriggerTemplate.Setters.Add(new Setter(Border.BackgroundProperty, new SolidColorBrush(Color.FromRgb(0x1A, 0x1A, 0x2E)), "TabItemBorder"));
+            selectedTriggerTemplate.Setters.Add(new Setter(Border.BorderThicknessProperty, new Thickness(0, 0, 0, 2), "TabItemBorder"));
+            selectedTriggerTemplate.Setters.Add(new Setter(Border.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x7F)), "TabItemBorder"));
+            template.Triggers.Add(selectedTriggerTemplate);
+
+            style.Setters.Add(new Setter(TabItem.TemplateProperty, template));
             
             // Padding
             style.Setters.Add(new Setter(TabItem.PaddingProperty, new Thickness(16, 8, 16, 8)));
@@ -124,10 +150,6 @@ namespace Stackdose.UI.Core.Controls
             var neonGreen = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x7F));
             selectedTrigger.Setters.Add(new Setter(TabItem.ForegroundProperty, neonGreen));
             selectedTrigger.Setters.Add(new Setter(TabItem.FontWeightProperty, FontWeights.SemiBold));
-            
-            // Selected: darker background
-            var selectedBg = new SolidColorBrush(Color.FromRgb(0x11, 0x11, 0x11)); // Very dark gray for selected tab to distinguish from black bg
-            selectedTrigger.Setters.Add(new Setter(TabItem.BackgroundProperty, selectedBg));
             
             style.Triggers.Add(selectedTrigger);
             

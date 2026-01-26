@@ -135,13 +135,13 @@ namespace Stackdose.UI.Core.Controls
             style.Setters.Add(new Setter(TabItem.TemplateProperty, template));
             
             // Padding
-            style.Setters.Add(new Setter(TabItem.PaddingProperty, new Thickness(16, 8, 16, 8)));
+            style.Setters.Add(new Setter(TabItem.PaddingProperty, new Thickness(8, 4, 8, 4)));
             
             // Margin
             style.Setters.Add(new Setter(TabItem.MarginProperty, new Thickness(0, 0, 2, 0)));
             
             // Font - 已縮小至 12.0 並改為 Light 字重
-            style.Setters.Add(new Setter(TabItem.FontSizeProperty, 12.0));
+            style.Setters.Add(new Setter(TabItem.FontSizeProperty, 10.0));
             style.Setters.Add(new Setter(TabItem.FontWeightProperty, FontWeights.Light));
             
             // Selected state trigger

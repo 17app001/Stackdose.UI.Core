@@ -32,7 +32,7 @@ namespace Stackdose.UI.Core.Helpers
         /// <summary>
         /// 是否啟用自動登出功能
         /// </summary>
-        public static bool EnableAutoLogout { get; set; } = false; // 🔥 改為 false 暫停自動登出
+        public static bool EnableAutoLogout { get; set; } = true; // 🔥 改為 false 暫停自動登出
 
         /// <summary>
         /// 🔥 新增：是否啟用 AD 驗證（預設 true）

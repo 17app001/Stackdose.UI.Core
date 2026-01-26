@@ -17,7 +17,9 @@
     <!-- Main Window Frame -->
     <Border Background="{DynamicResource Cyber.Bg.Dark}" 
             BorderBrush="{DynamicResource Cyber.Border}" 
-            BorderThickness="1">
+            BorderThickness="1"
+            CornerRadius="12"
+            ClipToBounds="True">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
@@ -28,7 +30,8 @@
             <Border Grid.Row="0" 
                     Background="{DynamicResource Cyber.Bg.Panel}" 
                     BorderBrush="{DynamicResource Cyber.Border.Strong}" 
-                    BorderThickness="0,0,0,2">
+                    BorderThickness="0,0,0,2"
+                    CornerRadius="12,12,0,0">
                 <Grid Margin="15,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -82,7 +85,8 @@
                                 BorderBrush="{DynamicResource Cyber.Border.Strong}"
                                 BorderThickness="1"
                                 Cursor="Hand"
-                                ToolTip="切換主題 (Dark/Light)">
+                                ToolTip="切換主題 (Dark/Light)"
+                                WindowChrome.IsHitTestVisibleInChrome="True">
                             <Button.Style>
                                 <Style TargetType="Button">
                                     <Setter Property="Background" Value="Transparent"/>
@@ -178,7 +182,8 @@
                                 BorderThickness="1"
                                 Cursor="Hand"
                                 ToolTip="User Management (Supervisor/Admin)"
-                                Margin="10,0,0,0">
+                                Margin="10,0,0,0"
+                                WindowChrome.IsHitTestVisibleInChrome="True">
                             <Button.Style>
                                 <Style TargetType="Button">
                                     <Setter Property="Background" Value="Transparent"/>
@@ -205,7 +210,7 @@
                                                             </Path>
                                                         </Canvas>
                                                     </Viewbox>
-                                    
+                
                                                     <Border.Effect>
                                                         <DropShadowEffect x:Name="GlowEffect"
                                                                           Color="#00E5FF" 
@@ -308,7 +313,7 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- RIGHT SECTION: Time + User + Logout -->
+                    <!-- RIGHT SECTION: Time + User + Logout + Window Controls -->
                     <StackPanel Grid.Column="2" 
                                 Orientation="Horizontal" 
                                 HorizontalAlignment="Right" 
@@ -352,7 +357,7 @@
                         <!-- User Info Display -->
                         <StackPanel Orientation="Horizontal" 
                                     VerticalAlignment="Center"
-                                    Margin="0,0,15,0">
+                                    Margin="0,0,10,0">
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock x:Name="UserNameText" 
                                            Text="Engineer" 
@@ -367,16 +372,18 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <!-- Logout Button -->
+                        <!-- Logout Button (Relocated to the left of window controls) -->
                         <Button x:Name="LogoutButton" 
                                 Click="LogoutButton_Click"
-                                Width="32" 
-                                Height="32" 
+                                Width="28" 
+                                Height="28" 
                                 Background="#FF5252" 
                                 BorderBrush="Transparent"
                                 BorderThickness="0"
                                 Cursor="Hand"
-                                ToolTip="登出系統">
+                                ToolTip="登出系統"
+                                Margin="0,0,10,0"
+                                WindowChrome.IsHitTestVisibleInChrome="True">
                             <Button.Style>
                                 <Style TargetType="Button">
                                     <Setter Property="Background" Value="#FF5252"/>
@@ -386,11 +393,11 @@
                                                 <Grid>
                                                     <Border x:Name="ButtonBorder"
                                                             Background="{TemplateBinding Background}" 
-                                                            CornerRadius="8"
+                                                            CornerRadius="6"
                                                             BorderBrush="#FFFFFF"
                                                             BorderThickness="0">
                                                         <!-- 電源圖標 -->
-                                                        <Viewbox Width="20" Height="20" Stretch="Uniform">
+                                                        <Viewbox Width="16" Height="16" Stretch="Uniform">
                                                             <Canvas Width="24" Height="24">
                                                                 <!-- 電源符號 (圓弧 + 直線) -->
                                                                 <Path Data="M18.36 6.64a9 9 0 1 1-12.73 0" 
@@ -414,7 +421,7 @@
                                                 
                                                     <!-- Hover 時的外框光暈 -->
                                                     <Border x:Name="GlowBorder"
-                                                            CornerRadius="8"
+                                                            CornerRadius="6"
                                                             BorderBrush="White"
                                                             BorderThickness="2"
                                                             Opacity="0"/>
@@ -493,6 +500,136 @@
                                         </Setter.Value>
                                     </Setter>
                                     <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <!-- Minimize Button -->
+                        <Button x:Name="MinimizeButton" 
+                                Click="MinimizeButton_Click"
+                                Width="28" 
+                                Height="28" 
+                                Background="Transparent" 
+                                BorderBrush="{DynamicResource Cyber.Border.Strong}"
+                                BorderThickness="1"
+                                Cursor="Hand"
+                                ToolTip="最小化"
+                                Margin="0,0,5,0"
+                                Visibility="{Binding ShowMinimizeButton, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                WindowChrome.IsHitTestVisibleInChrome="True">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="ButtonBorder"
+                                                        Background="{TemplateBinding Background}" 
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="6">
+                                                    <Viewbox Width="14" Height="14" Stretch="Uniform">
+                                                        <Canvas Width="24" Height="24">
+                                                            <Line X1="5" Y1="12" X2="19" Y2="12" 
+                                                                  Stroke="{DynamicResource Cyber.NeonBlue}" 
+                                                                  StrokeThickness="2"/>
+                                                        </Canvas>
+                                                    </Viewbox>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="ButtonBorder" Property="Background" Value="#1A00E5FF"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <!-- Maximize Button -->
+                        <Button x:Name="MaximizeButton" 
+                                Click="MaximizeButton_Click"
+                                Width="28" 
+                                Height="28" 
+                                Background="Transparent" 
+                                BorderBrush="{DynamicResource Cyber.Border.Strong}"
+                                BorderThickness="1"
+                                Cursor="Hand"
+                                ToolTip="最大化"
+                                Margin="0,0,5,0"
+                                Visibility="{Binding ShowMaximizeButton, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                WindowChrome.IsHitTestVisibleInChrome="True">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="ButtonBorder"
+                                                        Background="{TemplateBinding Background}" 
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="6">
+                                                    <Viewbox Width="14" Height="14" Stretch="Uniform">
+                                                        <Canvas Width="24" Height="24">
+                                                            <Rectangle Canvas.Left="5" Canvas.Top="5" Width="14" Height="14" 
+                                                                       Stroke="{DynamicResource Cyber.NeonBlue}" 
+                                                                       StrokeThickness="2"/>
+                                                        </Canvas>
+                                                    </Viewbox>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="ButtonBorder" Property="Background" Value="#1A00E5FF"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <!-- Close Application Button -->
+                        <Button x:Name="CloseAppButton" 
+                                Click="CloseAppButton_Click"
+                                Width="28" 
+                                Height="28" 
+                                Background="Transparent" 
+                                BorderBrush="{DynamicResource Cyber.Border.Strong}"
+                                BorderThickness="1"
+                                Cursor="Hand"
+                                ToolTip="關閉程式"
+                                Margin="0,0,-5,0"
+                                WindowChrome.IsHitTestVisibleInChrome="True">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="ButtonBorder"
+                                                        Background="{TemplateBinding Background}" 
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="6">
+                                                    <Viewbox Width="14" Height="14" Stretch="Uniform">
+                                                        <Canvas Width="24" Height="24">
+                                                            <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" 
+                                                                  Fill="{DynamicResource Status.Error}" />
+                                                        </Canvas>
+                                                    </Viewbox>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="ButtonBorder" Property="Background" Value="#1AFF5252"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
                                 </Style>
                             </Button.Style>
                         </Button>

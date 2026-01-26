@@ -140,8 +140,9 @@ namespace Stackdose.UI.Core.Controls
             // Margin
             style.Setters.Add(new Setter(TabItem.MarginProperty, new Thickness(0, 0, 2, 0)));
             
-            // Font
-            style.Setters.Add(new Setter(TabItem.FontSizeProperty, 14.0));
+            // Font - 已縮小至 12.0 並改為 Light 字重
+            style.Setters.Add(new Setter(TabItem.FontSizeProperty, 12.0));
+            style.Setters.Add(new Setter(TabItem.FontWeightProperty, FontWeights.Light));
             
             // Selected state trigger
             var selectedTrigger = new Trigger { Property = TabItem.IsSelectedProperty, Value = true };
@@ -149,7 +150,7 @@ namespace Stackdose.UI.Core.Controls
             // Selected: Neon Green
             var neonGreen = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x7F));
             selectedTrigger.Setters.Add(new Setter(TabItem.ForegroundProperty, neonGreen));
-            selectedTrigger.Setters.Add(new Setter(TabItem.FontWeightProperty, FontWeights.SemiBold));
+            selectedTrigger.Setters.Add(new Setter(TabItem.FontWeightProperty, FontWeights.Medium)); // 選中時稍微加重一點，但不使用 Bold
             
             style.Triggers.Add(selectedTrigger);
             

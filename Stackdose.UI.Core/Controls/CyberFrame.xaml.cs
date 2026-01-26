@@ -480,6 +480,38 @@ namespace Stackdose.UI.Core.Controls
         }
 
         /// <summary>
+        /// 是否顯示最小化按鈕
+        /// </summary>
+        public static readonly DependencyProperty ShowMinimizeButtonProperty =
+            DependencyProperty.Register(
+                nameof(ShowMinimizeButton),
+                typeof(bool),
+                typeof(CyberFrame),
+                new PropertyMetadata(true));
+
+        public bool ShowMinimizeButton
+        {
+            get => (bool)GetValue(ShowMinimizeButtonProperty);
+            set => SetValue(ShowMinimizeButtonProperty, value);
+        }
+
+        /// <summary>
+        /// 是否顯示最大化按鈕
+        /// </summary>
+        public static readonly DependencyProperty ShowMaximizeButtonProperty =
+            DependencyProperty.Register(
+                nameof(ShowMaximizeButton),
+                typeof(bool),
+                typeof(CyberFrame),
+                new PropertyMetadata(true));
+
+        public bool ShowMaximizeButton
+        {
+            get => (bool)GetValue(ShowMaximizeButtonProperty);
+            set => SetValue(ShowMaximizeButtonProperty, value);
+        }
+
+        /// <summary>
         /// 視圖模式 (正常內容 / 使用者管理)
         /// </summary>
         public static readonly DependencyProperty ViewModeProperty =
@@ -566,6 +598,50 @@ namespace Stackdose.UI.Core.Controls
             if (result == MessageBoxResult.Yes)
             {
                 SecurityContext.Logout();
+            }
+        }
+
+        /// <summary>
+        /// 關閉應用程式按鈕點擊
+        /// </summary>
+        private void CloseAppButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = CyberMessageBox.Show(
+                "確定要關閉程式嗎？",
+                "關閉確認",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question
+            );
+
+            if (result == MessageBoxResult.Yes)
+            {
+                Window.GetWindow(this)?.Close();
+            }
+        }
+
+        /// <summary>
+        /// 最小化視窗點擊
+        /// </summary>
+        private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            var window = Window.GetWindow(this);
+            if (window != null)
+            {
+                window.WindowState = WindowState.Minimized;
+            }
+        }
+
+        /// <summary>
+        /// 最大化/還原視窗點擊
+        /// </summary>
+        private void MaximizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            var window = Window.GetWindow(this);
+            if (window != null)
+            {
+                window.WindowState = window.WindowState == WindowState.Maximized 
+                    ? WindowState.Normal 
+                    : WindowState.Maximized;
             }
         }
 

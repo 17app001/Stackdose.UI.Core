@@ -18,7 +18,7 @@ namespace Stackdose.UI.Templates.Controls
     public partial class LeftNavigation : UserControl
     {
         public static readonly DependencyProperty NavigationItemsProperty =
-            DependencyProperty.Register(nameof(NavigationItems), typeof(ObservableCollection<NavigationItem>), 
+            DependencyProperty.Register(nameof(NavigationItems), typeof(ObservableCollection<NavigationItem>),
                 typeof(LeftNavigation), new PropertyMetadata(null));
 
         public ObservableCollection<NavigationItem> NavigationItems
@@ -32,15 +32,15 @@ namespace Stackdose.UI.Templates.Controls
         public LeftNavigation()
         {
             InitializeComponent();
-            
+
             // Default navigation items
             NavigationItems = new ObservableCollection<NavigationItem>
             {
-                new NavigationItem { Title = "Home Overview", Subtitle = "Home Dashboard", NavigationTarget = "HomePage" },
-                new NavigationItem { Title = "Process Management", Subtitle = "Process Management", NavigationTarget = "MachinePage" },
-                new NavigationItem { Title = "Log Viewer", Subtitle = "System Logs", NavigationTarget = "LogViewerPage" },
-                new NavigationItem { Title = "User Management", Subtitle = "Access Control", NavigationTarget = "UserManagementPage" },
-                new NavigationItem { Title = "System Settings", Subtitle = "Configuration", NavigationTarget = "SettingsPage" }
+                new NavigationItem { Title = "首頁總覽", Subtitle = "系統即時看板", NavigationTarget = "HomePage" },
+                new NavigationItem { Title = "設備控制", Subtitle = "機台與生產管理", NavigationTarget = "MachinePage" },
+                new NavigationItem { Title = "運行日誌", Subtitle = "系統活動紀錄", NavigationTarget = "LogViewerPage" },
+                new NavigationItem { Title = "帳戶管理", Subtitle = "權限與存取控制", NavigationTarget = "UserManagementPage" },
+                new NavigationItem { Title = "參數設定", Subtitle = "系統配置與偏好", NavigationTarget = "SettingsPage" }
             };
         }
 
@@ -53,10 +53,10 @@ namespace Stackdose.UI.Templates.Controls
                 {
                     navItem.IsSelected = false;
                 }
-                
+
                 // Select clicked item
                 item.IsSelected = true;
-                
+
                 // Trigger navigation event
                 NavigationRequested?.Invoke(this, item);
             }

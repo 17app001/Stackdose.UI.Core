@@ -132,7 +132,7 @@
 
                     <!-- Close Button -->
                     <Button x:Name="CloseButton"
-                            Content="?" 
+                            Content="X" 
                             Width="30" 
                             Height="30"
                             Background="{StaticResource ErrorBrush}"

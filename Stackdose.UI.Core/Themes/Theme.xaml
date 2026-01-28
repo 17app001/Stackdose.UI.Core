@@ -1,0 +1,12 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Colors.xaml"/>
+        <ResourceDictionary Source="LightColors.xaml"/>
+
+        <ResourceDictionary Source="Components/Controls.Default.xaml"/>
+        <ResourceDictionary Source="Components/Controls.Base.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>

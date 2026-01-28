@@ -16,9 +16,9 @@
             <RowDefinition Height="35"/>
             <!-- Bottom Bar -->
         </Grid.RowDefinitions>
-
-        <!-- Header -->
-        <controls:AppHeader x:Name="AppHeaderControl"
+        <Border MouseLeftButtonDown="Header_DragMove">
+            <!-- Header -->
+            <controls:AppHeader x:Name="AppHeaderControl"
                            Grid.Row="0"
                            PageTitle="Home Overview"
                            UserName="Admin"
@@ -26,7 +26,7 @@
                            LogoutClicked="OnLogout"
                            MinimizeClicked="OnMinimize"
                            CloseClicked="OnClose"/>
-
+        </Border>
         <!-- Main Content Area -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>

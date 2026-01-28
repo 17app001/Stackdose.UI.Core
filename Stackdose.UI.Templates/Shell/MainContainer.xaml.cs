@@ -1,7 +1,8 @@
+using Stackdose.UI.Templates.Controls;
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using Stackdose.UI.Templates.Controls;
+using System.Windows.Input;
 
 namespace Stackdose.UI.Templates.Shell
 {
@@ -32,6 +33,12 @@ namespace Stackdose.UI.Templates.Shell
             InitializeComponent();
         }
 
+
+        private void Header_DragMove(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                Window.GetWindow(this)?.DragMove();
+        }
         /// <summary>
         /// 外部（App）設定主內容與標題
         /// </summary>

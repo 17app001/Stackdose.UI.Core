@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Stackdose.UI.Core.Controls
@@ -171,6 +172,14 @@ namespace Stackdose.UI.Core.Controls
             }
         }
 
+
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
+        }
+
+
         /// <summary>
         /// ·s¼W«ö¶s
         /// </summary>
@@ -180,8 +189,8 @@ namespace Stackdose.UI.Core.Controls
             {
                 Content = text,
                 Margin = new Thickness(5, 0, 5, 0),
-                Style = isCancel 
-                    ? (Style)FindResource("CancelButtonStyle") 
+                Style = isCancel
+                    ? (Style)FindResource("CancelButtonStyle")
                     : (Style)FindResource("CyberButtonStyle")
             };
 

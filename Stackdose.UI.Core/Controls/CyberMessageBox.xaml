@@ -1,31 +1,45 @@
-<Window x:Class="Stackdose.UI.Core.Controls.CyberMessageBox"
+﻿<Window x:Class="Stackdose.UI.Core.Controls.CyberMessageBox"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Message" 
-        Height="250" Width="500"
+        Title="Message"
+        Height="250"
+        Width="520"
         WindowStyle="None"
-        AllowsTransparency="True"
-        Background="Transparent"
-        WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
-        Topmost="True">
+        Topmost="True"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowStartupLocation="CenterOwner">
 
     <Window.Resources>
+        <!-- ✅ 本視窗自帶色票：不依賴外部 Cyber.* -->
+        <SolidColorBrush x:Key="Cmb.Bg.Dark" Color="#FF0B1A33"/>
+        <SolidColorBrush x:Key="Cmb.Bg.Panel" Color="#FF122847"/>
+        <SolidColorBrush x:Key="Cmb.Border" Color="#FF214A63"/>
+        <SolidColorBrush x:Key="Cmb.BorderStrong" Color="#FF1D6D7C"/>
+        <SolidColorBrush x:Key="Cmb.Neon" Color="#FF00E5FF"/>
+
+        <SolidColorBrush x:Key="Cmb.Text.Bright" Color="#FFF2FAFF"/>
+        <SolidColorBrush x:Key="Cmb.Text.Muted" Color="#FF9FB7C5"/>
+
+        <SolidColorBrush x:Key="Cmb.Status.Info" Color="#FF00E5FF"/>
+        <SolidColorBrush x:Key="Cmb.Status.Error" Color="#FFFF5252"/>
+
         <!-- Button Style -->
         <Style x:Key="CyberButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource Cyber.Bg.Panel}"/>
-            <Setter Property="Foreground" Value="{DynamicResource Cyber.Text.Bright}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource Cyber.NeonBlue}"/>
+            <Setter Property="Background" Value="{StaticResource Cmb.Bg.Panel}"/>
+            <Setter Property="Foreground" Value="{StaticResource Cmb.Text.Bright}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Cmb.Neon}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="20,8"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="MinWidth" Value="90"/>
+            <Setter Property="MinWidth" Value="96"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -34,14 +48,14 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4">
-                            <ContentPresenter HorizontalAlignment="Center" 
-                                            VerticalAlignment="Center"
-                                            Margin="{TemplateBinding Padding}"/>
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource Cyber.NeonBlue}"/>
-                                <Setter Property="Foreground" Value="{DynamicResource Cyber.Bg.Dark}"/>
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource Cmb.Neon}"/>
+                                <Setter Property="Foreground" Value="{StaticResource Cmb.Bg.Dark}"/>
                                 <Setter TargetName="Border" Property="Effect">
                                     <Setter.Value>
                                         <DropShadowEffect Color="#00E5FF" BlurRadius="15" ShadowDepth="0" Opacity="0.8"/>
@@ -49,7 +63,11 @@
                                 </Setter>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource Status.Info}"/>
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource Cmb.Status.Info}"/>
+                                <Setter Property="Foreground" Value="{StaticResource Cmb.Bg.Dark}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -59,23 +77,24 @@
 
         <!-- Cancel Button Style -->
         <Style x:Key="CancelButtonStyle" TargetType="Button" BasedOn="{StaticResource CyberButtonStyle}">
-            <Setter Property="BorderBrush" Value="{DynamicResource Cyber.Border}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Cmb.Border}"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource Status.Error}"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource Status.Error}"/>
-                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                    <Setter Property="Background" Value="{StaticResource Cmb.Status.Error}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource Cmb.Status.Error}"/>
+                    <Setter Property="Foreground" Value="#FFFFFFFF"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
     </Window.Resources>
 
-    <!-- Main Container -->
-    <Border Background="{DynamicResource Cyber.Bg.Dark}" 
-            BorderBrush="{DynamicResource Cyber.NeonBlue}" 
-            BorderThickness="1" 
+    <!-- ✅ Content 必須是 Border（你的 code-behind 會 (Border)Content） -->
+    <Border Background="{StaticResource Cmb.Bg.Dark}"
+            BorderBrush="{StaticResource Cmb.Neon}"
+            BorderThickness="1"
             CornerRadius="8"
-            Opacity="0.98">
+            SnapsToDevicePixels="True">
+
         <Border.Effect>
             <DropShadowEffect Color="#00E5FF" BlurRadius="20" ShadowDepth="0" Opacity="0.6"/>
         </Border.Effect>
@@ -87,12 +106,13 @@
                 <RowDefinition Height="70"/>
             </Grid.RowDefinitions>
 
-            <!-- Title Bar -->
-            <Border Grid.Row="0" 
-                    Background="{DynamicResource Cyber.Bg.Panel}" 
+            <!-- ✅ Title Bar（拖曳區） -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource Cmb.Bg.Panel}"
                     CornerRadius="8,8,0,0"
-                    BorderBrush="{DynamicResource Cyber.Border.Strong}" 
-                    BorderThickness="0,0,0,2">
+                    BorderBrush="{StaticResource Cmb.BorderStrong}"
+                    BorderThickness="0,0,0,2"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -101,31 +121,33 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Icon -->
-                    <TextBlock x:Name="TitleIcon" 
+                    <TextBlock x:Name="TitleIcon"
                                Grid.Column="0"
-                               Text="INFO" 
-                               Foreground="{DynamicResource Cyber.NeonBlue}"
-                               FontSize="12" 
+                               Text="INFO"
+                               Foreground="{StaticResource Cmb.Neon}"
+                               FontSize="12"
                                FontWeight="Bold"
                                VerticalAlignment="Center"
                                Margin="15,0,10,0"/>
 
                     <!-- Title -->
-                    <TextBlock x:Name="TitleText" 
+                    <TextBlock x:Name="TitleText"
                                Grid.Column="1"
-                               Text="Message" 
-                               Foreground="{DynamicResource Cyber.NeonBlue}" 
-                               FontSize="16" 
+                               Text="Message"
+                               Foreground="{StaticResource Cmb.Neon}"
+                               FontSize="16"
                                FontWeight="Bold"
                                VerticalAlignment="Center"/>
 
-                    <!-- Close Button -->
-                    <Button Grid.Column="2" 
-                            Content="X" 
-                            Width="40" Height="40"
+                    <!-- Close Button（可點擊，不拖曳） -->
+                    <Button Grid.Column="2"
+                            Content="X"
+                            Width="40"
+                            Height="40"
+                            Margin="0,5,8,5"
                             Background="Transparent"
                             BorderThickness="0"
-                            Foreground="{DynamicResource Cyber.Text.Muted}"
+                            Foreground="{StaticResource Cmb.Text.Muted}"
                             FontSize="16"
                             FontWeight="Bold"
                             Click="CloseButton_Click"
@@ -143,8 +165,8 @@
                                 </Setter>
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource Status.Error}"/>
-                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="Background" Value="{StaticResource Cmb.Status.Error}"/>
+                                        <Setter Property="Foreground" Value="#FFFFFFFF"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
@@ -154,8 +176,8 @@
             </Border>
 
             <!-- Content Area -->
-            <Grid Grid.Row="1" 
-                  Background="{DynamicResource Cyber.Bg.Dark}"
+            <Grid Grid.Row="1"
+                  Background="{StaticResource Cmb.Bg.Dark}"
                   Margin="20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -163,23 +185,23 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Large Icon -->
-                <TextBlock x:Name="MessageIcon" 
+                <TextBlock x:Name="MessageIcon"
                            Grid.Column="0"
-                           Text="i" 
-                           Foreground="{DynamicResource Cyber.NeonBlue}"
-                           FontSize="48" 
+                           Text="i"
+                           Foreground="{StaticResource Cmb.Neon}"
+                           FontSize="48"
                            FontWeight="Bold"
                            VerticalAlignment="Top"
                            Margin="0,10,20,0"/>
 
                 <!-- Message Text -->
-                <ScrollViewer Grid.Column="1" 
+                <ScrollViewer Grid.Column="1"
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled">
-                    <TextBlock x:Name="MessageText" 
-                               Text="This is message content" 
-                               Foreground="{DynamicResource Cyber.Text.Bright}" 
-                               FontSize="14" 
+                    <TextBlock x:Name="MessageText"
+                               Text="This is message content"
+                               Foreground="{StaticResource Cmb.Text.Bright}"
+                               FontSize="14"
                                TextWrapping="Wrap"
                                VerticalAlignment="Center"
                                LineHeight="22"/>
@@ -187,18 +209,17 @@
             </Grid>
 
             <!-- Button Area -->
-            <Border Grid.Row="2" 
-                    Background="{DynamicResource Cyber.Bg.Panel}" 
-                    BorderBrush="{DynamicResource Cyber.Border.Strong}" 
+            <Border Grid.Row="2"
+                    Background="{StaticResource Cmb.Bg.Panel}"
+                    BorderBrush="{StaticResource Cmb.BorderStrong}"
                     BorderThickness="0,2,0,0"
                     CornerRadius="0,0,8,8">
-                <StackPanel x:Name="ButtonPanel" 
-                            Orientation="Horizontal" 
+                <StackPanel x:Name="ButtonPanel"
+                            Orientation="Horizontal"
                             HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
-                    <!-- Buttons will be dynamically generated in code -->
-                </StackPanel>
+                            VerticalAlignment="Center"/>
             </Border>
+
         </Grid>
     </Border>
 </Window>

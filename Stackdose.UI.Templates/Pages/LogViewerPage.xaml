@@ -10,232 +10,349 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-
-                <!-- ✅ 只為了 Designer：讓 VS 看到 Core Styles -->
+                <!-- 載入核心主題 -->
                 <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Core;component/Themes/Theme.xaml"/>
-
             </ResourceDictionary.MergedDictionaries>
-            <!-- 左側日期項目：頁面專用 -->
-            <Style x:Key="DateItemContainerStyle" TargetType="ListBoxItem">
-                <Setter Property="Padding" Value="0"/>
-                <Setter Property="Margin" Value="0,0,0,12"/>
-                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+
+            <!-- 日期項目容器樣式 -->
+            <Style x:Key="DateItemStyle" TargetType="Border">
+                <Setter Property="Background" Value="{DynamicResource Plc.Bg.Main}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource Plc.Border}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="CornerRadius" Value="6"/>
+                <Setter Property="Padding" Value="12"/>
+                <Setter Property="Margin" Value="0,0,0,8"/>
                 <Setter Property="Cursor" Value="Hand"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="ListBoxItem">
-                            <Border x:Name="Bd"
-                                Style="{StaticResource CardStyle}"
-                                Padding="12"
-                                Margin="0">
-                                <ContentPresenter/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="Bd" Property="Opacity" Value="0.92"/>
-                                </Trigger>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter TargetName="Bd" Property="BorderThickness" Value="2"/>
-                                </Trigger>
-                                <Trigger Property="IsEnabled" Value="False">
-                                    <Setter TargetName="Bd" Property="Opacity" Value="0.45"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource Sensor.Bg.Header}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource Cyber.NeonBlue}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- 日誌卡片樣式 -->
+            <Style x:Key="LogCardStyle" TargetType="Border">
+                <Setter Property="Background" Value="{DynamicResource Log.Bg.Main}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource Log.Border}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="CornerRadius" Value="8"/>
+                <Setter Property="Padding" Value="16"/>
+                <Setter Property="Margin" Value="0,0,0,12"/>
+            </Style>
+
+            <!-- 類型標籤樣式 -->
+            <Style x:Key="TypeBadgeStyle" TargetType="Border">
+                <Setter Property="CornerRadius" Value="4"/>
+                <Setter Property="Padding" Value="8,4"/>
+                <Setter Property="HorizontalAlignment" Value="Left"/>
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Margin="20">
+    <Grid Background="{DynamicResource Cyber.Bg.Dark}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- ========================= Top Filter Bar ========================= -->
+        <!-- ========================= 頂部篩選列 ========================= -->
         <Border Grid.Row="0"
-                Style="{StaticResource CardStyle}"
-                Padding="14"
-                Margin="0,0,0,16">
+                Background="{DynamicResource Plc.Bg.Main}"
+                BorderBrush="{DynamicResource Plc.Border}"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="16"
+                Margin="16,16,16,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Left : Chips + Date range -->
+                <!-- 左側：類型篩選 + 日期範圍 -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ToggleButton Style="{StaticResource ChipToggleStyle}"
+                    <!-- 類型篩選按鈕 -->
+                    <ToggleButton Content="AUDIT TRAIL"
                                   Background="#E85B4A"
-                                  Content="Audit Trail"
                                   IsChecked="True"
-                                  Margin="0,0,12,0"/>
-                    <ToggleButton Style="{StaticResource ChipToggleStyle}"
+                                  Width="120"
+                                  Height="32"
+                                  Margin="0,0,8,0"
+                                  Foreground="White"
+                                  FontWeight="Bold"
+                                  FontSize="11"
+                                  FontFamily="Consolas"/>
+                    
+                    <ToggleButton Content="OPERATION"
                                   Background="#3AA0FF"
-                                  Content="Operation"
-                                  Margin="0,0,12,0"/>
-                    <ToggleButton Style="{StaticResource ChipToggleStyle}"
+                                  Width="120"
+                                  Height="32"
+                                  Margin="0,0,8,0"
+                                  Foreground="White"
+                                  FontWeight="Bold"
+                                  FontSize="11"
+                                  FontFamily="Consolas"/>
+                    
+                    <ToggleButton Content="EVENT"
                                   Background="#FFB020"
-                                  Content="Event"
-                                  Margin="0,0,12,0"/>
-                    <ToggleButton Style="{StaticResource ChipToggleStyle}"
+                                  Width="120"
+                                  Height="32"
+                                  Margin="0,0,8,0"
+                                  Foreground="White"
+                                  FontWeight="Bold"
+                                  FontSize="11"
+                                  FontFamily="Consolas"/>
+                    
+                    <ToggleButton Content="PROCESS"
                                   Background="#3AC977"
-                                  Content="Process"
-                                  Margin="0,0,22,0"/>
+                                  Width="120"
+                                  Height="32"
+                                  Margin="0,0,24,0"
+                                  Foreground="White"
+                                  FontWeight="Bold"
+                                  FontSize="11"
+                                  FontFamily="Consolas"/>
 
-                    <TextBlock Style="{StaticResource KvKeyStyle}"
-                               Text="From"
+                    <!-- 日期範圍 -->
+                    <TextBlock Text="FROM"
+                               Foreground="{DynamicResource Plc.Text.Label}"
                                VerticalAlignment="Center"
+                               FontSize="11"
+                               FontWeight="Bold"
+                               FontFamily="Consolas"
                                Margin="0,0,8,0"/>
-
-                    <TextBox Width="140" Height="30" Margin="0,0,10,0"/>
-
-                    <TextBlock Style="{StaticResource KvKeyStyle}"
-                               Text="~"
+                    
+                    <DatePicker Width="120"
+                                Height="32"
+                                Margin="0,0,12,0"
+                                VerticalAlignment="Center"/>
+                    
+                    <TextBlock Text="TO"
+                               Foreground="{DynamicResource Plc.Text.Label}"
                                VerticalAlignment="Center"
-                               Margin="0,0,10,0"/>
-
-                    <TextBox Width="140" Height="30"/>
+                               FontSize="11"
+                               FontWeight="Bold"
+                               FontFamily="Consolas"
+                               Margin="0,0,8,0"/>
+                    
+                    <DatePicker Width="120"
+                                Height="32"
+                                VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- Right : Actions -->
+                <!-- 右側：操作按鈕 -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Style="{StaticResource PillButtonStyle}"
-                            Background="{StaticResource Button.Bg.Info}"
-                            Content="查詢"
-                            Margin="0,0,12,0"/>
-                    <Button Style="{StaticResource PillButtonStyle}"
+                    <Button Content="查詢"
+                            Background="{DynamicResource Button.Bg.Info}"
+                            Foreground="White"
+                            Width="90"
+                            Height="32"
+                            Margin="0,0,8,0"
+                            FontWeight="Bold"
+                            FontSize="12"
+                            FontFamily="Microsoft JhengHei"/>
+                    
+                    <Button Content="匯出 PDF"
                             Background="#A78BFA"
-                            Content="匯出 PDF"/>
+                            Foreground="White"
+                            Width="90"
+                            Height="32"
+                            FontWeight="Bold"
+                            FontSize="12"
+                            FontFamily="Microsoft JhengHei"/>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- ========================= Main Area ========================= -->
-        <Grid Grid.Row="1">
+        <!-- ========================= 主要內容區域 ========================= -->
+        <Grid Grid.Row="1" Margin="16,0,16,16">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="360"/>
+                <ColumnDefinition Width="280"/>
                 <ColumnDefinition Width="16"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- ================= Left : Date List ================= -->
+            <!-- ================= 左側：日期列表 ================= -->
             <Border Grid.Column="0"
-                    Style="{StaticResource CardStyle}"
-                    Padding="16">
-
+                    Background="{DynamicResource Sensor.Bg.Main}"
+                    BorderBrush="{DynamicResource Sensor.Border}"
+                    BorderThickness="1"
+                    CornerRadius="6">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Text="日期列表"
-                               Foreground="{StaticResource Cyber.Text.Main}"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               Margin="0,0,0,12"/>
+                    <!-- 標題列 -->
+                    <Border Background="{DynamicResource Sensor.Bg.Header}"
+                            BorderBrush="{DynamicResource Sensor.Border}"
+                            BorderThickness="0,0,0,1"
+                            Padding="12,10"
+                            CornerRadius="6,6,0,0">
+                        <TextBlock Text="DATE LIST"
+                                   Foreground="{DynamicResource Sensor.Text.Title}"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   FontFamily="Consolas"/>
+                    </Border>
 
-                    <ListBox Grid.Row="1"
-                             BorderThickness="0"
-                             Background="Transparent"
-                             ItemContainerStyle="{StaticResource DateItemContainerStyle}"
-                             SelectedIndex="0">
+                    <!-- 日期列表 -->
+                    <ScrollViewer Grid.Row="1"
+                                  VerticalScrollBarVisibility="Auto"
+                                  Padding="12">
+                        <StackPanel>
+                            <!-- 日期項目 1 -->
+                            <Border Style="{StaticResource DateItemStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
 
-                        <ListBoxItem>
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
+                                    <TextBlock Text="2025-01-12 (日)"
+                                               Foreground="{DynamicResource Cyber.Text.Main}"
+                                               FontSize="13"
+                                               FontWeight="Bold"
+                                               FontFamily="Microsoft JhengHei"/>
+                                    
+                                    <TextBlock Grid.Row="1"
+                                               Text="今天"
+                                               Foreground="{DynamicResource Plc.Text.Value}"
+                                               FontSize="11"
+                                               FontFamily="Microsoft JhengHei"
+                                               Margin="0,4,0,0"/>
+                                    
+                                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0">
+                                        <Ellipse Width="8" Height="8"
+                                                 Fill="{DynamicResource Status.Success}"
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,6,0"/>
+                                        <TextBlock Text="128 筆記錄"
+                                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                                   FontSize="11"
+                                                   FontFamily="Microsoft JhengHei"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
 
-                                <TextBlock Text="2025-01-12(日)"
-                                           Foreground="{StaticResource Cyber.Text.Main}"
-                                           FontSize="14"
-                                           FontWeight="Bold"/>
-                                <TextBlock Grid.Row="1"
-                                           Text="今天 - 128 筆記錄"
-                                           Foreground="{StaticResource Cyber.Text.Muted}"
-                                           FontSize="12"
-                                           Margin="0,4,0,0"/>
-                            </Grid>
-                        </ListBoxItem>
+                            <!-- 日期項目 2 -->
+                            <Border Style="{StaticResource DateItemStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
 
-                        <ListBoxItem>
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
+                                    <TextBlock Text="2025-01-11 (六)"
+                                               Foreground="{DynamicResource Cyber.Text.Main}"
+                                               FontSize="13"
+                                               FontWeight="Bold"
+                                               FontFamily="Microsoft JhengHei"/>
+                                    
+                                    <TextBlock Grid.Row="1"
+                                               Text="昨天"
+                                               Foreground="{DynamicResource Plc.Text.Label}"
+                                               FontSize="11"
+                                               FontFamily="Microsoft JhengHei"
+                                               Margin="0,4,0,0"/>
+                                    
+                                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0">
+                                        <Ellipse Width="8" Height="8"
+                                                 Fill="{DynamicResource Status.Info}"
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,6,0"/>
+                                        <TextBlock Text="234 筆記錄"
+                                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                                   FontSize="11"
+                                                   FontFamily="Microsoft JhengHei"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
 
-                                <TextBlock Text="2025-01-11(六)"
-                                           Foreground="{StaticResource Cyber.Text.Main}"
-                                           FontSize="14"
-                                           FontWeight="Bold"/>
-                                <TextBlock Grid.Row="1"
-                                           Text="昨天 - 234 筆記錄"
-                                           Foreground="{StaticResource Cyber.Text.Muted}"
-                                           FontSize="12"
-                                           Margin="0,4,0,0"/>
-                            </Grid>
-                        </ListBoxItem>
+                            <!-- 日期項目 3 -->
+                            <Border Style="{StaticResource DateItemStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
 
-                        <ListBoxItem>
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-
-                                <TextBlock Text="2025-01-10(五)"
-                                           Foreground="{StaticResource Cyber.Text.Main}"
-                                           FontSize="14"
-                                           FontWeight="Bold"/>
-                                <TextBlock Grid.Row="1"
-                                           Text="2 天前 - 198 筆記錄"
-                                           Foreground="{StaticResource Cyber.Text.Muted}"
-                                           FontSize="12"
-                                           Margin="0,4,0,0"/>
-                            </Grid>
-                        </ListBoxItem>
-
-                    </ListBox>
+                                    <TextBlock Text="2025-01-10 (五)"
+                                               Foreground="{DynamicResource Cyber.Text.Main}"
+                                               FontSize="13"
+                                               FontWeight="Bold"
+                                               FontFamily="Microsoft JhengHei"/>
+                                    
+                                    <TextBlock Grid.Row="1"
+                                               Text="2 天前"
+                                               Foreground="{DynamicResource Plc.Text.Label}"
+                                               FontSize="11"
+                                               FontFamily="Microsoft JhengHei"
+                                               Margin="0,4,0,0"/>
+                                    
+                                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0">
+                                        <Ellipse Width="8" Height="8"
+                                                 Fill="{DynamicResource Status.Offline}"
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,6,0"/>
+                                        <TextBlock Text="198 筆記錄"
+                                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                                   FontSize="11"
+                                                   FontFamily="Microsoft JhengHei"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
                 </Grid>
             </Border>
 
-            <!-- ================= Right : Log Cards ================= -->
+            <!-- ================= 右側：日誌卡片 ================= -->
             <Border Grid.Column="2"
-                    Style="{StaticResource CardStyle}"
-                    Padding="16">
-
+                    Background="{DynamicResource Sensor.Bg.Main}"
+                    BorderBrush="{DynamicResource Sensor.Border}"
+                    BorderThickness="1"
+                    CornerRadius="6">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Header -->
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                        <TextBlock Text="Audit Trail - 2025-01-12"
-                                   Foreground="{StaticResource Cyber.Text.Main}"
-                                   FontSize="16"
-                                   FontWeight="Bold"/>
-                        <TextBlock Text="  (共 45 筆記錄)"
-                                   Foreground="{StaticResource Cyber.Text.Muted}"
-                                   FontSize="12"
-                                   VerticalAlignment="Bottom"
-                                   Margin="8,0,0,1"/>
-                    </StackPanel>
+                    <!-- 標題列 -->
+                    <Border Background="{DynamicResource Sensor.Bg.Header}"
+                            BorderBrush="{DynamicResource Sensor.Border}"
+                            BorderThickness="0,0,0,1"
+                            Padding="12,10"
+                            CornerRadius="6,6,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="AUDIT TRAIL - 2025-01-12"
+                                       Foreground="{DynamicResource Sensor.Text.Title}"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="  (共 45 筆記錄)"
+                                       Foreground="{DynamicResource Plc.Text.Label}"
+                                       FontSize="12"
+                                       FontFamily="Microsoft JhengHei"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,0,0"/>
+                        </StackPanel>
+                    </Border>
 
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <!-- 日誌列表 -->
+                    <ScrollViewer Grid.Row="1"
+                                  VerticalScrollBarVisibility="Auto"
+                                  Padding="12">
                         <StackPanel>
-
-                            <!-- ====================== Log Card (完整明細卡) ====================== -->
-                            <Border Style="{StaticResource CardStyle}"
-                                    Padding="18"
-                                    Margin="0,0,0,16">
+                            <!-- ====================== 日誌卡片 1 ====================== -->
+                            <Border Style="{StaticResource LogCardStyle}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -260,57 +377,151 @@
                                             <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
 
-                                        <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource KvKeyStyle}" Text="Timestamp:"/>
-                                        <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource KvValueStyle}" Text="2025-01-12 14:30:25.123"/>
+                                        <!-- 欄位 1: Timestamp -->
+                                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                                   Text="Timestamp:"
+                                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                                   FontSize="11"
+                                                   FontFamily="Consolas"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                                   Text="2025-01-12 14:30:25.123"
+                                                   Foreground="{DynamicResource Cyber.Text.Main}"
+                                                   FontSize="11"
+                                                   FontWeight="Bold"
+                                                   FontFamily="Consolas"/>
 
-                                        <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource KvKeyStyle}" Text="User ID:" Margin="0,10,10,0"/>
-                                        <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource KvValueStyle}" Text="Admin (管理員)" Margin="0,10,0,0"/>
+                                        <!-- 欄位 2: User ID -->
+                                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                                   Text="User ID:"
+                                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                                   FontSize="11"
+                                                   FontFamily="Consolas"
+                                                   Margin="0,8,0,0"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                                   Text="Admin (管理員)"
+                                                   Foreground="{DynamicResource Plc.Text.Value}"
+                                                   FontSize="11"
+                                                   FontWeight="Bold"
+                                                   FontFamily="Microsoft JhengHei"
+                                                   Margin="0,8,0,0"/>
 
-                                        <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource KvKeyStyle}" Text="Action:" Margin="0,10,10,0"/>
+                                        <!-- 欄位 3: Action -->
+                                        <TextBlock Grid.Row="2" Grid.Column="0"
+                                                   Text="Action:"
+                                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                                   FontSize="11"
+                                                   FontFamily="Consolas"
+                                                   Margin="0,8,0,0"/>
                                         <Border Grid.Row="2" Grid.Column="1"
-                                                Background="{StaticResource Button.Bg.Error}"
-                                                CornerRadius="7"
-                                                Padding="10,4"
-                                                Margin="0,10,0,0"
-                                                HorizontalAlignment="Left">
-                                            <TextBlock Text="Start Process"
-                                                       Foreground="{StaticResource Button.Text}"
-                                                       FontSize="12"
-                                                       FontWeight="SemiBold"/>
+                                                Style="{StaticResource TypeBadgeStyle}"
+                                                Background="{DynamicResource Button.Bg.Error}"
+                                                Margin="0,8,0,0">
+                                            <TextBlock Text="START PROCESS"
+                                                       Foreground="White"
+                                                       FontSize="11"
+                                                       FontWeight="Bold"
+                                                       FontFamily="Consolas"/>
                                         </Border>
 
-                                        <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource KvKeyStyle}" Text="Before Value:" Margin="0,10,10,0"/>
-                                        <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource KvValueStyle}" Text="Idle" Margin="0,10,0,0"/>
-
-                                        <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource KvKeyStyle}" Text="After Value:" Margin="0,10,10,0"/>
-                                        <TextBlock Grid.Row="4" Grid.Column="1" Style="{StaticResource KvValueStyle}" Text="Running" Margin="0,10,0,0"/>
-
-                                        <TextBlock Grid.Row="5" Grid.Column="0" Style="{StaticResource KvKeyStyle}" Text="Reason:" Margin="0,10,10,0"/>
-                                        <TextBlock Grid.Row="5" Grid.Column="1" Style="{StaticResource KvValueStyle}" Text="開始新批次生產" Margin="0,10,0,0"/>
-
-                                        <TextBlock Grid.Row="6" Grid.Column="0" Style="{StaticResource KvKeyStyle}" Text="Batch ID:" Margin="0,10,10,0"/>
-                                        <TextBlock Grid.Row="6" Grid.Column="1" Style="{StaticResource KvValueStyle}" Text="BATCH-2025011201-A" Margin="0,10,0,0"/>
-
-                                        <TextBlock Grid.Row="7" Grid.Column="0" Style="{StaticResource KvKeyStyle}" Text="Parameter:" Margin="0,10,10,0"/>
-                                        <TextBlock Grid.Row="7" Grid.Column="1" Style="{StaticResource KvValueStyle}" Text="Process.State" Margin="0,10,0,0"/>
-
-                                        <TextBlock Grid.Row="8" Grid.Column="0" Style="{StaticResource KvKeyStyle}" Text="SHA-256:" Margin="0,10,10,0"/>
-                                        <TextBlock Grid.Row="8" Grid.Column="1"
-                                                   Foreground="{StaticResource Cyber.Text.Muted}"
+                                        <!-- 欄位 4: Before Value -->
+                                        <TextBlock Grid.Row="3" Grid.Column="0"
+                                                   Text="Before Value:"
+                                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                                   FontSize="11"
                                                    FontFamily="Consolas"
-                                                   FontSize="12"
+                                                   Margin="0,8,0,0"/>
+                                        <TextBlock Grid.Row="3" Grid.Column="1"
+                                                   Text="Idle"
+                                                   Foreground="{DynamicResource Status.Offline}"
+                                                   FontSize="11"
+                                                   FontWeight="Bold"
+                                                   FontFamily="Consolas"
+                                                   Margin="0,8,0,0"/>
+
+                                        <!-- 欄位 5: After Value -->
+                                        <TextBlock Grid.Row="4" Grid.Column="0"
+                                                   Text="After Value:"
+                                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                                   FontSize="11"
+                                                   FontFamily="Consolas"
+                                                   Margin="0,8,0,0"/>
+                                        <TextBlock Grid.Row="4" Grid.Column="1"
+                                                   Text="Running"
+                                                   Foreground="{DynamicResource Status.Success}"
+                                                   FontSize="11"
+                                                   FontWeight="Bold"
+                                                   FontFamily="Consolas"
+                                                   Margin="0,8,0,0"/>
+
+                                        <!-- 欄位 6: Reason -->
+                                        <TextBlock Grid.Row="5" Grid.Column="0"
+                                                   Text="Reason:"
+                                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                                   FontSize="11"
+                                                   FontFamily="Consolas"
+                                                   Margin="0,8,0,0"/>
+                                        <TextBlock Grid.Row="5" Grid.Column="1"
+                                                   Text="開始新批次生產"
+                                                   Foreground="{DynamicResource Cyber.Text.Main}"
+                                                   FontSize="11"
+                                                   FontFamily="Microsoft JhengHei"
+                                                   Margin="0,8,0,0"/>
+
+                                        <!-- 欄位 7: Batch ID -->
+                                        <TextBlock Grid.Row="6" Grid.Column="0"
+                                                   Text="Batch ID:"
+                                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                                   FontSize="11"
+                                                   FontFamily="Consolas"
+                                                   Margin="0,8,0,0"/>
+                                        <TextBlock Grid.Row="6" Grid.Column="1"
+                                                   Text="BATCH-2025011201-A"
+                                                   Foreground="{DynamicResource Status.Warning}"
+                                                   FontSize="11"
+                                                   FontWeight="Bold"
+                                                   FontFamily="Consolas"
+                                                   Margin="0,8,0,0"/>
+
+                                        <!-- 欄位 8: Parameter -->
+                                        <TextBlock Grid.Row="7" Grid.Column="0"
+                                                   Text="Parameter:"
+                                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                                   FontSize="11"
+                                                   FontFamily="Consolas"
+                                                   Margin="0,8,0,0"/>
+                                        <TextBlock Grid.Row="7" Grid.Column="1"
+                                                   Text="Process.State"
+                                                   Foreground="{DynamicResource Cyber.Text.Main}"
+                                                   FontSize="11"
+                                                   FontFamily="Consolas"
+                                                   Margin="0,8,0,0"/>
+
+                                        <!-- 欄位 9: SHA-256 -->
+                                        <TextBlock Grid.Row="8" Grid.Column="0"
+                                                   Text="SHA-256:"
+                                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                                   FontSize="11"
+                                                   FontFamily="Consolas"
+                                                   Margin="0,8,0,0"/>
+                                        <TextBlock Grid.Row="8" Grid.Column="1"
+                                                   Text="3a7bd3e2f4cd15b96a8f2d4c5b7e3a1c9f8d2e4b6a..."
+                                                   Foreground="{DynamicResource Plc.Text.Gray}"
+                                                   FontSize="10"
+                                                   FontFamily="Consolas"
                                                    TextWrapping="Wrap"
-                                                   Margin="0,10,0,0"
-                                                   Text="3a7bd3e2f4cd15b96a8f2d4c5b7e3a1..."/>
+                                                   Margin="0,8,0,0"/>
                                     </Grid>
 
+                                    <!-- 底部指示條 -->
                                     <Border Grid.Row="1"
-                                            Height="3"
-                                            Background="{StaticResource Button.Bg.Error}"
-                                            Margin="-18,16,-18,-18"/>
+                                            Height="4"
+                                            Background="{DynamicResource Button.Bg.Error}"
+                                            Margin="-16,12,-16,-16"
+                                            CornerRadius="0,0,8,8"/>
                                 </Grid>
                             </Border>
 
+                            <!-- 可以繼續添加更多日誌卡片... -->
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>

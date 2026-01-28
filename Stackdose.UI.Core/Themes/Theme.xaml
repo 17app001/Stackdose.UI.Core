@@ -2,8 +2,9 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <ResourceDictionary.MergedDictionaries>
+        <!-- Default to Dark Theme (Colors.xaml) -->
+        <!-- LightColors.xaml will be loaded dynamically when switching themes -->
         <ResourceDictionary Source="Colors.xaml"/>
-        <ResourceDictionary Source="LightColors.xaml"/>
 
         <ResourceDictionary Source="Components/Controls.Default.xaml"/>
         <ResourceDictionary Source="Components/Controls.Base.xaml"/>

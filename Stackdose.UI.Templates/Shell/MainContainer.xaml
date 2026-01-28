@@ -1,0 +1,54 @@
+<UserControl x:Class="Stackdose.UI.Templates.Shell.MainContainer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:controls="clr-namespace:Stackdose.UI.Templates.Controls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="900" d:DesignWidth="1600">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <!-- Header -->
+            <RowDefinition Height="*"/>
+            <!-- Content -->
+            <RowDefinition Height="35"/>
+            <!-- Bottom Bar -->
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <controls:AppHeader x:Name="AppHeaderControl"
+                           Grid.Row="0"
+                           PageTitle="Home Overview"
+                           UserName="Admin"
+                           UserRole="Administrator"
+                           LogoutClicked="OnLogout"
+                           MinimizeClicked="OnMinimize"
+                           CloseClicked="OnClose"/>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <!-- Left Navigation -->
+                <ColumnDefinition Width="4*"/>
+                <!-- Dynamic Content Area -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Navigation -->
+            <controls:LeftNavigation Grid.Column="0"
+                                    NavigationRequested="OnNavigate"/>
+
+            <!-- Dynamic Content Area -->
+            <Border Grid.Column="1"
+                    Background="{StaticResource BackgroundBrush}">
+                <ContentControl x:Name="ContentArea"
+                               Margin="30"/>
+            </Border>
+        </Grid>
+
+        <!-- Bottom Bar -->
+        <controls:AppBottomBar Grid.Row="2"/>
+    </Grid>
+</UserControl>

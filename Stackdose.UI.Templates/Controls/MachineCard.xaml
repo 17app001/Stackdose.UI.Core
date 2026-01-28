@@ -1,0 +1,96 @@
+﻿<UserControl x:Class="Stackdose.UI.Templates.Controls.MachineCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+
+    <Border Background="{StaticResource DarkBackgroundBrush}"
+            BorderBrush="{Binding ElementName=Root, Path=AccentBrush}"
+            BorderThickness="2"
+            CornerRadius="8"
+            Padding="14">
+
+        <StackPanel>
+            <!-- Title -->
+            <TextBlock Text="{Binding ElementName=Root, Path=Title}"
+                       FontSize="18"
+                       FontWeight="Bold"
+                       Foreground="{Binding ElementName=Root, Path=AccentBrush}"/>
+
+            <!-- Batch Box -->
+            <Border Background="{StaticResource CardBackgroundBrush}"
+                    CornerRadius="6"
+                    Padding="10"
+                    Margin="0,10,0,12">
+                <StackPanel>
+                    <TextBlock Text="{Binding ElementName=Root, Path=BatchLabel}"
+                               FontSize="12"
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
+
+                    <TextBlock Text="{Binding ElementName=Root, Path=BatchValue}"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
+
+                    <TextBlock Text="{Binding ElementName=Root, Path=RecipeText}"
+                               FontSize="12"
+                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Status pill -->
+            <Border Background="{Binding ElementName=Root, Path=StatusBrush}"
+                    CornerRadius="12"
+                    Padding="6,4"
+                    Margin="0,0,10,0"
+                    HorizontalAlignment="Left">
+                <TextBlock Text="{Binding ElementName=Root, Path=StatusText}"
+                           Foreground="White"
+                           FontSize="12"/>
+            </Border>
+
+            <!-- Metrics -->
+            <Grid Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="{Binding ElementName=Root, Path=LeftTopLabel}"
+                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                    <TextBlock Text="{Binding ElementName=Root, Path=LeftTopValue}"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               Margin="0,6,0,12"/>
+
+                    <TextBlock Text="{Binding ElementName=Root, Path=LeftBottomLabel}"
+                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                    <TextBlock Text="{Binding ElementName=Root, Path=LeftBottomValue}"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               Margin="0,6,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="{Binding ElementName=Root, Path=RightTopLabel}"
+                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                    <TextBlock Text="{Binding ElementName=Root, Path=RightTopValue}"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               Margin="0,6,0,12"/>
+
+                    <TextBlock Text="{Binding ElementName=Root, Path=RightBottomLabel}"
+                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                    <TextBlock Text="{Binding ElementName=Root, Path=RightBottomValue}"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               Margin="0,6,0,0"/>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -56,11 +56,11 @@ namespace Stackdose.UI.Core.Controls
         /// <summary>
         /// «ö¶s¤º®e
         /// </summary>
-        public static readonly DependencyProperty ContentProperty =
+        public new static readonly DependencyProperty ContentProperty =
             DependencyProperty.Register("Content", typeof(object), typeof(SecuredButton), 
                 new PropertyMetadata("Button"));
         
-        public object Content
+        public new object Content
         {
             get => GetValue(ContentProperty);
             set => SetValue(ContentProperty, value);

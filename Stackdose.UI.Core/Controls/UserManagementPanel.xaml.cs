@@ -19,7 +19,7 @@ namespace Stackdose.UI.Core.Controls
     {
         #region Fields
 
-        private readonly WindowsAccountService _windowsAccountService;
+        private readonly WindowsAccountService _windowsAccountService = null!;
         private ObservableCollection<WindowsAccountService.UserInfo> _users = new();
         private WindowsAccountService.UserInfo? _selectedUser;
         private bool _hasLoaded = false;
@@ -103,7 +103,7 @@ namespace Stackdose.UI.Core.Controls
 
         #region Load Users
 
-        private async System.Threading.Tasks.Task LoadUsersAsync()
+        private async Task LoadUsersAsync()
         {
             try
             {

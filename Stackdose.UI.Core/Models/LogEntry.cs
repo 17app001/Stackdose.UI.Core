@@ -12,7 +12,7 @@ namespace Stackdose.UI.Core.Models
     public class LogEntry
     {
         public DateTime Timestamp { get; set; }
-        public string Message { get; set; }
+        public string Message { get; set; } = string.Empty;
         public LogLevel Level { get; set; }
 
         // 方便 UI 顯示顏色的屬性

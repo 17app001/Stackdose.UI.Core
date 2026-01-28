@@ -6,23 +6,21 @@
              xmlns:controls="clr-namespace:Stackdose.UI.Templates.Controls"
              mc:Ignorable="d"
              d:DesignHeight="900" d:DesignWidth="1600"
-             Background="#1a1a2e">
+             Background="{DynamicResource Cyber.Bg.Dark}">
 
     <UserControl.Resources>
         <ResourceDictionary>
-			
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Stackdose.UI.Templates;component/Resources/CommonColors.xaml"/>
-				<ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Core;component/Themes/Theme.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Core;component/Themes/Theme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="60"/>   <!-- Header -->
-            <RowDefinition Height="*"/>    <!-- Content -->
-            <RowDefinition Height="35"/>   <!-- Bottom Bar -->
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="35"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -35,8 +33,8 @@
         <!-- Main Content Area -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>  <!-- Left Navigation -->
-                <ColumnDefinition Width="4*"/>  <!-- Content Area -->
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <!-- Left Navigation -->
@@ -44,7 +42,10 @@
                                     NavigationRequested="LeftNavigation_NavigationRequested"/>
 
             <!-- Content Area -->
-            <Border Grid.Column="1" Background="{StaticResource BackgroundBrush}">
+            <Border Grid.Column="1" 
+                    Background="{DynamicResource Cyber.Bg.Panel}"
+                    BorderBrush="{DynamicResource Cyber.Border}"
+                    BorderThickness="1,0,0,0">
                 <ContentPresenter Content="{Binding ContentArea, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
             </Border>
         </Grid>

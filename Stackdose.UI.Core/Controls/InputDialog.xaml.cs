@@ -7,8 +7,8 @@ namespace Stackdose.UI.Core.Controls
     /// </summary>
     public partial class InputDialog : Window
     {
-        public string Title { get; set; }
-        public string Prompt { get; set; }
+        public new string Title { get; set; } = string.Empty;
+        public string Prompt { get; set; } = string.Empty;
         public string InputText => InputTextBox.Text;
 
         public InputDialog(string title, string prompt)

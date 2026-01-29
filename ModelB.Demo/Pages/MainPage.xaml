@@ -1,0 +1,123 @@
+<UserControl x:Class="ModelB.Demo.Pages.MainPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:core="http://schemas.stackdose.com/wpf"
+             mc:Ignorable="d"
+             d:DesignHeight="800" d:DesignWidth="1200">
+
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Page Title -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource Plc.Bg.Main}"
+                BorderBrush="{DynamicResource Plc.Border}"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="20"
+                Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="MODEL-B SYSTEM OVERVIEW"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource Cyber.Text.Main}"
+                           FontFamily="Consolas"/>
+                <TextBlock Text="Real-time device status monitoring and control"
+                           FontSize="14"
+                           Foreground="{DynamicResource Plc.Text.Label}"
+                           Margin="0,8,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Device Status Cards -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <UniformGrid Columns="2" Rows="2" Margin="0">
+
+                <!-- PLC Status Card -->
+                <Border Background="{DynamicResource Sensor.Bg.Main}"
+                        BorderBrush="{DynamicResource Sensor.Border}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Margin="0,0,16,16"
+                        Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="PLC CONNECTION STATUS"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource Sensor.Text.Title}"
+                                   FontFamily="Consolas"
+                                   Margin="0,0,0,16"/>
+
+                        <core:PlcStatus IpAddress="192.168.22.39"
+                                        Port="3000"
+                                        AutoConnect="True"
+                                        IsGlobal="True"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Print Head Status Card -->
+                <Border Background="{DynamicResource Sensor.Bg.Main}"
+                        BorderBrush="{DynamicResource Sensor.Border}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Margin="0,0,16,16"
+                        Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="PRINT HEAD STATUS"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource Sensor.Text.Title}"
+                                   FontFamily="Consolas"
+                                   Margin="0,0,0,16"/>
+
+                        <core:PrintHeadStatus/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Sensor Viewer Card -->
+                <Border Background="{DynamicResource Sensor.Bg.Main}"
+                        BorderBrush="{DynamicResource Sensor.Border}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Margin="0,0,16,16"
+                        Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="SENSOR MONITORING"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource Sensor.Text.Title}"
+                                   FontFamily="Consolas"
+                                   Margin="0,0,0,16"/>
+
+                        <core:SensorViewer/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Alarm Viewer Card -->
+                <Border Background="{DynamicResource Sensor.Bg.Main}"
+                        BorderBrush="{DynamicResource Sensor.Border}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Margin="0,0,16,16"
+                        Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="ALARM VIEWER"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource Sensor.Text.Title}"
+                                   FontFamily="Consolas"
+                                   Margin="0,0,0,16"/>
+
+                        <core:AlarmViewer/>
+                    </StackPanel>
+                </Border>
+
+            </UniformGrid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

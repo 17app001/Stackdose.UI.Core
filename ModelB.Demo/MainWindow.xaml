@@ -1,0 +1,19 @@
+<Window x:Class="ModelB.Demo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:Stackdose.UI.Templates.Shell;assembly=Stackdose.UI.Templates"
+        Title="MODEL-B DEMO SYSTEM"
+        Width="1600"
+        Height="900"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowStartupLocation="CenterScreen">
+
+    <!-- Use MainContainer as main shell -->
+    <shell:MainContainer x:Name="Container"
+                         NavigationRequested="OnNavigationRequested"
+                         LogoutRequested="OnLogoutRequested"
+                         CloseRequested="OnCloseRequested"
+                         MinimizeRequested="OnMinimizeRequested"/>
+</Window>

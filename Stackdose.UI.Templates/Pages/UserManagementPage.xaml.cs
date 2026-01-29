@@ -22,18 +22,7 @@ namespace Stackdose.UI.Templates.Pages
 
         private void UserManagementPage_Loaded(object sender, RoutedEventArgs e)
         {
-            // 可以從 UserManagementPanel 取得統計資訊
-            UpdateStatistics();
-        }
-
-        /// <summary>
-        /// 更新統計資訊顯示
-        /// </summary>
-        private void UpdateStatistics()
-        {
-            // 可以從 UserManagementPanel 的 DataContext 取得使用者數量
-            // 這裡先保持簡單
-            TotalUsersText.Text = "User Management System";
-        }
+           
+        }      
     }
 }

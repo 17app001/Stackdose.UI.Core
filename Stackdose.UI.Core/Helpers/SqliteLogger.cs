@@ -121,12 +121,54 @@ namespace Stackdose.UI.Core.Helpers
                     CREATE TABLE IF NOT EXISTS AuditTrails (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        BatchId TEXT,
                         User TEXT,
                         Action TEXT,
                         TargetDevice TEXT,
                         OldValue TEXT,
                         NewValue TEXT,
-                        Reason TEXT
+                        Reason TEXT,
+                        Parameter TEXT
+                    );");
+
+                // 3. OperationLogs (操作日誌)
+                conn.Execute(@"
+                    CREATE TABLE IF NOT EXISTS OperationLogs (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        BatchId TEXT,
+                        UserId TEXT,
+                        CommandName TEXT,
+                        Category TEXT,
+                        BeforeState TEXT,
+                        AfterState TEXT,
+                        Message TEXT
+                    );");
+
+                // 4. EventLogs (事件日誌)
+                conn.Execute(@"
+                    CREATE TABLE IF NOT EXISTS EventLogs (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        BatchId TEXT,
+                        EventType TEXT,
+                        EventCode TEXT,
+                        EventDescription TEXT,
+                        Severity TEXT,
+                        CurrentState TEXT,
+                        UserId TEXT,
+                        Message TEXT
+                    );");
+
+                // 5. PeriodicDataLogs (週期性參數記錄)
+                conn.Execute(@"
+                    CREATE TABLE IF NOT EXISTS PeriodicDataLogs (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        BatchId TEXT,
+                        PredryTemp REAL,
+                        DryTemp REAL,
+                        CdaInletPressure REAL
                     );");
             }
 

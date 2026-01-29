@@ -21,6 +21,10 @@ namespace Stackdose.UI.Templates.Pages
             DependencyProperty.Register(nameof(LogoutRequested), typeof(RoutedEventHandler), typeof(BasePage), 
                 new PropertyMetadata(null));
 
+        public static readonly DependencyProperty SwitchUserRequestedProperty =
+            DependencyProperty.Register(nameof(SwitchUserRequested), typeof(RoutedEventHandler), typeof(BasePage), 
+                new PropertyMetadata(null));
+
         public static readonly DependencyProperty MinimizeRequestedProperty =
             DependencyProperty.Register(nameof(MinimizeRequested), typeof(RoutedEventHandler), typeof(BasePage), 
                 new PropertyMetadata(null));
@@ -51,6 +55,12 @@ namespace Stackdose.UI.Templates.Pages
             set => SetValue(LogoutRequestedProperty, value);
         }
 
+        public RoutedEventHandler SwitchUserRequested
+        {
+            get => (RoutedEventHandler)GetValue(SwitchUserRequestedProperty);
+            set => SetValue(SwitchUserRequestedProperty, value);
+        }
+
         public RoutedEventHandler MinimizeRequested
         {
             get => (RoutedEventHandler)GetValue(MinimizeRequestedProperty);
@@ -77,6 +87,11 @@ namespace Stackdose.UI.Templates.Pages
         private void AppHeader_LogoutClicked(object sender, RoutedEventArgs e)
         {
             LogoutRequested?.Invoke(this, e);
+        }
+
+        private void AppHeader_SwitchUserClicked(object sender, RoutedEventArgs e)
+        {
+            SwitchUserRequested?.Invoke(this, e);
         }
 
         private void AppHeader_MinimizeClicked(object sender, RoutedEventArgs e)

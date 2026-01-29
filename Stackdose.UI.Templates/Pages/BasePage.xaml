@@ -27,6 +27,7 @@
         <controls:AppHeader Grid.Row="0"
                            PageTitle="{Binding PageTitle, RelativeSource={RelativeSource AncestorType=UserControl}}"
                            LogoutClicked="AppHeader_LogoutClicked"
+                           SwitchUserClicked="AppHeader_SwitchUserClicked"
                            MinimizeClicked="AppHeader_MinimizeClicked"
                            CloseClicked="AppHeader_CloseClicked"/>
 

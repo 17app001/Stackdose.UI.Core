@@ -3,14 +3,14 @@
 
     <!-- 全域文字預設 -->
     <Style TargetType="{x:Type TextBlock}">
-        <Setter Property="Foreground" Value="{StaticResource Cyber.Text.Main}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Cyber.Text.Main}"/>
     </Style>
 
     <!-- TextBox 暗色外觀 -->
     <Style TargetType="{x:Type TextBox}">
-        <Setter Property="Foreground" Value="{StaticResource Cyber.Text.Main}"/>
-        <Setter Property="Background" Value="{StaticResource Cyber.Bg.Panel}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource Cyber.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Cyber.Text.Main}"/>
+        <Setter Property="Background" Value="{DynamicResource Cyber.Bg.Panel}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Cyber.Border}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="8,4"/>
         <Setter Property="Height" Value="30"/>
@@ -20,7 +20,7 @@
     <Style TargetType="{x:Type ListBox}">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Foreground" Value="{StaticResource Cyber.Text.Main}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Cyber.Text.Main}"/>
     </Style>
 
     <!-- ScrollViewer / ScrollBar 先用系統，避免你現在為了配色又卡住（之後再美化） -->

@@ -41,6 +41,7 @@ namespace Stackdose.UI.Templates.Controls
         public event RoutedEventHandler? LogoutClicked;
         public event RoutedEventHandler? MinimizeClicked;
         public event RoutedEventHandler? CloseClicked;
+        public event RoutedEventHandler? SwitchUserClicked;
 
         public AppHeader()
         {
@@ -50,6 +51,11 @@ namespace Stackdose.UI.Templates.Controls
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
             LogoutClicked?.Invoke(this, e);
+        }
+
+        private void SwitchUserButton_Click(object sender, RoutedEventArgs e)
+        {
+            SwitchUserClicked?.Invoke(this, e);
         }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)

@@ -25,9 +25,9 @@ namespace Stackdose.UI.Core.Helpers
         public static UserSession CurrentSession { get; } = new UserSession();
 
         /// <summary>
-        /// 自動登出時間（分鐘，預設 15）
+        /// 自動登出時間（分鐘，預設 30）
         /// </summary>
-        public static int AutoLogoutMinutes { get; set; } = 1;
+        public static int AutoLogoutMinutes { get; set; } = 30; // 🔥 改為 30 分鐘
 
         /// <summary>
         /// 是否啟用自動登出功能
@@ -102,7 +102,7 @@ namespace Stackdose.UI.Core.Helpers
         #region 登入/登出
 
         /// <summary>
-        /// 使用者登入 - 純 Windows AD 驗證（不需要資料庫帳號）
+        /// 使用者登入 - 優先資料庫驗證，失敗則嘗試 Windows AD
         /// </summary>
         /// <param name="userId">使用者帳號</param>
         /// <param name="password">密碼</param>
@@ -125,17 +125,79 @@ namespace Stackdose.UI.Core.Helpers
             
             WriteLog($"========================================");
             WriteLog($"Login START: {userId}");
-            WriteLog($"Mode: Pure Windows AD (No Database Check)");
+            WriteLog($"Mode: Database First, then Windows AD Fallback");
             WriteLog($"========================================");
 
-            // 🔥 步驟 1：Windows AD 驗證（使用完整的 Authenticate 取得群組資訊）
+            // 🔥 步驟 1：先嘗試資料庫驗證
+            try
+            {
+                WriteLog($"[Step 1] 嘗試資料庫驗證...");
+                var userService = new Stackdose.UI.Core.Services.UserManagementService();
+                var dbResult = userService.AuthenticateAsync(userId, password).Result;
+                
+                if (dbResult.Success && dbResult.User != null)
+                {
+                    WriteLog($"✅ 資料庫驗證成功");
+                    WriteLog($"   UserId: {dbResult.User.UserId}");
+                    WriteLog($"   DisplayName: {dbResult.User.DisplayName}");
+                    WriteLog($"   AccessLevel: {dbResult.User.AccessLevel}");
+                    
+                    // 設定 Session
+                    CurrentSession.CurrentUser = dbResult.User;
+                    CurrentSession.LoginTime = DateTime.Now;
+                    CurrentSession.LastActivityTime = DateTime.Now;
+                    
+                    // 記錄到 Audit Trail
+                    ComplianceContext.LogAuditTrail(
+                        "User Login",
+                        userId,
+                        "Logged Out",
+                        $"Logged In (Level {(int)dbResult.User.AccessLevel} - {dbResult.User.AccessLevel})",
+                        $"Login from {Environment.MachineName} via Database",
+                        showInUi: true
+                    );
+
+                    ComplianceContext.LogSystem(
+                        $"✅ Login Success: {dbResult.User.DisplayName} ({dbResult.User.AccessLevel}) via Database",
+                        LogLevel.Success,
+                        showInUi: true
+                    );
+
+                    // 觸發事件
+                    LoginSuccess?.Invoke(null, dbResult.User);
+                    AccessLevelChanged?.Invoke(null, EventArgs.Empty);
+
+                    // 啟動自動登出計時器
+                    if (EnableAutoLogout)
+                    {
+                        StartAutoLogoutTimer();
+                    }
+
+                    stopwatch.Stop();
+                    WriteLog($"========================================");
+                    WriteLog($"✅ Login COMPLETED in {stopwatch.ElapsedMilliseconds}ms (Database)");
+                    WriteLog($"========================================");
+                    
+                    return true;
+                }
+                else
+                {
+                    WriteLog($"❌ 資料庫驗證失敗: {dbResult.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteLog($"❌ 資料庫驗證錯誤: {ex.Message}");
+            }
+
+            // 🔥 步驟 2：資料庫驗證失敗，嘗試 Windows AD 驗證
             AuthenticationResult? adResult = null;
 
             if (EnableAdAuthentication)
             {
                 try
                 {
-                    WriteLog($"AD Authentication enabled (LocalMachine: {UseLocalMachineOnly})");
+                    WriteLog($"[Step 2] 嘗試 Windows AD 驗證...");
                     var adStopwatch = System.Diagnostics.Stopwatch.StartNew();
 
                     // 🔥 呼叫 AD 驗證
@@ -196,19 +258,19 @@ namespace Stackdose.UI.Core.Helpers
             }
             else
             {
-                WriteLog($"❌ AD Authentication is DISABLED");
+                WriteLog($"❌ AD Authentication is DISABLED and Database auth failed");
                 ComplianceContext.LogSystem(
-                    "[AD] Authentication is disabled - cannot login",
+                    "Login failed: Database authentication failed and AD is disabled",
                     LogLevel.Error,
                     showInUi: true
                 );
                 return false;
             }
 
-            // 🔥 步驟 2：檢查 AD 群組（必須屬於 App_ 群組之一）
+            // 🔥 步驟 3：AD 驗證成功，建立臨時 UserAccount
             if (adResult == null || !adResult.IsSuccess)
             {
-                WriteLog($"❌ Login Failed: AD verification failed");
+                WriteLog($"❌ Login Failed: Both Database and AD verification failed");
                 return false;
             }
 
@@ -243,7 +305,7 @@ namespace Stackdose.UI.Core.Helpers
                 return false;
             }
 
-            // 🔥 步驟 3：建立 UserAccount 物件（從 AD 資訊）
+            // 🔥 步驟 4：建立 UserAccount 物件（從 AD 資訊）
             var user = new UserAccount
             {
                 Id = adResult.UserGroups.GetHashCode(), // 🔥 使用 HashCode 作為臨時 ID
@@ -266,12 +328,12 @@ namespace Stackdose.UI.Core.Helpers
 
             stopwatch.Stop();
             WriteLog($"========================================");
-            WriteLog($"✅ Login COMPLETED in {stopwatch.ElapsedMilliseconds}ms");
+            WriteLog($"✅ Login COMPLETED in {stopwatch.ElapsedMilliseconds}ms (Windows AD)");
             WriteLog($"   Auth Method: Windows AD");
             WriteLog($"   AccessLevel: {user.AccessLevel}");
             WriteLog($"========================================");
 
-            // 🔥 步驟 4：登入成功
+            // 🔥 步驟 5：登入成功
             CurrentSession.CurrentUser = user;
             CurrentSession.LoginTime = DateTime.Now;
             CurrentSession.LastActivityTime = DateTime.Now;

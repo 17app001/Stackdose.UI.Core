@@ -98,7 +98,7 @@ namespace ModelB.Demo
                 // 清空當前頁面
                 Container.SetContent(null, "Logged Out");
 
-                // 顯示登入對話框
+                // ?? 直接顯示登入對話框（不需要延遲和檢查，因為這是唯一顯示的地方）
                 ShowLoginDialog();
             });
         }
@@ -218,27 +218,15 @@ namespace ModelB.Demo
 
         private void OnLogoutRequested(object sender, EventArgs e)
         {
-            var result = MessageBox.Show("Are you sure you want to logout?", "Logout Confirmation",
-                MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                // ?? 使用 SecurityContext 登出
-                SecurityContext.Logout();
-                ComplianceContext.LogSystem("User logout requested", LogLevel.Warning);
-            }
+            // ?? 移除這裡的確認對話框，CyberFrame 已經處理了
+            SecurityContext.Logout();
+            ComplianceContext.LogSystem("User logout requested", LogLevel.Warning);
         }
 
         private void OnCloseRequested(object sender, EventArgs e)
         {
-            var result = MessageBox.Show("Are you sure you want to close the application?", "Close Confirmation",
-                MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                ComplianceContext.LogSystem("Application closing", LogLevel.Warning);
-                Close();
-            }
+            ComplianceContext.LogSystem("Application closing", LogLevel.Warning);
+            Close();
         }
 
         private void OnMinimizeRequested(object sender, EventArgs e)

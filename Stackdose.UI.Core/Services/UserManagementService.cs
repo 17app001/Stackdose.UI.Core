@@ -22,11 +22,12 @@ namespace Stackdose.UI.Core.Services
             var path = dbPath ?? System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "StackDoseData.db");
             _connectionString = $"Data Source={path}";
             InitializeDatabase();
-            // ?? 移除：不再需要預設 Admin 帳號（改用 Windows AD）
-            // EnsureDefaultAdminExists();
+            
+            // ?? 確保預設 Admin 帳號存在
+            EnsureDefaultAdminExists();
             
             #if DEBUG
-            System.Diagnostics.Debug.WriteLine("[UserManagementService] Initialized (Pure Windows AD Mode - No default admin needed)");
+            System.Diagnostics.Debug.WriteLine("[UserManagementService] Initialized with default admin");
             #endif
         }
 
@@ -80,14 +81,58 @@ namespace Stackdose.UI.Core.Services
         }
 
         /// <summary>
-        /// ?? 已停用：不再需要預設 Admin 帳號（改用 Windows AD 登入）
+        /// 確保預設 Admin 帳號存在
         /// </summary>
-        [Obsolete("No longer needed - using pure Windows AD authentication")]
         private void EnsureDefaultAdminExists()
         {
-            // ?? 此方法已停用，因為改用 Windows AD 驗證
-            // 不再需要在資料庫中建立預設 Admin 帳號
-            System.Diagnostics.Debug.WriteLine("[UserManagementService] EnsureDefaultAdminExists: Skipped (Pure AD Mode)");
+            try
+            {
+                using var conn = new SqliteConnection(_connectionString);
+                conn.Open();
+
+                // 檢查是否已有 Admin 帳號
+                var adminCount = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM Users WHERE AccessLevel = @Level", 
+                    new { Level = (int)AccessLevel.Admin });
+
+                if (adminCount > 0)
+                {
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine("[UserManagementService] Admin account already exists");
+                    #endif
+                    return;
+                }
+
+                // 建立預設 Admin 帳號
+                var (hash, salt) = HashPassword("admin123");
+
+                conn.Execute(@"
+                    INSERT INTO Users (UserId, DisplayName, PasswordHash, Salt, AccessLevel, IsActive, 
+                                      CreatedAt, CreatedBy, Email, Department, Remarks)
+                    VALUES (@UserId, @DisplayName, @PasswordHash, @Salt, @AccessLevel, @IsActive, 
+                           @CreatedAt, @CreatedBy, @Email, @Department, @Remarks)",
+                    new
+                    {
+                        UserId = "admin01",
+                        DisplayName = "System Administrator",
+                        PasswordHash = hash,
+                        Salt = salt,
+                        AccessLevel = (int)AccessLevel.Admin,
+                        IsActive = 1,
+                        CreatedAt = DateTime.Now,
+                        CreatedBy = "System",
+                        Email = "admin@stackdose.com",
+                        Department = "IT",
+                        Remarks = "Default system administrator account"
+                    });
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[UserManagementService] Default admin account created: admin01 / admin123");
+                #endif
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] EnsureDefaultAdminExists Error: {ex.Message}");
+            }
         }
 
         #endregion
@@ -122,6 +167,54 @@ namespace Stackdose.UI.Core.Services
                 var hashBytes = sha256.ComputeHash(passwordWithSalt);
                 string computedHash = Convert.ToBase64String(hashBytes);
                 return computedHash == hash;
+            }
+        }
+
+        #endregion
+
+        #region Authentication
+
+        /// <summary>
+        /// ?? 資料庫密碼驗證（用於本地創建的使用者）
+        /// </summary>
+        /// <param name="userId">使用者 ID</param>
+        /// <param name="password">明文密碼</param>
+        /// <returns>驗證結果</returns>
+        public async Task<(bool Success, string Message, UserAccount? User)> AuthenticateAsync(string userId, string password)
+        {
+            try
+            {
+                using var conn = new SqliteConnection(_connectionString);
+                await conn.OpenAsync();
+
+                // 查詢使用者
+                var user = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                    "SELECT * FROM Users WHERE UserId = @UserId AND IsActive = 1",
+                    new { UserId = userId });
+
+                if (user == null)
+                {
+                    return (false, "使用者不存在或已停用", null);
+                }
+
+                // 驗證密碼
+                if (!VerifyPassword(password, user.PasswordHash, user.Salt))
+                {
+                    return (false, "密碼錯誤", null);
+                }
+
+                // 更新最後登入時間
+                await conn.ExecuteAsync(
+                    "UPDATE Users SET LastLoginAt = @Now WHERE Id = @Id",
+                    new { Now = DateTime.Now, Id = user.Id });
+
+                user.LastLoginAt = DateTime.Now;
+
+                return (true, "驗證成功", user);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"驗證失敗: {ex.Message}", null);
             }
         }
 
@@ -465,10 +558,22 @@ namespace Stackdose.UI.Core.Services
                     return (false, "找不到使用者資訊");
                 }
 
+                // ?? 檢查權限：不能修改比自己權限高或相等的使用者
+                if (operatorUser.AccessLevel <= targetUser.AccessLevel && operatorUser.Id != targetUser.Id)
+                {
+                    return (false, $"您沒有權限修改 {targetUser.AccessLevel} 等級的使用者");
+                }
+
                 // 檢查權限
                 if (newAccessLevel.HasValue && !CanManageUser(operatorUser.AccessLevel, newAccessLevel.Value))
                 {
                     return (false, "您沒有權限設定此權限等級");
+                }
+
+                // ?? 檢查：不能將使用者權限設定為高於或等於自己
+                if (newAccessLevel.HasValue && newAccessLevel.Value >= operatorUser.AccessLevel)
+                {
+                    return (false, $"您不能將使用者權限設定為 {newAccessLevel.Value}（必須低於您的權限）");
                 }
 
                 // 更新欄位
@@ -610,19 +715,19 @@ namespace Stackdose.UI.Core.Services
                 return (await conn.QueryAsync<UserAccount>("SELECT * FROM Users ORDER BY AccessLevel DESC, UserId")).ToList();
             }
 
-            // Supervisor: 查看自己創建的 + 所有 Supervisor (包含自己)
+            // ?? Supervisor: 查看權限 <= Supervisor 的所有使用者（包含自己和所有低權限）
             if (operatorUser.AccessLevel == AccessLevel.Supervisor)
             {
                 return (await conn.QueryAsync<UserAccount>(
                     @"SELECT * FROM Users 
-                      WHERE CreatedByUserId = @OperatorId 
-                         OR AccessLevel = @SupervisorLevel
+                      WHERE AccessLevel <= @SupervisorLevel
                       ORDER BY AccessLevel DESC, UserId",
-                    new { OperatorId = operatorUserId, SupervisorLevel = (int)AccessLevel.Supervisor }
+                    new { SupervisorLevel = (int)AccessLevel.Supervisor }
                 )).ToList();
             }
 
-            return new List<UserAccount>();
+            // Operator 和以下：只能看到自己
+            return new List<UserAccount> { operatorUser };
         }
 
         public async Task<List<UserAccount>> GetAllUsersAsync()

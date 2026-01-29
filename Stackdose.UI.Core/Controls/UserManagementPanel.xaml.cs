@@ -99,9 +99,49 @@ namespace Stackdose.UI.Core.Controls
                 _currentUserName = session.CurrentUserName;
                 _currentLevel = session.CurrentLevel;
                 
-                // 取得當前使用者 ID
-                var currentUser = session.CurrentUser;
-                _currentUserId = currentUser?.Id ?? 0;
+                // ?? 修復：從資料庫中查找真實的 UserId
+                try
+                {
+                    var allUsers = await _userService.GetAllUsersAsync();
+                    var currentUser = allUsers.FirstOrDefault(u => u.UserId == _currentUserName);
+                    
+                    if (currentUser != null)
+                    {
+                        _currentUserId = currentUser.Id;
+                        System.Diagnostics.Debug.WriteLine($"[UserManagementPanel] 找到當前使用者: {_currentUserName}, Id={_currentUserId}");
+                    }
+                    else
+                    {
+                        // ?? 如果資料庫中找不到，使用 admin01 作為預設創建者
+                        var admin = allUsers.FirstOrDefault(u => u.UserId == "admin01");
+                        if (admin != null)
+                        {
+                            _currentUserId = admin.Id;
+                            System.Diagnostics.Debug.WriteLine($"[UserManagementPanel] 當前使用者不在資料庫中，使用 admin01 作為創建者, Id={_currentUserId}");
+                            ComplianceContext.LogSystem(
+                                $"[UserManagement] 當前 AD 使用者 '{_currentUserName}' 不在本地資料庫，使用 admin01 (Id={_currentUserId}) 作為創建者",
+                                LogLevel.Warning,
+                                showInUi: true
+                            );
+                        }
+                        else
+                        {
+                            CyberMessageBox.Show(
+                                "錯誤：找不到有效的創建者帳號\n請先確認 admin01 帳號存在",
+                                "錯誤",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error
+                            );
+                            return;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[UserManagementPanel] 查找當前使用者失敗: {ex.Message}");
+                    CyberMessageBox.Show($"初始化失敗: {ex.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
 
                 SubtitleText.Text = $"Current: {_currentUserName} ({_currentLevel})";
 
@@ -370,46 +410,6 @@ namespace Stackdose.UI.Core.Controls
             catch (Exception ex)
             {
                 CyberMessageBox.Show($"操作失敗: {ex.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private async void ViewAuditButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // 從 Tag 取得使用者
-                UserAccount? targetUser = null;
-                if (sender is Button button && button.Tag is UserAccount user)
-                {
-                    targetUser = user;
-                }
-                else if (SelectedUser != null)
-                {
-                    targetUser = SelectedUser;
-                }
-
-                if (targetUser == null) return;
-
-                // 取得稽核日誌
-                var logs = await _userService.GetAuditLogsAsync(targetUser.Id, 20);
-                
-                var message = logs.Count > 0
-                    ? $"使用者: {targetUser.DisplayName} ({targetUser.UserId})\n\n" +
-                      $"狀態: {(targetUser.IsActive ? "啟用" : "停用")}\n" +
-                      $"權限: {targetUser.AccessLevel}\n\n" +
-                      $"最近操作記錄:\n" + string.Join("\n", logs.Select(l => 
-                          $"  [{l.Timestamp:MM-dd HH:mm}] {l.OperatorUserName} - {l.Action}"))
-                    : $"使用者: {targetUser.DisplayName}\n\n無稽核記錄";
-
-                CyberMessageBox.Show(
-                    message,
-                    "使用者稽核資訊",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                CyberMessageBox.Show($"查詢失敗: {ex.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

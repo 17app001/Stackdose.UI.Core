@@ -36,10 +36,10 @@ namespace Stackdose.UI.Templates.Controls
             // Default navigation items
             NavigationItems = new ObservableCollection<NavigationItem>
             {
-                new NavigationItem { Title = "首頁總覽", Subtitle = "系統即時看板", NavigationTarget = "HomePage" },
-                new NavigationItem { Title = "設備控制", Subtitle = "機台與生產管理", NavigationTarget = "MachinePage" },
-                new NavigationItem { Title = "運行日誌", Subtitle = "系統活動紀錄", NavigationTarget = "LogViewerPage" },
-                new NavigationItem { Title = "帳戶管理", Subtitle = "權限與存取控制", NavigationTarget = "UserManagementPage" },
+                new NavigationItem { Title = "首頁總覽", Subtitle = "系統即時監控", NavigationTarget = "MainPage" },
+                new NavigationItem { Title = "設備控制", Subtitle = "機台參數管理", NavigationTarget = "DeviceControlPage" },
+                new NavigationItem { Title = "運行日誌", Subtitle = "系統操作記錄", NavigationTarget = "LogViewerPage" },
+                new NavigationItem { Title = "帳戶管理", Subtitle = "權限與角色設定", NavigationTarget = "UserManagementPage" },
                 new NavigationItem { Title = "參數設定", Subtitle = "系統配置與偏好", NavigationTarget = "SettingsPage" }
             };
         }

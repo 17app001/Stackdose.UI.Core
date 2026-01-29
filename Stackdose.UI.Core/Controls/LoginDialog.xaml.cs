@@ -18,13 +18,13 @@ namespace Stackdose.UI.Core.Controls
             InitializeComponent();
 
             #if DEBUG
-            // ?? DEBUG 模式：自動填入 admin01（測試用）
+            // DEBUG mode: Auto-fill admin01 (for testing)
             System.Diagnostics.Debug.WriteLine("[LoginDialog] DEBUG Mode: Auto-filling admin01 credentials");
             UserIdTextBox.Text = "admin01";
-            // 注意：密碼不預填，需手動輸入（安全考量）
-            System.Diagnostics.Debug.WriteLine("[LoginDialog] Tip: Use Windows password 'admin01admin01' to login");
+            // Note: Password is not pre-filled for security
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] Tip: Use password 'admin123' to login");
             #else
-            // ?? RELEASE 模式：自動填入當前 Windows 使用者名稱
+            // RELEASE mode: Auto-fill current Windows username
             try
             {
                 string currentUser = AdAuthenticationService.GetCurrentWindowsUser();
@@ -39,7 +39,7 @@ namespace Stackdose.UI.Core.Controls
             }
             #endif
 
-            // 支援 Enter 鍵登入
+            // Support Enter key for login
             this.KeyDown += (s, e) =>
             {
                 if (e.Key == Key.Enter)
@@ -52,7 +52,7 @@ namespace Stackdose.UI.Core.Controls
                 }
             };
 
-            // ?? 自動 focus 到密碼欄（因為帳號已預填）
+            // Auto focus to password field (username is pre-filled)
             this.Loaded += (s, e) =>
             {
                 #if DEBUG
@@ -63,7 +63,7 @@ namespace Stackdose.UI.Core.Controls
                 PasswordBox.Focus();
             };
 
-            // 監聽視窗關閉事件
+            // Monitor window closing event
             this.Closing += (s, e) =>
             {
                 #if DEBUG
@@ -205,21 +205,21 @@ namespace Stackdose.UI.Core.Controls
             System.Diagnostics.Debug.WriteLine("[LoginDialog] ForgotPasswordButton_Click called");
             #endif
 
-            // 顯示密碼重置說明
-            string message = "密碼重置說明\n\n" +
-                           "此系統使用 Windows AD (Active Directory) 驗證\n\n" +
-                           "密碼重置步驟：\n" +
-                           "1. 聯繫 IT 部門或系統管理員\n" +
-                           "2. 提供您的 Windows 帳戶名稱\n" +
-                           "3. 遵循公司密碼重置流程\n\n" +
-                           "開發/測試環境：\n" +
-                           "? 使用者名稱：admin01\n" +
-                           "? 密碼：admin01admin01\n\n" +
-                           "注意：實際密碼取決於您的 Windows 域帳戶";
+            // Display password reset instructions
+            string message = "Password Reset Instructions\n\n" +
+                           "This system uses Windows AD (Active Directory) authentication\n\n" +
+                           "To reset your password:\n" +
+                           "1. Contact IT support or system administrator\n" +
+                           "2. Provide your Windows account name\n" +
+                           "3. Follow the password reset procedure\n\n" +
+                           "Development/Testing:\n" +
+                           "- Username: admin01\n" +
+                           "- Password: admin123\n\n" +
+                           "Note: Your password is the same as your Windows account";
 
             MessageBox.Show(
                 message,
-                "忘記密碼說明",
+                "Forgot Password Help",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information
             );
@@ -229,6 +229,15 @@ namespace Stackdose.UI.Core.Controls
                 LogLevel.Info,
                 showInUi: false
             );
+        }
+        
+        /// <summary>
+        /// 防止點擊遮罩時關閉對話框
+        /// </summary>
+        private void Overlay_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            // 不執行任何操作 - 防止點擊遮罩時關閉對話框
+            e.Handled = true;
         }
         
         /// <summary>

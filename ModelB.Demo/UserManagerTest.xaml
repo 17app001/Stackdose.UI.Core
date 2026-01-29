@@ -1,0 +1,173 @@
+<Window x:Class="ModelB.Demo.UserManagerTest"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="UserManager Test" 
+        Height="600" 
+        Width="900"
+        WindowStartupLocation="CenterScreen"
+        Background="#1E1E2E">
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" 
+                Background="#2D2D3D"
+                BorderBrush="#00D9FF"
+                BorderThickness="0,0,0,2"
+                Padding="20"
+                Margin="0,0,0,10">
+            <StackPanel>
+                <TextBlock Text="UserManager Test Program"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           Foreground="#00D9FF"
+                           FontFamily="Consolas"/>
+                <TextBlock Text="Test UserManagementService.CreateUserAsync Function"
+                           FontSize="12"
+                           Foreground="#888"
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="1"
+                Background="#252535"
+                BorderBrush="#00D9FF"
+                BorderThickness="1"
+                CornerRadius="6"
+                Margin="0,0,0,10">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <TextBox x:Name="OutputTextBox"
+                         Background="Transparent"
+                         Foreground="White"
+                         FontFamily="Consolas"
+                         FontSize="11"
+                         IsReadOnly="True"
+                         TextWrapping="Wrap"
+                         BorderThickness="0"
+                         Padding="15"
+                         VerticalScrollBarVisibility="Auto"/>
+            </ScrollViewer>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="TestButton"
+                    Grid.Column="0"
+                    Content="Test Create User"
+                    Height="45"
+                    Background="#00D9FF"
+                    Foreground="White"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    BorderThickness="0"
+                    Click="TestButton_Click"
+                    IsEnabled="False">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="#00D9FF"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                            CornerRadius="6"
+                                            BorderThickness="0">
+                                        <ContentPresenter HorizontalAlignment="Center" 
+                                                        VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#00ACC1"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#555"/>
+                                <Setter Property="Foreground" Value="#888"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
+            <Button x:Name="ClearButton"
+                    Grid.Column="2"
+                    Content="Clear Output"
+                    Height="45"
+                    Background="#FFB020"
+                    Foreground="White"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    BorderThickness="0"
+                    Click="ClearButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="#FFB020"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                            CornerRadius="6"
+                                            BorderThickness="0">
+                                        <ContentPresenter HorizontalAlignment="Center" 
+                                                        VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FF9800"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
+            <Button x:Name="CloseButton"
+                    Grid.Column="4"
+                    Content="Close"
+                    Height="45"
+                    Background="#424242"
+                    Foreground="White"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    BorderThickness="0"
+                    Click="CloseButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="#424242"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                            CornerRadius="6"
+                                            BorderThickness="0">
+                                        <ContentPresenter HorizontalAlignment="Center" 
+                                                        VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#616161"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </Grid>
+    </Grid>
+</Window>

@@ -358,7 +358,6 @@
                                             Click="ResetPasswordButton_Click"/>
                                     <Button Padding="12,4"
                                             FontSize="11"
-                                            Margin="0,0,8,0"
                                             Tag="{Binding}"
                                             Click="ToggleActiveButton_Click">
                                         <Button.Style>
@@ -376,13 +375,6 @@
                                             </Style>
                                         </Button.Style>
                                     </Button>
-                                    <Button Content="View Audit"
-                                            Style="{StaticResource ModernButtonStyle}"
-                                            Background="#9C27B0"
-                                            Padding="12,4"
-                                            FontSize="11"
-                                            Tag="{Binding}"
-                                            Click="ViewAuditButton_Click"/>
                                 </StackPanel>
                             </Grid>
                         </Border>

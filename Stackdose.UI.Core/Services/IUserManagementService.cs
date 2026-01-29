@@ -11,6 +11,11 @@ namespace Stackdose.UI.Core.Services
     public interface IUserManagementService
     {
         /// <summary>
+        /// ?? 新增：資料庫密碼驗證（用於本地創建的使用者）
+        /// </summary>
+        Task<(bool Success, string Message, UserAccount? User)> AuthenticateAsync(string userId, string password);
+
+        /// <summary>
         /// 創建新使用者
         /// </summary>
         Task<(bool Success, string Message, UserAccount? User)> CreateUserAsync(

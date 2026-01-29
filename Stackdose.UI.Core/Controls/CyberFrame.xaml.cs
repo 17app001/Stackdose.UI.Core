@@ -603,18 +603,11 @@ namespace Stackdose.UI.Core.Controls
         }
 
         /// <summary>
-        /// 登出事件
-        /// </summary>
-        private void OnLogoutOccurred(object? sender, EventArgs e)
-        {
-            Dispatcher.BeginInvoke(UpdateUserInfo);
-        }
-
-        /// <summary>
         /// 登出按鈕點擊
         /// </summary>
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
+            // 🔥 確認登出
             var result = CyberMessageBox.Show(
                 "確定要登出嗎？",
                 "登出確認",
@@ -622,18 +615,38 @@ namespace Stackdose.UI.Core.Controls
                 MessageBoxImage.Question
             );
 
-            if (result == MessageBoxResult.Yes)
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            // 登出
+            SecurityContext.Logout();
+            
+            // 登出後自動回到首頁
+            if (ViewMode == CyberFrameViewMode.UserManagement)
             {
-                SecurityContext.Logout();
-                
-                // ✅ 登出後立即顯示登入視窗
-                var loginDialog = new LoginDialog
-                {
-                    Owner = Window.GetWindow(this),
-                    Title = "請重新登入"
-                };
-                loginDialog.ShowDialog();
+                ViewMode = CyberFrameViewMode.Normal;
             }
+            
+            // 🔥 不要在這裡顯示登入視窗！讓 OnLogoutOccurred 統一處理
+        }
+
+        /// <summary>
+        /// 登出事件
+        /// </summary>
+        private void OnLogoutOccurred(object? sender, EventArgs e)
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                UpdateUserInfo();
+                
+                // 登出後自動回到首頁
+                if (ViewMode == CyberFrameViewMode.UserManagement)
+                {
+                    ViewMode = CyberFrameViewMode.Normal;
+                }
+            });
+            
+            // 🔥 不要在這裡顯示登入視窗！讓 MainWindow.OnLogoutOccurred 處理
         }
 
         /// <summary>

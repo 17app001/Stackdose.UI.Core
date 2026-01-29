@@ -625,6 +625,14 @@ namespace Stackdose.UI.Core.Controls
             if (result == MessageBoxResult.Yes)
             {
                 SecurityContext.Logout();
+                
+                // ✅ 登出後立即顯示登入視窗
+                var loginDialog = new LoginDialog
+                {
+                    Owner = Window.GetWindow(this),
+                    Title = "請重新登入"
+                };
+                loginDialog.ShowDialog();
             }
         }
 

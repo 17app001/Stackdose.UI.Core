@@ -47,7 +47,7 @@ namespace Stackdose.UI.Core.Services
         private const string APP_ADMINS_GROUP = "App_Admins";
 
         // 驗證超時設定（5秒）
-        private const int VALIDATION_TIMEOUT_MS = 5000;
+        private const int VALIDATION_TIMEOUT_MS = 2000; // ?? 5000 ?? 2000
 
         #endregion
 

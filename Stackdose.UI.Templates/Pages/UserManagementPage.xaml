@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:core="http://schemas.stackdose.com/wpf"
              mc:Ignorable="d"
              d:DesignWidth="1400"
              d:DesignHeight="900">
@@ -12,22 +13,6 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Core;component/Themes/Theme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-
-            <Style x:Key="UserCardStyle" TargetType="Border">
-                <Setter Property="Background" Value="{DynamicResource Log.Bg.Main}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource Log.Border}"/>
-                <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="CornerRadius" Value="8"/>
-                <Setter Property="Padding" Value="16"/>
-                <Setter Property="Margin" Value="0,0,0,12"/>
-                <Setter Property="Cursor" Value="Hand"/>
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="BorderBrush" Value="{DynamicResource Cyber.NeonBlue}"/>
-                        <Setter Property="Background" Value="{DynamicResource Sensor.Bg.Header}"/>
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -51,7 +36,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Left: Title and Statistics -->
+                <!-- Left: Title -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="USER MANAGEMENT"
                                Foreground="{DynamicResource Sensor.Text.Title}"
@@ -64,406 +49,36 @@
                             CornerRadius="4"
                             Padding="8,4"
                             Margin="16,0,0,0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Total: "
-                                       Foreground="White"
-                                       FontSize="11"
-                                       FontWeight="Bold"
-                                       FontFamily="Consolas"/>
-                            <TextBlock x:Name="TotalUsersText"
-                                       Text="12"
-                                       Foreground="White"
-                                       FontSize="11"
-                                       FontWeight="Bold"
-                                       FontFamily="Consolas"/>
-                        </StackPanel>
-                    </Border>
-                    
-                    <Border Background="{DynamicResource Status.Success}"
-                            CornerRadius="4"
-                            Padding="8,4"
-                            Margin="8,0,0,0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Active: "
-                                       Foreground="White"
-                                       FontSize="11"
-                                       FontWeight="Bold"
-                                       FontFamily="Consolas"/>
-                            <TextBlock x:Name="ActiveUsersText"
-                                       Text="10"
-                                       Foreground="White"
-                                       FontSize="11"
-                                       FontWeight="Bold"
-                                       FontFamily="Consolas"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-
-                <!-- Right: Action Buttons -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="AddUserButton"
-                            Content="Add User"
-                            Background="{DynamicResource Button.Bg.Success}"
-                            Foreground="White"
-                            Width="100"
-                            Height="32"
-                            Margin="0,0,8,0"
-                            FontWeight="Bold"
-                            FontSize="12"
-                            Click="AddUserButton_Click"/>
-                    
-                    <Button x:Name="RefreshButton"
-                            Content="Refresh"
-                            Background="{DynamicResource Button.Bg.Info}"
-                            Foreground="White"
-                            Width="90"
-                            Height="32"
-                            FontWeight="Bold"
-                            FontSize="12"
-                            Click="RefreshButton_Click"/>
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <!-- Main Content Area -->
-        <Grid Grid.Row="1" Margin="16,0,16,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="280"/>
-                <ColumnDefinition Width="16"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- Left: Access Level Filter -->
-            <Border Grid.Column="0"
-                    Background="{DynamicResource Sensor.Bg.Main}"
-                    BorderBrush="{DynamicResource Sensor.Border}"
-                    BorderThickness="1"
-                    CornerRadius="6">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <Border Background="{DynamicResource Sensor.Bg.Header}"
-                            BorderBrush="{DynamicResource Sensor.Border}"
-                            BorderThickness="0,0,0,1"
-                            Padding="12,10"
-                            CornerRadius="6,6,0,0">
-                        <TextBlock Text="ACCESS LEVEL"
-                                   Foreground="{DynamicResource Sensor.Text.Title}"
-                                   FontSize="14"
+                        <TextBlock x:Name="TotalUsersText"
+                                   Text="Integrated Panel"
+                                   Foreground="White"
+                                   FontSize="11"
                                    FontWeight="Bold"
                                    FontFamily="Consolas"/>
                     </Border>
+                </StackPanel>
 
-                    <ScrollViewer Grid.Row="1"
-                                  VerticalScrollBarVisibility="Auto"
-                                  Padding="12">
-                        <StackPanel>
-                            <!-- All Users -->
-                            <Border Style="{StaticResource UserCardStyle}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
+                <!-- Right: Info -->
+                <TextBlock Grid.Column="1"
+                           Text="Using Stackdose.UI.Core Component"
+                           Foreground="{DynamicResource Plc.Text.Label}"
+                           FontSize="11"
+                           FontFamily="Consolas"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
 
-                                    <Ellipse Width="10" Height="10"
-                                             Fill="{DynamicResource Status.Info}"
-                                             VerticalAlignment="Center"
-                                             Margin="0,0,12,0"/>
-                                    
-                                    <TextBlock Grid.Column="1"
-                                               Text="All Users"
-                                               Foreground="{DynamicResource Cyber.Text.Main}"
-                                               FontSize="13"
-                                               FontWeight="Bold"
-                                               VerticalAlignment="Center"/>
-                                    
-                                    <TextBlock Grid.Column="2"
-                                               Text="12"
-                                               Foreground="{DynamicResource Plc.Text.Label}"
-                                               FontSize="11"
-                                               FontFamily="Consolas"
-                                               VerticalAlignment="Center"/>
-                                </Grid>
-                            </Border>
-
-                            <!-- Admin -->
-                            <Border Style="{StaticResource UserCardStyle}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <Ellipse Width="10" Height="10"
-                                             Fill="{DynamicResource Status.Error}"
-                                             VerticalAlignment="Center"
-                                             Margin="0,0,12,0"/>
-                                    
-                                    <TextBlock Grid.Column="1"
-                                               Text="Admin"
-                                               Foreground="{DynamicResource Cyber.Text.Main}"
-                                               FontSize="13"
-                                               FontWeight="Bold"
-                                               FontFamily="Consolas"
-                                               VerticalAlignment="Center"/>
-                                    
-                                    <TextBlock Grid.Column="2"
-                                               Text="2"
-                                               Foreground="{DynamicResource Plc.Text.Label}"
-                                               FontSize="11"
-                                               FontFamily="Consolas"
-                                               VerticalAlignment="Center"/>
-                                </Grid>
-                            </Border>
-
-                            <!-- Supervisor -->
-                            <Border Style="{StaticResource UserCardStyle}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <Ellipse Width="10" Height="10"
-                                             Fill="{DynamicResource Status.Warning}"
-                                             VerticalAlignment="Center"
-                                             Margin="0,0,12,0"/>
-                                    
-                                    <TextBlock Grid.Column="1"
-                                               Text="Supervisor"
-                                               Foreground="{DynamicResource Cyber.Text.Main}"
-                                               FontSize="13"
-                                               FontWeight="Bold"
-                                               FontFamily="Consolas"
-                                               VerticalAlignment="Center"/>
-                                    
-                                    <TextBlock Grid.Column="2"
-                                               Text="4"
-                                               Foreground="{DynamicResource Plc.Text.Label}"
-                                               FontSize="11"
-                                               FontFamily="Consolas"
-                                               VerticalAlignment="Center"/>
-                                </Grid>
-                            </Border>
-
-                            <!-- Operator -->
-                            <Border Style="{StaticResource UserCardStyle}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <Ellipse Width="10" Height="10"
-                                             Fill="{DynamicResource Status.Success}"
-                                             VerticalAlignment="Center"
-                                             Margin="0,0,12,0"/>
-                                    
-                                    <TextBlock Grid.Column="1"
-                                               Text="Operator"
-                                               Foreground="{DynamicResource Cyber.Text.Main}"
-                                               FontSize="13"
-                                               FontWeight="Bold"
-                                               FontFamily="Consolas"
-                                               VerticalAlignment="Center"/>
-                                    
-                                    <TextBlock Grid.Column="2"
-                                               Text="6"
-                                               Foreground="{DynamicResource Plc.Text.Label}"
-                                               FontSize="11"
-                                               FontFamily="Consolas"
-                                               VerticalAlignment="Center"/>
-                                </Grid>
-                            </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
-            </Border>
-
-            <!-- Right: User List -->
-            <Border Grid.Column="2"
-                    Background="{DynamicResource Sensor.Bg.Main}"
-                    BorderBrush="{DynamicResource Sensor.Border}"
-                    BorderThickness="1"
-                    CornerRadius="6">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <Border Background="{DynamicResource Sensor.Bg.Header}"
-                            BorderBrush="{DynamicResource Sensor.Border}"
-                            BorderThickness="0,0,0,1"
-                            Padding="12,10"
-                            CornerRadius="6,6,0,0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="USER LIST"
-                                       Foreground="{DynamicResource Sensor.Text.Title}"
-                                       FontSize="14"
-                                       FontWeight="Bold"
-                                       FontFamily="Consolas"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="  (12 users)"
-                                       Foreground="{DynamicResource Plc.Text.Label}"
-                                       FontSize="12"
-                                       VerticalAlignment="Center"
-                                       Margin="8,0,0,0"/>
-                        </StackPanel>
-                    </Border>
-
-                    <ScrollViewer Grid.Row="1"
-                                  VerticalScrollBarVisibility="Auto"
-                                  Padding="12">
-                        <StackPanel x:Name="UserListPanel">
-                            <!-- User Card Example -->
-                            <Border Style="{StaticResource UserCardStyle}">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-
-                                    <Grid Grid.Row="0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="140"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-
-                                        <TextBlock Grid.Row="0" Grid.Column="0"
-                                                   Text="User ID:"
-                                                   Foreground="{DynamicResource Plc.Text.Label}"
-                                                   FontSize="11"
-                                                   FontFamily="Consolas"/>
-                                        <TextBlock Grid.Row="0" Grid.Column="1"
-                                                   Text="admin"
-                                                   Foreground="{DynamicResource Plc.Text.Value}"
-                                                   FontSize="11"
-                                                   FontWeight="Bold"
-                                                   FontFamily="Consolas"/>
-
-                                        <TextBlock Grid.Row="1" Grid.Column="0"
-                                                   Text="Display Name:"
-                                                   Foreground="{DynamicResource Plc.Text.Label}"
-                                                   FontSize="11"
-                                                   FontFamily="Consolas"
-                                                   Margin="0,8,0,0"/>
-                                        <TextBlock Grid.Row="1" Grid.Column="1"
-                                                   Text="Administrator"
-                                                   Foreground="{DynamicResource Cyber.Text.Main}"
-                                                   FontSize="11"
-                                                   FontWeight="Bold"
-                                                   Margin="0,8,0,0"/>
-
-                                        <TextBlock Grid.Row="2" Grid.Column="0"
-                                                   Text="Access Level:"
-                                                   Foreground="{DynamicResource Plc.Text.Label}"
-                                                   FontSize="11"
-                                                   FontFamily="Consolas"
-                                                   Margin="0,8,0,0"/>
-                                        <Border Grid.Row="2" Grid.Column="1"
-                                                Background="{DynamicResource Button.Bg.Error}"
-                                                CornerRadius="4"
-                                                Padding="8,4"
-                                                Margin="0,8,0,0"
-                                                HorizontalAlignment="Left">
-                                            <TextBlock Text="ADMIN"
-                                                       Foreground="White"
-                                                       FontSize="11"
-                                                       FontWeight="Bold"
-                                                       FontFamily="Consolas"/>
-                                        </Border>
-
-                                        <TextBlock Grid.Row="3" Grid.Column="0"
-                                                   Text="Status:"
-                                                   Foreground="{DynamicResource Plc.Text.Label}"
-                                                   FontSize="11"
-                                                   FontFamily="Consolas"
-                                                   Margin="0,8,0,0"/>
-                                        <TextBlock Grid.Row="3" Grid.Column="1"
-                                                   Text="Active"
-                                                   Foreground="{DynamicResource Status.Success}"
-                                                   FontSize="11"
-                                                   FontWeight="Bold"
-                                                   FontFamily="Consolas"
-                                                   Margin="0,8,0,0"/>
-
-                                        <TextBlock Grid.Row="4" Grid.Column="0"
-                                                   Text="Groups:"
-                                                   Foreground="{DynamicResource Plc.Text.Label}"
-                                                   FontSize="11"
-                                                   FontFamily="Consolas"
-                                                   Margin="0,8,0,0"/>
-                                        <TextBlock Grid.Row="4" Grid.Column="1"
-                                                   Text="Administrators, StackdoseApp_Admin"
-                                                   Foreground="{DynamicResource Cyber.Text.Main}"
-                                                   FontSize="11"
-                                                   FontFamily="Consolas"
-                                                   TextWrapping="Wrap"
-                                                   Margin="0,8,0,0"/>
-
-                                        <TextBlock Grid.Row="5" Grid.Column="0"
-                                                   Text="Created:"
-                                                   Foreground="{DynamicResource Plc.Text.Label}"
-                                                   FontSize="11"
-                                                   FontFamily="Consolas"
-                                                   Margin="0,8,0,0"/>
-                                        <TextBlock Grid.Row="5" Grid.Column="1"
-                                                   Text="2025-01-10 10:30:25"
-                                                   Foreground="{DynamicResource Plc.Text.Gray}"
-                                                   FontSize="10"
-                                                   FontFamily="Consolas"
-                                                   Margin="0,8,0,0"/>
-                                    </Grid>
-
-                                    <StackPanel Grid.Row="1" 
-                                                Orientation="Horizontal" 
-                                                HorizontalAlignment="Right"
-                                                Margin="0,12,0,0">
-                                        <Button Content="Edit"
-                                                Background="{DynamicResource Button.Bg.Success}"
-                                                Foreground="White"
-                                                Padding="12,4"
-                                                FontSize="11"
-                                                Margin="0,0,8,0"
-                                                Click="EditUserButton_Click"/>
-                                        <Button Content="Reset Password"
-                                                Background="{DynamicResource Button.Bg.Warning}"
-                                                Foreground="White"
-                                                Padding="12,4"
-                                                FontSize="11"
-                                                Margin="0,0,8,0"
-                                                Click="ResetPasswordButton_Click"/>
-                                        <Button Content="Disable"
-                                                Background="{DynamicResource Button.Bg.Error}"
-                                                Foreground="White"
-                                                Padding="12,4"
-                                                FontSize="11"
-                                                Click="ToggleActiveButton_Click"/>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
-            </Border>
-        </Grid>
+        <!-- Main Content: UserManagementPanel from Core -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource Sensor.Bg.Main}"
+                BorderBrush="{DynamicResource Sensor.Border}"
+                BorderThickness="1"
+                CornerRadius="6"
+                Margin="16,0,16,16">
+            
+            <!-- Core Component -->
+            <core:UserManagementPanel x:Name="UserManagementPanel"/>
+            
+        </Border>
     </Grid>
 </UserControl>

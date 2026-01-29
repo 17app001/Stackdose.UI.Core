@@ -4,38 +4,36 @@ using System.Windows.Controls;
 namespace Stackdose.UI.Templates.Pages
 {
     /// <summary>
-    /// UserManagementPage.xaml 的互動邏輯
+    /// UserManagementPage - 使用者管理頁面 (Template 外框)
     /// </summary>
+    /// <remarks>
+    /// 使用 Stackdose.UI.Core 的 UserManagementPanel 作為核心組件
+    /// 提供統一的 Template 風格外框
+    /// </remarks>
     public partial class UserManagementPage : UserControl
     {
         public UserManagementPage()
         {
             InitializeComponent();
+            
+            // 載入完成後更新統計資訊
+            this.Loaded += UserManagementPage_Loaded;
         }
 
-        private void AddUserButton_Click(object sender, RoutedEventArgs e)
+        private void UserManagementPage_Loaded(object sender, RoutedEventArgs e)
         {
-            // TODO: 實作新增使用者功能
+            // 可以從 UserManagementPanel 取得統計資訊
+            UpdateStatistics();
         }
 
-        private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// 更新統計資訊顯示
+        /// </summary>
+        private void UpdateStatistics()
         {
-            // TODO: 實作重新整理功能
-        }
-
-        private void EditUserButton_Click(object sender, RoutedEventArgs e)
-        {
-            // TODO: 實作編輯使用者功能
-        }
-
-        private void ResetPasswordButton_Click(object sender, RoutedEventArgs e)
-        {
-            // TODO: 實作重設密碼功能
-        }
-
-        private void ToggleActiveButton_Click(object sender, RoutedEventArgs e)
-        {
-            // TODO: 實作啟用/停用功能
+            // 可以從 UserManagementPanel 的 DataContext 取得使用者數量
+            // 這裡先保持簡單
+            TotalUsersText.Text = "User Management System";
         }
     }
 }

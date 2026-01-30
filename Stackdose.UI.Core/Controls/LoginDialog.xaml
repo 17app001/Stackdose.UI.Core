@@ -228,7 +228,7 @@
                     </Button>
                 </Grid>
 
-                <!-- Forgot Password Link -->
+                <!-- Forgot Password Link --><!--
                 <Button Grid.Row="4"
                         x:Name="ForgotPasswordButton" 
                         Content="Forgot Password" 
@@ -254,7 +254,7 @@
                             </Setter>
                         </Style>
                     </Button.Style>
-                </Button>
+                </Button>-->
             </Grid>
         </Border>
     </Grid>

@@ -1,0 +1,12 @@
+# Placeholder for app.ico
+
+This file indicates where the application icon should be placed.
+
+Please place your `app.ico` file in this directory: `ModelB.Demo\Resources\app.ico`
+
+The icon should be:
+- Format: .ico (Windows Icon format)
+- Size: 256x256 pixels (with multiple resolutions)
+- Theme: Industrial/Technology style matching the blue/cyan application theme
+
+Once you add the icon file, rebuild the project to see it applied to the executable.

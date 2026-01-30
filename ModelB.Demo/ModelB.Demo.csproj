@@ -7,6 +7,8 @@
     <Nullable>enable</Nullable>
     <PlatformTarget>x64</PlatformTarget>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Uncomment the line below after adding app.ico to Resources folder -->
+    <!-- <ApplicationIcon>Resources\app.ico</ApplicationIcon> -->
   </PropertyGroup>
 
   <ItemGroup>

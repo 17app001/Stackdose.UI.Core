@@ -219,7 +219,7 @@
                             Cursor="Hand"
                             Margin="0,0,2,0"
                             Click="FullscreenButton_Click"
-                            ToolTip="Fullscreen Toggle">
+                            ToolTip="Exit Fullscreen">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Template">
@@ -241,7 +241,8 @@
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
-                        <Path Data="M0,0 L8,0 L8,2 L2,2 L2,8 L0,8 Z M10,0 L18,0 L18,8 L16,8 L16,2 L10,2 Z M0,10 L2,10 L2,16 L8,16 L8,18 L0,18 Z M16,16 L16,10 L18,10 L18,18 L10,18 L10,16 Z"
+                        <!-- Exit Fullscreen Icon (corners inward) - Default icon -->
+                        <Path Data="M2,0 L2,2 L0,2 L0,8 L6,8 L6,6 L8,6 L8,0 Z M10,0 L10,6 L12,6 L12,8 L18,8 L18,2 L16,2 L16,0 Z M0,10 L0,16 L6,16 L6,18 L8,18 L8,12 L6,12 L6,10 Z M12,10 L10,10 L10,18 L16,18 L16,16 L18,16 L18,10 Z"
                               Fill="{StaticResource TextPrimaryBrush}"
                               Stretch="Uniform"
                               Width="16"

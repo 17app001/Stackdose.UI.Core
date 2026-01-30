@@ -77,7 +77,7 @@
                                   Margin="0,0,8,0"
                                   Foreground="White"
                                   FontWeight="Bold"
-                                  FontSize="11"
+                                  FontSize="12"
                                   FontFamily="Consolas"/>
                     
                     <ToggleButton Content="OPERATION"
@@ -89,7 +89,7 @@
                                   Margin="0,0,8,0"
                                   Foreground="White"
                                   FontWeight="Bold"
-                                  FontSize="11"
+                                  FontSize="12"
                                   FontFamily="Consolas"/>
                     
                     <ToggleButton Content="EVENT"
@@ -101,7 +101,7 @@
                                   Margin="0,0,8,0"
                                   Foreground="White"
                                   FontWeight="Bold"
-                                  FontSize="11"
+                                  FontSize="12"
                                   FontFamily="Consolas"/>
                     
                     <ToggleButton Content="PERIODIC DATA"
@@ -113,13 +113,13 @@
                                   Margin="0,0,24,0"
                                   Foreground="White"
                                   FontWeight="Bold"
-                                  FontSize="11"
+                                  FontSize="12"
                                   FontFamily="Consolas"/>
 
                     <TextBlock Text="FROM"
                                Foreground="{DynamicResource Plc.Text.Label}"
                                VerticalAlignment="Center"
-                               FontSize="11"
+                               FontSize="12"
                                FontWeight="Bold"
                                FontFamily="Consolas"
                                Margin="0,0,8,0"/>
@@ -133,7 +133,7 @@
                     <TextBlock Text="TO"
                                Foreground="{DynamicResource Plc.Text.Label}"
                                VerticalAlignment="Center"
-                               FontSize="11"
+                               FontSize="12"
                                FontWeight="Bold"
                                FontFamily="Consolas"
                                Margin="0,0,8,0"/>
@@ -153,7 +153,7 @@
                             Height="32"
                             Margin="0,0,8,0"
                             FontWeight="Bold"
-                            FontSize="12"
+                            FontSize="14"
                             FontFamily="Microsoft JhengHei"/>
                     
                     <Button Content="Export PDF"
@@ -163,7 +163,7 @@
                             Width="90"
                             Height="32"
                             FontWeight="Bold"
-                            FontSize="12"
+                            FontSize="14"
                             FontFamily="Microsoft JhengHei"/>
                 </StackPanel>
             </Grid>
@@ -194,7 +194,7 @@
                             CornerRadius="6,6,0,0">
                         <TextBlock Text="DATE LIST"
                                    Foreground="{DynamicResource Sensor.Text.Title}"
-                                   FontSize="14"
+                                   FontSize="16"
                                    FontWeight="Bold"
                                    FontFamily="Consolas"/>
                     </Border>
@@ -217,14 +217,14 @@
 
                                             <TextBlock Text="{Binding DateStr}"
                                                        Foreground="{DynamicResource Cyber.Text.Main}"
-                                                       FontSize="13"
+                                                       FontSize="14"
                                                        FontWeight="Bold"
                                                        FontFamily="Microsoft JhengHei"/>
                                             
                                             <TextBlock Grid.Row="1"
                                                        Text="{Binding RelativeStr}"
                                                        Foreground="{DynamicResource Plc.Text.Value}"
-                                                       FontSize="11"
+                                                       FontSize="12"
                                                        FontFamily="Microsoft JhengHei"
                                                        Margin="0,4,0,0"/>
                                             
@@ -234,7 +234,7 @@
                                                          VerticalAlignment="Center"
                                                          Margin="0,0,6,0"/>
                                                 <TextBlock Foreground="{DynamicResource Plc.Text.Label}"
-                                                           FontSize="11"
+                                                           FontSize="12"
                                                            FontFamily="Microsoft JhengHei">
                                                     <Run Text="{Binding TotalCount, Mode=OneWay}"/>
                                                     <Run Text=" Records"/>
@@ -267,7 +267,7 @@
                             CornerRadius="6,6,0,0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Foreground="{DynamicResource Sensor.Text.Title}"
-                                       FontSize="14"
+                                       FontSize="16"
                                        FontWeight="Bold"
                                        FontFamily="Consolas"
                                        VerticalAlignment="Center">
@@ -276,7 +276,7 @@
                                 <Run Text="{Binding SelectedDateGroup.DateStr, Mode=OneWay}"/>
                             </TextBlock>
                             <TextBlock Foreground="{DynamicResource Plc.Text.Label}"
-                                       FontSize="12"
+                                       FontSize="14"
                                        FontFamily="Microsoft JhengHei"
                                        VerticalAlignment="Center"
                                        Margin="8,0,0,0">
@@ -317,25 +317,25 @@
                                                 <TextBlock Grid.Row="0" Grid.Column="0"
                                                            Text="Timestamp:"
                                                            Foreground="{DynamicResource Plc.Text.Label}"
-                                                           FontSize="11"
+                                                           FontSize="14"
                                                            FontFamily="Consolas"/>
                                                 <TextBlock Grid.Row="0" Grid.Column="1"
                                                            Text="{Binding Timestamp, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss.fff}'}"
                                                            Foreground="{DynamicResource Cyber.Text.Main}"
-                                                           FontSize="11"
+                                                           FontSize="14"
                                                            FontWeight="Bold"
                                                            FontFamily="Consolas"/>
 
                                                 <TextBlock Grid.Row="1" Grid.Column="0"
                                                            Text="User:"
                                                            Foreground="{DynamicResource Plc.Text.Label}"
-                                                           FontSize="11"
+                                                           FontSize="14"
                                                            FontFamily="Consolas"
                                                            Margin="0,8,0,0"/>
                                                 <TextBlock Grid.Row="1" Grid.Column="1"
                                                            Text="{Binding User}"
                                                            Foreground="{DynamicResource Plc.Text.Value}"
-                                                           FontSize="11"
+                                                           FontSize="14"
                                                            FontWeight="Bold"
                                                            FontFamily="Microsoft JhengHei"
                                                            Margin="0,8,0,0"/>
@@ -343,7 +343,7 @@
                                                 <TextBlock Grid.Row="2" Grid.Column="0"
                                                            Text="Action:"
                                                            Foreground="{DynamicResource Plc.Text.Label}"
-                                                           FontSize="11"
+                                                           FontSize="14"
                                                            FontFamily="Consolas"
                                                            Margin="0,8,0,0"/>
                                                 <Border Grid.Row="2" Grid.Column="1"
@@ -352,7 +352,7 @@
                                                         Margin="0,8,0,0">
                                                     <TextBlock Text="{Binding Action}"
                                                                Foreground="White"
-                                                               FontSize="11"
+                                                               FontSize="14"
                                                                FontWeight="Bold"
                                                                FontFamily="Consolas"/>
                                                 </Border>
@@ -360,26 +360,26 @@
                                                 <TextBlock Grid.Row="3" Grid.Column="0"
                                                            Text="Target Device:"
                                                            Foreground="{DynamicResource Plc.Text.Label}"
-                                                           FontSize="11"
+                                                           FontSize="14"
                                                            FontFamily="Consolas"
                                                            Margin="0,8,0,0"/>
                                                 <TextBlock Grid.Row="3" Grid.Column="1"
                                                            Text="{Binding TargetDevice}"
                                                            Foreground="{DynamicResource Cyber.Text.Main}"
-                                                           FontSize="11"
+                                                           FontSize="14"
                                                            FontFamily="Consolas"
                                                            Margin="0,8,0,0"/>
 
                                                 <TextBlock Grid.Row="4" Grid.Column="0"
                                                            Text="Old Value:"
                                                            Foreground="{DynamicResource Plc.Text.Label}"
-                                                           FontSize="11"
+                                                           FontSize="14"
                                                            FontFamily="Consolas"
                                                            Margin="0,8,0,0"/>
                                                 <TextBlock Grid.Row="4" Grid.Column="1"
                                                            Text="{Binding OldValue}"
                                                            Foreground="{DynamicResource Status.Offline}"
-                                                           FontSize="11"
+                                                           FontSize="14"
                                                            FontWeight="Bold"
                                                            FontFamily="Consolas"
                                                            Margin="0,8,0,0"/>
@@ -387,13 +387,13 @@
                                                 <TextBlock Grid.Row="5" Grid.Column="0"
                                                            Text="New Value:"
                                                            Foreground="{DynamicResource Plc.Text.Label}"
-                                                           FontSize="11"
+                                                           FontSize="14"
                                                            FontFamily="Consolas"
                                                            Margin="0,8,0,0"/>
                                                 <TextBlock Grid.Row="5" Grid.Column="1"
                                                            Text="{Binding NewValue}"
                                                            Foreground="{DynamicResource Status.Success}"
-                                                           FontSize="11"
+                                                           FontSize="14"
                                                            FontWeight="Bold"
                                                            FontFamily="Consolas"
                                                            Margin="0,8,0,0"/>
@@ -401,13 +401,13 @@
                                                 <TextBlock Grid.Row="6" Grid.Column="0"
                                                            Text="Reason:"
                                                            Foreground="{DynamicResource Plc.Text.Label}"
-                                                           FontSize="11"
+                                                           FontSize="14"
                                                            FontFamily="Consolas"
                                                            Margin="0,8,0,0"/>
                                                 <TextBlock Grid.Row="6" Grid.Column="1"
                                                            Text="{Binding Reason}"
                                                            Foreground="{DynamicResource Cyber.Text.Main}"
-                                                           FontSize="11"
+                                                           FontSize="14"
                                                            FontFamily="Microsoft JhengHei"
                                                            TextWrapping="Wrap"
                                                            Margin="0,8,0,0"/>
@@ -442,7 +442,7 @@
                                                 <TextBlock Grid.Column="0" 
                                                            Text="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}"
                                                            Foreground="{DynamicResource Plc.Text.Value}"
-                                                           FontSize="12"
+                                                           FontSize="14"
                                                            FontFamily="Consolas"
                                                            VerticalAlignment="Center"/>
 
@@ -450,7 +450,7 @@
                                                 <TextBlock Grid.Column="1" 
                                                            Text="{Binding UserId}"
                                                            Foreground="{DynamicResource Cyber.Text.Main}"
-                                                           FontSize="12"
+                                                           FontSize="14"
                                                            FontWeight="Medium"
                                                            VerticalAlignment="Center"
                                                            Margin="8,0,0,0"/>
@@ -459,7 +459,7 @@
                                                 <TextBlock Grid.Column="2" 
                                                            Text="{Binding CommandName}"
                                                            Foreground="{DynamicResource Plc.Text.Title}"
-                                                           FontSize="12"
+                                                           FontSize="14"
                                                            FontWeight="Bold"
                                                            VerticalAlignment="Center"
                                                            Margin="8,0,0,0"/>
@@ -471,16 +471,16 @@
                                                             Margin="8,0,0,0">
                                                     <TextBlock Text="{Binding BeforeState}"
                                                                Foreground="{DynamicResource Plc.Text.Label}"
-                                                               FontSize="11"
+                                                               FontSize="14"
                                                                VerticalAlignment="Center"/>
                                                     <TextBlock Text=" > "
                                                                Foreground="{DynamicResource Cyber.Text.Main}"
-                                                               FontSize="11"
+                                                               FontSize="14"
                                                                Margin="4,0"
                                                                VerticalAlignment="Center"/>
                                                     <TextBlock Text="{Binding AfterState}"
                                                                Foreground="{DynamicResource Sensor.Text.Title}"
-                                                               FontSize="11"
+                                                               FontSize="14"
                                                                FontWeight="Medium"
                                                                VerticalAlignment="Center"/>
                                                 </StackPanel>
@@ -489,7 +489,7 @@
                                                 <TextBlock Grid.Column="4" 
                                                            Text="{Binding Message}"
                                                            Foreground="{DynamicResource Plc.Text.Label}"
-                                                           FontSize="11"
+                                                           FontSize="12"
                                                            TextWrapping="Wrap"
                                                            VerticalAlignment="Center"
                                                            Margin="8,0,0,0"/>
@@ -518,7 +518,7 @@
                                                 <TextBlock Grid.Column="0" 
                                                            Text="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}"
                                                            Foreground="{DynamicResource Plc.Text.Value}"
-                                                           FontSize="12"
+                                                           FontSize="14"
                                                            FontFamily="Consolas"
                                                            VerticalAlignment="Center"/>
 
@@ -526,7 +526,7 @@
                                                 <TextBlock Grid.Column="1" 
                                                            Text="{Binding EventType}"
                                                            Foreground="{DynamicResource Cyber.Text.Main}"
-                                                           FontSize="12"
+                                                           FontSize="14"
                                                            FontWeight="Medium"
                                                            VerticalAlignment="Center"
                                                            Margin="8,0,0,0"/>
@@ -540,7 +540,7 @@
                                                         VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding Severity}"
                                                                Foreground="{DynamicResource Sensor.Text.Title}"
-                                                               FontSize="10"
+                                                               FontSize="12"
                                                                FontWeight="Bold"
                                                                HorizontalAlignment="Center"/>
                                                 </Border>
@@ -549,7 +549,7 @@
                                                 <TextBlock Grid.Column="3" 
                                                            Text="{Binding EventDescription}"
                                                            Foreground="{DynamicResource Plc.Text.Title}"
-                                                           FontSize="12"
+                                                           FontSize="14"
                                                            FontWeight="Bold"
                                                            VerticalAlignment="Center"
                                                            Margin="8,0,0,0"/>
@@ -558,7 +558,7 @@
                                                 <TextBlock Grid.Column="4" 
                                                            Text="{Binding Message}"
                                                            Foreground="{DynamicResource Plc.Text.Label}"
-                                                           FontSize="11"
+                                                           FontSize="12"
                                                            TextWrapping="Wrap"
                                                            VerticalAlignment="Center"
                                                            Margin="8,0,0,0"/>
@@ -587,7 +587,7 @@
                                                 <TextBlock Grid.Column="0" 
                                                            Text="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}"
                                                            Foreground="{DynamicResource Plc.Text.Value}"
-                                                           FontSize="12"
+                                                           FontSize="14"
                                                            FontFamily="Consolas"
                                                            VerticalAlignment="Center"/>
 
@@ -595,7 +595,7 @@
                                                 <TextBlock Grid.Column="1" 
                                                            Text="{Binding BatchId}"
                                                            Foreground="{DynamicResource Cyber.Text.Main}"
-                                                           FontSize="12"
+                                                           FontSize="14"
                                                            FontWeight="Medium"
                                                            VerticalAlignment="Center"
                                                            Margin="8,0,0,0"/>
@@ -607,10 +607,10 @@
                                                             Margin="8,0,0,0">
                                                     <TextBlock Text="PreDry: "
                                                                Foreground="{DynamicResource Plc.Text.Label}"
-                                                               FontSize="11"/>
+                                                               FontSize="12"/>
                                                     <TextBlock Text="{Binding PredryTemp, StringFormat='{}{0:F1} C'}"
                                                                Foreground="{DynamicResource Sensor.Text.Title}"
-                                                               FontSize="11"
+                                                               FontSize="14"
                                                                FontWeight="Medium"/>
                                                 </StackPanel>
 
@@ -621,10 +621,10 @@
                                                             Margin="8,0,0,0">
                                                     <TextBlock Text="Dry: "
                                                                Foreground="{DynamicResource Plc.Text.Label}"
-                                                               FontSize="11"/>
+                                                               FontSize="12"/>
                                                     <TextBlock Text="{Binding DryTemp, StringFormat='{}{0:F1} C'}"
                                                                Foreground="{DynamicResource Sensor.Text.Title}"
-                                                               FontSize="11"
+                                                               FontSize="14"
                                                                FontWeight="Medium"/>
                                                 </StackPanel>
 
@@ -635,10 +635,10 @@
                                                             Margin="8,0,0,0">
                                                     <TextBlock Text="CDA: "
                                                                Foreground="{DynamicResource Plc.Text.Label}"
-                                                               FontSize="11"/>
+                                                               FontSize="12"/>
                                                     <TextBlock Text="{Binding CdaInletPressure, StringFormat='{}{0:F1} bar'}"
                                                                Foreground="{DynamicResource Sensor.Text.Title}"
-                                                               FontSize="11"
+                                                               FontSize="14"
                                                                FontWeight="Medium"/>
                                                 </StackPanel>
                                             </Grid>

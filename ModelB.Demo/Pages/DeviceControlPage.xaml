@@ -55,14 +55,14 @@
                         HorizontalAlignment="Left"
                         Margin="8,0,8,4">
                 <TextBlock Text="Status:"
-                           FontSize="14"
+                           FontSize="16"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource Plc.Text.Label}"
                            VerticalAlignment="Center"
                            Margin="0,0,8,0"/>
                 <TextBlock x:Name="DeviceStatusText"
                            Text="Uninitialized"
-                           FontSize="14"
+                           FontSize="16"
                            FontWeight="Bold"
                            Foreground="{DynamicResource Plc.Text.Value}"
                            VerticalAlignment="Center"/>
@@ -88,7 +88,7 @@
                     Margin="0,0,8,0">
                 <StackPanel>
                     <TextBlock Text="PROCESS CONTROL"
-                               FontSize="12"
+                               FontSize="16"
                                FontWeight="Bold"
                                Foreground="{DynamicResource Sensor.Text.Title}"
                                FontFamily="Consolas"
@@ -177,7 +177,7 @@
                                          ValueForeground="NeonRed"
                                          LabelForeground="Default"
                                          ValueFontSize="28"
-                                         LabelFontSize="12"
+                                         LabelFontSize="14"
                                          ShowAddress="False"
                                          Width="120"
                                          Height="120"
@@ -193,7 +193,7 @@
                                          ValueForeground="NeonRed"
                                          LabelForeground="Default"
                                          ValueFontSize="28"
-                                         LabelFontSize="12"
+                                         LabelFontSize="14"
                                          ShowAddress="False"
                                          Width="120"
                                          Height="120"
@@ -209,7 +209,7 @@
                                          ValueForeground="NeonRed"
                                          LabelForeground="Default"
                                          ValueFontSize="28"
-                                         LabelFontSize="12"
+                                         LabelFontSize="14"
                                          ShowAddress="False"
                                          Width="120"
                                          Height="120"
@@ -224,7 +224,7 @@
                                          ValueForeground="NeonBlue"
                                          LabelForeground="Default"
                                          ValueFontSize="26"
-                                         LabelFontSize="12"
+                                         LabelFontSize="14"
                                          ShowAddress="False"
                                          Width="120"
                                          Height="120"
@@ -239,7 +239,7 @@
                                          ValueForeground="NeonBlue"
                                          LabelForeground="Default"
                                          ValueFontSize="26"
-                                         LabelFontSize="12"
+                                         LabelFontSize="14"
                                          ShowAddress="False"
                                          Width="120"
                                          Height="120"
@@ -254,7 +254,7 @@
                                          ValueForeground="NeonBlue"
                                          LabelForeground="Default"
                                          ValueFontSize="26"
-                                         LabelFontSize="12"
+                                         LabelFontSize="14"
                                          ShowAddress="False"
                                          Width="120"
                                          Height="120"
@@ -270,7 +270,7 @@
                                          StringFormat="F1"
                                          ValueForeground="NeonGreen"
                                          ValueFontSize="24"
-                                         LabelFontSize="13"
+                                         LabelFontSize="14"
                                          ShowAddress="False"
                                          Margin="4"/>
 
@@ -281,7 +281,7 @@
                                          StringFormat="F1"
                                          ValueForeground="NeonGreen"
                                          ValueFontSize="24"
-                                         LabelFontSize="13"
+                                         LabelFontSize="14"
                                          ShowAddress="False"
                                          Margin="4"/>
 
@@ -291,7 +291,7 @@
                                          StringFormat="F0"
                                          ValueForeground="NeonBlue"
                                          ValueFontSize="24"
-                                         LabelFontSize="13"
+                                         LabelFontSize="14"
                                          ShowAddress="False"
                                          Margin="4"/>
 
@@ -301,7 +301,7 @@
                                          StringFormat="F0"
                                          ValueForeground="NeonBlue"
                                          ValueFontSize="24"
-                                         LabelFontSize="13"
+                                         LabelFontSize="14"
                                          ShowAddress="False"
                                          Margin="4"/>
                         </UniformGrid>
@@ -334,7 +334,7 @@
                         Margin="0,0,0,4">
                     <Grid>
                         <TextBlock Text="ALARM MONITORING"
-                                   FontSize="14"
+                                   FontSize="18"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource Sensor.Text.Title}"
                                    FontFamily="Consolas"
@@ -342,7 +342,7 @@
                                    VerticalAlignment="Top"
                                    Margin="0,16,0,0"/>
                         <TextBlock Text="[No Active Alarms]"
-                                   FontSize="12"
+                                   FontSize="14"
                                    Foreground="{DynamicResource Plc.Text.Label}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>

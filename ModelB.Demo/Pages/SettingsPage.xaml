@@ -22,7 +22,7 @@
                         Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="PLC CONNECTION SETTINGS"
-                                   FontSize="16"
+                                   FontSize="18"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource Sensor.Text.Title}"
                                    FontFamily="Consolas"
@@ -42,12 +42,12 @@
                             <TextBlock Grid.Row="0" Grid.Column="0"
                                        Text="IP Address:"
                                        Foreground="{DynamicResource Plc.Text.Label}"
-                                       FontSize="14"
+                                       FontSize="16"
                                        VerticalAlignment="Center"
                                        Margin="0,0,0,12"/>
                             <TextBox Grid.Row="0" Grid.Column="1"
                                      Text="192.168.22.39"
-                                     FontSize="14"
+                                     FontSize="16"
                                      Padding="12,10"
                                      Height="40"
                                      Margin="0,0,0,12"/>
@@ -55,12 +55,12 @@
                             <TextBlock Grid.Row="1" Grid.Column="0"
                                        Text="Port:"
                                        Foreground="{DynamicResource Plc.Text.Label}"
-                                       FontSize="14"
+                                       FontSize="16"
                                        VerticalAlignment="Center"
                                        Margin="0,0,0,12"/>
                             <TextBox Grid.Row="1" Grid.Column="1"
                                      Text="3000"
-                                     FontSize="14"
+                                     FontSize="16"
                                      Padding="12,10"
                                      Height="40"
                                      Margin="0,0,0,12"/>
@@ -68,11 +68,11 @@
                             <TextBlock Grid.Row="2" Grid.Column="0"
                                        Text="Scan Interval (ms):"
                                        Foreground="{DynamicResource Plc.Text.Label}"
-                                       FontSize="14"
+                                       FontSize="16"
                                        VerticalAlignment="Center"/>
                             <TextBox Grid.Row="2" Grid.Column="1"
                                      Text="150"
-                                     FontSize="14"
+                                     FontSize="16"
                                      Padding="12,10"
                                      Height="40"/>
                         </Grid>
@@ -80,7 +80,7 @@
                         <Button Content="Save PLC Settings"
                                 Background="{DynamicResource Button.Bg.Info}"
                                 Foreground="White"
-                                FontSize="14"
+                                FontSize="16"
                                 FontWeight="Bold"
                                 Padding="12,8"
                                 Margin="0,16,0,0"
@@ -99,7 +99,7 @@
                         Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="PLC DEVICE EDITOR"
-                                   FontSize="16"
+                                   FontSize="18"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource Sensor.Text.Title}"
                                    FontFamily="Consolas"
@@ -118,7 +118,7 @@
                         Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="SYSTEM PREFERENCES"
-                                   FontSize="16"
+                                   FontSize="18"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource Sensor.Text.Title}"
                                    FontFamily="Consolas"
@@ -126,31 +126,31 @@
 
                         <CheckBox Content="Enable Auto-Connect on Startup"
                                   IsChecked="True"
-                                  FontSize="14"
+                                  FontSize="16"
                                   Foreground="{DynamicResource Plc.Text.Value}"
                                   Margin="0,0,0,12"/>
 
                         <CheckBox Content="Enable Data Logging"
                                   IsChecked="True"
-                                  FontSize="14"
+                                  FontSize="16"
                                   Foreground="{DynamicResource Plc.Text.Value}"
                                   Margin="0,0,0,12"/>
 
                         <CheckBox Content="Enable Audit Trail"
                                   IsChecked="True"
-                                  FontSize="14"
+                                  FontSize="16"
                                   Foreground="{DynamicResource Plc.Text.Value}"
                                   Margin="0,0,0,12"/>
 
                         <CheckBox Content="Show System Notifications"
                                   IsChecked="True"
-                                  FontSize="14"
+                                  FontSize="16"
                                   Foreground="{DynamicResource Plc.Text.Value}"/>
 
                         <Button Content="Save Preferences"
                                 Background="{DynamicResource Button.Bg.Success}"
                                 Foreground="White"
-                                FontSize="14"
+                                FontSize="16"
                                 FontWeight="Bold"
                                 Padding="12,8"
                                 Margin="0,16,0,0"
@@ -168,13 +168,13 @@
                         Padding="20">
                     <StackPanel>
                         <TextBlock Text="ABOUT"
-                                   FontSize="16"
+                                   FontSize="18"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource Sensor.Text.Title}"
                                    FontFamily="Consolas"
                                    Margin="0,0,0,16"/>
 
-                        <TextBlock FontSize="14"
+                        <TextBlock FontSize="16"
                                    Foreground="{DynamicResource Plc.Text.Value}"
                                    LineHeight="24">
                             <Run Text="System Name: MODEL-B DEMO SYSTEM"/><LineBreak/>

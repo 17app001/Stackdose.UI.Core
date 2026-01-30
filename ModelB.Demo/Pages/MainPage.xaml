@@ -37,7 +37,7 @@
                         Margin="0,0,0,12">
                     <StackPanel>
                         <TextBlock Text="PLC CONNECTION STATUS"
-                                   FontSize="14"
+                                   FontSize="18"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource Sensor.Text.Title}"
                                    FontFamily="Consolas"
@@ -61,7 +61,7 @@
                         Padding="20">
                     <StackPanel>
                         <TextBlock Text="SYSTEM GLOBAL STATUS"
-                                   FontSize="16"
+                                   FontSize="20"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource Sensor.Text.Title}"
                                    FontFamily="Consolas"
@@ -75,13 +75,13 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0"
                                        Text="Current Time:"
-                                       FontSize="15"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource Plc.Text.Label}"/>
                             <TextBlock Grid.Column="1"
                                        x:Name="CurrentTimeText"
                                        Text="2025-01-30 16:05:36"
-                                       FontSize="15"
+                                       FontSize="16"
                                        FontWeight="Bold"
                                        FontFamily="Consolas"
                                        Foreground="{DynamicResource Cyber.NeonBlue}"/>
@@ -95,13 +95,13 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0"
                                        Text="Batch Number:"
-                                       FontSize="15"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource Plc.Text.Label}"/>
                             <TextBlock Grid.Column="1"
                                        x:Name="BatchNumberText"
                                        Text="-"
-                                       FontSize="15"
+                                       FontSize="16"
                                        FontWeight="Bold"
                                        FontFamily="Consolas"
                                        Foreground="{DynamicResource Plc.Text.Value}"/>
@@ -115,13 +115,13 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0"
                                        Text="Running Time:"
-                                       FontSize="15"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource Plc.Text.Label}"/>
                             <TextBlock Grid.Column="1"
                                        x:Name="RunningTimeText"
                                        Text="00:00:00"
-                                       FontSize="15"
+                                       FontSize="16"
                                        FontWeight="Bold"
                                        FontFamily="Consolas"
                                        Foreground="{DynamicResource Status.Success}"/>
@@ -135,13 +135,13 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0"
                                        Text="Completed Count:"
-                                       FontSize="15"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource Plc.Text.Label}"/>
                             <TextBlock Grid.Column="1"
                                        x:Name="CompletedCountText"
                                        Text="0"
-                                       FontSize="15"
+                                       FontSize="16"
                                        FontWeight="Bold"
                                        FontFamily="Consolas"
                                        Foreground="{DynamicResource Status.Success}"/>
@@ -155,13 +155,13 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0"
                                        Text="Defect Count:"
-                                       FontSize="15"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource Plc.Text.Label}"/>
                             <TextBlock Grid.Column="1"
                                        x:Name="DefectCountText"
                                        Text="0"
-                                       FontSize="15"
+                                       FontSize="16"
                                        FontWeight="Bold"
                                        FontFamily="Consolas"
                                        Foreground="{DynamicResource Status.Error}"/>
@@ -175,13 +175,13 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0"
                                        Text="Yield Rate:"
-                                       FontSize="15"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource Plc.Text.Label}"/>
                             <TextBlock Grid.Column="1"
                                        x:Name="YieldRateText"
                                        Text="100.00 %"
-                                       FontSize="15"
+                                       FontSize="16"
                                        FontWeight="Bold"
                                        FontFamily="Consolas"
                                        Foreground="{DynamicResource Status.Success}"/>
@@ -222,7 +222,7 @@
                             BorderThickness="0,0,0,1"
                             Padding="16,12">
                         <TextBlock Text="SYSTEM LIVE LOG"
-                                   FontSize="14"
+                                   FontSize="18"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource Sensor.Text.Title}"
                                    FontFamily="Consolas"/>
@@ -259,7 +259,7 @@
                     <!-- Title -->
                     <TextBlock Grid.Row="0"
                                Text="WEEKLY PRODUCTION"
-                               FontSize="16"
+                               FontSize="20"
                                FontWeight="Bold"
                                Foreground="{DynamicResource Sensor.Text.Title}"
                                FontFamily="Consolas"
@@ -271,7 +271,7 @@
                         <!-- Total Production -->
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <TextBlock Text="Total"
-                                       FontSize="14"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource Plc.Text.Label}"
                                        HorizontalAlignment="Center"
@@ -284,7 +284,7 @@
                                        Foreground="{DynamicResource Cyber.NeonBlue}"
                                        HorizontalAlignment="Center"/>
                             <TextBlock Text="units"
-                                       FontSize="12"
+                                       FontSize="14"
                                        Foreground="{DynamicResource Plc.Text.Label}"
                                        HorizontalAlignment="Center"
                                        Margin="0,4,0,0"/>
@@ -293,7 +293,7 @@
                         <!-- Completed -->
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <TextBlock Text="Completed"
-                                       FontSize="14"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource Plc.Text.Label}"
                                        HorizontalAlignment="Center"
@@ -306,7 +306,7 @@
                                        Foreground="{DynamicResource Status.Success}"
                                        HorizontalAlignment="Center"/>
                             <TextBlock Text="units"
-                                       FontSize="12"
+                                       FontSize="14"
                                        Foreground="{DynamicResource Plc.Text.Label}"
                                        HorizontalAlignment="Center"
                                        Margin="0,4,0,0"/>
@@ -315,7 +315,7 @@
                         <!-- Defect -->
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <TextBlock Text="Defect"
-                                       FontSize="14"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource Plc.Text.Label}"
                                        HorizontalAlignment="Center"
@@ -328,7 +328,7 @@
                                        Foreground="{DynamicResource Status.Error}"
                                        HorizontalAlignment="Center"/>
                             <TextBlock Text="units"
-                                       FontSize="12"
+                                       FontSize="14"
                                        Foreground="{DynamicResource Plc.Text.Label}"
                                        HorizontalAlignment="Center"
                                        Margin="0,4,0,0"/>
@@ -354,7 +354,7 @@
                     <!-- Title -->
                     <TextBlock Grid.Row="0"
                                Text="MONTHLY PRODUCTION"
-                               FontSize="16"
+                               FontSize="20"
                                FontWeight="Bold"
                                Foreground="{DynamicResource Sensor.Text.Title}"
                                FontFamily="Consolas"
@@ -366,7 +366,7 @@
                         <!-- Total Production -->
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <TextBlock Text="Total"
-                                       FontSize="14"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource Plc.Text.Label}"
                                        HorizontalAlignment="Center"
@@ -379,7 +379,7 @@
                                        Foreground="{DynamicResource Cyber.NeonBlue}"
                                        HorizontalAlignment="Center"/>
                             <TextBlock Text="units"
-                                       FontSize="12"
+                                       FontSize="14"
                                        Foreground="{DynamicResource Plc.Text.Label}"
                                        HorizontalAlignment="Center"
                                        Margin="0,4,0,0"/>
@@ -388,7 +388,7 @@
                         <!-- Completed -->
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <TextBlock Text="Completed"
-                                       FontSize="14"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource Plc.Text.Label}"
                                        HorizontalAlignment="Center"
@@ -401,7 +401,7 @@
                                        Foreground="{DynamicResource Status.Success}"
                                        HorizontalAlignment="Center"/>
                             <TextBlock Text="units"
-                                       FontSize="12"
+                                       FontSize="14"
                                        Foreground="{DynamicResource Plc.Text.Label}"
                                        HorizontalAlignment="Center"
                                        Margin="0,4,0,0"/>
@@ -410,7 +410,7 @@
                         <!-- Defect -->
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <TextBlock Text="Defect"
-                                       FontSize="14"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource Plc.Text.Label}"
                                        HorizontalAlignment="Center"
@@ -423,7 +423,7 @@
                                        Foreground="{DynamicResource Status.Error}"
                                        HorizontalAlignment="Center"/>
                             <TextBlock Text="units"
-                                       FontSize="12"
+                                       FontSize="14"
                                        Foreground="{DynamicResource Plc.Text.Label}"
                                        HorizontalAlignment="Center"
                                        Margin="0,4,0,0"/>

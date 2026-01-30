@@ -30,8 +30,8 @@
         <!-- Main Content Area -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="240"/>
-                <!-- Left Navigation - Fixed width -->
+                <ColumnDefinition Width="220"/>
+                <!-- Left Navigation - Wider -->
                 <ColumnDefinition Width="*"/>
                 <!-- Dynamic Content Area -->
             </Grid.ColumnDefinitions>

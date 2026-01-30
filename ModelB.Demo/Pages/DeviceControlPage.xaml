@@ -40,9 +40,9 @@
         <!-- Main Content Area -->
         <Grid Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="220"/>
-                <ColumnDefinition Width="500"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="4*"/>
+                <ColumnDefinition Width="4*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -55,19 +55,19 @@
                     BorderBrush="{DynamicResource Plc.Border}"
                     BorderThickness="1"
                     CornerRadius="6"
-                    Padding="12,8"
-                    Margin="0,0,8,12"
+                    Padding="8,5"
+                    Margin="0,0,8,8"
                     HorizontalAlignment="Stretch">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Device Status:"
-                               FontSize="14"
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="Status:"
+                               FontSize="11"
                                FontWeight="Medium"
                                Foreground="{DynamicResource Plc.Text.Label}"
                                VerticalAlignment="Center"
-                               Margin="0,0,10,0"/>
+                               Margin="0,0,6,0"/>
                     <TextBlock x:Name="DeviceStatusText"
                                Text="Uninitialized"
-                               FontSize="14"
+                               FontSize="11"
                                FontWeight="Bold"
                                Foreground="{DynamicResource Plc.Text.Value}"
                                VerticalAlignment="Center"/>
@@ -79,32 +79,26 @@
                                          Grid.Column="2"
                                          Grid.Row="0"
                                          HorizontalAlignment="Right"
-                                         Margin="0,0,0,12"
+                                         Margin="0,0,0,8"
                                          VerticalAlignment="Top"
                                          ProcessState="Idle"/>
 
-            <!-- Left Section: Function Buttons -->
+            <!-- Left Section: Function Buttons (2*) -->
             <Border Grid.Column="0"
                     Grid.Row="1"
                     Background="{DynamicResource Sensor.Bg.Main}"
                     BorderBrush="{DynamicResource Sensor.Border}"
                     BorderThickness="1"
                     CornerRadius="6"
-                    Padding="16"
+                    Padding="12"
                     Margin="0,0,8,0">
                 <StackPanel>
                     <TextBlock Text="PROCESS CONTROL"
-                               FontSize="14"
+                               FontSize="12"
                                FontWeight="Bold"
                                Foreground="{DynamicResource Sensor.Text.Title}"
                                FontFamily="Consolas"
-                               Margin="0,0,0,16"
-                               HorizontalAlignment="Center"/>
-                    
-                    <TextBlock Text="Process Flow Control"
-                               FontSize="12"
-                               Foreground="{DynamicResource Plc.Text.Label}"
-                               Margin="0,0,0,20"
+                               Margin="0,0,0,12"
                                HorizontalAlignment="Center"/>
 
                     <!-- Device Initialization -->
@@ -112,7 +106,7 @@
                                       Content="Device Init"
                                       RequiredLevel="Admin"
                                       OperationName="Device Initialization"
-                                      Margin="0,0,0,12"
+                                      Margin="0,0,0,10"
                                       Click="BtnDeviceInit_Click"
                                       HorizontalAlignment="Stretch"/>
 
@@ -122,7 +116,7 @@
                                       RequiredLevel="Operator"
                                       OperationName="Start Production Process"
                                       Theme="Success"
-                                      Margin="0,0,0,12"
+                                      Margin="0,0,0,10"
                                       Click="BtnStartProcess_Click"
                                       HorizontalAlignment="Stretch"
                                       IsEnabled="False"/>
@@ -133,7 +127,7 @@
                                       RequiredLevel="Operator"
                                       OperationName="Pause Production Process"
                                       Theme="Warning"
-                                      Margin="0,0,0,12"
+                                      Margin="0,0,0,10"
                                       Click="BtnPauseProcess_Click"
                                       HorizontalAlignment="Stretch"
                                       IsEnabled="False"/>
@@ -144,7 +138,7 @@
                                       RequiredLevel="Supervisor"
                                       OperationName="Cancel Production Process"
                                       Theme="Error"
-                                      Margin="0,0,0,12"
+                                      Margin="0,0,0,10"
                                       Click="BtnCancelProcess_Click"
                                       HorizontalAlignment="Stretch"
                                       IsEnabled="False"/>
@@ -161,180 +155,175 @@
                 </StackPanel>
             </Border>
 
-            <!-- Center Section: Data Display -->
-            <Border Grid.Column="1"
-                    Grid.Row="1"
-                    Background="{DynamicResource Plc.Bg.Main}"
-                    BorderBrush="{DynamicResource Plc.Border}"
-                    BorderThickness="1"
-                    CornerRadius="6"
-                    Padding="16"
-                    Margin="0,0,8,0">
-                <StackPanel>
-                    <TextBlock Text="PROCESS PARAMETERS"
-                               FontSize="14"
-                               FontWeight="Bold"
-                               Foreground="{DynamicResource Plc.Text.Value}"
-                               FontFamily="Consolas"
-                               Margin="0,0,0,16"
-                               HorizontalAlignment="Center"/>
-                    
-                    <TextBlock Text="Process Parameter Monitoring"
-                               FontSize="12"
-                               Foreground="{DynamicResource Plc.Text.Label}"
-                               Margin="0,0,0,20"
-                               HorizontalAlignment="Center"/>
-
-                    <!-- Data Display Grid (2 columns, 6 rows) -->
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <!-- Row 0 -->
-                        <core:PlcLabel Grid.Row="0" Grid.Column="0"
-                                     Label="1. CDA Flow"
-                                     Address="D100"
-                                     DataType="Word"
-                                     Divisor="10"
-                                     StringFormat="F1"
-                                     ValueFontSize="18"
-                                     Margin="4"/>
-
-                        <core:PlcLabel Grid.Row="0" Grid.Column="1"
-                                     Label="2. CDA Volume"
-                                     Address="D101"
-                                     DataType="Word"
-                                     Divisor="10"
-                                     StringFormat="F1"
-                                     ValueFontSize="18"
-                                     Margin="4"/>
-
-                        <!-- Row 1 -->
-                        <core:PlcLabel Grid.Row="1" Grid.Column="0"
-                                     Label="3. Swing Speed"
-                                     Address="D102"
-                                     DataType="Word"
-                                     StringFormat="F0"
-                                     ValueFontSize="18"
-                                     Margin="4"/>
-
-                        <core:PlcLabel Grid.Row="1" Grid.Column="1"
-                                     Label="4. Batch No"
-                                     Address="D103"
-                                     DataType="Word"
-                                     StringFormat="F0"
-                                     ValueFontSize="18"
-                                     Margin="4"/>
-
-                        <!-- Row 2 -->
-                        <core:PlcLabel Grid.Row="2" Grid.Column="0"
-                                     Label="5. PreDry Temp"
-                                     Address="D104"
-                                     DataType="Word"
-                                     Divisor="10"
-                                     StringFormat="F1"
-                                     ValueForeground="Warning"
-                                     ValueFontSize="18"
-                                     Margin="4"/>
-
-                        <core:PlcLabel Grid.Row="2" Grid.Column="1"
-                                     Label="6. PreDry Time"
-                                     Address="D105"
-                                     DataType="Word"
-                                     StringFormat="F0"
-                                     ValueFontSize="18"
-                                     Margin="4"/>
-
-                        <!-- Row 3 -->
-                        <core:PlcLabel Grid.Row="3" Grid.Column="0"
-                                     Label="7. Heat Zone1 Temp"
-                                     Address="D106"
-                                     DataType="Word"
-                                     Divisor="10"
-                                     StringFormat="F1"
-                                     ValueForeground="Warning"
-                                     ValueFontSize="18"
-                                     Margin="4"/>
-
-                        <core:PlcLabel Grid.Row="3" Grid.Column="1"
-                                     Label="8. Heat Zone1 Time"
-                                     Address="D107"
-                                     DataType="Word"
-                                     StringFormat="F0"
-                                     ValueFontSize="18"
-                                     Margin="4"/>
-
-                        <!-- Row 4 -->
-                        <core:PlcLabel Grid.Row="4" Grid.Column="0"
-                                     Label="9. Heat Zone2 Temp"
-                                     Address="D108"
-                                     DataType="Word"
-                                     Divisor="10"
-                                     StringFormat="F1"
-                                     ValueForeground="Warning"
-                                     ValueFontSize="18"
-                                     Margin="4"/>
-
-                        <core:PlcLabel Grid.Row="4" Grid.Column="1"
-                                     Label="10. Heat Zone2 Time"
-                                     Address="D109"
-                                     DataType="Word"
-                                     StringFormat="F0"
-                                     ValueFontSize="18"
-                                     Margin="4"/>
-
-                        <!-- Row 5 -->
-                        <core:PlcLabel Grid.Row="5" Grid.Column="0"
-                                     Label="11. Heat Zone3 Temp"
-                                     Address="D110"
-                                     DataType="Word"
-                                     Divisor="10"
-                                     StringFormat="F1"
-                                     ValueForeground="Warning"
-                                     ValueFontSize="18"
-                                     Margin="4"/>
-
-                        <core:PlcLabel Grid.Row="5" Grid.Column="1"
-                                     Label="12. Heat Zone3 Time"
-                                     Address="D111"
-                                     DataType="Word"
-                                     StringFormat="F0"
-                                     ValueFontSize="18"
-                                     Margin="4"/>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-            <!-- Right Section: Monitoring Components -->
-            <Grid Grid.Column="2" Grid.Row="1">
+            <!-- Center Section: Data Display + Live Log (4*) -->
+            <Grid Grid.Column="1" Grid.Row="1" Margin="0,0,8,0">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="6*"/>
-                    <RowDefinition Height="4*"/>
+                    <RowDefinition Height="7*"/>
+                    <RowDefinition Height="3*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Sensor Viewer with ScrollViewer -->
+                <!-- Process Parameters with Circle Labels -->
                 <Border Grid.Row="0"
-                        Background="{DynamicResource Sensor.Bg.Main}"
-                        BorderBrush="{DynamicResource Sensor.Border}"
+                        Background="{DynamicResource Plc.Bg.Main}"
+                        BorderBrush="{DynamicResource Plc.Border}"
                         BorderThickness="1"
                         CornerRadius="6"
+                        Padding="16,12"
                         Margin="0,0,0,8">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <core:SensorViewer x:Name="MainSensorViewer"
-                                         Title="SENSOR MONITORING"
-                                         ConfigFile="Sensors.json"/>
-                    </ScrollViewer>
+                    <StackPanel>
+                        <!-- Temperature Parameters (Circular) -->
+                        <TextBlock Text="Temperature Control"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                   Margin="0,0,0,8"/>
+
+                        <UniformGrid Columns="3" Rows="2" Margin="0,0,0,12">
+                            <core:PlcLabel Label="PreDry Temp"
+                                         Address="D104"
+                                         DataType="Word"
+                                         Divisor="10"
+                                         StringFormat="F1"
+                                         FrameShape="Circle"
+                                         FrameBackground="DarkBlue"
+                                         ValueForeground="NeonRed"
+                                         LabelForeground="Default"
+                                         ValueFontSize="26"
+                                         LabelFontSize="11"
+                                         ShowAddress="False"
+                                         Width="110"
+                                         Height="110"
+                                         Margin="2"/>
+
+                            <core:PlcLabel Label="Zone1 Temp"
+                                         Address="D106"
+                                         DataType="Word"
+                                         Divisor="10"
+                                         StringFormat="F1"
+                                         FrameShape="Circle"
+                                         FrameBackground="DarkBlue"
+                                         ValueForeground="NeonRed"
+                                         LabelForeground="Default"
+                                         ValueFontSize="26"
+                                         LabelFontSize="11"
+                                         ShowAddress="False"
+                                         Width="110"
+                                         Height="110"
+                                         Margin="2"/>
+
+                            <core:PlcLabel Label="Zone2 Temp"
+                                         Address="D108"
+                                         DataType="Word"
+                                         Divisor="10"
+                                         StringFormat="F1"
+                                         FrameShape="Circle"
+                                         FrameBackground="DarkBlue"
+                                         ValueForeground="NeonRed"
+                                         LabelForeground="Default"
+                                         ValueFontSize="26"
+                                         LabelFontSize="11"
+                                         ShowAddress="False"
+                                         Width="110"
+                                         Height="110"
+                                         Margin="2"/>
+
+                            <core:PlcLabel Label="PreDry Time"
+                                         Address="D105"
+                                         DataType="Word"
+                                         StringFormat="F0"
+                                         FrameShape="Circle"
+                                         FrameBackground="DarkBlue"
+                                         ValueForeground="NeonBlue"
+                                         LabelForeground="Default"
+                                         ValueFontSize="24"
+                                         LabelFontSize="11"
+                                         ShowAddress="False"
+                                         Width="110"
+                                         Height="110"
+                                         Margin="2"/>
+
+                            <core:PlcLabel Label="Zone1 Time"
+                                         Address="D107"
+                                         DataType="Word"
+                                         StringFormat="F0"
+                                         FrameShape="Circle"
+                                         FrameBackground="DarkBlue"
+                                         ValueForeground="NeonBlue"
+                                         LabelForeground="Default"
+                                         ValueFontSize="24"
+                                         LabelFontSize="11"
+                                         ShowAddress="False"
+                                         Width="110"
+                                         Height="110"
+                                         Margin="2"/>
+
+                            <core:PlcLabel Label="Zone2 Time"
+                                         Address="D109"
+                                         DataType="Word"
+                                         StringFormat="F0"
+                                         FrameShape="Circle"
+                                         FrameBackground="DarkBlue"
+                                         ValueForeground="NeonBlue"
+                                         LabelForeground="Default"
+                                         ValueFontSize="24"
+                                         LabelFontSize="11"
+                                         ShowAddress="False"
+                                         Width="110"
+                                         Height="110"
+                                         Margin="2"/>
+                        </UniformGrid>
+
+                        <!-- Flow and Pressure Parameters (Rectangle) -->
+                        <TextBlock Text="Flow &amp; Pressure"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                   Margin="0,0,0,8"/>
+
+                        <UniformGrid Columns="2" Rows="2" Margin="0,0,0,8">
+                            <core:PlcLabel Label="CDA Flow"
+                                         Address="D100"
+                                         DataType="Word"
+                                         Divisor="10"
+                                         StringFormat="F1"
+                                         ValueForeground="NeonGreen"
+                                         ValueFontSize="20"
+                                         LabelFontSize="11"
+                                         ShowAddress="False"
+                                         Margin="2"/>
+
+                            <core:PlcLabel Label="CDA Volume"
+                                         Address="D101"
+                                         DataType="Word"
+                                         Divisor="10"
+                                         StringFormat="F1"
+                                         ValueForeground="NeonGreen"
+                                         ValueFontSize="20"
+                                         LabelFontSize="11"
+                                         ShowAddress="False"
+                                         Margin="2"/>
+
+                            <core:PlcLabel Label="Swing Speed"
+                                         Address="D102"
+                                         DataType="Word"
+                                         StringFormat="F0"
+                                         ValueForeground="NeonBlue"
+                                         ValueFontSize="20"
+                                         LabelFontSize="11"
+                                         ShowAddress="False"
+                                         Margin="2"/>
+
+                            <core:PlcLabel Label="Batch No"
+                                         Address="D103"
+                                         DataType="Word"
+                                         StringFormat="F0"
+                                         ValueForeground="NeonBlue"
+                                         ValueFontSize="20"
+                                         LabelFontSize="11"
+                                         ShowAddress="False"
+                                         Margin="2"/>
+                        </UniformGrid>
+                    </StackPanel>
                 </Border>
 
                 <!-- Live Log Viewer -->
@@ -344,6 +333,53 @@
                         BorderThickness="1"
                         CornerRadius="6">
                     <core:LiveLogViewer x:Name="MainLogViewer"/>
+                </Border>
+            </Grid>
+
+            <!-- Right Section: Alarm + Sensor (4*) -->
+            <Grid Grid.Column="2" Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Alarm Viewer (Top 50%) - Temporarily Empty -->
+                <Border Grid.Row="0"
+                        Background="{DynamicResource Sensor.Bg.Main}"
+                        BorderBrush="{DynamicResource Sensor.Border}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Margin="0,0,0,4">
+                    <Grid>
+                        <TextBlock Text="ALARM MONITORING"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource Sensor.Text.Title}"
+                                   FontFamily="Consolas"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Top"
+                                   Margin="0,16,0,0"/>
+                        <TextBlock Text="[No Active Alarms]"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- Sensor Viewer (Bottom 50%) -->
+                <Border Grid.Row="1"
+                        Background="{DynamicResource Sensor.Bg.Main}"
+                        BorderBrush="{DynamicResource Sensor.Border}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Margin="0,4,0,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <core:SensorViewer x:Name="MainSensorViewer"
+                                         Title="SENSOR MONITORING"
+                                         ConfigFile="Sensors.json"/>
+                    </ScrollViewer>
                 </Border>
             </Grid>
         </Grid>

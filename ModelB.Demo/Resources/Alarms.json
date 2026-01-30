@@ -1,0 +1,148 @@
+{
+  "Alarms": [
+    {
+      "Group": "溫度監控",
+      "Device": "M100",
+      "Bit": 0,
+      "OperationDescription": "加熱區過溫度過高警告"
+    },
+    {
+      "Group": "溫度監控",
+      "Device": "M100",
+      "Bit": 1,
+      "OperationDescription": "冷卻系統溫度異常"
+    },
+    {
+      "Group": "溫度監控",
+      "Device": "M100",
+      "Bit": 2,
+      "OperationDescription": "預乾燥溫度過低"
+    },
+    {
+      "Group": "安全監控",
+      "Device": "M100",
+      "Bit": 3,
+      "OperationDescription": "急停按鈕觸發"
+    },
+    {
+      "Group": "安全監控",
+      "Device": "M100",
+      "Bit": 4,
+      "OperationDescription": "門禁開啟警告"
+    },
+    {
+      "Group": "安全監控",
+      "Device": "M100",
+      "Bit": 5,
+      "OperationDescription": "光柵感應器觸發"
+    },
+    {
+      "Group": "氣壓系統",
+      "Device": "M101",
+      "Bit": 0,
+      "OperationDescription": "CDA 氣壓不足"
+    },
+    {
+      "Group": "氣壓系統",
+      "Device": "M101",
+      "Bit": 1,
+      "OperationDescription": "真空度不足"
+    },
+    {
+      "Group": "氣壓系統",
+      "Device": "M101",
+      "Bit": 2,
+      "OperationDescription": "壓力調節器故障"
+    },
+    {
+      "Group": "機械系統",
+      "Device": "M101",
+      "Bit": 3,
+      "OperationDescription": "伺服馬達過載"
+    },
+    {
+      "Group": "機械系統",
+      "Device": "M101",
+      "Bit": 4,
+      "OperationDescription": "X軸限位觸發"
+    },
+    {
+      "Group": "機械系統",
+      "Device": "M101",
+      "Bit": 5,
+      "OperationDescription": "Y軸限位觸發"
+    },
+    {
+      "Group": "機械系統",
+      "Device": "M101",
+      "Bit": 6,
+      "OperationDescription": "Z軸限位觸發"
+    },
+    {
+      "Group": "噴頭系統",
+      "Device": "M102",
+      "Bit": 0,
+      "OperationDescription": "噴頭通訊異常"
+    },
+    {
+      "Group": "噴頭系統",
+      "Device": "M102",
+      "Bit": 1,
+      "OperationDescription": "噴嘴堵塞警告"
+    },
+    {
+      "Group": "噴頭系統",
+      "Device": "M102",
+      "Bit": 2,
+      "OperationDescription": "墨水不足警告"
+    },
+    {
+      "Group": "UV系統",
+      "Device": "M102",
+      "Bit": 3,
+      "OperationDescription": "UV燈管故障"
+    },
+    {
+      "Group": "UV系統",
+      "Device": "M102",
+      "Bit": 4,
+      "OperationDescription": "UV燈管壽命到期"
+    },
+    {
+      "Group": "料盒系統",
+      "Device": "M102",
+      "Bit": 5,
+      "OperationDescription": "料盒未就位"
+    },
+    {
+      "Group": "料盒系統",
+      "Device": "M102",
+      "Bit": 6,
+      "OperationDescription": "料盒門未關閉"
+    },
+    {
+      "Group": "通訊系統",
+      "Device": "M103",
+      "Bit": 0,
+      "OperationDescription": "PLC 通訊中斷"
+    },
+    {
+      "Group": "通訊系統",
+      "Device": "M103",
+      "Bit": 1,
+      "OperationDescription": "噴頭控制器離線"
+    },
+    {
+      "Group": "製程監控",
+      "Device": "M103",
+      "Bit": 2,
+      "OperationDescription": "製程時間超時"
+    },
+    {
+      "Group": "製程監控",
+      "Device": "M103",
+      "Bit": 3,
+      "OperationDescription": "品質檢測失敗"
+    }
+  ]
+}

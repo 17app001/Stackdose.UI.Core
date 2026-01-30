@@ -12,6 +12,8 @@ namespace Stackdose.UI.Core.Models
         Error,      // 紅色
         Info,       // 青色
         NeonBlue,   // 霓虹藍
+        NeonRed,    // 霓虹紅
+        NeonGreen,  // 霓虹綠
         White,      // 白色
         Gray,       // 灰色
         DarkBlue    // 深藍色（類似 #1E1E2E）

@@ -10,9 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Resources\Sensors.json">
+    <None Include="Resources\Sensors.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </None>
+    <None Include="Resources\Alarms.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

@@ -8,34 +8,9 @@
              d:DesignHeight="800" d:DesignWidth="1200">
 
     <Grid Background="{StaticResource BackgroundBrush}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <!-- Page Title -->
-        <Border Grid.Row="0"
-                Background="{DynamicResource Plc.Bg.Main}"
-                BorderBrush="{DynamicResource Plc.Border}"
-                BorderThickness="1"
-                CornerRadius="6"
-                Padding="20"
-                Margin="0,0,0,16">
-            <StackPanel>
-                <TextBlock Text="SYSTEM SETTINGS"
-                           FontSize="28"
-                           FontWeight="Bold"
-                           Foreground="{DynamicResource Cyber.Text.Main}"
-                           FontFamily="Consolas"/>
-                <TextBlock Text="Configure system parameters and preferences"
-                           FontSize="14"
-                           Foreground="{DynamicResource Plc.Text.Label}"
-                           Margin="0,8,0,0"/>
-            </StackPanel>
-        </Border>
-
+        
         <!-- Settings Content -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="0">
 
                 <!-- PLC Connection Settings -->
@@ -73,7 +48,8 @@
                             <TextBox Grid.Row="0" Grid.Column="1"
                                      Text="192.168.22.39"
                                      FontSize="14"
-                                     Padding="8"
+                                     Padding="12,10"
+                                     Height="40"
                                      Margin="0,0,0,12"/>
 
                             <TextBlock Grid.Row="1" Grid.Column="0"
@@ -85,7 +61,8 @@
                             <TextBox Grid.Row="1" Grid.Column="1"
                                      Text="3000"
                                      FontSize="14"
-                                     Padding="8"
+                                     Padding="12,10"
+                                     Height="40"
                                      Margin="0,0,0,12"/>
 
                             <TextBlock Grid.Row="2" Grid.Column="0"
@@ -96,7 +73,8 @@
                             <TextBox Grid.Row="2" Grid.Column="1"
                                      Text="150"
                                      FontSize="14"
-                                     Padding="8"/>
+                                     Padding="12,10"
+                                     Height="40"/>
                         </Grid>
 
                         <Button Content="Save PLC Settings"
@@ -109,6 +87,25 @@
                                 HorizontalAlignment="Right"
                                 Width="200"
                                 Click="SavePlcSettings_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- PlcDeviceEditor Control -->
+                <Border Background="{DynamicResource Sensor.Bg.Main}"
+                        BorderBrush="{DynamicResource Sensor.Border}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="20"
+                        Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="PLC DEVICE EDITOR"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource Sensor.Text.Title}"
+                                   FontFamily="Consolas"
+                                   Margin="0,0,0,16"/>
+                        
+                        <core:PlcDeviceEditor x:Name="DeviceEditor"/>
                     </StackPanel>
                 </Border>
 

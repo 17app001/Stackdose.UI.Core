@@ -8,7 +8,7 @@ using System.Windows.Media;
 namespace Stackdose.UI.Core.Converters
 {
     /// <summary>
-    /// PlcLabel 顏色主題轉 Brush 轉換器
+    /// PlcLabel 顏色主題 轉 Brush 轉換器
     /// </summary>
     public class PlcLabelColorThemeToBrushConverter : IValueConverter
     {
@@ -16,10 +16,10 @@ namespace Stackdose.UI.Core.Converters
         {
             if (value is PlcLabelColorTheme theme)
             {
-                // ?? 特殊處理：DarkBlue 根據主題自動調整
+                // ?? 特殊處理：DarkBlue 會根據主題自動調整
                 if (theme == PlcLabelColorTheme.DarkBlue)
                 {
-                    // 多重檢測方式判斷主題
+                    // 使用懶惰檢測方式判斷主題
                     bool isLightMode = IsLightTheme();
                     
                     if (isLightMode)
@@ -34,13 +34,13 @@ namespace Stackdose.UI.Core.Converters
                     }
                 }
 
-                // ?? NeonBlue 作為底框時，Light 模式下改為白色
+                // ?? NeonBlue 在 Light 模式下需要改為白色
                 if (theme == PlcLabelColorTheme.NeonBlue && targetType == typeof(Brush))
                 {
                     bool isLightMode = IsLightTheme();
                     if (isLightMode)
                     {
-                        // Light 模式下 NeonBlue 底框改為白色
+                        // Light 模式下 NeonBlue 改為深色或白色
                         return new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0xFF)); // #FFFFFF 白色
                     }
                 }
@@ -54,6 +54,8 @@ namespace Stackdose.UI.Core.Converters
                     PlcLabelColorTheme.Error => Application.Current.TryFindResource("Status.Error") as Brush ?? Brushes.Red,
                     PlcLabelColorTheme.Info => Application.Current.TryFindResource("Status.Info") as Brush ?? Brushes.Cyan,
                     PlcLabelColorTheme.NeonBlue => Application.Current.TryFindResource("Cyber.NeonBlue") as Brush ?? Brushes.Cyan,
+                    PlcLabelColorTheme.NeonRed => Application.Current.TryFindResource("Cyber.NeonRed") as Brush ?? new SolidColorBrush(Color.FromRgb(0xFF, 0x44, 0x44)),
+                    PlcLabelColorTheme.NeonGreen => Application.Current.TryFindResource("Cyber.NeonGreen") as Brush ?? new SolidColorBrush(Color.FromRgb(0x44, 0xFF, 0x44)),
                     PlcLabelColorTheme.White => Application.Current.TryFindResource("Cyber.Text.Bright") as Brush ?? Brushes.White,
                     PlcLabelColorTheme.Gray => Application.Current.TryFindResource("Plc.Text.Gray") as Brush ?? Brushes.Gray,
                     _ => Application.Current.TryFindResource("Plc.Text.Label") as Brush ?? Brushes.Gray
@@ -68,7 +70,7 @@ namespace Stackdose.UI.Core.Converters
         }
 
         /// <summary>
-        /// 判斷當前是否為 Light 主題（多重檢測）
+        /// 判斷當前是否為 Light 主題（使用懶惰檢測回退）
         /// </summary>
         private bool IsLightTheme()
         {
@@ -81,7 +83,7 @@ namespace Stackdose.UI.Core.Converters
                     var bgColor = plcBgBrush.Color;
                     if (bgColor.R > 200 && bgColor.G > 200 && bgColor.B > 200)
                     {
-                        return true; // 亮色背景 = Light 模式
+                        return true; // 背景很亮 = Light 模式
                     }
                 }
 
@@ -92,7 +94,7 @@ namespace Stackdose.UI.Core.Converters
                     var bgColor = cyberBgBrush.Color;
                     if (bgColor.R > 200 && bgColor.G > 200 && bgColor.B > 200)
                     {
-                        return true; // 亮色背景 = Light 模式
+                        return true; // 背景很亮 = Light 模式
                     }
                 }
 

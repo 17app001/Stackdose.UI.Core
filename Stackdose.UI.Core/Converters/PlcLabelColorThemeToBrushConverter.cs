@@ -16,16 +16,15 @@ namespace Stackdose.UI.Core.Converters
         {
             if (value is PlcLabelColorTheme theme)
             {
-                // ?? 特殊處理：DarkBlue 會根據主題自動調整
+                // 特殊處理：DarkBlue 會根據主題自動調整
                 if (theme == PlcLabelColorTheme.DarkBlue)
                 {
-                    // 使用懶惰檢測方式判斷主題
                     bool isLightMode = IsLightTheme();
                     
                     if (isLightMode)
                     {
                         // Light 模式：使用淺灰色
-                        return new SolidColorBrush(Color.FromRgb(0xF5, 0xF5, 0xF5)); // #F5F5F5 淺灰
+                        return new SolidColorBrush(Color.FromRgb(0xF5, 0xF5, 0xF5)); // #F5F5F5
                     }
                     else
                     {
@@ -34,34 +33,34 @@ namespace Stackdose.UI.Core.Converters
                     }
                 }
 
-                // ?? NeonBlue 在 Light 模式下需要改為白色
+                // NeonBlue 在 Light 模式下需要改為白色
                 if (theme == PlcLabelColorTheme.NeonBlue && targetType == typeof(Brush))
                 {
                     bool isLightMode = IsLightTheme();
                     if (isLightMode)
                     {
-                        // Light 模式下 NeonBlue 改為深色或白色
-                        return new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0xFF)); // #FFFFFF 白色
+                        return new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0xFF)); // #FFFFFF
                     }
                 }
                 
                 return theme switch
                 {
-                    PlcLabelColorTheme.Default => Application.Current.TryFindResource("Plc.Text.Label") as Brush ?? Brushes.Gray,
+                    PlcLabelColorTheme.Default => Application.Current.TryFindResource("Plc.Text.Label") as Brush ?? new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC)),
                     PlcLabelColorTheme.Primary => Application.Current.TryFindResource("Button.Bg.Primary") as Brush ?? Brushes.Blue,
                     PlcLabelColorTheme.Success => Application.Current.TryFindResource("Status.Success") as Brush ?? Brushes.Green,
                     PlcLabelColorTheme.Warning => Application.Current.TryFindResource("Status.Warning") as Brush ?? Brushes.Orange,
                     PlcLabelColorTheme.Error => Application.Current.TryFindResource("Status.Error") as Brush ?? Brushes.Red,
                     PlcLabelColorTheme.Info => Application.Current.TryFindResource("Status.Info") as Brush ?? Brushes.Cyan,
-                    PlcLabelColorTheme.NeonBlue => Application.Current.TryFindResource("Cyber.NeonBlue") as Brush ?? Brushes.Cyan,
-                    PlcLabelColorTheme.NeonRed => Application.Current.TryFindResource("Cyber.NeonRed") as Brush ?? new SolidColorBrush(Color.FromRgb(0xFF, 0x44, 0x44)),
-                    PlcLabelColorTheme.NeonGreen => Application.Current.TryFindResource("Cyber.NeonGreen") as Brush ?? new SolidColorBrush(Color.FromRgb(0x44, 0xFF, 0x44)),
-                    PlcLabelColorTheme.White => Application.Current.TryFindResource("Cyber.Text.Bright") as Brush ?? Brushes.White,
-                    PlcLabelColorTheme.Gray => Application.Current.TryFindResource("Plc.Text.Gray") as Brush ?? Brushes.Gray,
-                    _ => Application.Current.TryFindResource("Plc.Text.Label") as Brush ?? Brushes.Gray
+                    // 增強霓虹色的亮度和飽和度
+                    PlcLabelColorTheme.NeonBlue => Application.Current.TryFindResource("Cyber.NeonBlue") as Brush ?? new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0xFF)),
+                    PlcLabelColorTheme.NeonRed => Application.Current.TryFindResource("Cyber.NeonRed") as Brush ?? new SolidColorBrush(Color.FromRgb(0xFF, 0x33, 0x33)),
+                    PlcLabelColorTheme.NeonGreen => Application.Current.TryFindResource("Cyber.NeonGreen") as Brush ?? new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88)),
+                    PlcLabelColorTheme.White => Application.Current.TryFindResource("Cyber.Text.Bright") as Brush ?? new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0xFF)),
+                    PlcLabelColorTheme.Gray => Application.Current.TryFindResource("Plc.Text.Gray") as Brush ?? new SolidColorBrush(Color.FromRgb(0x99, 0x99, 0x99)),
+                    _ => Application.Current.TryFindResource("Plc.Text.Label") as Brush ?? new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC))
                 };
             }
-            return Brushes.Gray;
+            return new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

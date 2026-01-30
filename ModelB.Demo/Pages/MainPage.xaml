@@ -5,119 +5,432 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:core="http://schemas.stackdose.com/wpf"
              mc:Ignorable="d"
-             d:DesignHeight="800" d:DesignWidth="1200">
+             d:DesignHeight="800" d:DesignWidth="1400">
 
     <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
 
-        <!-- Page Title -->
-        <Border Grid.Row="0"
-                Background="{DynamicResource Plc.Bg.Main}"
-                BorderBrush="{DynamicResource Plc.Border}"
-                BorderThickness="1"
-                CornerRadius="6"
-                Padding="20"
-                Margin="0,0,0,16">
-            <StackPanel>
-                <TextBlock Text="MODEL-B SYSTEM OVERVIEW"
-                           FontSize="28"
-                           FontWeight="Bold"
-                           Foreground="{DynamicResource Cyber.Text.Main}"
-                           FontFamily="Consolas"/>
-                <TextBlock Text="Real-time device status monitoring and control"
-                           FontSize="14"
-                           Foreground="{DynamicResource Plc.Text.Label}"
-                           Margin="0,8,0,0"/>
-            </StackPanel>
-        </Border>
+        <!-- Top Section -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.5*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
 
-        <!-- Device Status Cards -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <UniformGrid Columns="2" Rows="2" Margin="0">
+            <!-- Left Section: PLC Status + Global Status -->
+            <Grid Grid.Column="0" Margin="0,0,8,8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-                <!-- PLC Status Card -->
-                <Border Background="{DynamicResource Sensor.Bg.Main}"
+                <!-- PLC Connection Status -->
+                <Border Grid.Row="0"
+                        Background="{DynamicResource Sensor.Bg.Main}"
                         BorderBrush="{DynamicResource Sensor.Border}"
                         BorderThickness="1"
                         CornerRadius="6"
-                        Margin="0,0,16,16"
-                        Padding="16">
+                        Padding="20"
+                        Margin="0,0,0,12">
                     <StackPanel>
                         <TextBlock Text="PLC CONNECTION STATUS"
                                    FontSize="14"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource Sensor.Text.Title}"
                                    FontFamily="Consolas"
-                                   Margin="0,0,0,16"/>
+                                   Margin="0,0,0,12"/>
 
-                        <core:PlcStatus IpAddress="192.168.22.39"
+                        <core:PlcStatus x:Name="MainPlcStatus"
+                                        IpAddress="192.168.22.39"
                                         Port="3000"
                                         AutoConnect="True"
-                                        IsGlobal="True"/>
+                                        IsGlobal="True"
+                                        ScanInterval="150"/>
                     </StackPanel>
                 </Border>
 
-                <!-- Print Head Status Card -->
-                <Border Background="{DynamicResource Sensor.Bg.Main}"
+                <!-- Global Status Information -->
+                <Border Grid.Row="1"
+                        Background="{DynamicResource Sensor.Bg.Main}"
                         BorderBrush="{DynamicResource Sensor.Border}"
                         BorderThickness="1"
                         CornerRadius="6"
-                        Margin="0,0,16,16"
-                        Padding="16">
+                        Padding="20">
                     <StackPanel>
-                        <TextBlock Text="PRINT HEAD STATUS"
-                                   FontSize="14"
+                        <TextBlock Text="SYSTEM GLOBAL STATUS"
+                                   FontSize="16"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource Sensor.Text.Title}"
                                    FontFamily="Consolas"
-                                   Margin="0,0,0,16"/>
+                                   Margin="0,0,0,20"/>
 
-                        <core:PrintHeadStatus/>
+                        <!-- Current Time -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="180"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="Current Time:"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Plc.Text.Label}"/>
+                            <TextBlock Grid.Column="1"
+                                       x:Name="CurrentTimeText"
+                                       Text="2025-01-30 16:05:36"
+                                       FontSize="15"
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"
+                                       Foreground="{DynamicResource Cyber.NeonBlue}"/>
+                        </Grid>
+
+                        <!-- Process Batch Number -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="180"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="Batch Number:"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Plc.Text.Label}"/>
+                            <TextBlock Grid.Column="1"
+                                       x:Name="BatchNumberText"
+                                       Text="-"
+                                       FontSize="15"
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"
+                                       Foreground="{DynamicResource Plc.Text.Value}"/>
+                        </Grid>
+
+                        <!-- Running Time -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="180"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="Running Time:"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Plc.Text.Label}"/>
+                            <TextBlock Grid.Column="1"
+                                       x:Name="RunningTimeText"
+                                       Text="00:00:00"
+                                       FontSize="15"
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"
+                                       Foreground="{DynamicResource Status.Success}"/>
+                        </Grid>
+
+                        <!-- Completed Count -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="180"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="Completed Count:"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Plc.Text.Label}"/>
+                            <TextBlock Grid.Column="1"
+                                       x:Name="CompletedCountText"
+                                       Text="0"
+                                       FontSize="15"
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"
+                                       Foreground="{DynamicResource Status.Success}"/>
+                        </Grid>
+
+                        <!-- Defect Count -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="180"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="Defect Count:"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Plc.Text.Label}"/>
+                            <TextBlock Grid.Column="1"
+                                       x:Name="DefectCountText"
+                                       Text="0"
+                                       FontSize="15"
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"
+                                       Foreground="{DynamicResource Status.Error}"/>
+                        </Grid>
+
+                        <!-- Yield Rate -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="180"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="Yield Rate:"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Plc.Text.Label}"/>
+                            <TextBlock Grid.Column="1"
+                                       x:Name="YieldRateText"
+                                       Text="100.00 %"
+                                       FontSize="15"
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"
+                                       Foreground="{DynamicResource Status.Success}"/>
+                        </Grid>
+
+                        <!-- Process Status Indicator -->
+                        <Border BorderBrush="{DynamicResource Plc.Border}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="12"
+                                Margin="0,12,0,0"
+                                Background="{DynamicResource Plc.Bg.Main}">
+                            <core:ProcessStatusIndicator x:Name="GlobalProcessStatus"
+                                                         ProcessState="Idle"
+                                                         HorizontalAlignment="Stretch"/>
+                        </Border>
                     </StackPanel>
                 </Border>
+            </Grid>
 
-                <!-- Sensor Viewer Card -->
-                <Border Background="{DynamicResource Sensor.Bg.Main}"
-                        BorderBrush="{DynamicResource Sensor.Border}"
-                        BorderThickness="1"
-                        CornerRadius="6"
-                        Margin="0,0,16,16"
-                        Padding="16">
-                    <StackPanel>
-                        <TextBlock Text="SENSOR MONITORING"
+            <!-- Right Section: Live Log Viewer -->
+            <Border Grid.Column="1"
+                    Background="{DynamicResource Log.Bg.Main}"
+                    BorderBrush="{DynamicResource Log.Border}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Margin="8,0,0,8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Log Title -->
+                    <Border Grid.Row="0"
+                            Background="{DynamicResource Plc.Bg.Main}"
+                            BorderBrush="{DynamicResource Plc.Border}"
+                            BorderThickness="0,0,0,1"
+                            Padding="16,12">
+                        <TextBlock Text="SYSTEM LIVE LOG"
                                    FontSize="14"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource Sensor.Text.Title}"
-                                   FontFamily="Consolas"
-                                   Margin="0,0,0,16"/>
+                                   FontFamily="Consolas"/>
+                    </Border>
 
-                        <core:SensorViewer/>
-                    </StackPanel>
-                </Border>
+                    <!-- Live Log Viewer -->
+                    <core:LiveLogViewer Grid.Row="1"
+                                        x:Name="MainLogViewer"/>
+                </Grid>
+            </Border>
+        </Grid>
 
-                <!-- Alarm Viewer Card -->
-                <Border Background="{DynamicResource Sensor.Bg.Main}"
-                        BorderBrush="{DynamicResource Sensor.Border}"
-                        BorderThickness="1"
-                        CornerRadius="6"
-                        Margin="0,0,16,16"
-                        Padding="16">
-                    <StackPanel>
-                        <TextBlock Text="ALARM VIEWER"
-                                   FontSize="14"
-                                   FontWeight="Bold"
-                                   Foreground="{DynamicResource Sensor.Text.Title}"
-                                   FontFamily="Consolas"
-                                   Margin="0,0,0,16"/>
+        <!-- Bottom Section: Production Statistics -->
+        <Grid Grid.Row="1" Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-                        <core:AlarmViewer/>
-                    </StackPanel>
-                </Border>
+            <!-- Weekly Production Statistics -->
+            <Border Grid.Column="0"
+                    Background="{DynamicResource Sensor.Bg.Main}"
+                    BorderBrush="{DynamicResource Sensor.Border}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="24"
+                    Margin="0,0,8,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-            </UniformGrid>
-        </ScrollViewer>
+                    <!-- Title -->
+                    <TextBlock Grid.Row="0"
+                               Text="WEEKLY PRODUCTION"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource Sensor.Text.Title}"
+                               FontFamily="Consolas"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,20"/>
+
+                    <!-- Statistics Grid -->
+                    <UniformGrid Grid.Row="1" Columns="3" Rows="1">
+                        <!-- Total Production -->
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="Total"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Plc.Text.Label}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock x:Name="WeeklyTotalText"
+                                       Text="1,250"
+                                       FontSize="36"
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"
+                                       Foreground="{DynamicResource Cyber.NeonBlue}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="units"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource Plc.Text.Label}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <!-- Completed -->
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="Completed"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Plc.Text.Label}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock x:Name="WeeklyCompletedText"
+                                       Text="1,187"
+                                       FontSize="36"
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"
+                                       Foreground="{DynamicResource Status.Success}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="units"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource Plc.Text.Label}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <!-- Defect -->
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="Defect"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Plc.Text.Label}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock x:Name="WeeklyDefectText"
+                                       Text="63"
+                                       FontSize="36"
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"
+                                       Foreground="{DynamicResource Status.Error}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="units"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource Plc.Text.Label}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </UniformGrid>
+                </Grid>
+            </Border>
+
+            <!-- Monthly Production Statistics -->
+            <Border Grid.Column="1"
+                    Background="{DynamicResource Sensor.Bg.Main}"
+                    BorderBrush="{DynamicResource Sensor.Border}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="24"
+                    Margin="8,0,0,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Title -->
+                    <TextBlock Grid.Row="0"
+                               Text="MONTHLY PRODUCTION"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource Sensor.Text.Title}"
+                               FontFamily="Consolas"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,20"/>
+
+                    <!-- Statistics Grid -->
+                    <UniformGrid Grid.Row="1" Columns="3" Rows="1">
+                        <!-- Total Production -->
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="Total"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Plc.Text.Label}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock x:Name="MonthlyTotalText"
+                                       Text="5,420"
+                                       FontSize="36"
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"
+                                       Foreground="{DynamicResource Cyber.NeonBlue}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="units"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource Plc.Text.Label}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <!-- Completed -->
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="Completed"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Plc.Text.Label}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock x:Name="MonthlyCompletedText"
+                                       Text="5,149"
+                                       FontSize="36"
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"
+                                       Foreground="{DynamicResource Status.Success}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="units"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource Plc.Text.Label}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <!-- Defect -->
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="Defect"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Plc.Text.Label}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock x:Name="MonthlyDefectText"
+                                       Text="271"
+                                       FontSize="36"
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"
+                                       Foreground="{DynamicResource Status.Error}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="units"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource Plc.Text.Label}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </UniformGrid>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

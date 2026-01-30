@@ -7,43 +7,85 @@
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1400">
 
-    <Grid Background="{StaticResource BackgroundBrush}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <!-- Fade In Animation -->
+                    <DoubleAnimation Storyboard.TargetName="MainGrid"
+                                   Storyboard.TargetProperty="Opacity"
+                                   From="0.0"
+                                   To="1.0"
+                                   Duration="0:0:0.8"
+                                   AccelerationRatio="0.2"
+                                   DecelerationRatio="0.2"/>
+                    <!-- Slide In Animation -->
+                    <DoubleAnimation Storyboard.TargetName="MainGridTransform"
+                                   Storyboard.TargetProperty="Y"
+                                   From="30"
+                                   To="0"
+                                   Duration="0:0:0.8"
+                                   AccelerationRatio="0.2"
+                                   DecelerationRatio="0.2"/>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </UserControl.Triggers>
 
-        <!-- Page Title -->
-        <Border Grid.Row="0"
-                Background="{DynamicResource Plc.Bg.Main}"
-                BorderBrush="{DynamicResource Plc.Border}"
-                BorderThickness="1"
-                CornerRadius="6"
-                Padding="20"
-                Margin="0,0,0,16">
-            <StackPanel>
-                <TextBlock Text="DEVICE CONTROL"
-                           FontSize="28"
-                           FontWeight="Bold"
-                           Foreground="{DynamicResource Cyber.Text.Main}"
-                           FontFamily="Consolas"/>
-                <TextBlock Text="Control print head and system parameters / Device Control and Production Management"
-                           FontSize="14"
-                           Foreground="{DynamicResource Plc.Text.Label}"
-                           Margin="0,8,0,0"/>
-            </StackPanel>
-        </Border>
-
+    <Grid x:Name="MainGrid" Background="{StaticResource BackgroundBrush}" Opacity="0">
+        <Grid.RenderTransform>
+            <TranslateTransform x:Name="MainGridTransform" Y="30"/>
+        </Grid.RenderTransform>
+        
         <!-- Main Content Area -->
-        <Grid Grid.Row="1" Margin="0,0,0,16">
+        <Grid Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="220"/>
                 <ColumnDefinition Width="500"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Device Status Display (Top Left) -->
+            <Border Grid.Column="0" Grid.Row="0"
+                    Background="{DynamicResource Plc.Bg.Main}"
+                    BorderBrush="{DynamicResource Plc.Border}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="12,8"
+                    Margin="0,0,8,12"
+                    HorizontalAlignment="Stretch">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Device Status:"
+                               FontSize="14"
+                               FontWeight="Medium"
+                               Foreground="{DynamicResource Plc.Text.Label}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,10,0"/>
+                    <TextBlock x:Name="DeviceStatusText"
+                               Text="Uninitialized"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource Plc.Text.Value}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Process Status Indicator (Top Right) -->
+            <core:ProcessStatusIndicator x:Name="ProcessStatus"
+                                         Grid.Column="2"
+                                         Grid.Row="0"
+                                         HorizontalAlignment="Right"
+                                         Margin="0,0,0,12"
+                                         VerticalAlignment="Top"
+                                         ProcessState="Idle"/>
 
             <!-- Left Section: Function Buttons -->
             <Border Grid.Column="0"
+                    Grid.Row="1"
                     Background="{DynamicResource Sensor.Bg.Main}"
                     BorderBrush="{DynamicResource Sensor.Border}"
                     BorderThickness="1"
@@ -65,7 +107,7 @@
                                Margin="0,0,0,20"
                                HorizontalAlignment="Center"/>
 
-                    <!-- Device Initialization (L-1-L5) -->
+                    <!-- Device Initialization -->
                     <core:SecuredButton x:Name="BtnDeviceInit"
                                       Content="Device Init"
                                       RequiredLevel="Admin"
@@ -74,7 +116,7 @@
                                       Click="BtnDeviceInit_Click"
                                       HorizontalAlignment="Stretch"/>
 
-                    <!-- Start Process (L-1-L5) -->
+                    <!-- Start Process -->
                     <core:SecuredButton x:Name="BtnStartProcess"
                                       Content="Start Process"
                                       RequiredLevel="Operator"
@@ -82,19 +124,10 @@
                                       Theme="Success"
                                       Margin="0,0,0,12"
                                       Click="BtnStartProcess_Click"
-                                      HorizontalAlignment="Stretch"/>
+                                      HorizontalAlignment="Stretch"
+                                      IsEnabled="False"/>
 
-                    <!-- Input Batch Number (L-1-L5) -->
-                    <core:SecuredButton x:Name="BtnInputBatch"
-                                      Content="Input Batch"
-                                      RequiredLevel="Operator"
-                                      OperationName="Input Batch Number"
-                                      Theme="Info"
-                                      Margin="0,0,0,12"
-                                      Click="BtnInputBatch_Click"
-                                      HorizontalAlignment="Stretch"/>
-
-                    <!-- Pause Process (L-1-L5) -->
+                    <!-- Pause Process -->
                     <core:SecuredButton x:Name="BtnPauseProcess"
                                       Content="Pause Process"
                                       RequiredLevel="Operator"
@@ -102,9 +135,10 @@
                                       Theme="Warning"
                                       Margin="0,0,0,12"
                                       Click="BtnPauseProcess_Click"
-                                      HorizontalAlignment="Stretch"/>
+                                      HorizontalAlignment="Stretch"
+                                      IsEnabled="False"/>
 
-                    <!-- Cancel Process (L3-L5) -->
+                    <!-- Cancel Process -->
                     <core:SecuredButton x:Name="BtnCancelProcess"
                                       Content="Cancel Process"
                                       RequiredLevel="Supervisor"
@@ -112,21 +146,24 @@
                                       Theme="Error"
                                       Margin="0,0,0,12"
                                       Click="BtnCancelProcess_Click"
-                                      HorizontalAlignment="Stretch"/>
+                                      HorizontalAlignment="Stretch"
+                                      IsEnabled="False"/>
 
-                    <!-- Error Reset (L2-L5) -->
+                    <!-- Error Reset -->
                     <core:SecuredButton x:Name="BtnErrorReset"
                                       Content="Error Reset"
                                       RequiredLevel="Instructor"
                                       OperationName="Error Reset and Recovery"
                                       Margin="0,0,0,0"
                                       Click="BtnErrorReset_Click"
-                                      HorizontalAlignment="Stretch"/>
+                                      HorizontalAlignment="Stretch"
+                                      IsEnabled="False"/>
                 </StackPanel>
             </Border>
 
             <!-- Center Section: Data Display -->
             <Border Grid.Column="1"
+                    Grid.Row="1"
                     Background="{DynamicResource Plc.Bg.Main}"
                     BorderBrush="{DynamicResource Plc.Border}"
                     BorderThickness="1"
@@ -279,9 +316,8 @@
             </Border>
 
             <!-- Right Section: Monitoring Components -->
-            <Grid Grid.Column="2">
+            <Grid Grid.Column="2" Grid.Row="1">
                 <Grid.RowDefinitions>
-                    <!-- Adjust ratio: SensorViewer 60%, LogViewer 40% -->
                     <RowDefinition Height="6*"/>
                     <RowDefinition Height="4*"/>
                 </Grid.RowDefinitions>
@@ -293,7 +329,6 @@
                         BorderThickness="1"
                         CornerRadius="6"
                         Margin="0,0,0,8">
-                    <!-- Add ScrollViewer for better display -->
                     <ScrollViewer VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Disabled">
                         <core:SensorViewer x:Name="MainSensorViewer"

@@ -1,0 +1,152 @@
+<Window x:Class="Stackdose.UI.Core.Controls.BatchInputDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Input Batch Number"
+        Width="500"
+        Height="280"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize">
+
+    <Window.Resources>
+        <!-- Cyber Button Style -->
+        <Style x:Key="CyberButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#2196F3"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="5"
+                                BorderThickness="0">
+                            <Border.Effect>
+                                <DropShadowEffect Color="Black" 
+                                                  BlurRadius="10" 
+                                                  ShadowDepth="2" 
+                                                  Opacity="0.3"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1976D2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Cancel Button Style -->
+        <Style x:Key="CancelButtonStyle" TargetType="Button" BasedOn="{StaticResource CyberButtonStyle}">
+            <Setter Property="Background" Value="#757575"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#616161"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="#1E1E2E"
+            BorderBrush="#00BCD4"
+            BorderThickness="2"
+            CornerRadius="10">
+        <Border.Effect>
+            <DropShadowEffect Color="#00BCD4" 
+                              BlurRadius="20" 
+                              ShadowDepth="0" 
+                              Opacity="0.5"/>
+        </Border.Effect>
+
+        <Grid Margin="30">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title -->
+            <TextBlock Grid.Row="0"
+                       Text="START PRODUCTION PROCESS"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Foreground="#00BCD4"
+                       HorizontalAlignment="Center"
+                       FontFamily="Consolas"/>
+
+            <!-- Description -->
+            <TextBlock Grid.Row="2"
+                       Text="Please enter the batch number to start the production process."
+                       FontSize="13"
+                       Foreground="#B0BEC5"
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"/>
+
+            <!-- Input Field -->
+            <Border Grid.Row="4"
+                    Background="#2C2C3E"
+                    BorderBrush="#00BCD4"
+                    BorderThickness="2"
+                    CornerRadius="5"
+                    Padding="12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="Batch No:"
+                               FontSize="14"
+                               Foreground="#00BCD4"
+                               FontWeight="Medium"
+                               VerticalAlignment="Center"
+                               Margin="0,0,10,0"/>
+
+                    <TextBox x:Name="BatchNumberTextBox"
+                             Grid.Column="1"
+                             FontSize="16"
+                             FontFamily="Consolas"
+                             Foreground="White"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             VerticalAlignment="Center"
+                             Text="BATCH-"
+                             CaretBrush="#00BCD4"
+                             SelectionBrush="#00BCD4"
+                             KeyDown="BatchNumberTextBox_KeyDown"/>
+                </Grid>
+            </Border>
+
+            <!-- Buttons -->
+            <StackPanel Grid.Row="6"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                <Button Content="CONFIRM"
+                        Style="{StaticResource CyberButtonStyle}"
+                        Width="120"
+                        Click="ConfirmButton_Click"
+                        Margin="0,0,10,0"/>
+                <Button Content="CANCEL"
+                        Style="{StaticResource CancelButtonStyle}"
+                        Width="120"
+                        Click="CancelButton_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

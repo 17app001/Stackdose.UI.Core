@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.Abstractions.Logging;
+using Stackdose.UI.Core.Controls;
 
 namespace ModelB.Demo.Pages
 {
@@ -19,7 +20,8 @@ namespace ModelB.Demo.Pages
         {
             // TODO: Implement PLC settings save logic
             ComplianceContext.LogSystem("PLC settings saved", LogLevel.Success);
-            MessageBox.Show("PLC settings saved successfully!", "Success",
+            // ?? 改用 CyberMessageBox
+            CyberMessageBox.Show("PLC settings saved successfully!\nPLC 設定已成功儲存！", "Success",
                 MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
@@ -27,7 +29,8 @@ namespace ModelB.Demo.Pages
         {
             // TODO: Implement preferences save logic
             ComplianceContext.LogSystem("System preferences saved", LogLevel.Success);
-            MessageBox.Show("System preferences saved successfully!", "Success",
+            // ?? 改用 CyberMessageBox
+            CyberMessageBox.Show("System preferences saved successfully!\n系統偏好設定已成功儲存！", "Success",
                 MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }

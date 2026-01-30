@@ -473,7 +473,7 @@
                                                                Foreground="{DynamicResource Plc.Text.Label}"
                                                                FontSize="11"
                                                                VerticalAlignment="Center"/>
-                                                    <TextBlock Text=" -&gt; "
+                                                    <TextBlock Text=" > "
                                                                Foreground="{DynamicResource Cyber.Text.Main}"
                                                                FontSize="11"
                                                                Margin="4,0"

@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:Stackdose.UI.Templates.Controls"
              mc:Ignorable="d"
-             d:DesignHeight="800" d:DesignWidth="320">
+             d:DesignHeight="800" d:DesignWidth="240">
 
     <UserControl.Resources>
         <ResourceDictionary>
@@ -16,7 +16,7 @@
             <!-- Navigation Item Style -->
             <Style x:Key="NavigationItemStyle" TargetType="Border">
                 <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
-                <Setter Property="Margin" Value="10,5"/>
+                <Setter Property="Margin" Value="8,5"/>
                 <Setter Property="CornerRadius" Value="8"/>
                 <Setter Property="Cursor" Value="Hand"/>
                 <Style.Triggers>
@@ -40,10 +40,10 @@
             <StackPanel Margin="0,20,0,0">
                 <!-- Navigation Title -->
                 <TextBlock Text="Function Menu" 
-                           FontSize="18" 
+                           FontSize="16" 
                            FontWeight="Bold"
                            Foreground="{StaticResource PrimaryBrush}"
-                           Margin="20,0,0,20"/>
+                           Margin="15,0,0,20"/>
 
                 <!-- Navigation Items -->
                 <ItemsControl ItemsSource="{Binding NavigationItems, RelativeSource={RelativeSource AncestorType=UserControl}}">
@@ -51,9 +51,9 @@
                         <DataTemplate>
                             <Border Style="{StaticResource NavigationItemStyle}"
                                     MouseLeftButtonDown="NavigationItem_Click">
-                                <StackPanel Margin="15,12">
+                                <StackPanel Margin="12,10">
                                     <TextBlock Text="{Binding Title}" 
-                                               FontSize="16" 
+                                               FontSize="15" 
                                                FontWeight="SemiBold">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">

@@ -69,16 +69,19 @@ namespace Stackdose.UI.Core.Helpers
         /// <param name="oldValue">修改前的值</param>
         /// <param name="newValue">修改後的值</param>
         /// <param name="reason">修改原因 (預設為手動操作)</param>
+        /// <param name="parameter">被變更的參數名稱（選填）</param>
+        /// <param name="batchId">批次編號（選填）</param>
         /// <param name="showInUi">是否顯示在 UI 日誌檢視器</param>
         /// <remarks>
         /// 此方法使用批次寫入模式，日誌會先存入佇列，再定期批次寫入資料庫
+        /// 符合 FDA 21 CFR Part 11 規範
         /// </remarks>
-        public static void LogAuditTrail(string deviceName, string address, string oldValue, string newValue, string reason = "Manual Operation", bool showInUi = true)
+        public static void LogAuditTrail(string deviceName, string address, string oldValue, string newValue, string reason = "Manual Operation", string parameter = "", string batchId = "", bool showInUi = true)
         {
-            // 🔥 批次寫入模式：日誌會先存入佇列
-            SqliteLogger.LogAudit(CurrentUser, "WRITE", $"{deviceName}({address})", oldValue, newValue, reason);
+            // Batch write mode: logs are queued first - now includes parameter and batchId
+            SqliteLogger.LogAudit(CurrentUser, "WRITE", $"{deviceName}({address})", oldValue, newValue, reason, parameter, batchId);
             
-            // 顯示在 UI
+            // Display in UI
             AddToLiveLog($"[Audit] {deviceName} ({address}) : {oldValue} -> {newValue}", LogLevel.Warning, showInUi);
         }
 
@@ -104,8 +107,80 @@ namespace Stackdose.UI.Core.Helpers
         /// </remarks>
         public static void LogDataHistory(string labelName, string address, string value)
         {
-            // 🔥 批次寫入模式：日誌會先存入佇列
+            // Batch write mode: logs are queued first
             SqliteLogger.LogData(labelName, address, value);
+        }
+
+        /// <summary>
+        /// 記錄操作日誌 (Operation Log) - 用於操作記錄
+        /// </summary>
+        /// <param name="userId">使用者ID</param>
+        /// <param name="commandName">命令名稱</param>
+        /// <param name="category">分類</param>
+        /// <param name="beforeState">操作前狀態</param>
+        /// <param name="afterState">操作後狀態</param>
+        /// <param name="message">訊息</param>
+        /// <param name="batchId">批次ID（選填）</param>
+        /// <param name="showInUi">是否顯示在 UI 日誌檢視器</param>
+        public static void LogOperation(string userId, string commandName, string category, string beforeState, string afterState, string message, string batchId = "", bool showInUi = true)
+        {
+            // Batch write mode: logs are queued first
+            SqliteLogger.LogOperation(userId, commandName, category, beforeState, afterState, message, batchId);
+            
+            // Display in UI
+            if (showInUi)
+            {
+                AddToLiveLog($"[Operation] {commandName} - {message}", LogLevel.Info, true);
+            }
+        }
+
+        /// <summary>
+        /// 記錄事件日誌 (Event Log) - 用於系統事件記錄
+        /// </summary>
+        /// <param name="eventType">事件類型</param>
+        /// <param name="eventCode">事件代碼</param>
+        /// <param name="eventDescription">事件描述</param>
+        /// <param name="severity">嚴重性</param>
+        /// <param name="currentState">當前狀態</param>
+        /// <param name="userId">使用者ID</param>
+        /// <param name="message">訊息</param>
+        /// <param name="batchId">批次ID（選填）</param>
+        /// <param name="showInUi">是否顯示在 UI 日誌檢視器</param>
+        public static void LogEvent(string eventType, string eventCode, string eventDescription, string severity, string currentState, string userId, string message, string batchId = "", bool showInUi = true)
+        {
+            // Batch write mode: logs are queued first
+            SqliteLogger.LogEvent(eventType, eventCode, eventDescription, severity, currentState, userId, message, batchId);
+            
+            // Display in UI
+            if (showInUi)
+            {
+                var level = severity switch
+                {
+                    "Critical" => LogLevel.Error,
+                    "Major" => LogLevel.Error,
+                    "Minor" => LogLevel.Warning,
+                    "Info" => LogLevel.Info,
+                    _ => LogLevel.Info
+                };
+                AddToLiveLog($"[Event] {eventDescription} - {message}", level, true);
+            }
+        }
+
+        /// <summary>
+        /// 記錄週期性製程參數 (Periodic Data) - 每5秒記錄一次
+        /// </summary>
+        /// <param name="batchId">批次編號</param>
+        /// <param name="predryTemp">預乾燥溫度</param>
+        /// <param name="dryTemp">乾燥模組溫度</param>
+        /// <param name="cdaInletPressure">設備入口氣壓</param>
+        /// <remarks>
+        /// 此方法使用批次寫入模式，符合 FDA 21 CFR Part 11 規範
+        /// 製程中每5秒記錄一筆資料
+        /// </remarks>
+        public static void LogPeriodicData(string batchId, double predryTemp, double dryTemp, double cdaInletPressure)
+        {
+            // Batch write mode: logs are queued first
+            SqliteLogger.LogPeriodicData(batchId, predryTemp, dryTemp, cdaInletPressure);
         }
 
         #endregion
@@ -160,12 +235,18 @@ namespace Stackdose.UI.Core.Helpers
         /// </summary>
         /// <returns>
         /// (DataLogs: 已寫入 DataLogs 數量, 
-        ///  AuditLogs: 已寫入 AuditLogs 數量, 
+        ///  AuditLogs: 已寫入 AuditLogs 數量,
+        ///  OperationLogs: 已寫入 OperationLogs 數量,
+        ///  EventLogs: 已寫入 EventLogs 數量,
+        ///  PeriodicDataLogs: 已寫入 PeriodicDataLogs 數量,
         ///  BatchFlushes: 批次刷新次數,
         ///  PendingDataLogs: 待寫入 DataLogs 數量,
-        ///  PendingAuditLogs: 待寫入 AuditLogs 數量)
+        ///  PendingAuditLogs: 待寫入 AuditLogs 數量,
+        ///  PendingOperationLogs: 待寫入 OperationLogs 數量,
+        ///  PendingEventLogs: 待寫入 EventLogs 數量,
+        ///  PendingPeriodicData: 待寫入 PeriodicData 數量)
         /// </returns>
-        public static (long DataLogs, long AuditLogs, long BatchFlushes, int PendingDataLogs, int PendingAuditLogs) GetBatchStatistics()
+        public static (long DataLogs, long AuditLogs, long OperationLogs, long EventLogs, long PeriodicDataLogs, long BatchFlushes, int PendingDataLogs, int PendingAuditLogs, int PendingOperationLogs, int PendingEventLogs, int PendingPeriodicData) GetBatchStatistics()
         {
             return SqliteLogger.GetStatistics();
         }

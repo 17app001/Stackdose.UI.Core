@@ -1,0 +1,98 @@
+[
+  {
+    "Group": "溫度監控",
+    "Device": "D90",
+    "Bit": "",
+    "Value": ">75",
+    "Mode": "COMPARE",
+    "OperationDescription": "加熱器溫度過高"
+  },
+  {
+    "Group": "溫度監控",
+    "Device": "D91",
+    "Bit": "",
+    "Value": "<20",
+    "Mode": "COMPARE",
+    "OperationDescription": "冷卻系統溫度過低"
+  },
+  {
+    "Group": "安全監測器",
+    "Device": "M100",
+    "Bit": "0",
+    "Value": "1",
+    "Mode": "AND",
+    "OperationDescription": "急停按鈕觸發"
+  },
+  {
+    "Group": "安全監測器",
+    "Device": "M100",
+    "Bit": "1",
+    "Value": "1",
+    "Mode": "AND",
+    "OperationDescription": "門禁開啟警報"
+  },
+  {
+    "Group": "安全監測器",
+    "Device": "M101",
+    "Bit": "2,3",
+    "Value": "1,1",
+    "Mode": "OR",
+    "OperationDescription": "光柵觸發或壓力感測器異常"
+  },
+  {
+    "Group": "壓力監控",
+    "Device": "D100",
+    "Bit": "",
+    "Value": ">150",
+    "Mode": "COMPARE",
+    "OperationDescription": "氣壓超過上限"
+  },
+  {
+    "Group": "壓力監控",
+    "Device": "D101",
+    "Bit": "",
+    "Value": "<30",
+    "Mode": "COMPARE",
+    "OperationDescription": "真空度不足"
+  },
+  {
+    "Group": "流量監控",
+    "Device": "D110",
+    "Bit": "",
+    "Value": "==0",
+    "Mode": "COMPARE",
+    "OperationDescription": "流量異常中斷"
+  },
+  {
+    "Group": "設備狀態",
+    "Device": "M200",
+    "Bit": "0,1,2",
+    "Value": "1,1,1",
+    "Mode": "AND",
+    "OperationDescription": "三軸同步失敗"
+  },
+  {
+    "Group": "設備狀態",
+    "Device": "D200",
+    "Bit": "",
+    "Value": "!=100",
+    "Mode": "COMPARE",
+    "OperationDescription": "馬達轉速異常"
+  },
+  {
+    "Group": "電壓監控",
+    "Device": "D120",
+    "Bit": "",
+    "Value": "<200",
+    "Mode": "COMPARE",
+    "OperationDescription": "供電電壓過低"
+  },
+  {
+    "Group": "電壓監控",
+    "Device": "D121",
+    "Bit": "",
+    "Value": ">250",
+    "Mode": "COMPARE",
+    "OperationDescription": "供電電壓過高"
+  }
+]

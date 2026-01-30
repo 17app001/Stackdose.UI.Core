@@ -625,27 +625,29 @@ namespace Stackdose.UI.Core.Controls
                     });
                 }
 
-                // 3. 🔥 自動合規紀錄 - Audit Trail (關鍵狀態變動追蹤)
-                // 只有在 EnableAuditTrail 為 True，且數值真正有意義地改變時才紀錄
+                // 3. Auto compliance logging - Audit Trail (Critical state change tracking)
+                // Only log when EnableAuditTrail is True and value meaningfully changed
                 if (EnableAuditTrail && newValueStr != "-" && oldValueStr != "-" && !string.IsNullOrEmpty(Label) && oldValueStr != newValueStr)
                 {
                     string logLabel = Label;
                     string logAddr = Address;
                     string oldVal = oldValueStr;
                     string logVal = newValueStr;
-                    bool showInUi = ShowLog; // 🔥 這裡讀取新的屬性
+                    bool showInUi = ShowLog;
                     Task.Run(() =>
                     {
-                       
-                        // 由於這是自動讀取，我們將 Reason 標記為系統自動追蹤
+                        // Since this is auto-read, mark Reason as system auto-tracking
+                        // New signature: (deviceName, address, oldValue, newValue, reason, parameter, batchId, showInUi)
                         ComplianceContext.LogAuditTrail(
-                        logLabel,
-                        logAddr,
-                        oldVal,
-                        logVal,
-                        "System Auto-Read Change",
-                        showInUi
-                    );
+                            logLabel,
+                            logAddr,
+                            oldVal,
+                            logVal,
+                            "System Auto-Read Change",
+                            parameter: "",  // parameter is empty for auto-read
+                            batchId: "",    // batchId is empty for auto-read
+                            showInUi
+                        );
                     });
                 }
             }

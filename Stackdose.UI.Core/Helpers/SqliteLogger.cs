@@ -24,23 +24,29 @@ namespace Stackdose.UI.Core.Helpers
         private static string _dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "StackDoseData.db");
         private static string _connectionString = $"Data Source={_dbPath}";
 
-        // 🔥 批次寫入佇列
+        // Batch write queues
         private static readonly ConcurrentQueue<DataLogEntry> _dataLogQueue = new();
         private static readonly ConcurrentQueue<AuditLogEntry> _auditLogQueue = new();
+        private static readonly ConcurrentQueue<OperationLogEntry> _operationLogQueue = new();
+        private static readonly ConcurrentQueue<EventLogEntry> _eventLogQueue = new();
+        private static readonly ConcurrentQueue<PeriodicDataLogEntry> _periodicDataQueue = new();
 
-        // 🔥 定時刷新 Timer
+        // Flush timer
         private static System.Threading.Timer? _flushTimer;
 
-        // 🔥 執行緒鎖
+        // Thread lock
         private static readonly object _flushLock = new();
 
-        // 🔥 設定參數
-        private static int _batchSize = 100;          // 批次大小（超過此數量自動刷新）
-        private static int _flushIntervalMs = 5000;   // 刷新間隔（毫秒）
+        // Configuration parameters
+        private static int _batchSize = 100;          // Batch size
+        private static int _flushIntervalMs = 5000;   // Flush interval (ms)
 
-        // 🔥 統計資訊
+        // Statistics
         private static long _totalDataLogs = 0;
         private static long _totalAuditLogs = 0;
+        private static long _totalOperationLogs = 0;
+        private static long _totalEventLogs = 0;
+        private static long _totalPeriodicDataLogs = 0;
         private static long _batchFlushCount = 0;
 
         #endregion
@@ -84,12 +90,57 @@ namespace Stackdose.UI.Core.Helpers
         private class AuditLogEntry
         {
             public DateTime Timestamp { get; set; }
+            public string BatchId { get; set; } = "";
             public string User { get; set; } = "";
             public string Action { get; set; } = "";
             public string TargetDevice { get; set; } = "";
             public string OldValue { get; set; } = "";
             public string NewValue { get; set; } = "";
             public string Reason { get; set; } = "";
+            public string Parameter { get; set; } = "";
+        }
+
+        /// <summary>
+        /// OperationLog 批次項目
+        /// </summary>
+        private class OperationLogEntry
+        {
+            public DateTime Timestamp { get; set; }
+            public string BatchId { get; set; } = "";
+            public string UserId { get; set; } = "";
+            public string CommandName { get; set; } = "";
+            public string Category { get; set; } = "";
+            public string BeforeState { get; set; } = "";
+            public string AfterState { get; set; } = "";
+            public string Message { get; set; } = "";
+        }
+
+        /// <summary>
+        /// EventLog 批次項目
+        /// </summary>
+        private class EventLogEntry
+        {
+            public DateTime Timestamp { get; set; }
+            public string BatchId { get; set; } = "";
+            public string EventType { get; set; } = "";
+            public string EventCode { get; set; } = "";
+            public string EventDescription { get; set; } = "";
+            public string Severity { get; set; } = "";
+            public string CurrentState { get; set; } = "";
+            public string UserId { get; set; } = "";
+            public string Message { get; set; } = "";
+        }
+
+        /// <summary>
+        /// PeriodicDataLog 批次項目
+        /// </summary>
+        private class PeriodicDataLogEntry
+        {
+            public DateTime Timestamp { get; set; }
+            public string BatchId { get; set; } = "";
+            public double PredryTemp { get; set; }
+            public double DryTemp { get; set; }
+            public double CdaInletPressure { get; set; }
         }
 
         #endregion
@@ -245,23 +296,36 @@ namespace Stackdose.UI.Core.Helpers
         /// <summary>
         /// 記錄審計軌跡（批次模式）
         /// </summary>
-        public static void LogAudit(string user, string action, string device, string oldVal, string newVal, string reason)
+        /// <remarks>
+        /// <para>符合 FDA 21 CFR Part 11</para>
+        /// </remarks>
+        /// <param name="user">使用者帳號</param>
+        /// <param name="action">操作動作</param>
+        /// <param name="device">目標裝置/參數</param>
+        /// <param name="oldVal">修改前的值</param>
+        /// <param name="newVal">修改後的值</param>
+        /// <param name="reason">修改原因</param>
+        /// <param name="parameter">被變更的參數名稱（選填）</param>
+        /// <param name="batchId">批次編號（選填）</param>
+        public static void LogAudit(string user, string action, string device, string oldVal, string newVal, string reason, string parameter = "", string batchId = "")
         {
             try
             {
-                // 🔥 加入批次佇列
+                // Add to batch queue with millisecond precision
                 _auditLogQueue.Enqueue(new AuditLogEntry
                 {
                     Timestamp = DateTime.Now,
+                    BatchId = batchId,
                     User = user,
                     Action = action,
                     TargetDevice = device,
                     OldValue = oldVal,
                     NewValue = newVal,
-                    Reason = reason
+                    Reason = reason,
+                    Parameter = parameter
                 });
 
-                // 🔥 超過批次大小時自動刷新
+                // Auto flush when batch size reached
                 if (_auditLogQueue.Count >= _batchSize)
                 {
                     FlushAuditLogs();
@@ -270,6 +334,98 @@ namespace Stackdose.UI.Core.Helpers
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[SqliteLogger] LogAudit Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 記錄操作日誌（批次模式）
+        /// </summary>
+        public static void LogOperation(string userId, string commandName, string category, string beforeState, string afterState, string message, string batchId = "")
+        {
+            try
+            {
+                _operationLogQueue.Enqueue(new OperationLogEntry
+                {
+                    Timestamp = DateTime.Now,
+                    BatchId = batchId,
+                    UserId = userId,
+                    CommandName = commandName,
+                    Category = category,
+                    BeforeState = beforeState,
+                    AfterState = afterState,
+                    Message = message
+                });
+
+                if (_operationLogQueue.Count >= _batchSize)
+                {
+                    FlushOperationLogs();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SqliteLogger] LogOperation Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 記錄事件日誌（批次模式）
+        /// </summary>
+        public static void LogEvent(string eventType, string eventCode, string eventDescription, string severity, string currentState, string userId, string message, string batchId = "")
+        {
+            try
+            {
+                _eventLogQueue.Enqueue(new EventLogEntry
+                {
+                    Timestamp = DateTime.Now,
+                    BatchId = batchId,
+                    EventType = eventType,
+                    EventCode = eventCode,
+                    EventDescription = eventDescription,
+                    Severity = severity,
+                    CurrentState = currentState,
+                    UserId = userId,
+                    Message = message
+                });
+
+                if (_eventLogQueue.Count >= _batchSize)
+                {
+                    FlushEventLogs();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SqliteLogger] LogEvent Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 記錄週期性製程參數（批次模式） - 符合 FDA 21 CFR Part 11
+        /// </summary>
+        /// <param name="batchId">批次編號</param>
+        /// <param name="predryTemp">預乾燥溫度</param>
+        /// <param name="dryTemp">乾燥模組溫度</param>
+        /// <param name="cdaInletPressure">設備入口氣壓</param>
+        public static void LogPeriodicData(string batchId, double predryTemp, double dryTemp, double cdaInletPressure)
+        {
+            try
+            {
+                _periodicDataQueue.Enqueue(new PeriodicDataLogEntry
+                {
+                    Timestamp = DateTime.Now,
+                    BatchId = batchId,
+                    PredryTemp = predryTemp,
+                    DryTemp = dryTemp,
+                    CdaInletPressure = cdaInletPressure
+                });
+
+                if (_periodicDataQueue.Count >= _batchSize)
+                {
+                    FlushPeriodicDataLogs();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SqliteLogger] LogPeriodicData Error: {ex.Message}");
             }
         }
 
@@ -284,6 +440,9 @@ namespace Stackdose.UI.Core.Helpers
         {
             FlushDataLogs();
             FlushAuditLogs();
+            FlushOperationLogs();
+            FlushEventLogs();
+            FlushPeriodicDataLogs();
         }
 
         /// <summary>
@@ -383,8 +542,8 @@ namespace Stackdose.UI.Core.Helpers
                             foreach (var entry in batch)
                             {
                                 conn.Execute(
-                                    @"INSERT INTO AuditTrails (Timestamp, User, Action, TargetDevice, OldValue, NewValue, Reason) 
-                                      VALUES (@Timestamp, @User, @Action, @TargetDevice, @OldValue, @NewValue, @Reason)",
+                                    @"INSERT INTO AuditTrails (Timestamp, BatchId, User, Action, TargetDevice, OldValue, NewValue, Reason, Parameter) 
+                                      VALUES (@Timestamp, @BatchId, @User, @Action, @TargetDevice, @OldValue, @NewValue, @Reason, @Parameter)",
                                     entry,
                                     transaction
                                 );
@@ -411,6 +570,168 @@ namespace Stackdose.UI.Core.Helpers
             }
         }
 
+        /// <summary>
+        /// 刷新 OperationLogs 佇列
+        /// </summary>
+        private static void FlushOperationLogs()
+        {
+            if (_operationLogQueue.IsEmpty) return;
+
+            lock (_flushLock)
+            {
+                if (_operationLogQueue.IsEmpty) return;
+
+                try
+                {
+                    var batch = new List<OperationLogEntry>();
+
+                    while (_operationLogQueue.TryDequeue(out var entry))
+                    {
+                        batch.Add(entry);
+                    }
+
+                    if (batch.Count == 0) return;
+
+                    using (var conn = new SqliteConnection(_connectionString))
+                    {
+                        conn.Open();
+                        using (var transaction = conn.BeginTransaction())
+                        {
+                            foreach (var entry in batch)
+                            {
+                                conn.Execute(
+                                    @"INSERT INTO OperationLogs (Timestamp, BatchId, UserId, CommandName, Category, BeforeState, AfterState, Message) 
+                                      VALUES (@Timestamp, @BatchId, @UserId, @CommandName, @Category, @BeforeState, @AfterState, @Message)",
+                                    entry,
+                                    transaction
+                                );
+                            }
+                            transaction.Commit();
+                        }
+                    }
+
+                    _totalOperationLogs += batch.Count;
+                    _batchFlushCount++;
+
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] OperationLogs 批次寫入: {batch.Count} 筆 (累計: {_totalOperationLogs})");
+                    #endif
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FlushOperationLogs Error: {ex.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 刷新 EventLogs 佇列
+        /// </summary>
+        private static void FlushEventLogs()
+        {
+            if (_eventLogQueue.IsEmpty) return;
+
+            lock (_flushLock)
+            {
+                if (_eventLogQueue.IsEmpty) return;
+
+                try
+                {
+                    var batch = new List<EventLogEntry>();
+
+                    while (_eventLogQueue.TryDequeue(out var entry))
+                    {
+                        batch.Add(entry);
+                    }
+
+                    if (batch.Count == 0) return;
+
+                    using (var conn = new SqliteConnection(_connectionString))
+                    {
+                        conn.Open();
+                        using (var transaction = conn.BeginTransaction())
+                        {
+                            foreach (var entry in batch)
+                            {
+                                conn.Execute(
+                                    @"INSERT INTO EventLogs (Timestamp, BatchId, EventType, EventCode, EventDescription, Severity, CurrentState, UserId, Message) 
+                                      VALUES (@Timestamp, @BatchId, @EventType, @EventCode, @EventDescription, @Severity, @CurrentState, @UserId, @Message)",
+                                    entry,
+                                    transaction
+                                );
+                            }
+                            transaction.Commit();
+                        }
+                    }
+
+                    _totalEventLogs += batch.Count;
+                    _batchFlushCount++;
+
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] EventLogs 批次寫入: {batch.Count} 筆 (累計: {_totalEventLogs})");
+                    #endif
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FlushEventLogs Error: {ex.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 刷新 PeriodicDataLogs 佇列
+        /// </summary>
+        private static void FlushPeriodicDataLogs()
+        {
+            if (_periodicDataQueue.IsEmpty) return;
+
+            lock (_flushLock)
+            {
+                if (_periodicDataQueue.IsEmpty) return;
+
+                try
+                {
+                    var batch = new List<PeriodicDataLogEntry>();
+
+                    while (_periodicDataQueue.TryDequeue(out var entry))
+                    {
+                        batch.Add(entry);
+                    }
+
+                    if (batch.Count == 0) return;
+
+                    using (var conn = new SqliteConnection(_connectionString))
+                    {
+                        conn.Open();
+                        using (var transaction = conn.BeginTransaction())
+                        {
+                            foreach (var entry in batch)
+                            {
+                                conn.Execute(
+                                    @"INSERT INTO PeriodicDataLogs (Timestamp, BatchId, PredryTemp, DryTemp, CdaInletPressure) 
+                                      VALUES (@Timestamp, @BatchId, @PredryTemp, @DryTemp, @CdaInletPressure)",
+                                    entry,
+                                    transaction
+                                );
+                            }
+                            transaction.Commit();
+                        }
+                    }
+
+                    _totalPeriodicDataLogs += batch.Count;
+                    _batchFlushCount++;
+
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] PeriodicDataLogs 批次寫入: {batch.Count} 筆 (累計: {_totalPeriodicDataLogs})");
+                    #endif
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FlushPeriodicDataLogs Error: {ex.Message}");
+                }
+            }
+        }
+
         #endregion
 
         #region Statistics
@@ -418,14 +739,20 @@ namespace Stackdose.UI.Core.Helpers
         /// <summary>
         /// 取得統計資訊
         /// </summary>
-        public static (long DataLogs, long AuditLogs, long BatchFlushes, int PendingDataLogs, int PendingAuditLogs) GetStatistics()
+        public static (long DataLogs, long AuditLogs, long OperationLogs, long EventLogs, long PeriodicDataLogs, long BatchFlushes, int PendingDataLogs, int PendingAuditLogs, int PendingOperationLogs, int PendingEventLogs, int PendingPeriodicData) GetStatistics()
         {
             return (
                 DataLogs: _totalDataLogs,
                 AuditLogs: _totalAuditLogs,
+                OperationLogs: _totalOperationLogs,
+                EventLogs: _totalEventLogs,
+                PeriodicDataLogs: _totalPeriodicDataLogs,
                 BatchFlushes: _batchFlushCount,
                 PendingDataLogs: _dataLogQueue.Count,
-                PendingAuditLogs: _auditLogQueue.Count
+                PendingAuditLogs: _auditLogQueue.Count,
+                PendingOperationLogs: _operationLogQueue.Count,
+                PendingEventLogs: _eventLogQueue.Count,
+                PendingPeriodicData: _periodicDataQueue.Count
             );
         }
 
@@ -436,6 +763,9 @@ namespace Stackdose.UI.Core.Helpers
         {
             _totalDataLogs = 0;
             _totalAuditLogs = 0;
+            _totalOperationLogs = 0;
+            _totalEventLogs = 0;
+            _totalPeriodicDataLogs = 0;
             _batchFlushCount = 0;
         }
 
@@ -456,7 +786,7 @@ namespace Stackdose.UI.Core.Helpers
 
             #if DEBUG
             var stats = GetStatistics();
-            System.Diagnostics.Debug.WriteLine($"[SqliteLogger] Shutdown - 總計寫入: DataLogs={stats.DataLogs}, AuditLogs={stats.AuditLogs}, BatchFlushes={stats.BatchFlushes}");
+            System.Diagnostics.Debug.WriteLine($"[SqliteLogger] Shutdown - 總計寫入: DataLogs={stats.DataLogs}, AuditLogs={stats.AuditLogs}, OperationLogs={stats.OperationLogs}, EventLogs={stats.EventLogs}, PeriodicDataLogs={stats.PeriodicDataLogs}, BatchFlushes={stats.BatchFlushes}");
             #endif
         }
 

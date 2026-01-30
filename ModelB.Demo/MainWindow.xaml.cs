@@ -25,6 +25,10 @@ namespace ModelB.Demo
         {
             InitializeComponent();
 
+            // ?? 設定預設全螢幕
+            this.WindowState = WindowState.Maximized;
+            this.WindowStyle = WindowStyle.None;
+
             // ?? 訂閱 SecurityContext 事件
             SecurityContext.LoginSuccess += OnLoginSuccess;
             SecurityContext.LogoutOccurred += OnLogoutOccurred;

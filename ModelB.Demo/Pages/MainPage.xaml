@@ -27,7 +27,7 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- PLC Connection Status -->
+                <!-- PLC Connection Status with Time Display -->
                 <Border Grid.Row="0"
                         Background="{DynamicResource Sensor.Bg.Main}"
                         BorderBrush="{DynamicResource Sensor.Border}"
@@ -35,21 +35,63 @@
                         CornerRadius="6"
                         Padding="20"
                         Margin="0,0,0,12">
-                    <StackPanel>
-                        <TextBlock Text="PLC CONNECTION STATUS"
-                                   FontSize="18"
-                                   FontWeight="Bold"
-                                   Foreground="{DynamicResource Sensor.Text.Title}"
-                                   FontFamily="Consolas"
-                                   Margin="0,0,0,12"/>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                        <core:PlcStatus x:Name="MainPlcStatus"
+                        <!-- Title and Time Row -->
+                        <Grid Grid.Row="0" Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       Text="PLC CONNECTION STATUS"
+                                       FontSize="18"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource Sensor.Text.Title}"
+                                       FontFamily="Consolas"
+                                       VerticalAlignment="Center"/>
+
+                            <!-- Large Time Display -->
+                            <Border Grid.Column="1"
+                                    Background="{DynamicResource Plc.Bg.Main}"
+                                    BorderBrush="{DynamicResource Cyber.NeonBlue}"
+                                    BorderThickness="2"
+                                    CornerRadius="6"
+                                    Padding="16,8">
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock Text="CURRENT TIME"
+                                               FontSize="12"
+                                               FontWeight="Bold"
+                                               Foreground="{DynamicResource Plc.Text.Label}"
+                                               FontFamily="Consolas"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,4"/>
+                                    <TextBlock x:Name="CurrentTimeText"
+                                               Text="2025-01-30 16:05:36"
+                                               FontSize="24"
+                                               FontWeight="Bold"
+                                               FontFamily="Consolas"
+                                               Foreground="{DynamicResource Cyber.NeonBlue}"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- PLC Status Control -->
+                        <core:PlcStatus Grid.Row="1"
+                                        x:Name="MainPlcStatus"
                                         IpAddress="192.168.22.39"
                                         Port="3000"
                                         AutoConnect="True"
                                         IsGlobal="True"
                                         ScanInterval="150"/>
-                    </StackPanel>
+                    </Grid>
                 </Border>
 
                 <!-- Global Status Information -->
@@ -66,26 +108,6 @@
                                    Foreground="{DynamicResource Sensor.Text.Title}"
                                    FontFamily="Consolas"
                                    Margin="0,0,0,20"/>
-
-                        <!-- Current Time -->
-                        <Grid Margin="0,0,0,16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="180"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0"
-                                       Text="Current Time:"
-                                       FontSize="16"
-                                       FontWeight="SemiBold"
-                                       Foreground="{DynamicResource Plc.Text.Label}"/>
-                            <TextBlock Grid.Column="1"
-                                       x:Name="CurrentTimeText"
-                                       Text="2025-01-30 16:05:36"
-                                       FontSize="16"
-                                       FontWeight="Bold"
-                                       FontFamily="Consolas"
-                                       Foreground="{DynamicResource Cyber.NeonBlue}"/>
-                        </Grid>
 
                         <!-- Process Batch Number -->
                         <Grid Margin="0,0,0,16">

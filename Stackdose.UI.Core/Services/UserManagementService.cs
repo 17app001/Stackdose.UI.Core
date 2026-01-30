@@ -81,7 +81,7 @@ namespace Stackdose.UI.Core.Services
         }
 
         /// <summary>
-        /// 確保預設 Admin 帳號存在
+        /// 確保預設 Admin 和 SuperAdmin 帳號存在
         /// </summary>
         private void EnsureDefaultAdminExists()
         {
@@ -90,48 +90,120 @@ namespace Stackdose.UI.Core.Services
                 using var conn = new SqliteConnection(_connectionString);
                 conn.Open();
 
-                // 檢查是否已有 Admin 帳號
-                var adminCount = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM Users WHERE AccessLevel = @Level", 
-                    new { Level = (int)AccessLevel.Admin });
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[UserManagementService] Checking default accounts...");
+                #endif
 
-                if (adminCount > 0)
-                {
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine("[UserManagementService] Admin account already exists");
-                    #endif
-                    return;
-                }
-
-                // 建立預設 Admin 帳號
-                var (hash, salt) = HashPassword("admin123");
-
-                conn.Execute(@"
-                    INSERT INTO Users (UserId, DisplayName, PasswordHash, Salt, AccessLevel, IsActive, 
-                                      CreatedAt, CreatedBy, Email, Department, Remarks)
-                    VALUES (@UserId, @DisplayName, @PasswordHash, @Salt, @AccessLevel, @IsActive, 
-                           @CreatedAt, @CreatedBy, @Email, @Department, @Remarks)",
-                    new
-                    {
-                        UserId = "admin01",
-                        DisplayName = "System Administrator",
-                        PasswordHash = hash,
-                        Salt = salt,
-                        AccessLevel = (int)AccessLevel.Admin,
-                        IsActive = 1,
-                        CreatedAt = DateTime.Now,
-                        CreatedBy = "System",
-                        Email = "admin@stackdose.com",
-                        Department = "IT",
-                        Remarks = "Default system administrator account"
-                    });
+                // 檢查是否已有 SuperAdmin 帳號
+                var superAdminCount = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM Users WHERE AccessLevel = @Level", 
+                    new { Level = (int)AccessLevel.SuperAdmin });
 
                 #if DEBUG
-                System.Diagnostics.Debug.WriteLine("[UserManagementService] Default admin account created: admin01 / admin123");
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] SuperAdmin count: {superAdminCount}");
+                #endif
+
+                // 檢查 superadmin 帳號是否存在
+                var superAdminExists = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM Users WHERE UserId = @UserId",
+                    new { UserId = "superadmin" });
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] superadmin account exists: {superAdminExists > 0}");
+                #endif
+
+                if (superAdminExists == 0)
+                {
+                    // 創建預設 SuperAdmin 帳號
+                    var (superHash, superSalt) = HashPassword("superadminsuperadmin");
+
+                    conn.Execute(@"
+                        INSERT INTO Users (UserId, DisplayName, PasswordHash, Salt, AccessLevel, IsActive, 
+                                          CreatedAt, CreatedBy, Email, Department, Remarks)
+                        VALUES (@UserId, @DisplayName, @PasswordHash, @Salt, @AccessLevel, @IsActive, 
+                               @CreatedAt, @CreatedBy, @Email, @Department, @Remarks)",
+                        new
+                        {
+                            UserId = "superadmin",
+                            DisplayName = "Super Administrator",
+                            PasswordHash = superHash,
+                            Salt = superSalt,
+                            AccessLevel = (int)AccessLevel.SuperAdmin,
+                            IsActive = 1,
+                            CreatedAt = DateTime.Now,
+                            CreatedBy = "System",
+                            Email = "superadmin@stackdose.com",
+                            Department = "IT",
+                            Remarks = "Default super administrator account with full access"
+                        });
+
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine("[UserManagementService] ? Default SuperAdmin account created: superadmin / superadminsuperadmin");
+                    #endif
+                }
+                else
+                {
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine("[UserManagementService] SuperAdmin account already exists, skipping creation");
+                    #endif
+                }
+
+                // 檢查是否已有 Admin 帳號
+                var adminExists = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM Users WHERE UserId = @UserId",
+                    new { UserId = "admin01" });
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] admin01 account exists: {adminExists > 0}");
+                #endif
+
+                if (adminExists == 0)
+                {
+                    // 創建預設 Admin 帳號
+                    var (hash, salt) = HashPassword("admin123");
+
+                    conn.Execute(@"
+                        INSERT INTO Users (UserId, DisplayName, PasswordHash, Salt, AccessLevel, IsActive, 
+                                          CreatedAt, CreatedBy, Email, Department, Remarks)
+                        VALUES (@UserId, @DisplayName, @PasswordHash, @Salt, @AccessLevel, @IsActive, 
+                               @CreatedAt, @CreatedBy, @Email, @Department, @Remarks)",
+                        new
+                        {
+                            UserId = "admin01",
+                            DisplayName = "System Administrator",
+                            PasswordHash = hash,
+                            Salt = salt,
+                            AccessLevel = (int)AccessLevel.Admin,
+                            IsActive = 1,
+                            CreatedAt = DateTime.Now,
+                            CreatedBy = "System",
+                            Email = "admin@stackdose.com",
+                            Department = "IT",
+                            Remarks = "Default system administrator account"
+                        });
+
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine("[UserManagementService] ? Default admin account created: admin01 / admin123");
+                    #endif
+                }
+                else
+                {
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine("[UserManagementService] Admin account already exists, skipping creation");
+                    #endif
+                }
+
+                // ?? 輸出所有使用者列表（調試用）
+                #if DEBUG
+                var allUsers = conn.Query<dynamic>("SELECT UserId, DisplayName, AccessLevel, IsActive FROM Users ORDER BY AccessLevel DESC");
+                System.Diagnostics.Debug.WriteLine("[UserManagementService] Current users in database:");
+                foreach (var user in allUsers)
+                {
+                    System.Diagnostics.Debug.WriteLine($"  - {user.UserId} ({user.DisplayName}) - Level {user.AccessLevel}, Active: {user.IsActive}");
+                }
                 #endif
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[UserManagementService] EnsureDefaultAdminExists Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] Stack trace: {ex.StackTrace}");
             }
         }
 
@@ -709,13 +781,24 @@ namespace Stackdose.UI.Core.Services
             if (operatorUser == null)
                 return new List<UserAccount>();
 
-            // Admin: 查看所有使用者
-            if (operatorUser.AccessLevel == AccessLevel.Admin)
+            // SuperAdmin: 查看所有使用者（包含其他 SuperAdmin）
+            if (operatorUser.AccessLevel == AccessLevel.SuperAdmin)
             {
                 return (await conn.QueryAsync<UserAccount>("SELECT * FROM Users ORDER BY AccessLevel DESC, UserId")).ToList();
             }
 
-            // ?? Supervisor: 查看權限 <= Supervisor 的所有使用者（包含自己和所有低權限）
+            // Admin: 查看所有使用者（除了 SuperAdmin）
+            if (operatorUser.AccessLevel == AccessLevel.Admin)
+            {
+                return (await conn.QueryAsync<UserAccount>(
+                    @"SELECT * FROM Users 
+                      WHERE AccessLevel < @SuperAdminLevel
+                      ORDER BY AccessLevel DESC, UserId",
+                    new { SuperAdminLevel = (int)AccessLevel.SuperAdmin }
+                )).ToList();
+            }
+
+            // Supervisor: 查看權限 <= Supervisor 的所有使用者（包含自己與所有低權限）
             if (operatorUser.AccessLevel == AccessLevel.Supervisor)
             {
                 return (await conn.QueryAsync<UserAccount>(
@@ -726,7 +809,7 @@ namespace Stackdose.UI.Core.Services
                 )).ToList();
             }
 
-            // Operator 和以下：只能看到自己
+            // Operator 與以下：只能看自己
             return new List<UserAccount> { operatorUser };
         }
 
@@ -776,11 +859,15 @@ namespace Stackdose.UI.Core.Services
             if (operatorUserId == targetUserId)
                 return false;
 
-            // Admin 可刪除所有 Supervisor
+            // SuperAdmin 可刪除所有人（除了自己）
+            if (operatorLevel == AccessLevel.SuperAdmin)
+                return true;
+
+            // Admin 可刪除所有 < SuperAdmin（除了自己）
             if (operatorLevel == AccessLevel.Admin)
                 return true;
 
-            // Supervisor 可刪除其他 Supervisor (非自己)
+            // Supervisor 可刪除低於 Supervisor（不包含自己）
             // 以及自己創建的 Level 1-2 使用者
             if (operatorLevel == AccessLevel.Supervisor)
                 return true;
@@ -790,11 +877,15 @@ namespace Stackdose.UI.Core.Services
 
         public bool CanManageUser(AccessLevel operatorLevel, AccessLevel targetLevel)
         {
-            // Admin 可管理所有等級
-            if (operatorLevel == AccessLevel.Admin)
+            // SuperAdmin 可管理所有等級
+            if (operatorLevel == AccessLevel.SuperAdmin)
                 return true;
 
-            // Supervisor 可管理 Supervisor 和 Level 1-2
+            // Admin 可管理所有等級（除了 SuperAdmin）
+            if (operatorLevel == AccessLevel.Admin && targetLevel < AccessLevel.SuperAdmin)
+                return true;
+
+            // Supervisor 可管理 Supervisor 與 Level 1-2
             if (operatorLevel == AccessLevel.Supervisor && targetLevel <= AccessLevel.Supervisor)
                 return true;
 
@@ -887,8 +978,13 @@ namespace Stackdose.UI.Core.Services
             var groupsLower = userGroups.Select(g => g.ToLower()).ToList();
 
             // 判斷權限等級（從高到低）
+            // L5: App_SuperAdmins
+            if (groupsLower.Contains("app_superadmins"))
+            {
+                return AccessLevel.SuperAdmin;
+            }
             // L4: App_Admins
-            if (groupsLower.Contains("app_admins"))
+            else if (groupsLower.Contains("app_admins"))
             {
                 return AccessLevel.Admin;
             }
@@ -900,15 +996,20 @@ namespace Stackdose.UI.Core.Services
             // L2: App_Instructors
             else if (groupsLower.Contains("app_instructors"))
             {
-                return AccessLevel.Operator; // ?? 對應到 Operator（您可以根據需求調整）
+                return AccessLevel.Instructor;
             }
             // L1: App_Operators
             else if (groupsLower.Contains("app_operators"))
             {
                 return AccessLevel.Operator;
             }
-            // Domain/Local Admins
-            else if (groupsLower.Any(g => g.Contains("domain admins") || g.Contains("enterprise admins") || g.Contains("administrators")))
+            // Domain/Local Admins -> 對應到 SuperAdmin
+            else if (groupsLower.Any(g => g.Contains("domain admins") || g.Contains("enterprise admins")))
+            {
+                return AccessLevel.SuperAdmin;
+            }
+            // Local Administrators -> 對應到 Admin
+            else if (groupsLower.Contains("administrators"))
             {
                 return AccessLevel.Admin;
             }

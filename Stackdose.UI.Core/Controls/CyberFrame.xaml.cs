@@ -715,15 +715,15 @@ namespace Stackdose.UI.Core.Controls
         {
             System.Diagnostics.Debug.WriteLine("========== UserManagementToggleButton_Click START ==========");
 
-            // 檢查權限 (只有 Admin 和 Supervisor 可進入)
+            // 檢查權限 (只有 Admin 和 SuperAdmin 可進入)
             var session = SecurityContext.CurrentSession;
             System.Diagnostics.Debug.WriteLine($"[CyberFrame] Current User: {session.CurrentUserName}, Level: {session.CurrentLevel}");
 
-            if (session.CurrentLevel < AccessLevel.Supervisor)
+            if (session.CurrentLevel < AccessLevel.Admin)
             {
                 System.Diagnostics.Debug.WriteLine("[CyberFrame] ❌ Permission denied");
                 CyberMessageBox.Show(
-                    "您沒有權限存取使用者管理功能\n需要 Supervisor 或 Admin 權限",
+                    "您沒有權限存取使用者管理功能\n需要 Administrator 或 SuperAdmin 權限",
                     "權限不足",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);

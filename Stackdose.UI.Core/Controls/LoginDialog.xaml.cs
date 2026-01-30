@@ -72,7 +72,7 @@ namespace Stackdose.UI.Core.Controls
             };
         }
 
-        private void LoginButton_Click(object? sender, RoutedEventArgs? e)
+        private async void LoginButton_Click(object? sender, RoutedEventArgs? e)
         {
             #if DEBUG
             System.Diagnostics.Debug.WriteLine("[LoginDialog] LoginButton_Click called");
@@ -80,8 +80,11 @@ namespace Stackdose.UI.Core.Controls
 
             // 清除錯誤訊息
             ErrorPanel.Visibility = Visibility.Collapsed;
+            
+            // 顯示載入提示
+            ShowLoading(true);
 
-            // 取得輸入
+            // 獲取輸入
             string userId = UserIdTextBox.Text.Trim();
             string password = PasswordBox.Password;
 
@@ -92,6 +95,7 @@ namespace Stackdose.UI.Core.Controls
             // 驗證輸入
             if (string.IsNullOrWhiteSpace(userId))
             {
+                ShowLoading(false);
                 ShowError("請輸入帳號 (Please enter User ID)");
                 UserIdTextBox.Focus();
                 return;
@@ -99,27 +103,35 @@ namespace Stackdose.UI.Core.Controls
 
             if (string.IsNullOrWhiteSpace(password))
             {
+                ShowLoading(false);
                 ShowError("請輸入密碼 (Please enter Password)");
                 PasswordBox.Focus();
                 return;
             }
 
-            // ?? 使用整合後的登入邏輯（支援 AD 驗證）
+            // 使用非同步的登入邏輯（避免 UI 凍結）
             try
             {
                 #if DEBUG
                 System.Diagnostics.Debug.WriteLine("[LoginDialog] Calling SecurityContext.Login...");
                 #endif
 
-                bool success = SecurityContext.Login(userId, password);
+                // 延遲一點時間讓載入動畫可見（至少顯示 500ms）
+                var loginTask = System.Threading.Tasks.Task.Run(() => SecurityContext.Login(userId, password));
+                var delayTask = System.Threading.Tasks.Task.Delay(500);
+                
+                await System.Threading.Tasks.Task.WhenAll(loginTask, delayTask);
+                bool success = loginTask.Result;
 
                 #if DEBUG
                 System.Diagnostics.Debug.WriteLine($"[LoginDialog] Login result: {success}");
                 #endif
 
+                ShowLoading(false);
+
                 if (success)
                 {
-                    // ?? 顯示登入成功訊息
+                    // 顯示登入成功訊息
                     var user = SecurityContext.CurrentSession.CurrentUser;
                     
                     #if DEBUG
@@ -147,15 +159,15 @@ namespace Stackdose.UI.Core.Controls
                     System.Diagnostics.Debug.WriteLine("[LoginDialog] Login failed");
                     #endif
 
-                    // ?? 登入失敗，顯示詳細的錯誤訊息
+                    // 登入失敗，顯示詳細的錯誤訊息
                     ShowError($"登入失敗 Login Failed\n" +
                              $"帳號: {userId}\n\n" +
                              $"可能原因:\n" +
                              $"? Windows 密碼錯誤\n" +
-                             $"? 不屬於任何 App_ 群組\n" +
+                             $"? 未加入所需 App_ 群組\n" +
                              $"   (需要: App_Operators, App_Instructors, App_Supervisors, 或 App_Admins)\n\n" +
                              $"請確認:\n" +
-                             $"1. 使用 Windows 本機帳號密碼\n" +
+                             $"1. 使用 Windows 系統帳號密碼\n" +
                              $"2. 帳號已加入上述群組之一\n" +
                              $"3. 檢查 login_debug.log 了解詳情");
                     PasswordBox.Clear();
@@ -169,6 +181,7 @@ namespace Stackdose.UI.Core.Controls
                 System.Diagnostics.Debug.WriteLine($"[LoginDialog] Stack trace: {ex.StackTrace}");
                 #endif
 
+                ShowLoading(false);
                 ShowError($"登入錯誤 Login Error:\n{ex.Message}");
             }
         }
@@ -197,6 +210,38 @@ namespace Stackdose.UI.Core.Controls
             #if DEBUG
             System.Diagnostics.Debug.WriteLine($"[LoginDialog] Show Error: {message}");
             #endif
+        }
+
+        /// <summary>
+        /// 顯示或隱藏載入提示
+        /// </summary>
+        private void ShowLoading(bool show)
+        {
+            if (show)
+            {
+                LoadingPanel.Visibility = Visibility.Visible;
+                ErrorPanel.Visibility = Visibility.Collapsed;
+                
+                // 禁用按鈕避免重複點擊
+                UserIdTextBox.IsEnabled = false;
+                PasswordBox.IsEnabled = false;
+                
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[LoginDialog] Showing loading indicator");
+                #endif
+            }
+            else
+            {
+                LoadingPanel.Visibility = Visibility.Collapsed;
+                
+                // 重新啟用輸入欄位和按鈕
+                UserIdTextBox.IsEnabled = true;
+                PasswordBox.IsEnabled = true;
+                
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[LoginDialog] Hiding loading indicator");
+                #endif
+            }
         }
 
         private void ForgotPasswordButton_Click(object sender, RoutedEventArgs e)

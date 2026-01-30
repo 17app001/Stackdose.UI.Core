@@ -151,6 +151,53 @@
                     </ScrollViewer>
                 </Border>
 
+                <!-- Loading Indicator -->
+                <Border Grid.Row="2"
+                        x:Name="LoadingPanel"
+                        Height="60"
+                        Margin="0,20,0,10"
+                        Background="#2C2C2C"
+                        BorderBrush="#00BCD4"
+                        BorderThickness="1"
+                        CornerRadius="5"
+                        Padding="10"
+                        Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <!-- Loading Animation -->
+                        <Border Width="24" Height="24" Margin="0,0,12,0">
+                            <Grid>
+                                <Ellipse Width="24" Height="24" 
+                                         Stroke="#00BCD4" 
+                                         StrokeThickness="3"
+                                         StrokeDashArray="4,2">
+                                    <Ellipse.RenderTransform>
+                                        <RotateTransform x:Name="LoadingRotation" CenterX="12" CenterY="12"/>
+                                    </Ellipse.RenderTransform>
+                                    <Ellipse.Triggers>
+                                        <EventTrigger RoutedEvent="Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard RepeatBehavior="Forever">
+                                                    <DoubleAnimation Storyboard.TargetName="LoadingRotation"
+                                                                     Storyboard.TargetProperty="Angle"
+                                                                     From="0"
+                                                                     To="360"
+                                                                     Duration="0:0:1.5"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Ellipse.Triggers>
+                                </Ellipse>
+                            </Grid>
+                        </Border>
+                        <TextBlock x:Name="LoadingText"
+                                   Text="Logging in..."
+                                   Foreground="#00BCD4"
+                                   FontSize="14"
+                                   FontWeight="Medium"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
                 <!-- Buttons -->
                 <Grid Grid.Row="3" Margin="0,15,0,0">
                     <Grid.ColumnDefinitions>

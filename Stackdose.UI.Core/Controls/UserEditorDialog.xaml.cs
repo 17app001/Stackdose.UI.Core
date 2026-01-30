@@ -53,8 +53,18 @@ namespace Stackdose.UI.Core.Controls
             var availableLevels = new List<AccessLevel>();
 
             // 根據當前使用者權限決定可設定的權限
-            if (_operatorAccessLevel == AccessLevel.Admin)
+            if (_operatorAccessLevel == AccessLevel.SuperAdmin)
             {
+                // SuperAdmin 可以設定所有等級
+                availableLevels.Add(AccessLevel.Operator);
+                availableLevels.Add(AccessLevel.Instructor);
+                availableLevels.Add(AccessLevel.Supervisor);
+                availableLevels.Add(AccessLevel.Admin);
+                availableLevels.Add(AccessLevel.SuperAdmin);
+            }
+            else if (_operatorAccessLevel == AccessLevel.Admin)
+            {
+                // Admin 可以設定 Operator ~ Admin（不包含 SuperAdmin）
                 availableLevels.Add(AccessLevel.Operator);
                 availableLevels.Add(AccessLevel.Instructor);
                 availableLevels.Add(AccessLevel.Supervisor);

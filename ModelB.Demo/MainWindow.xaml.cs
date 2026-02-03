@@ -12,6 +12,11 @@ namespace ModelB.Demo
     public partial class MainWindow : Window
     {
         /// <summary>
+        /// ?? 追蹤是否已經登入成功（登入成功後不再顯示登入對話框）
+        /// </summary>
+        private bool _isLoggedIn = false;
+
+        /// <summary>
         /// ?? 防止重複進入導航邏輯（避免當機）
         /// </summary>
         private bool _isNavigating = false;
@@ -25,15 +30,27 @@ namespace ModelB.Demo
         {
             InitializeComponent();
 
-            // ?? 設定預設全螢幕
+            // ?? 設定預設視窗狀態
             this.WindowState = WindowState.Maximized;
             this.WindowStyle = WindowStyle.None;
 
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[MainWindow] Constructor - Instance: {this.GetHashCode()}");
+            #endif
+
+            // ? 先移除舊的訂閱（避免重複訂閱）
+            SecurityContext.LoginSuccess -= OnLoginSuccess;
+            SecurityContext.LogoutOccurred -= OnLogoutOccurred;
+            
             // ?? 訂閱 SecurityContext 事件
             SecurityContext.LoginSuccess += OnLoginSuccess;
             SecurityContext.LogoutOccurred += OnLogoutOccurred;
+            
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[MainWindow] Event handlers subscribed");
+            #endif
 
-            // ?? 視窗載入後顯示登入對話框
+            // ?? 視窗載入時顯示登入視窗
             this.Loaded += MainWindow_Loaded;
             this.Closing += MainWindow_Closing;
 
@@ -41,22 +58,45 @@ namespace ModelB.Demo
         }
 
         /// <summary>
-        /// ?? 視窗載入後顯示登入對話框
+        /// ?? 視窗載入後顯示登入對話框（只執行一次）
         /// </summary>
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // 延遲顯示登入對話框，確保 MainWindow 完全載入
-            Dispatcher.InvokeAsync(() =>
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[MainWindow] MainWindow_Loaded - IsLoggedIn: {_isLoggedIn}");
+            #endif
+
+            // ? 如果已經登入，不再顯示登入對話框
+            if (_isLoggedIn || SecurityContext.CurrentSession.IsLoggedIn)
             {
-                ShowLoginDialog();
-            }, System.Windows.Threading.DispatcherPriority.Loaded);
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[MainWindow] Already logged in, skipping login dialog");
+                #endif
+                return;
+            }
+
+            // ? 同步顯示登入對話框（不要用 InvokeAsync 延遲！）
+            ShowLoginDialogOnce();
         }
 
         /// <summary>
-        /// ?? 顯示登入對話框
+        /// ?? 顯示登入視窗（保證只會在需要時顯示）
         /// </summary>
-        private void ShowLoginDialog()
+        private void ShowLoginDialogOnce()
         {
+            // ? 再次檢查是否已登入
+            if (_isLoggedIn || SecurityContext.CurrentSession.IsLoggedIn)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[MainWindow] ShowLoginDialogOnce - Already logged in, skipping");
+                #endif
+                return;
+            }
+
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[MainWindow] ShowLoginDialogOnce - Creating dialog");
+            #endif
+
             var loginDialog = new LoginDialog
             {
                 Owner = this,
@@ -65,26 +105,44 @@ namespace ModelB.Demo
 
             var result = loginDialog.ShowDialog();
 
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[MainWindow] LoginDialog closed - Result: {result}");
+            #endif
+
             if (result != true)
             {
-                // 使用者取消登入，關閉應用程式
+                // 使用者取消登入，關閉程式
                 ComplianceContext.LogSystem("User cancelled login, closing application", LogLevel.Warning);
                 Application.Current.Shutdown();
                 return;
             }
 
-            // 登入成功後初始化首頁
+            // ? 登入成功，設定標記
+            _isLoggedIn = true;
+
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[MainWindow] Login successful, _isLoggedIn = true");
+            #endif
+
+            // 顯示主頁面
             ShowPage("MainPage", "MODEL-B System Overview");
 
-            // ?? 更新 AppHeader 的使用者資訊
+            // 更新 AppHeader 的使用者資訊
             UpdateAppHeaderUserInfo();
         }
 
         /// <summary>
-        /// ?? 登入成功事件處理
+        /// ?? 登入成功事件處理（由 SecurityContext 觸發）
         /// </summary>
         private void OnLoginSuccess(object? sender, Stackdose.UI.Core.Models.UserAccount user)
         {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[MainWindow] OnLoginSuccess - User: {user.DisplayName}, _isLoggedIn: {_isLoggedIn}");
+            #endif
+
+            // ? 設定已登入標記
+            _isLoggedIn = true;
+
             Dispatcher.Invoke(() =>
             {
                 UpdateAppHeaderUserInfo();
@@ -93,17 +151,28 @@ namespace ModelB.Demo
         }
 
         /// <summary>
-        /// ?? 登出事件處理
+        /// ?? 登出事件處理（由 SecurityContext 觸發）
         /// </summary>
         private void OnLogoutOccurred(object? sender, EventArgs e)
         {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[MainWindow] OnLogoutOccurred - _isLoggedIn: {_isLoggedIn}");
+            #endif
+            
             Dispatcher.Invoke(() =>
             {
-                // 清空當前頁面
+                // ? 重置登入狀態
+                _isLoggedIn = false;
+                
+                // 清空內容
                 Container.SetContent(null, "Logged Out");
 
-                // ?? 直接顯示登入對話框（不需要延遲和檢查，因為這是唯一顯示的地方）
-                ShowLoginDialog();
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[MainWindow] OnLogoutOccurred - Showing login dialog");
+                #endif
+
+                // ?? 顯示登入視窗
+                ShowLoginDialogOnce();
             });
         }
 
@@ -222,9 +291,14 @@ namespace ModelB.Demo
 
         private void OnLogoutRequested(object sender, EventArgs e)
         {
-            // ?? 移除這裡的確認對話框，CyberFrame 已經處理了
-            SecurityContext.Logout();
-            ComplianceContext.LogSystem("User logout requested", LogLevel.Warning);
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[MainWindow] OnLogoutRequested called");
+            #endif
+
+            // ? 不要在這裡呼叫 SecurityContext.Logout()！
+            // AppHeader.LogoutButton_Click 已經呼叫過了
+            // 這裡只記錄日誌，不做任何登出操作
+            ComplianceContext.LogSystem("User logout requested (from MainContainer)", LogLevel.Info, showInUi: false);
         }
 
         private void OnCloseRequested(object sender, EventArgs e)

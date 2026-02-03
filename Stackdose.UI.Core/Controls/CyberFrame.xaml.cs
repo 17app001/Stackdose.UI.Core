@@ -89,8 +89,21 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         private void InitializeSecurityEvents()
         {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[CyberFrame] InitializeSecurityEvents called - Instance: {this.GetHashCode()}");
+            #endif
+            
+            // ✅ 先移除舊的訂閱（避免重複訂閱）
+            SecurityContext.LoginSuccess -= OnLoginSuccess;
+            SecurityContext.LogoutOccurred -= OnLogoutOccurred;
+            
+            // 然後重新訂閱
             SecurityContext.LoginSuccess += OnLoginSuccess;
             SecurityContext.LogoutOccurred += OnLogoutOccurred;
+            
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[CyberFrame] Event handlers subscribed - Instance: {this.GetHashCode()}");
+            #endif
         }
 
         /// <summary>
@@ -635,8 +648,17 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         private void OnLogoutOccurred(object? sender, EventArgs e)
         {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[CyberFrame] OnLogoutOccurred called - Instance: {this.GetHashCode()}");
+            System.Diagnostics.Debug.WriteLine($"[CyberFrame] Stack trace: {Environment.StackTrace}");
+            #endif
+            
             Dispatcher.BeginInvoke(() =>
             {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[CyberFrame] OnLogoutOccurred - Updating UI - Instance: {this.GetHashCode()}");
+                #endif
+                
                 UpdateUserInfo();
                 
                 // 登出後自動回到首頁
@@ -646,7 +668,10 @@ namespace Stackdose.UI.Core.Controls
                 }
             });
             
-            // 🔥 不要在這裡顯示登入視窗！讓 MainWindow.OnLogoutOccurred 處理
+            // ✅ 完全不顯示登入視窗 - 由 MainWindow.OnLogoutOccurred 統一處理
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[CyberFrame] OnLogoutOccurred completed - NOT showing login dialog");
+            #endif
         }
 
         /// <summary>

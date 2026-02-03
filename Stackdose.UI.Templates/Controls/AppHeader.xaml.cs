@@ -179,13 +179,9 @@ namespace Stackdose.UI.Templates.Controls
                     // 觸發事件（向後相容）
                     LogoutClicked?.Invoke(this, e);
 
-                    // ? 登出後立即顯示登入視窗
-                    var loginDialog = new LoginDialog
-                    {
-                        Owner = Window.GetWindow(this),
-                        Title = "請重新登入"
-                    };
-                    loginDialog.ShowDialog();
+                    // ? 移除這裡的 LoginDialog！
+                    // 讓 MainWindow.OnLogoutOccurred 統一處理登入對話框的顯示
+                    // 避免出現兩個登入視窗
                 }
             }
             catch (Exception ex)

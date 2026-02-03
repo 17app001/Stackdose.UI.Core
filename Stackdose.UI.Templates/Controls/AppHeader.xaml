@@ -44,18 +44,27 @@
                 </Border>
 
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="STACKDOSE 3D PRINTING SYSTEM" 
-                               FontSize="16" 
-                               FontWeight="Bold"
-                               Foreground="{StaticResource PrimaryBrush}"/>
-                    <TextBlock Text="3D Tablet Printer System" 
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="STACKDOSE 3D TABLET PRINTER" 
+                                   FontSize="15" 
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource PrimaryBrush}"/>
+                        <TextBlock Text="  |  " 
+                                   FontSize="15" 
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                        <TextBlock Text="MODEL-B" 
+                                   FontSize="18" 
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource WarningBrush}"/>
+                    </StackPanel>
+                    <TextBlock Text="Merdury Co. - Pharmaceutical 3D Printing System" 
                                FontSize="10" 
                                Foreground="{StaticResource TextTertiaryBrush}"
                                Margin="0,1,0,0"/>
                 </StackPanel>
             </StackPanel>
 
-            <!-- Page Title -->
+            <!-- Page Title (without MODEL-B) -->
             <StackPanel Grid.Column="1"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center">

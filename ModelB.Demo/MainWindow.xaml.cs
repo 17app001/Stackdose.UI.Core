@@ -125,7 +125,7 @@ namespace ModelB.Demo
             #endif
 
             // 顯示主頁面
-            ShowPage("MainPage", "MODEL-B System Overview");
+            ShowPage("MainPage", "System Overview");
 
             // 更新 AppHeader 的使用者資訊
             UpdateAppHeaderUserInfo();
@@ -284,7 +284,7 @@ namespace ModelB.Demo
             "LogViewerPage" => "Operation Logs",
             "SettingsPage" => "Settings",
             "UserManagementPage" => "User Management",
-            _ => "MODEL-B DEMO"
+            _ => "DEMO"
         };
 
         #region Window Control Events

@@ -21,7 +21,6 @@
         <Grid Margin="15,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
@@ -29,7 +28,7 @@
             <StackPanel Grid.Column="0" 
                         Orientation="Horizontal" 
                         VerticalAlignment="Center">
-                <TextBlock Text="Stackdose 3D Printing System" 
+                <TextBlock Text="StackDose 3D Tablet Printer" 
                            FontSize="11" 
                            Foreground="{StaticResource TextTertiaryBrush}"
                            Margin="0,0,12,0"/>
@@ -43,27 +42,12 @@
                            Foreground="{StaticResource TextSecondaryBrush}"/>
             </StackPanel>
 
-            <!-- Center: Date Time -->
-            <StackPanel Grid.Column="1" 
-                        Orientation="Horizontal" 
-                        VerticalAlignment="Center">
-                <TextBlock x:Name="DateText"
-                           Text="2025-01-14" 
-                           FontSize="11" 
-                           Foreground="{StaticResource TextSecondaryBrush}"
-                           Margin="0,0,10,0"/>
-                <TextBlock x:Name="TimeText"
-                           Text="14:30:25" 
-                           FontSize="11" 
-                           Foreground="{StaticResource TextSecondaryBrush}"/>
-            </StackPanel>
-
             <!-- Right: Copyright -->
-            <StackPanel Grid.Column="2" 
+            <StackPanel Grid.Column="1" 
                         Orientation="Horizontal" 
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center">
-                <TextBlock Text="? 2025 Stackdose Inc. All Rights Reserved." 
+                <TextBlock Text="2025 Merdury Co. All Rights Reserved." 
                            FontSize="10" 
                            Foreground="{StaticResource TextTertiaryBrush}"/>
             </StackPanel>

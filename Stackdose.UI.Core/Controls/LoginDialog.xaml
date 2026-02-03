@@ -74,7 +74,7 @@
                              BorderThickness="1"
                              VerticalContentAlignment="Center"
                              Margin="0,0,0,20"
-                             Text="admin01">
+                             Text="superadmin">
                         <TextBox.Style>
                             <Style TargetType="TextBox">
                                 <Setter Property="Template">

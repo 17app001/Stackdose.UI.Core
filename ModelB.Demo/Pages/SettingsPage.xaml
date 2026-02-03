@@ -13,6 +13,78 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="0">
 
+                <!-- Parameter Settings - Moved to Top -->
+                <Border Background="{DynamicResource Sensor.Bg.Main}"
+                        BorderBrush="{DynamicResource Sensor.Border}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="20"
+                        Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="PARAMETER SETTINGS"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource Sensor.Text.Title}"
+                                   FontFamily="Consolas"
+                                   Margin="0,0,0,16"/>
+
+                        <!-- Row 1: Time Parameters -->
+                        <UniformGrid Rows="1" Columns="3" Margin="0,0,0,10">
+                            <core:PlcText Label="PreDry Time"
+                                         Address="D100"
+                                         Value="0"
+                                         Margin="0,0,5,0"
+                                         x:Name="PreDryTimePlcText"/>
+
+                            <core:PlcText Label="Zone1 Time"
+                                         Address="D101"
+                                         Value="0"
+                                         Margin="5,0,5,0"
+                                         x:Name="Zone1TimePlcText"/>
+
+                            <core:PlcText Label="Zone2 Time"
+                                         Address="D102"
+                                         Value="0"
+                                         Margin="5,0,0,0"
+                                         x:Name="Zone2TimePlcText"/>
+                        </UniformGrid>
+
+                        <!-- Row 2: CDA Parameters -->
+                        <UniformGrid Rows="1" Columns="3" Margin="0,0,0,10">
+                            <core:PlcText Label="CDA Flow"
+                                         Address="D103"
+                                         Value="0"
+                                         Margin="0,0,5,0"
+                                         x:Name="CdaFlowPlcText"/>
+
+                            <core:PlcText Label="CDA Volume"
+                                         Address="D104"
+                                         Value="0"
+                                         Margin="5,0,5,0"
+                                         x:Name="CdaVolumePlcText"/>
+
+                            <core:PlcText Label="Swing Speed"
+                                         Address="D105"
+                                         Value="0"
+                                         Margin="5,0,0,0"
+                                         x:Name="SwingSpeedPlcText"/>
+                        </UniformGrid>
+
+                        <!-- Row 3: Other Parameters -->
+                        <UniformGrid Rows="1" Columns="3">
+                            <core:PlcText Label="Batch No"
+                                         Address="D106"
+                                         Value="0"
+                                         Margin="0,0,5,0"
+                                         x:Name="BatchNoPlcText"/>
+                            
+                            <!-- Empty placeholders for alignment -->
+                            <Border Margin="5,0,5,0"/>
+                            <Border Margin="5,0,0,0"/>
+                        </UniformGrid>
+                    </StackPanel>
+                </Border>
+
                 <!-- PLC Connection Settings -->
                 <Border Background="{DynamicResource Sensor.Bg.Main}"
                         BorderBrush="{DynamicResource Sensor.Border}"

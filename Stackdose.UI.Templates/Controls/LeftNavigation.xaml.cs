@@ -88,36 +88,36 @@ namespace Stackdose.UI.Templates.Controls
             {
                 new NavigationItem 
                 { 
-                    Title = "系統總覽", 
-                    Subtitle = "系統即時狀態", 
+                    Title = "System Overview", 
+                    Subtitle = "", 
                     NavigationTarget = "MainPage",
                     RequiredLevel = AccessLevel.Operator  // L1+
                 },
                 new NavigationItem 
                 { 
-                    Title = "設備控制", 
-                    Subtitle = "設備參數管理", 
+                    Title = "Device Control", 
+                    Subtitle = "", 
                     NavigationTarget = "DeviceControlPage",
                     RequiredLevel = AccessLevel.Operator  // L1+
                 },
                 new NavigationItem 
                 { 
-                    Title = "紀錄檢視", 
-                    Subtitle = "系統操作紀錄", 
+                    Title = "Log Viewer", 
+                    Subtitle = "", 
                     NavigationTarget = "LogViewerPage",
                     RequiredLevel = AccessLevel.Instructor  // L2+ (指導員以上)
                 },
                 new NavigationItem 
                 { 
-                    Title = "帳號管理", 
-                    Subtitle = "權限與用戶設定", 
+                    Title = "User Management", 
+                    Subtitle = "", 
                     NavigationTarget = "UserManagementPage",
                     RequiredLevel = AccessLevel.Admin  // L4+ (管理員以上)
                 },
                 new NavigationItem 
                 { 
-                    Title = "參數設定", 
-                    Subtitle = "系統配置與調校", 
+                    Title = "Settings", 
+                    Subtitle = "", 
                     NavigationTarget = "SettingsPage",
                     RequiredLevel = AccessLevel.SuperAdmin  // L5 (僅超級管理員)
                 }
@@ -169,17 +169,17 @@ namespace Stackdose.UI.Templates.Controls
         {
             if (sender is Border border && border.DataContext is NavigationItem item)
             {
-                // 檢查是否啟用
+                // Check if enabled
                 if (!item.IsEnabled)
                 {
                     #if DEBUG
                     System.Diagnostics.Debug.WriteLine($"[LeftNavigation] Navigation blocked: {item.Title} (requires {item.RequiredLevel})");
                     #endif
                     
-                    // 顯示權限不足提示
+                    // Show permission denied message
                     Stackdose.UI.Core.Controls.CyberMessageBox.Show(
-                        $"您沒有權限存取「{item.Title}」功能\n需要 {item.RequiredLevel} 或更高權限",
-                        "權限不足",
+                        $"Access Denied\n\nYou don't have permission to access \"{item.Title}\"\nRequired: {item.RequiredLevel} or higher",
+                        "Permission Denied",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
                     return;

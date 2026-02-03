@@ -18,11 +18,11 @@ namespace Stackdose.UI.Core.Controls
             InitializeComponent();
 
             #if DEBUG
-            // DEBUG mode: Auto-fill admin01 (for testing)
-            System.Diagnostics.Debug.WriteLine("[LoginDialog] DEBUG Mode: Auto-filling admin01 credentials");
-            UserIdTextBox.Text = "admin01";
-            // Note: Password is not pre-filled for security
-            System.Diagnostics.Debug.WriteLine("[LoginDialog] Tip: Use password 'admin123' to login");
+            // DEBUG mode: Auto-fill superadmin (for testing)
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] DEBUG Mode: Auto-filling superadmin credentials");
+            UserIdTextBox.Text = "superadmin";
+            PasswordBox.Password = "superadminsuperadmin";  // Pre-fill password for testing
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] Tip: Use password 'superadminsuperadmin' to login");
             #else
             // RELEASE mode: Auto-fill current Windows username
             try

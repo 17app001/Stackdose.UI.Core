@@ -57,15 +57,15 @@
                         <DataTemplate>
                             <Border Style="{StaticResource NavigationItemStyle}"
                                     MouseLeftButtonDown="NavigationItem_Click">
-                                <Grid Margin="12,10">
+                                <Grid Margin="12,12">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <StackPanel Grid.Column="0">
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding Title}" 
-                                                   FontSize="14" 
+                                                   FontSize="16" 
                                                    FontWeight="SemiBold">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
@@ -76,23 +76,6 @@
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding IsEnabled}" Value="False">
                                                             <Setter Property="Foreground" Value="#666666"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                        <TextBlock Text="{Binding Subtitle}" 
-                                                   FontSize="10" 
-                                                   Margin="0,3,0,0">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding IsEnabled}" Value="False">
-                                                            <Setter Property="Foreground" Value="#555555"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>

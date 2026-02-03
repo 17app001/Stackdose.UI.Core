@@ -97,127 +97,127 @@
                     Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="SYSTEM GLOBAL STATUS"
-                               FontSize="18"
+                               FontSize="20"
                                FontWeight="Bold"
                                Foreground="{DynamicResource Sensor.Text.Title}"
                                FontFamily="Consolas"
-                               Margin="0,0,0,16"/>
+                               Margin="0,0,0,20"/>
 
                     <!-- Device Status -->
-                    <Grid Margin="0,0,0,12">
+                    <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="200"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0"
                                    Text="Device Status:"
-                                   FontSize="16"
+                                   FontSize="20"
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource Plc.Text.Label}"/>
                         <TextBlock Grid.Column="1"
                                    x:Name="DeviceStatusText"
                                    Text="Not Initialized"
-                                   FontSize="16"
+                                   FontSize="22"
                                    FontWeight="Bold"
                                    FontFamily="Consolas"
                                    Foreground="{DynamicResource Status.Warning}"/>
                     </Grid>
 
                     <!-- Process Batch Number -->
-                    <Grid Margin="0,0,0,12">
+                    <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="200"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0"
                                    Text="Batch Number:"
-                                   FontSize="16"
+                                   FontSize="20"
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource Plc.Text.Label}"/>
                         <TextBlock Grid.Column="1"
                                    x:Name="BatchNumberText"
                                    Text="-"
-                                   FontSize="16"
+                                   FontSize="22"
                                    FontWeight="Bold"
                                    FontFamily="Consolas"
                                    Foreground="{DynamicResource Plc.Text.Value}"/>
                     </Grid>
 
                     <!-- Running Time -->
-                    <Grid Margin="0,0,0,12">
+                    <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="200"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0"
                                    Text="Running Time:"
-                                   FontSize="16"
+                                   FontSize="20"
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource Plc.Text.Label}"/>
                         <TextBlock Grid.Column="1"
                                    x:Name="RunningTimeText"
                                    Text="00:00:00"
-                                   FontSize="16"
+                                   FontSize="22"
                                    FontWeight="Bold"
                                    FontFamily="Consolas"
                                    Foreground="{DynamicResource Status.Success}"/>
                     </Grid>
 
                     <!-- Completed Count -->
-                    <Grid Margin="0,0,0,12">
+                    <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="200"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0"
                                    Text="Completed Count:"
-                                   FontSize="16"
+                                   FontSize="20"
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource Plc.Text.Label}"/>
                         <TextBlock Grid.Column="1"
                                    x:Name="CompletedCountText"
                                    Text="0"
-                                   FontSize="16"
+                                   FontSize="22"
                                    FontWeight="Bold"
                                    FontFamily="Consolas"
                                    Foreground="{DynamicResource Status.Success}"/>
                     </Grid>
 
                     <!-- Defect Count -->
-                    <Grid Margin="0,0,0,12">
+                    <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="200"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0"
                                    Text="Defect Count:"
-                                   FontSize="16"
+                                   FontSize="20"
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource Plc.Text.Label}"/>
                         <TextBlock Grid.Column="1"
                                    x:Name="DefectCountText"
                                    Text="0"
-                                   FontSize="16"
+                                   FontSize="22"
                                    FontWeight="Bold"
                                    FontFamily="Consolas"
                                    Foreground="{DynamicResource Status.Error}"/>
                     </Grid>
 
                     <!-- Yield Rate -->
-                    <Grid Margin="0,0,0,12">
+                    <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="200"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0"
                                    Text="Yield Rate:"
-                                   FontSize="16"
+                                   FontSize="20"
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource Plc.Text.Label}"/>
                         <TextBlock Grid.Column="1"
                                    x:Name="YieldRateText"
                                    Text="100.00 %"
-                                   FontSize="16"
+                                   FontSize="22"
                                    FontWeight="Bold"
                                    FontFamily="Consolas"
                                    Foreground="{DynamicResource Status.Success}"/>

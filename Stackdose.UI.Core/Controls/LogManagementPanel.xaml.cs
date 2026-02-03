@@ -23,6 +23,7 @@ namespace Stackdose.UI.Core.Controls
         private ObservableCollection<DataLogRecord> _currentDataLogs;
         private ObservableCollection<OperationLogRecord> _currentOperationLogs;
         private ObservableCollection<EventLogRecord> _currentEventLogs;
+        private ObservableCollection<EventLogRecord> _allEventLogs; // Store all event logs for filtering
         private ObservableCollection<PeriodicDataLogRecord> _currentPeriodicDataLogs;
         private DateGroup? _selectedDateGroup;
         private LogViewMode _currentViewMode = LogViewMode.AuditTrail;
@@ -31,6 +32,19 @@ namespace Stackdose.UI.Core.Controls
         
         // ?? 新增：標記是否為日期範圍查詢模式
         private bool _isDateRangeQueryMode = false;
+
+        // Severity filter flags
+        private bool _isSeverityAll = true;
+        private bool _isSeverityCritical = false;
+        private bool _isSeverityMajor = false;
+        private bool _isSeverityMinor = false;
+        private bool _isSeverityInfo = false;
+
+        // Event type filter flags
+        private bool _isEventTypeAlarm = false;
+        private bool _isEventTypeWarning = false;
+        private bool _isEventTypeSystem = false;
+        private bool _isEventTypeSafety = false;
 
         #endregion
 
@@ -98,6 +112,13 @@ namespace Stackdose.UI.Core.Controls
                 
                 // ?? 切換類型時重置為單日模式
                 _isDateRangeQueryMode = false;
+                
+                // Reset severity filter when switching modes
+                if (value == LogViewMode.Event)
+                {
+                    ResetSeverityFilter();
+                }
+                
                 LoadLogsForSelectedDate();
             }
         }
@@ -124,6 +145,62 @@ namespace Stackdose.UI.Core.Controls
         {
             get => _currentViewMode == LogViewMode.PeriodicData;
             set { if (value) CurrentViewMode = LogViewMode.PeriodicData; }
+        }
+
+        // Severity filter properties
+        public bool IsSeverityAll
+        {
+            get => _isSeverityAll;
+            set { _isSeverityAll = value; OnPropertyChanged(); }
+        }
+
+        public bool IsSeverityCritical
+        {
+            get => _isSeverityCritical;
+            set { _isSeverityCritical = value; OnPropertyChanged(); }
+        }
+
+        public bool IsSeverityMajor
+        {
+            get => _isSeverityMajor;
+            set { _isSeverityMajor = value; OnPropertyChanged(); }
+        }
+
+        public bool IsSeverityMinor
+        {
+            get => _isSeverityMinor;
+            set { _isSeverityMinor = value; OnPropertyChanged(); }
+        }
+
+        public bool IsSeverityInfo
+        {
+            get => _isSeverityInfo;
+            set { _isSeverityInfo = value; OnPropertyChanged(); }
+        }
+
+        // Event type filter properties
+        public bool IsEventTypeAlarm
+        {
+            get => _isEventTypeAlarm;
+            set { _isEventTypeAlarm = value; OnPropertyChanged(); }
+        }
+
+        public bool IsEventTypeWarning
+        {
+            get => _isEventTypeWarning;
+            set { _isEventTypeWarning = value; OnPropertyChanged(); }
+        }
+
+        public bool IsEventTypeSystem
+        {
+            get => _isEventTypeSystem;
+            set { _isEventTypeSystem = value; OnPropertyChanged(); }
+        }
+
+        public bool IsEventTypeSafety
+        {
+            get => _isEventTypeSafety;
+            set { _isEventTypeSafety = value; OnPropertyChanged(); }
         }
 
         public string CurrentViewModeText => _currentViewMode switch
@@ -182,6 +259,7 @@ namespace Stackdose.UI.Core.Controls
             _currentDataLogs = new ObservableCollection<DataLogRecord>();
             _currentOperationLogs = new ObservableCollection<OperationLogRecord>();
             _currentEventLogs = new ObservableCollection<EventLogRecord>();
+            _allEventLogs = new ObservableCollection<EventLogRecord>();
             _currentPeriodicDataLogs = new ObservableCollection<PeriodicDataLogRecord>();
 
             Loaded += LogManagementPanel_Loaded;
@@ -194,6 +272,180 @@ namespace Stackdose.UI.Core.Controls
         private void LogManagementPanel_Loaded(object sender, RoutedEventArgs e)
         {
             LoadDateGroups();
+        }
+
+        #endregion
+
+        #region Severity Filter Methods
+
+        private void ResetSeverityFilter()
+        {
+            _isSeverityAll = true;
+            _isSeverityCritical = false;
+            _isSeverityMajor = false;
+            _isSeverityMinor = false;
+            _isSeverityInfo = false;
+            _isEventTypeAlarm = false;
+            _isEventTypeWarning = false;
+            _isEventTypeSystem = false;
+            _isEventTypeSafety = false;
+            
+            // Notify all properties
+            OnPropertyChanged(nameof(IsSeverityAll));
+            OnPropertyChanged(nameof(IsSeverityCritical));
+            OnPropertyChanged(nameof(IsSeverityMajor));
+            OnPropertyChanged(nameof(IsSeverityMinor));
+            OnPropertyChanged(nameof(IsSeverityInfo));
+            OnPropertyChanged(nameof(IsEventTypeAlarm));
+            OnPropertyChanged(nameof(IsEventTypeWarning));
+            OnPropertyChanged(nameof(IsEventTypeSystem));
+            OnPropertyChanged(nameof(IsEventTypeSafety));
+        }
+
+        private void ApplyEventLogFilter()
+        {
+            if (_allEventLogs == null || _allEventLogs.Count == 0)
+            {
+                System.Diagnostics.Debug.WriteLine("[LogManagementPanel] ApplyEventLogFilter: No event logs to filter");
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] ApplyEventLogFilter: Total={_allEventLogs.Count}");
+            System.Diagnostics.Debug.WriteLine($"  SeverityAll={_isSeverityAll}, Critical={_isSeverityCritical}, Major={_isSeverityMajor}, Minor={_isSeverityMinor}, Info={_isSeverityInfo}");
+            System.Diagnostics.Debug.WriteLine($"  Alarm={_isEventTypeAlarm}, Warning={_isEventTypeWarning}, System={_isEventTypeSystem}, Safety={_isEventTypeSafety}");
+
+            var filtered = _allEventLogs.AsEnumerable();
+
+            // Apply severity filter
+            if (!_isSeverityAll)
+            {
+                var severities = new System.Collections.Generic.List<string>();
+                if (_isSeverityCritical) severities.Add("Critical");
+                if (_isSeverityMajor) severities.Add("Major");
+                if (_isSeverityMinor) severities.Add("Minor");
+                if (_isSeverityInfo) severities.Add("Info");
+
+                System.Diagnostics.Debug.WriteLine($"  Filtering by severities: {string.Join(", ", severities)}");
+
+                if (severities.Count > 0)
+                {
+                    filtered = filtered.Where(e => severities.Any(s => 
+                        string.Equals(e.Severity, s, StringComparison.OrdinalIgnoreCase)));
+                }
+            }
+
+            // Apply event type filter
+            bool hasEventTypeFilter = _isEventTypeAlarm || _isEventTypeWarning || _isEventTypeSystem || _isEventTypeSafety;
+            if (hasEventTypeFilter)
+            {
+                var eventTypes = new System.Collections.Generic.List<string>();
+                if (_isEventTypeAlarm) eventTypes.Add("Alarm");
+                if (_isEventTypeWarning) eventTypes.Add("Warning");
+                if (_isEventTypeSystem) eventTypes.Add("System Event");
+                if (_isEventTypeSafety) eventTypes.Add("Safety Event");
+
+                System.Diagnostics.Debug.WriteLine($"  Filtering by event types: {string.Join(", ", eventTypes)}");
+                filtered = filtered.Where(e => eventTypes.Any(t => 
+                    string.Equals(e.EventType, t, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            var result = filtered.ToList();
+            System.Diagnostics.Debug.WriteLine($"  Filter result: {result.Count} records");
+
+            CurrentEventLogs.Clear();
+            foreach (var r in result)
+            {
+                CurrentEventLogs.Add(r);
+            }
+
+            OnPropertyChanged(nameof(CurrentRecordCount));
+        }
+
+        private void SeverityAll_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("[LogManagementPanel] SeverityAll_Click");
+            
+            _isSeverityAll = true;
+            _isSeverityCritical = false;
+            _isSeverityMajor = false;
+            _isSeverityMinor = false;
+            _isSeverityInfo = false;
+            
+            OnPropertyChanged(nameof(IsSeverityAll));
+            OnPropertyChanged(nameof(IsSeverityCritical));
+            OnPropertyChanged(nameof(IsSeverityMajor));
+            OnPropertyChanged(nameof(IsSeverityMinor));
+            OnPropertyChanged(nameof(IsSeverityInfo));
+            
+            ApplyEventLogFilter();
+        }
+
+        private void SeverityCritical_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] SeverityCritical_Click");
+            
+            _isSeverityAll = false;
+            // Don't toggle here - the ToggleButton already toggled it via binding
+            // Just apply filter with current state
+            
+            OnPropertyChanged(nameof(IsSeverityAll));
+            
+            // Use dispatcher to wait for binding update
+            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void SeverityMajor_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] SeverityMajor_Click");
+            
+            _isSeverityAll = false;
+            OnPropertyChanged(nameof(IsSeverityAll));
+            
+            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void SeverityMinor_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] SeverityMinor_Click");
+            
+            _isSeverityAll = false;
+            OnPropertyChanged(nameof(IsSeverityAll));
+            
+            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void SeverityInfo_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] SeverityInfo_Click");
+            
+            _isSeverityAll = false;
+            OnPropertyChanged(nameof(IsSeverityAll));
+            
+            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void EventTypeAlarm_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] EventTypeAlarm_Click");
+            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void EventTypeWarning_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] EventTypeWarning_Click");
+            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void EventTypeSystem_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] EventTypeSystem_Click");
+            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void EventTypeSafety_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] EventTypeSafety_Click");
+            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
         }
 
         #endregion
@@ -240,8 +492,9 @@ namespace Stackdose.UI.Core.Controls
 
                     case LogViewMode.Event:
                         var eventRecords = _logService.GetEventLogsByDate(SelectedDateGroup.Date);
-                        CurrentEventLogs.Clear();
-                        foreach (var r in eventRecords) CurrentEventLogs.Add(r);
+                        _allEventLogs.Clear();
+                        foreach (var r in eventRecords) _allEventLogs.Add(r);
+                        ApplyEventLogFilter();
                         break;
 
                     case LogViewMode.PeriodicData:
@@ -325,8 +578,9 @@ namespace Stackdose.UI.Core.Controls
 
                     case LogViewMode.Event:
                         var eventRecords = _logService.GetEventLogsByDateRange(FilterFromDate, FilterToDate);
-                        CurrentEventLogs.Clear();
-                        foreach (var r in eventRecords) CurrentEventLogs.Add(r);
+                        _allEventLogs.Clear();
+                        foreach (var r in eventRecords) _allEventLogs.Add(r);
+                        ApplyEventLogFilter();
                         MessageBox.Show($"查詢完成！共 {CurrentEventLogs.Count} 筆事件日誌記錄", "查詢結果", MessageBoxButton.OK, MessageBoxImage.Information);
                         break;
 

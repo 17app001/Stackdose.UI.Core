@@ -62,12 +62,17 @@
                 Padding="16"
                 Margin="16,16,16,12">
             <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Row 0: Log Type Buttons -->
+                <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <ToggleButton Content="AUDIT TRAIL"
                                   Background="#E85B4A"
                                   IsChecked="{Binding IsAuditTrailMode}"
@@ -144,7 +149,7 @@
                                 VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="Query"
                             Click="QueryButton_Click"
                             Background="{DynamicResource Button.Bg.Info}"
@@ -165,6 +170,151 @@
                             FontWeight="Bold"
                             FontSize="14"
                             FontFamily="Microsoft JhengHei"/>
+                </StackPanel>
+
+                <!-- Row 1: Event Severity Filter (only visible in Event mode) -->
+                <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                            Orientation="Horizontal" 
+                            Margin="0,12,0,0"
+                            Visibility="{Binding IsEventMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Text="SEVERITY FILTER:"
+                               Foreground="{DynamicResource Plc.Text.Label}"
+                               VerticalAlignment="Center"
+                               FontSize="12"
+                               FontWeight="Bold"
+                               FontFamily="Consolas"
+                               Margin="0,0,12,0"/>
+                    
+                    <ToggleButton Content="ALL"
+                                  x:Name="SeverityAllBtn"
+                                  IsChecked="{Binding IsSeverityAll, Mode=TwoWay}"
+                                  Click="SeverityAll_Click"
+                                  Width="70"
+                                  Height="28"
+                                  Margin="0,0,6,0"
+                                  Background="#6B7280"
+                                  Foreground="White"
+                                  FontWeight="Bold"
+                                  FontSize="11"
+                                  FontFamily="Consolas"/>
+                    
+                    <ToggleButton Content="CRITICAL"
+                                  x:Name="SeverityCriticalBtn"
+                                  IsChecked="{Binding IsSeverityCritical, Mode=TwoWay}"
+                                  Click="SeverityCritical_Click"
+                                  Width="80"
+                                  Height="28"
+                                  Margin="0,0,6,0"
+                                  Background="#DC2626"
+                                  Foreground="White"
+                                  FontWeight="Bold"
+                                  FontSize="11"
+                                  FontFamily="Consolas"/>
+                    
+                    <ToggleButton Content="MAJOR"
+                                  x:Name="SeverityMajorBtn"
+                                  IsChecked="{Binding IsSeverityMajor, Mode=TwoWay}"
+                                  Click="SeverityMajor_Click"
+                                  Width="70"
+                                  Height="28"
+                                  Margin="0,0,6,0"
+                                  Background="#EA580C"
+                                  Foreground="White"
+                                  FontWeight="Bold"
+                                  FontSize="11"
+                                  FontFamily="Consolas"/>
+                    
+                    <ToggleButton Content="MINOR"
+                                  x:Name="SeverityMinorBtn"
+                                  IsChecked="{Binding IsSeverityMinor, Mode=TwoWay}"
+                                  Click="SeverityMinor_Click"
+                                  Width="70"
+                                  Height="28"
+                                  Margin="0,0,6,0"
+                                  Background="#CA8A04"
+                                  Foreground="White"
+                                  FontWeight="Bold"
+                                  FontSize="11"
+                                  FontFamily="Consolas"/>
+                    
+                    <ToggleButton Content="INFO"
+                                  x:Name="SeverityInfoBtn"
+                                  IsChecked="{Binding IsSeverityInfo, Mode=TwoWay}"
+                                  Click="SeverityInfo_Click"
+                                  Width="70"
+                                  Height="28"
+                                  Margin="0,0,6,0"
+                                  Background="#2563EB"
+                                  Foreground="White"
+                                  FontWeight="Bold"
+                                  FontSize="11"
+                                  FontFamily="Consolas"/>
+
+                    <TextBlock Text="|"
+                               Foreground="{DynamicResource Plc.Border}"
+                               VerticalAlignment="Center"
+                               FontSize="16"
+                               Margin="8,0,12,0"/>
+
+                    <TextBlock Text="EVENT TYPE:"
+                               Foreground="{DynamicResource Plc.Text.Label}"
+                               VerticalAlignment="Center"
+                               FontSize="12"
+                               FontWeight="Bold"
+                               FontFamily="Consolas"
+                               Margin="0,0,12,0"/>
+
+                    <ToggleButton Content="Alarm"
+                                  x:Name="EventTypeAlarmBtn"
+                                  IsChecked="{Binding IsEventTypeAlarm, Mode=TwoWay}"
+                                  Click="EventTypeAlarm_Click"
+                                  Width="70"
+                                  Height="28"
+                                  Margin="0,0,6,0"
+                                  Background="#EF4444"
+                                  Foreground="White"
+                                  FontWeight="Bold"
+                                  FontSize="11"
+                                  FontFamily="Consolas"/>
+
+                    <ToggleButton Content="Warning"
+                                  x:Name="EventTypeWarningBtn"
+                                  IsChecked="{Binding IsEventTypeWarning, Mode=TwoWay}"
+                                  Click="EventTypeWarning_Click"
+                                  Width="75"
+                                  Height="28"
+                                  Margin="0,0,6,0"
+                                  Background="#F59E0B"
+                                  Foreground="White"
+                                  FontWeight="Bold"
+                                  FontSize="11"
+                                  FontFamily="Consolas"/>
+
+                    <ToggleButton Content="System"
+                                  x:Name="EventTypeSystemBtn"
+                                  IsChecked="{Binding IsEventTypeSystem, Mode=TwoWay}"
+                                  Click="EventTypeSystem_Click"
+                                  Width="70"
+                                  Height="28"
+                                  Margin="0,0,6,0"
+                                  Background="#3B82F6"
+                                  Foreground="White"
+                                  FontWeight="Bold"
+                                  FontSize="11"
+                                  FontFamily="Consolas"/>
+
+                    <ToggleButton Content="Safety"
+                                  x:Name="EventTypeSafetyBtn"
+                                  IsChecked="{Binding IsEventTypeSafety, Mode=TwoWay}"
+                                  Click="EventTypeSafety_Click"
+                                  Width="70"
+                                  Height="28"
+                                  Margin="0,0,6,0"
+                                  Background="#8B5CF6"
+                                  Foreground="White"
+                                  FontWeight="Bold"
+                                  FontSize="11"
+                                  FontFamily="Consolas"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -507,10 +657,10 @@
                                         <Border Style="{StaticResource LogCardStyle}" Margin="0,0,0,8">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="140"/>
-                                                    <ColumnDefinition Width="100"/>
-                                                    <ColumnDefinition Width="100"/>
-                                                    <ColumnDefinition Width="200"/>
+                                                    <ColumnDefinition Width="150"/>
+                                                    <ColumnDefinition Width="95"/>
+                                                    <ColumnDefinition Width="75"/>
+                                                    <ColumnDefinition Width="220"/>
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
 
@@ -518,30 +668,77 @@
                                                 <TextBlock Grid.Column="0" 
                                                            Text="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}"
                                                            Foreground="{DynamicResource Plc.Text.Value}"
-                                                           FontSize="14"
+                                                           FontSize="13"
                                                            FontFamily="Consolas"
                                                            VerticalAlignment="Center"/>
 
-                                                <!-- Event Type -->
-                                                <TextBlock Grid.Column="1" 
-                                                           Text="{Binding EventType}"
-                                                           Foreground="{DynamicResource Cyber.Text.Main}"
-                                                           FontSize="14"
-                                                           FontWeight="Medium"
-                                                           VerticalAlignment="Center"
-                                                           Margin="8,0,0,0"/>
-
-                                                <!-- Severity -->
-                                                <Border Grid.Column="2" 
-                                                        Background="{DynamicResource Sensor.Border}"
+                                                <!-- Event Type with fixed width -->
+                                                <Border Grid.Column="1" 
                                                         CornerRadius="3"
-                                                        Padding="6,2"
+                                                        Padding="6,3"
                                                         Margin="8,0,0,0"
-                                                        VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Severity}"
-                                                               Foreground="{DynamicResource Sensor.Text.Title}"
-                                                               FontSize="12"
+                                                        Width="85"
+                                                        VerticalAlignment="Center"
+                                                        HorizontalAlignment="Left">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="#3B82F6"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding EventType}" Value="Alarm">
+                                                                    <Setter Property="Background" Value="#EF4444"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding EventType}" Value="Warning">
+                                                                    <Setter Property="Background" Value="#F59E0B"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding EventType}" Value="System Event">
+                                                                    <Setter Property="Background" Value="#3B82F6"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding EventType}" Value="Safety Event">
+                                                                    <Setter Property="Background" Value="#8B5CF6"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <TextBlock Text="{Binding EventType}"
+                                                               Foreground="White"
+                                                               FontSize="11"
                                                                FontWeight="Bold"
+                                                               FontFamily="Consolas"
+                                                               HorizontalAlignment="Center"/>
+                                                </Border>
+
+                                                <!-- Severity with fixed width -->
+                                                <Border Grid.Column="2" 
+                                                        CornerRadius="3"
+                                                        Padding="6,3"
+                                                        Margin="8,0,0,0"
+                                                        Width="65"
+                                                        VerticalAlignment="Center"
+                                                        HorizontalAlignment="Left">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="#6B7280"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Severity}" Value="Critical">
+                                                                    <Setter Property="Background" Value="#DC2626"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Severity}" Value="Major">
+                                                                    <Setter Property="Background" Value="#EA580C"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Severity}" Value="Minor">
+                                                                    <Setter Property="Background" Value="#CA8A04"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Severity}" Value="Info">
+                                                                    <Setter Property="Background" Value="#2563EB"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <TextBlock Text="{Binding Severity}"
+                                                               Foreground="White"
+                                                               FontSize="11"
+                                                               FontWeight="Bold"
+                                                               FontFamily="Consolas"
                                                                HorizontalAlignment="Center"/>
                                                 </Border>
 
@@ -549,10 +746,11 @@
                                                 <TextBlock Grid.Column="3" 
                                                            Text="{Binding EventDescription}"
                                                            Foreground="{DynamicResource Plc.Text.Title}"
-                                                           FontSize="14"
+                                                           FontSize="13"
                                                            FontWeight="Bold"
                                                            VerticalAlignment="Center"
-                                                           Margin="8,0,0,0"/>
+                                                           Margin="8,0,0,0"
+                                                           TextTrimming="CharacterEllipsis"/>
 
                                                 <!-- Message -->
                                                 <TextBlock Grid.Column="4" 
@@ -576,11 +774,11 @@
                                         <Border Style="{StaticResource LogCardStyle}" Margin="0,0,0,8">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="140"/>
-                                                    <ColumnDefinition Width="120"/>
-                                                    <ColumnDefinition Width="120"/>
-                                                    <ColumnDefinition Width="120"/>
-                                                    <ColumnDefinition Width="120"/>
+                                                    <ColumnDefinition Width="150"/>
+                                                    <ColumnDefinition Width="180"/>
+                                                    <ColumnDefinition Width="130"/>
+                                                    <ColumnDefinition Width="130"/>
+                                                    <ColumnDefinition Width="130"/>
                                                 </Grid.ColumnDefinitions>
 
                                                 <!-- Timestamp -->
@@ -591,12 +789,13 @@
                                                            FontFamily="Consolas"
                                                            VerticalAlignment="Center"/>
 
-                                                <!-- Batch ID -->
+                                                <!-- Batch ID - wider -->
                                                 <TextBlock Grid.Column="1" 
                                                            Text="{Binding BatchId}"
                                                            Foreground="{DynamicResource Cyber.Text.Main}"
                                                            FontSize="14"
                                                            FontWeight="Medium"
+                                                           FontFamily="Consolas"
                                                            VerticalAlignment="Center"
                                                            Margin="8,0,0,0"/>
 
@@ -607,11 +806,12 @@
                                                             Margin="8,0,0,0">
                                                     <TextBlock Text="PreDry: "
                                                                Foreground="{DynamicResource Plc.Text.Label}"
-                                                               FontSize="12"/>
+                                                               FontSize="13"/>
                                                     <TextBlock Text="{Binding PredryTemp, StringFormat='{}{0:F1} C'}"
                                                                Foreground="{DynamicResource Sensor.Text.Title}"
                                                                FontSize="14"
-                                                               FontWeight="Medium"/>
+                                                               FontWeight="Bold"
+                                                               FontFamily="Consolas"/>
                                                 </StackPanel>
 
                                                 <!-- Dry Temp -->
@@ -621,11 +821,12 @@
                                                             Margin="8,0,0,0">
                                                     <TextBlock Text="Dry: "
                                                                Foreground="{DynamicResource Plc.Text.Label}"
-                                                               FontSize="12"/>
+                                                               FontSize="13"/>
                                                     <TextBlock Text="{Binding DryTemp, StringFormat='{}{0:F1} C'}"
                                                                Foreground="{DynamicResource Sensor.Text.Title}"
                                                                FontSize="14"
-                                                               FontWeight="Medium"/>
+                                                               FontWeight="Bold"
+                                                               FontFamily="Consolas"/>
                                                 </StackPanel>
 
                                                 <!-- CDA Pressure -->
@@ -635,11 +836,12 @@
                                                             Margin="8,0,0,0">
                                                     <TextBlock Text="CDA: "
                                                                Foreground="{DynamicResource Plc.Text.Label}"
-                                                               FontSize="12"/>
+                                                               FontSize="13"/>
                                                     <TextBlock Text="{Binding CdaInletPressure, StringFormat='{}{0:F1} bar'}"
                                                                Foreground="{DynamicResource Sensor.Text.Title}"
                                                                FontSize="14"
-                                                               FontWeight="Medium"/>
+                                                               FontWeight="Bold"
+                                                               FontFamily="Consolas"/>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>

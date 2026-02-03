@@ -32,51 +32,7 @@ namespace Stackdose.UI.Core.Helpers
         /// <summary>
         /// 是否啟用自動登出功能
         /// </summary>
-        public static bool EnableAutoLogout { get; set; } = true; // 🔥 改為 false 暫停自動登出
-
-        /// <summary>
-        /// 🔥 新增：是否啟用 AD 驗證（預設 true）
-        /// </summary>
-        #if DEBUG
-        public static bool EnableAdAuthentication { get; set; } = true; // 🔥 DEBUG 也啟用（但用本機驗證）
-        #else
-        public static bool EnableAdAuthentication { get; set; } = true;
-        #endif
-
-        /// <summary>
-        /// 🔥 新增：是否僅使用本機 Windows 驗證（不連網域，速度快）
-        /// </summary>
-        public static bool UseLocalMachineOnly { get; set; } = true; // 🔥 預設使用本機驗證
-
-        /// <summary>
-        /// 🔥 新增：AD 驗證服務實例
-        /// </summary>
-        private static AdAuthenticationService? _adService;
-
-        /// <summary>
-        /// 🔥 新增：取得 AD 驗證服務實例
-        /// </summary>
-        public static AdAuthenticationService AdService
-        {
-            get
-            {
-                if (_adService == null)
-                {
-                    // 🔥 根據設定決定使用 Domain 或 LocalMachine
-                    _adService = new AdAuthenticationService(
-                        domainName: null, 
-                        useLocalMachine: UseLocalMachineOnly // ← 使用本機驗證
-                    );
-                    
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[SecurityContext] AdAuthenticationService initialized (LocalMachine: {UseLocalMachineOnly})");
-                    System.Diagnostics.Debug.WriteLine($"[SecurityContext] Current Windows User: {AdAuthenticationService.GetCurrentWindowsUserWithDomain()}");
-                    System.Diagnostics.Debug.WriteLine($"[SecurityContext] AD Available: {_adService.IsAvailable()}");
-                    #endif
-                }
-                return _adService;
-            }
-        }
+        public static bool EnableAutoLogout { get; set; } = true;
 
         #endregion
 
@@ -102,7 +58,7 @@ namespace Stackdose.UI.Core.Helpers
         #region 登入/登出
 
         /// <summary>
-        /// 使用者登入 - 優先資料庫驗證，失敗則嘗試 Windows AD
+        /// 使用者登入 - 使用 SQLite 資料庫驗證
         /// </summary>
         /// <param name="userId">使用者帳號</param>
         /// <param name="password">密碼</param>
@@ -125,10 +81,10 @@ namespace Stackdose.UI.Core.Helpers
             
             WriteLog($"========================================");
             WriteLog($"Login START: {userId}");
-            WriteLog($"Mode: Database First, then Windows AD Fallback");
+            WriteLog($"Mode: SQLite Database Authentication");
             WriteLog($"========================================");
 
-            // 🔥 步驟 1：先嘗試資料庫驗證
+            // 🔥 資料庫驗證
             try
             {
                 WriteLog($"[Step 1] 嘗試資料庫驗證...");
@@ -147,18 +103,18 @@ namespace Stackdose.UI.Core.Helpers
                     CurrentSession.LoginTime = DateTime.Now;
                     CurrentSession.LastActivityTime = DateTime.Now;
                     
-                    // 記錄到 Audit Trail
+                    // 記錄到 Audit Trail (不包含 "via Database" 字樣)
                     ComplianceContext.LogAuditTrail(
                         "User Login",
                         userId,
                         "Logged Out",
                         $"Logged In (Level {(int)dbResult.User.AccessLevel} - {dbResult.User.AccessLevel})",
-                        $"Login from {Environment.MachineName} via Database",
+                        $"Login from {Environment.MachineName}",  // 🔥 移除 "via Database"
                         showInUi: true
                     );
 
                     ComplianceContext.LogSystem(
-                        $"✅ Login Success: {dbResult.User.DisplayName} ({dbResult.User.AccessLevel}) via Database",
+                        $"✅ Login Success: {dbResult.User.DisplayName} ({dbResult.User.AccessLevel})",
                         LogLevel.Success,
                         showInUi: true
                     );
@@ -175,7 +131,7 @@ namespace Stackdose.UI.Core.Helpers
 
                     stopwatch.Stop();
                     WriteLog($"========================================");
-                    WriteLog($"✅ Login COMPLETED in {stopwatch.ElapsedMilliseconds}ms (Database)");
+                    WriteLog($"✅ Login COMPLETED in {stopwatch.ElapsedMilliseconds}ms");
                     WriteLog($"========================================");
                     
                     return true;
@@ -183,189 +139,37 @@ namespace Stackdose.UI.Core.Helpers
                 else
                 {
                     WriteLog($"❌ 資料庫驗證失敗: {dbResult.Message}");
-                }
-            }
-            catch (Exception ex)
-            {
-                WriteLog($"❌ 資料庫驗證錯誤: {ex.Message}");
-            }
-
-            // 🔥 步驟 2：資料庫驗證失敗，嘗試 Windows AD 驗證
-            AuthenticationResult? adResult = null;
-
-            if (EnableAdAuthentication)
-            {
-                try
-                {
-                    WriteLog($"[Step 2] 嘗試 Windows AD 驗證...");
-                    var adStopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-                    // 🔥 呼叫 AD 驗證
-                    adResult = AdService.Authenticate(userId, password);
-                    
-                    adStopwatch.Stop();
-                    WriteLog($"AD Authentication took {adStopwatch.ElapsedMilliseconds}ms - Result: {adResult.IsSuccess}");
-                    
-                    if (adResult.IsSuccess)
-                    {
-                        WriteLog($"✅ AD Authentication SUCCESS: {userId}");
-                        WriteLog($"   DisplayName: {adResult.DisplayName}");
-                        WriteLog($"   Permission Level: {adResult.PermissionLevel}");
-                        WriteLog($"   Groups: {string.Join(", ", adResult.UserGroups)}");
-                        
-                        ComplianceContext.LogSystem(
-                            $"[AD] Authentication Success: {userId} - Groups: {string.Join(", ", adResult.UserGroups)}",
-                            LogLevel.Success,
-                            showInUi: true
-                        );
-                    }
-                    else
-                    {
-                        WriteLog($"❌ AD Authentication FAILED: {userId}");
-                        WriteLog($"   Error: {adResult.ErrorMessage}");
-                        
-                        ComplianceContext.LogSystem(
-                            $"[AD] Login Failed: {userId} - {adResult.ErrorMessage}",
-                            LogLevel.Warning,
-                            showInUi: true
-                        );
-                        
-                        ComplianceContext.LogAuditTrail(
-                            "User Login",
-                            userId,
-                            "N/A",
-                            "Failed (Invalid Credentials)",
-                            $"Windows AD: {adResult.ErrorMessage}",
-                            showInUi: false
-                        );
-                        
-                        return false;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    WriteLog($"❌ AD Authentication Error: {ex.Message}");
-                    WriteLog($"   Stack: {ex.StackTrace}");
                     
                     ComplianceContext.LogSystem(
-                        $"[AD] Authentication Error: {ex.Message}",
-                        LogLevel.Error,
+                        $"Login Failed: {userId} - {dbResult.Message}",
+                        LogLevel.Warning,
                         showInUi: true
+                    );
+                    
+                    ComplianceContext.LogAuditTrail(
+                        "User Login",
+                        userId,
+                        "N/A",
+                        "Failed (Invalid Credentials)",
+                        $"驗證超時，請檢查網路連線或憑證設定",
+                        showInUi: false
                     );
                     
                     return false;
                 }
             }
-            else
+            catch (Exception ex)
             {
-                WriteLog($"❌ AD Authentication is DISABLED and Database auth failed");
+                WriteLog($"❌ 資料庫驗證錯誤: {ex.Message}");
+                
                 ComplianceContext.LogSystem(
-                    "Login failed: Database authentication failed and AD is disabled",
+                    $"Authentication Error: {ex.Message}",
                     LogLevel.Error,
                     showInUi: true
                 );
-                return false;
-            }
-
-            // 🔥 步驟 3：AD 驗證成功，建立臨時 UserAccount
-            if (adResult == null || !adResult.IsSuccess)
-            {
-                WriteLog($"❌ Login Failed: Both Database and AD verification failed");
-                return false;
-            }
-
-            // 🔥 判斷 AccessLevel
-            var accessLevel = UserManagementService.DetermineAccessLevelFromAdGroups(adResult.UserGroups);
-            
-            WriteLog($"✅ AccessLevel determined: {accessLevel}");
-            WriteLog($"   Based on groups: {string.Join(", ", adResult.UserGroups)}");
-
-            // 🔥 檢查是否屬於任何 App_ 群組
-            if (accessLevel == AccessLevel.Guest)
-            {
-                WriteLog($"❌ Login Failed: User is not in any App_ group");
-                WriteLog($"   User groups: {string.Join(", ", adResult.UserGroups)}");
-                WriteLog($"   Required: App_Operators, App_Instructors, App_Supervisors, or App_Admins");
-                
-                ComplianceContext.LogSystem(
-                    $"[AD] Login Failed: User '{userId}' is not in any App_ group. Current groups: {string.Join(", ", adResult.UserGroups)}",
-                    LogLevel.Warning,
-                    showInUi: true
-                );
-                
-                ComplianceContext.LogAuditTrail(
-                    "User Login",
-                    userId,
-                    "N/A",
-                    "Failed (No App_ Group)",
-                    $"User is not in App_Operators, App_Instructors, App_Supervisors, or App_Admins. Groups: {string.Join(", ", adResult.UserGroups)}",
-                    showInUi: false
-                );
                 
                 return false;
             }
-
-            // 🔥 步驟 4：建立 UserAccount 物件（從 AD 資訊）
-            var user = new UserAccount
-            {
-                Id = adResult.UserGroups.GetHashCode(), // 🔥 使用 HashCode 作為臨時 ID
-                UserId = userId,
-                DisplayName = adResult.DisplayName,
-                Email = adResult.Email,
-                AccessLevel = accessLevel,
-                IsActive = true,
-                CreatedBy = "Windows AD",
-                CreatedAt = DateTime.Now,
-                Department = string.Join(", ", adResult.UserGroups),
-                Remarks = $"Windows AD User - Groups: {string.Join(", ", adResult.UserGroups)}"
-            };
-
-            WriteLog($"✅ UserAccount created from AD:");
-            WriteLog($"   UserId: {user.UserId}");
-            WriteLog($"   DisplayName: {user.DisplayName}");
-            WriteLog($"   AccessLevel: {user.AccessLevel}");
-            WriteLog($"   Email: {user.Email}");
-
-            stopwatch.Stop();
-            WriteLog($"========================================");
-            WriteLog($"✅ Login COMPLETED in {stopwatch.ElapsedMilliseconds}ms (Windows AD)");
-            WriteLog($"   Auth Method: Windows AD");
-            WriteLog($"   AccessLevel: {user.AccessLevel}");
-            WriteLog($"========================================");
-
-            // 🔥 步驟 5：登入成功
-            CurrentSession.CurrentUser = user;
-            CurrentSession.LoginTime = DateTime.Now;
-            CurrentSession.LastActivityTime = DateTime.Now;
-            user.LastLoginAt = DateTime.Now;
-
-            // 記錄到 Audit Trail
-            ComplianceContext.LogAuditTrail(
-                "User Login",
-                userId,
-                "Logged Out",
-                $"Logged In (Level {(int)user.AccessLevel} - {user.AccessLevel})",
-                $"Login from {Environment.MachineName} via Windows AD (Groups: {string.Join(", ", adResult.UserGroups)})",
-                showInUi: true
-            );
-
-            ComplianceContext.LogSystem(
-                $"✅ Login Success: {user.DisplayName} ({user.AccessLevel}) via Windows AD",
-                LogLevel.Success,
-                showInUi: true
-            );
-
-            // 觸發事件
-            LoginSuccess?.Invoke(null, user);
-            AccessLevelChanged?.Invoke(null, EventArgs.Empty);
-
-            // 啟動自動登出計時器
-            if (EnableAutoLogout)
-            {
-                StartAutoLogoutTimer();
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -635,21 +439,16 @@ namespace Stackdose.UI.Core.Helpers
 
         #endregion
 
-        #region 資料庫存取 (已停用 - 改用純 Windows AD)
+        #region 資料庫存取
 
         /// <summary>
-        /// 🔥 已停用：從資料庫載入使用者（改用純 Windows AD）
+        /// 從資料庫載入使用者（用於 QuickLogin 測試）
         /// </summary>
-        /// <remarks>
-        /// 此方法僅保留給 QuickLogin() 使用（測試用途）
-        /// 正常登入流程不會使用資料庫，所有使用者資訊來自 Windows AD
-        /// </remarks>
-        [Obsolete("No longer used in production - all user data comes from Windows AD")]
         private static UserAccount? LoadUserFromDatabase(string userId)
         {
             try
             {
-                // 🔥 從真實資料庫讀取（僅 QuickLogin 測試用）
+                // 從真實資料庫讀取（用於 QuickLogin 測試）
                 var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "StackDoseData.db");
                 using var conn = new SqliteConnection($"Data Source={dbPath}");
                 conn.Open();
@@ -658,14 +457,6 @@ namespace Stackdose.UI.Core.Helpers
                     "SELECT * FROM Users WHERE UserId = @UserId AND IsActive = 1",
                     new { UserId = userId }
                 );
-                
-                #if DEBUG
-                if (user != null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[SecurityContext] ⚠️ LoadUserFromDatabase: Found legacy user in DB: {userId}");
-                    System.Diagnostics.Debug.WriteLine($"[SecurityContext] Note: Normal login uses Windows AD, not database");
-                }
-                #endif
                 
                 return user;
             }

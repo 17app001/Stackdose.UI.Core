@@ -25,8 +25,13 @@ namespace Stackdose.UI.Core.Helpers
     {
         #region Private Fields
 
-        // 模擬當前登入使用者 (在實際專案中，這裡應串接您的登入系統/權限管理)
-        public static string CurrentUser { get; set; } = "Operator_A";
+        // 🔥 移除硬編碼的 CurrentUser，改為動態取得
+        // public static string CurrentUser { get; set; } = "Operator_A";
+        
+        /// <summary>
+        /// 取得當前登入使用者的 UserId
+        /// </summary>
+        public static string CurrentUser => SecurityContext.CurrentSession?.CurrentUser?.UserId ?? "System";
         
         // 1. 建立一個可綁定的集合 (這就是我們要綁定給 UI 的源頭)
         public static ObservableCollection<LogEntry> LiveLogs { get; } = new ObservableCollection<LogEntry>();

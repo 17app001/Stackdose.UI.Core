@@ -163,13 +163,12 @@ namespace Stackdose.UI.Core.Controls
                     ShowError($"登入失敗 Login Failed\n" +
                              $"帳號: {userId}\n\n" +
                              $"可能原因:\n" +
-                             $"? Windows 密碼錯誤\n" +
-                             $"? 未加入所需 App_ 群組\n" +
-                             $"   (需要: App_Operators, App_Instructors, App_Supervisors, 或 App_Admins)\n\n" +
+                             $"? 帳號或密碼錯誤\n" +
+                             $"? 帳號已被停用\n\n" +
                              $"請確認:\n" +
-                             $"1. 使用 Windows 系統帳號密碼\n" +
-                             $"2. 帳號已加入上述群組之一\n" +
-                             $"3. 檢查 login_debug.log 了解詳情");
+                             $"1. 使用正確的帳號和密碼\n" +
+                             $"2. 帳號狀態為啟用\n" +
+                             $"3. 如需協助請聯絡系統管理員");
                     PasswordBox.Clear();
                     PasswordBox.Focus();
                 }
@@ -251,16 +250,16 @@ namespace Stackdose.UI.Core.Controls
             #endif
 
             // Display password reset instructions
-            string message = "Password Reset Instructions\n\n" +
-                           "This system uses Windows AD (Active Directory) authentication\n\n" +
+            string message = "密碼重設說明 Password Reset Instructions\n\n" +
+                           "請聯絡系統管理員重設密碼\n\n" +
                            "To reset your password:\n" +
-                           "1. Contact IT support or system administrator\n" +
-                           "2. Provide your Windows account name\n" +
+                           "1. Contact system administrator\n" +
+                           "2. Provide your User ID\n" +
                            "3. Follow the password reset procedure\n\n" +
+                           "開發/測試環境預設帳號:\n" +
                            "Development/Testing:\n" +
                            "- Username: admin01\n" +
-                           "- Password: admin123\n\n" +
-                           "Note: Your password is the same as your Windows account";
+                           "- Password: admin123";
 
             MessageBox.Show(
                 message,

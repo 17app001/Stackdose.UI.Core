@@ -10,7 +10,7 @@ using Stackdose.UI.Core.Services;
 namespace Stackdose.UI.Core.Controls
 {
     /// <summary>
-    /// LogManagementPanel - 日誌管理面板（可重用控制項）
+    /// LogManagementPanel - 日誌管理面板（可獨立使用）
     /// 支援 4 種日誌類型：AuditTrail, Operation, Event, PeriodicData
     /// </summary>
     public partial class LogManagementPanel : UserControl, INotifyPropertyChanged
@@ -28,6 +28,9 @@ namespace Stackdose.UI.Core.Controls
         private LogViewMode _currentViewMode = LogViewMode.AuditTrail;
         private DateTime _filterFromDate = DateTime.Today.AddDays(-7);
         private DateTime _filterToDate = DateTime.Today;
+        
+        // ?? 新增：標記是否為日期範圍查詢模式
+        private bool _isDateRangeQueryMode = false;
 
         #endregion
 
@@ -66,7 +69,17 @@ namespace Stackdose.UI.Core.Controls
         public DateGroup? SelectedDateGroup
         {
             get => _selectedDateGroup;
-            set { _selectedDateGroup = value; OnPropertyChanged(); LoadLogsForSelectedDate(); }
+            set 
+            { 
+                _selectedDateGroup = value; 
+                OnPropertyChanged();
+                
+                // ?? 只有在非日期範圍查詢模式時才載入單日數據
+                if (!_isDateRangeQueryMode)
+                {
+                    LoadLogsForSelectedDate(); 
+                }
+            }
         }
 
         public LogViewMode CurrentViewMode
@@ -82,6 +95,9 @@ namespace Stackdose.UI.Core.Controls
                 OnPropertyChanged(nameof(IsPeriodicDataMode));
                 OnPropertyChanged(nameof(CurrentViewModeText));
                 OnPropertyChanged(nameof(CurrentRecordCount));
+                
+                // ?? 切換類型時重置為單日模式
+                _isDateRangeQueryMode = false;
                 LoadLogsForSelectedDate();
             }
         }
@@ -149,7 +165,7 @@ namespace Stackdose.UI.Core.Controls
             InitializeComponent();
             DataContext = this;
 
-            // ?? 確保資料庫已初始化（觸發 ComplianceContext 靜態建構子）
+            // 確保資料庫已初始化
             try
             {
                 var _ = Stackdose.UI.Core.Helpers.ComplianceContext.CurrentUser;
@@ -234,6 +250,9 @@ namespace Stackdose.UI.Core.Controls
                         foreach (var r in periodicRecords) CurrentPeriodicDataLogs.Add(r);
                         break;
                 }
+                
+                // ?? 更新 CurrentRecordCount
+                OnPropertyChanged(nameof(CurrentRecordCount));
             }
             catch (Exception ex)
             {
@@ -248,7 +267,11 @@ namespace Stackdose.UI.Core.Controls
         private void DateItem_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (sender is FrameworkElement element && element.Tag is DateGroup dateGroup)
+            {
+                // ?? 重置為單日模式
+                _isDateRangeQueryMode = false;
                 SelectedDateGroup = dateGroup;
+            }
         }
 
         private void AuditTrailButton_Click(object sender, RoutedEventArgs e)
@@ -277,9 +300,12 @@ namespace Stackdose.UI.Core.Controls
             {
                 if (FilterFromDate > FilterToDate)
                 {
-                    MessageBox.Show("起始日期不能大於結束日期", "日期錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("起始日期不可大於結束日期", "日期錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
+
+                // ?? 設為日期範圍查詢模式
+                _isDateRangeQueryMode = true;
 
                 switch (CurrentViewMode)
                 {
@@ -287,32 +313,36 @@ namespace Stackdose.UI.Core.Controls
                         var auditRecords = _logService.GetAuditTrailsByDateRange(FilterFromDate, FilterToDate);
                         CurrentAuditTrails.Clear();
                         foreach (var r in auditRecords) CurrentAuditTrails.Add(r);
-                        MessageBox.Show($"查詢完成！找到 {CurrentAuditTrails.Count} 筆稽核軌跡記錄", "查詢結果", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show($"查詢完成！共 {CurrentAuditTrails.Count} 筆審計軌跡記錄", "查詢結果", MessageBoxButton.OK, MessageBoxImage.Information);
                         break;
 
                     case LogViewMode.Operation:
                         var opRecords = _logService.GetOperationLogsByDateRange(FilterFromDate, FilterToDate);
                         CurrentOperationLogs.Clear();
                         foreach (var r in opRecords) CurrentOperationLogs.Add(r);
-                        MessageBox.Show($"查詢完成！找到 {CurrentOperationLogs.Count} 筆操作日誌記錄", "查詢結果", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show($"查詢完成！共 {CurrentOperationLogs.Count} 筆操作日誌記錄", "查詢結果", MessageBoxButton.OK, MessageBoxImage.Information);
                         break;
 
                     case LogViewMode.Event:
                         var eventRecords = _logService.GetEventLogsByDateRange(FilterFromDate, FilterToDate);
                         CurrentEventLogs.Clear();
                         foreach (var r in eventRecords) CurrentEventLogs.Add(r);
-                        MessageBox.Show($"查詢完成！找到 {CurrentEventLogs.Count} 筆事件日誌記錄", "查詢結果", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show($"查詢完成！共 {CurrentEventLogs.Count} 筆事件日誌記錄", "查詢結果", MessageBoxButton.OK, MessageBoxImage.Information);
                         break;
 
                     case LogViewMode.PeriodicData:
                         var periodicRecords = _logService.GetPeriodicDataLogsByDateRange(FilterFromDate, FilterToDate);
                         CurrentPeriodicDataLogs.Clear();
                         foreach (var r in periodicRecords) CurrentPeriodicDataLogs.Add(r);
-                        MessageBox.Show($"查詢完成！找到 {CurrentPeriodicDataLogs.Count} 筆週期數據記錄", "查詢結果", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show($"查詢完成！共 {CurrentPeriodicDataLogs.Count} 筆週期數據記錄", "查詢結果", MessageBoxButton.OK, MessageBoxImage.Information);
                         break;
                 }
 
-                LoadDateGroups();
+                // ?? 更新 CurrentRecordCount
+                OnPropertyChanged(nameof(CurrentRecordCount));
+                
+                // ?? 不再呼叫 LoadDateGroups()，避免重置數據
+                // LoadDateGroups();
             }
             catch (Exception ex)
             {
@@ -359,7 +389,7 @@ namespace Stackdose.UI.Core.Controls
                             break;
                     }
 
-                    MessageBox.Show($"成功匯出 {recordCount} 筆記錄到：\n{saveDialog.FileName}", "匯出成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"成功匯出 {recordCount} 筆記錄至：\n{saveDialog.FileName}", "匯出成功", MessageBoxButton.OK, MessageBoxImage.Information);
 
                     var result = MessageBox.Show("是否要開啟匯出的 PDF 檔案？", "開啟檔案", MessageBoxButton.YesNo, MessageBoxImage.Question);
                     if (result == MessageBoxResult.Yes)
@@ -397,7 +427,7 @@ namespace Stackdose.UI.Core.Controls
     /// </summary>
     public enum LogViewMode
     {
-        AuditTrail,   // 稽核軌跡
+        AuditTrail,   // 審計軌跡
         Operation,    // 操作日誌
         Event,        // 事件日誌
         PeriodicData  // 週期性數據

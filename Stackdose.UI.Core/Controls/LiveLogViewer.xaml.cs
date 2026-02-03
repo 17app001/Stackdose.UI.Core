@@ -32,6 +32,20 @@ namespace Stackdose.UI.Core.Controls
     /// </example>
     public partial class LiveLogViewer : UserControl, IThemeAware
     {
+        #region Private Fields
+
+        /// <summary>
+        /// 🔥 追蹤目前訂閱的集合（避免重複訂閱）
+        /// </summary>
+        private INotifyCollectionChanged? _subscribedCollection;
+
+        /// <summary>
+        /// 🔥 CollectionChanged 事件處理器（方便取消訂閱）
+        /// </summary>
+        private NotifyCollectionChangedEventHandler? _collectionChangedHandler;
+
+        #endregion
+
         #region Constructor
 
         /// <summary>
@@ -40,6 +54,9 @@ namespace Stackdose.UI.Core.Controls
         public LiveLogViewer()
         {
             InitializeComponent();
+            
+            // 🔥 建立事件處理器
+            _collectionChangedHandler = OnCollectionChanged;
             
             // 預設綁定到全域即時日誌
             this.Source = ComplianceContext.LiveLogs;
@@ -77,6 +94,12 @@ namespace Stackdose.UI.Core.Controls
         {
             // 🔥 註冊到 ThemeManager（自動接收主題變更通知）
             ThemeManager.Register(this);
+            
+            // 🔥 確保事件已訂閱
+            SubscribeToCollection(Source as INotifyCollectionChanged);
+            
+            // 🔥 捲動到底部
+            ScrollToBottom();
         }
 
         /// <summary>
@@ -84,8 +107,26 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         private void LiveLogViewer_Unloaded(object sender, RoutedEventArgs e)
         {
-            // 🔥 註銷 ThemeManager（WeakReference 會自動處理，但手動註銷更安全）
+            // 🔥 註銷 ThemeManager
             ThemeManager.Unregister(this);
+            
+            // 🔥 不要取消訂閱集合事件，因為頁面切換後還可能需要接收新日誌
+            // UnsubscribeFromCollection();
+        }
+
+        /// <summary>
+        /// 🔥 集合變更事件處理
+        /// </summary>
+        private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            // 當有新日誌加入時，自動捲動到底部
+            if (e.Action == NotifyCollectionChangedAction.Add)
+            {
+                Dispatcher.InvokeAsync(() =>
+                {
+                    ScrollToBottom();
+                }, System.Windows.Threading.DispatcherPriority.Background);
+            }
         }
 
         #endregion
@@ -139,6 +180,44 @@ namespace Stackdose.UI.Core.Controls
             }
         }
 
+        /// <summary>
+        /// 🔥 訂閱集合變更事件
+        /// </summary>
+        private void SubscribeToCollection(INotifyCollectionChanged? collection)
+        {
+            if (collection == null) return;
+            
+            // 如果已經訂閱過同一個集合，就不再重複訂閱
+            if (_subscribedCollection == collection) return;
+            
+            // 先取消舊的訂閱
+            UnsubscribeFromCollection();
+            
+            // 訂閱新的集合
+            collection.CollectionChanged += _collectionChangedHandler;
+            _subscribedCollection = collection;
+            
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine("[LiveLogViewer] Subscribed to collection");
+            #endif
+        }
+
+        /// <summary>
+        /// 🔥 取消訂閱集合變更事件
+        /// </summary>
+        private void UnsubscribeFromCollection()
+        {
+            if (_subscribedCollection != null && _collectionChangedHandler != null)
+            {
+                _subscribedCollection.CollectionChanged -= _collectionChangedHandler;
+                _subscribedCollection = null;
+                
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[LiveLogViewer] Unsubscribed from collection");
+                #endif
+            }
+        }
+
         #endregion
 
         #region Dependency Properties
@@ -178,21 +257,8 @@ namespace Stackdose.UI.Core.Controls
             // 綁定新的資料來源
             control.LogList.ItemsSource = e.NewValue as IEnumerable;
 
-            // 訂閱集合變更事件以自動捲動
-            if (e.NewValue is INotifyCollectionChanged newCollection)
-            {
-                newCollection.CollectionChanged += (s, args) =>
-                {
-                    // 當有新日誌加入時，自動捲動到底部
-                    if (args.Action == NotifyCollectionChangedAction.Add)
-                    {
-                        control.Dispatcher.InvokeAsync(() =>
-                        {
-                            control.ScrollToBottom();
-                        }, System.Windows.Threading.DispatcherPriority.Background);
-                    }
-                };
-            }
+            // 🔥 訂閱集合變更事件（會自動取消舊的訂閱）
+            control.SubscribeToCollection(e.NewValue as INotifyCollectionChanged);
         }
 
         #endregion

@@ -281,7 +281,7 @@ namespace ModelB.Demo
         {
             "MainPage" => "System Overview",
             "DeviceControlPage" => "Device Control",
-            "LogViewerPage" => "Operation Logs",
+            "LogViewerPage" => "Log Viewer",
             "SettingsPage" => "Settings",
             "UserManagementPage" => "User Management",
             _ => "DEMO"

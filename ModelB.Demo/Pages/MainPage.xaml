@@ -81,7 +81,7 @@
                                     x:Name="MainPlcStatus"
                                     IpAddress="192.168.22.39"
                                     Port="3000"
-                                    AutoConnect="True"
+                                    AutoConnect="False"
                                     IsGlobal="True"
                                     ScanInterval="150"/>
                 </Grid>

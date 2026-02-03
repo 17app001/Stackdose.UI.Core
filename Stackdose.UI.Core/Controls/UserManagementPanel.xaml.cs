@@ -99,7 +99,7 @@ namespace Stackdose.UI.Core.Controls
                 _currentUserName = session.CurrentUserName;
                 _currentLevel = session.CurrentLevel;
                 
-                // ?? 修復：從資料庫中查找真實的 UserId
+                // ?? 復原：從資料庫查詢真正的 UserId
                 try
                 {
                     var allUsers = await _userService.GetAllUsersAsync();
@@ -118,11 +118,9 @@ namespace Stackdose.UI.Core.Controls
                         {
                             _currentUserId = admin.Id;
                             System.Diagnostics.Debug.WriteLine($"[UserManagementPanel] 當前使用者不在資料庫中，使用 admin01 作為創建者, Id={_currentUserId}");
-                            ComplianceContext.LogSystem(
-                                $"[UserManagement] 當前 AD 使用者 '{_currentUserName}' 不在本地資料庫，使用 admin01 (Id={_currentUserId}) 作為創建者",
-                                LogLevel.Warning,
-                                showInUi: true
-                            );
+                            
+                            // ?? 改為只在 Debug 輸出，不顯示在 UI
+                            // 因為這是正常行為（AD 使用者不在本地資料庫）
                         }
                         else
                         {
@@ -138,7 +136,7 @@ namespace Stackdose.UI.Core.Controls
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[UserManagementPanel] 查找當前使用者失敗: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"[UserManagementPanel] 查詢當前使用者失敗: {ex.Message}");
                     CyberMessageBox.Show($"初始化失敗: {ex.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }

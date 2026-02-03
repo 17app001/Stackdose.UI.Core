@@ -13,10 +13,21 @@ namespace Stackdose.UI.Core.Controls
     /// </summary>
     public partial class PlcText : UserControl
     {
+        /// <summary>
+        /// ?? 追蹤訂閱的 PlcStatus 實例
+        /// </summary>
+        private PlcStatus? _subscribedStatus;
+        
+        /// <summary>
+        /// ?? 記錄舊值，用於 Audit Trail
+        /// </summary>
+        private string _previousValue = "0";
+
         public PlcText()
         {
             InitializeComponent();
             Loaded += PlcText_Loaded;
+            Unloaded += PlcText_Unloaded;
         }
 
         #region Dependency Properties
@@ -87,6 +98,38 @@ namespace Stackdose.UI.Core.Controls
         }
 
         /// <summary>
+        /// ?? 是否顯示成功訊息（預設 true）
+        /// </summary>
+        public static readonly DependencyProperty ShowSuccessMessageProperty =
+            DependencyProperty.Register(
+                nameof(ShowSuccessMessage),
+                typeof(bool),
+                typeof(PlcText),
+                new PropertyMetadata(true));
+
+        public bool ShowSuccessMessage
+        {
+            get => (bool)GetValue(ShowSuccessMessageProperty);
+            set => SetValue(ShowSuccessMessageProperty, value);
+        }
+
+        /// <summary>
+        /// ?? 是否啟用 Audit Trail 記錄（預設 true）
+        /// </summary>
+        public static readonly DependencyProperty EnableAuditTrailProperty =
+            DependencyProperty.Register(
+                nameof(EnableAuditTrail),
+                typeof(bool),
+                typeof(PlcText),
+                new PropertyMetadata(true));
+
+        public bool EnableAuditTrail
+        {
+            get => (bool)GetValue(EnableAuditTrailProperty);
+            set => SetValue(EnableAuditTrailProperty, value);
+        }
+
+        /// <summary>
         /// ValueApplied 事件 - 當使用者按下 Apply 按鈕時觸發
         /// </summary>
         public event EventHandler<ValueAppliedEventArgs>? ValueApplied;
@@ -97,7 +140,6 @@ namespace Stackdose.UI.Core.Controls
 
         private static object CoerceValue(DependencyObject d, object baseValue)
         {
-            // 確保 Value 不為 null
             return baseValue ?? "0";
         }
 
@@ -111,30 +153,96 @@ namespace Stackdose.UI.Core.Controls
 
         private void PlcText_Loaded(object sender, RoutedEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine($"[PlcText] Loaded: {Label} ({Address})");
+            
+            SubscribeToGlobalStatus();
+            
             if (!string.IsNullOrEmpty(Address))
             {
                 ReadFromPlc();
             }
         }
 
-        /// <summary>
-        /// 從 PLC 讀取初始值
-        /// </summary>
+        private void PlcText_Unloaded(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[PlcText] Unloaded: {Label} ({Address})");
+            UnsubscribeFromStatus();
+        }
+
+        private void SubscribeToGlobalStatus()
+        {
+            UnsubscribeFromStatus();
+            
+            var globalStatus = PlcContext.GlobalStatus;
+            if (globalStatus != null)
+            {
+                _subscribedStatus = globalStatus;
+                _subscribedStatus.ConnectionEstablished += OnPlcConnectionEstablished;
+                _subscribedStatus.ScanUpdated += OnScanUpdated;
+                
+                System.Diagnostics.Debug.WriteLine($"[PlcText] Subscribed to PlcStatus: {Label} ({Address}), IsConnected={globalStatus.CurrentManager?.IsConnected}");
+            }
+        }
+
+        private void UnsubscribeFromStatus()
+        {
+            if (_subscribedStatus != null)
+            {
+                _subscribedStatus.ConnectionEstablished -= OnPlcConnectionEstablished;
+                _subscribedStatus.ScanUpdated -= OnScanUpdated;
+                _subscribedStatus = null;
+            }
+        }
+
+        private void OnPlcConnectionEstablished(IPlcManager manager)
+        {
+            try
+            {
+                if (Dispatcher.HasShutdownStarted) return;
+                
+                Dispatcher.Invoke(() =>
+                {
+                    if (!Dispatcher.HasShutdownStarted && !string.IsNullOrEmpty(Address))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[PlcText] Connection established, reading value: {Label} ({Address})");
+                        ReadFromPlc();
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PlcText] OnPlcConnectionEstablished error: {ex.Message}");
+            }
+        }
+
+        private void OnScanUpdated(IPlcManager manager)
+        {
+            // PlcText 通常不需要每次掃描都更新
+        }
+
         private void ReadFromPlc()
         {
             try
             {
                 var manager = PlcManager ?? PlcContext.GlobalStatus?.CurrentManager;
+                
+                System.Diagnostics.Debug.WriteLine($"[PlcText] ReadFromPlc: {Label} ({Address}) - Manager={manager != null}, IsConnected={manager?.IsConnected}");
+                
                 if (manager == null || !manager.IsConnected || string.IsNullOrEmpty(Address))
                 {
                     return;
                 }
 
-                // 嘗試讀取值 - 使用 ReadWord
                 short? readValue = manager.ReadWord(Address);
                 if (readValue.HasValue)
                 {
                     Value = readValue.Value.ToString();
+                    _previousValue = Value;  // ?? 記錄初始值
+                    System.Diagnostics.Debug.WriteLine($"[PlcText] Read success: {Label} ({Address}) = {Value}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[PlcText] Read returned null: {Label} ({Address})");
                 }
             }
             catch (Exception ex)
@@ -161,39 +269,105 @@ namespace Stackdose.UI.Core.Controls
                     return;
                 }
 
+                // ?? 記錄舊值（用於 Audit Trail）
+                string oldValue = _previousValue;
+                string newValue = intValue.ToString();
+
                 // 寫入 PLC
                 bool writeSuccess = false;
                 var manager = PlcManager ?? PlcContext.GlobalStatus?.CurrentManager;
                 
+                System.Diagnostics.Debug.WriteLine($"[PlcText] ApplyButton_Click: {Label} ({Address}) = {intValue}, Manager={manager != null}, IsConnected={manager?.IsConnected}");
+                
                 if (manager != null && manager.IsConnected && !string.IsNullOrEmpty(Address))
                 {
-                    // 使用 WriteAsync 方法，格式: "D100=123"
-                    string writeCommand = $"{Address}={intValue}";
+                    string writeCommand = $"{Address},{intValue}";
+                    System.Diagnostics.Debug.WriteLine($"[PlcText] Write command: {writeCommand}");
+                    
                     writeSuccess = await manager.WriteAsync(writeCommand);
+                    
+                    System.Diagnostics.Debug.WriteLine($"[PlcText] Write result: {writeSuccess}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[PlcText] Cannot write - PLC not connected");
                 }
 
                 // 觸發事件
                 var args = new ValueAppliedEventArgs(Address, intValue, writeSuccess);
                 ValueApplied?.Invoke(this, args);
 
-                // 記錄日誌
+                // ?? 記錄日誌和顯示訊息
                 if (writeSuccess)
                 {
+                    // ?? 更新 _previousValue
+                    _previousValue = newValue;
+
+                    // ?? 記錄 System Log
                     ComplianceContext.LogSystem(
                         $"[PlcText] {Label} ({Address}) set to {intValue}",
                         LogLevel.Success,
                         showInUi: true);
 
-                    // 顯示成功提示（可選）
-                    // CyberMessageBox.Show($"{Label} updated to {intValue}", "Success", 
-                    //     MessageBoxButton.OK, MessageBoxImage.Information);
+                    // ?? 記錄 Audit Trail（FDA 21 CFR Part 11 合規）
+                    if (EnableAuditTrail)
+                    {
+                        string userId = SecurityContext.CurrentSession?.CurrentUserName ?? "Unknown";
+                        string batchId = ProcessContext.BatchNumber > 0 ? ProcessContext.BatchNumber.ToString() : "";
+                        
+                        ComplianceContext.LogAuditTrail(
+                            deviceName: Label,
+                            address: Address,
+                            oldValue: oldValue,
+                            newValue: newValue,
+                            reason: "Parameter Change",
+                            parameter: $"User: {userId}",
+                            batchId: batchId,
+                            showInUi: true
+                        );
+                        
+                        // ?? 立即刷新，確保 Audit Trail 寫入資料庫
+                        ComplianceContext.FlushLogs();
+                    }
+
+                    // ?? 顯示成功訊息
+                    if (ShowSuccessMessage)
+                    {
+                        CyberMessageBox.Show(
+                            $"{Label} successfully updated to {intValue}",
+                            "Write Success",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
                 }
                 else
                 {
+                    // ?? 記錄失敗
                     ComplianceContext.LogSystem(
-                        $"[PlcText] Failed to write {Label} ({Address})",
+                        $"[PlcText] Failed to write {Label} ({Address}) - PLC not connected or write failed",
                         LogLevel.Warning,
                         showInUi: true);
+
+                    // ?? 記錄 Audit Trail（失敗也要記錄）
+                    if (EnableAuditTrail)
+                    {
+                        string userId = SecurityContext.CurrentSession?.CurrentUserName ?? "Unknown";
+                        string batchId = ProcessContext.BatchNumber > 0 ? ProcessContext.BatchNumber.ToString() : "";
+                        
+                        ComplianceContext.LogAuditTrail(
+                            deviceName: Label,
+                            address: Address,
+                            oldValue: oldValue,
+                            newValue: $"{newValue} (FAILED)",
+                            reason: "Parameter Change Failed",
+                            parameter: $"User: {userId}",
+                            batchId: batchId,
+                            showInUi: true
+                        );
+                        
+                        // ?? 立即刷新，確保 Audit Trail 寫入資料庫
+                        ComplianceContext.FlushLogs();
+                    }
 
                     CyberMessageBox.Show(
                         $"Failed to write {Label} to PLC.\nPlease check PLC connection.",

@@ -457,24 +457,61 @@ namespace Stackdose.UI.Core.Controls
             // 🔥 初始化底框顏色
             UpdateFrameBackground();
             
-            if (TargetStatus == null) TryResolveContextStatus();
+            // 🔥 重新綁定到 PlcStatus（每次頁面載入都要執行，因為可能切換頁面後 GlobalStatus 有更新）
+            TryResolveContextStatus();
+            
+            // 🔥 如果 PLC 已連線，主動註冊監控位址並讀取數據
+            if (_boundStatus?.CurrentManager != null && _boundStatus.CurrentManager.IsConnected)
+            {
+                // 🔥 呼叫 PlcStatus 的 RefreshMonitors 來註冊新的監控位址
+                PlcContext.GlobalStatus?.RefreshMonitors();
+                
+                // 🔥 立即讀取一次數據
+                RefreshFrom(_boundStatus.CurrentManager);
+            }
         }
 
         private void TryResolveContextStatus()
         {
             var contextStatus = PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
-            if (contextStatus != null) BindToStatus(contextStatus);
+            if (contextStatus != null) 
+            {
+                BindToStatus(contextStatus);
+                
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[PlcLabel] Bound to PlcStatus: {Label} ({Address}), IsConnected={contextStatus.CurrentManager?.IsConnected}");
+                #endif
+            }
+            else
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[PlcLabel] No PlcStatus available for: {Label} ({Address})");
+                #endif
+            }
         }
 
         private void BindToStatus(PlcStatus? newStatus)
         {
-            if (_boundStatus == newStatus) return;
-            if (_boundStatus != null) _boundStatus.ScanUpdated -= OnScanUpdated;
+            // 🔥 移除「相同實例不重新綁定」的限制，因為頁面切換後事件可能已失效
+            // if (_boundStatus == newStatus) return;
+            
+            // 先取消舊的訂閱
+            if (_boundStatus != null) 
+            {
+                _boundStatus.ScanUpdated -= OnScanUpdated;
+            }
+            
             _boundStatus = newStatus;
+            
             if (_boundStatus != null)
             {
                 _boundStatus.ScanUpdated += OnScanUpdated;
-                if (_boundStatus.CurrentManager != null) OnScanUpdated(_boundStatus.CurrentManager);
+                
+                // 🔥 如果已連線，立即讀取一次數據
+                if (_boundStatus.CurrentManager != null && _boundStatus.CurrentManager.IsConnected) 
+                {
+                    OnScanUpdated(_boundStatus.CurrentManager);
+                }
             }
         }
 

@@ -16,12 +16,15 @@ namespace Stackdose.UI.Core.Controls
         private IPlcManager? _plcManager;
         private bool _isBusy = false;
 
-        // 🔥 新增：用來控制看門狗是否應該繼續運行
+        // 🔥 用來控制看門狗是否應該繼續運行
         private CancellationTokenSource? _watchdogCts;
+        
+        // 🔥 追蹤是否已訂閱事件
+        private bool _isEventSubscribed = false;
 
         public IPlcManager? CurrentManager => _plcManager;
         
-        // 🔥 新增：當 PLC 連線成功時觸發的事件
+        // 🔥 當 PLC 連線成功時觸發的事件
         public event Action<IPlcManager>? ConnectionEstablished;
         
         public event Action<IPlcManager>? ScanUpdated;
@@ -37,7 +40,6 @@ namespace Stackdose.UI.Core.Controls
 
         #region Dependency Properties
 
-        // ... (原有的屬性保持不變: IpAddress, Port, AutoConnect, etc.) ...
         public static readonly DependencyProperty IpAddressProperty =
              DependencyProperty.Register("IpAddress", typeof(string), typeof(PlcStatus), new PropertyMetadata("127.0.0.1"));
         public string IpAddress { get { return (string)GetValue(IpAddressProperty); } set { SetValue(IpAddressProperty, value); } }
@@ -47,7 +49,7 @@ namespace Stackdose.UI.Core.Controls
         public int Port { get { return (int)GetValue(PortProperty); } set { SetValue(PortProperty, value); } }
 
         public static readonly DependencyProperty AutoConnectProperty =
-            DependencyProperty.Register("AutoConnect", typeof(bool), typeof(PlcStatus), new PropertyMetadata(true));
+            DependencyProperty.Register("AutoConnect", typeof(bool), typeof(PlcStatus), new PropertyMetadata(false));
         public bool AutoConnect { get { return (bool)GetValue(AutoConnectProperty); } set { SetValue(AutoConnectProperty, value); } }
 
         public static readonly DependencyProperty ScanIntervalProperty =
@@ -66,12 +68,10 @@ namespace Stackdose.UI.Core.Controls
             DependencyProperty.Register("IsGlobal", typeof(bool), typeof(PlcStatus), new PropertyMetadata(true, OnIsGlobalChanged));
         public bool IsGlobal { get { return (bool)GetValue(IsGlobalProperty); } set { SetValue(IsGlobalProperty, value); } }
 
-        // 🔥 新增：重試次數設定 (預設 3 次)
         public static readonly DependencyProperty MaxRetryCountProperty =
             DependencyProperty.Register("MaxRetryCount", typeof(int), typeof(PlcStatus), new PropertyMetadata(3));
         public int MaxRetryCount { get { return (int)GetValue(MaxRetryCountProperty); } set { SetValue(MaxRetryCountProperty, value); } }
 
-        // 新增：控制是否顯示邊框 (預設 true)
         public static readonly DependencyProperty ShowBorderProperty =
             DependencyProperty.Register("ShowBorder", typeof(bool), typeof(PlcStatus), new PropertyMetadata(true));
         public bool ShowBorder { get { return (bool)GetValue(ShowBorderProperty); } set { SetValue(ShowBorderProperty, value); } }
@@ -85,36 +85,114 @@ namespace Stackdose.UI.Core.Controls
 
         private async void PlcStatus_Loaded(object sender, RoutedEventArgs e)
         {
+            if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(this)) return;
+
+            System.Diagnostics.Debug.WriteLine($"[PlcStatus] Loaded - IsGlobal={IsGlobal}, AutoConnect={AutoConnect}, this={this.GetHashCode()}");
+            System.Diagnostics.Debug.WriteLine($"[PlcStatus] Current GlobalStatus={PlcContext.GlobalStatus?.GetHashCode()}, IsConnected={PlcContext.GlobalStatus?.CurrentManager?.IsConnected}");
+
             if (IsGlobal)
             {
+                var existingGlobal = PlcContext.GlobalStatus;
+                
+                // 🔥 情況1: 已有全局實例且已連線，且不是自己
+                if (existingGlobal != null && existingGlobal != this && existingGlobal.CurrentManager?.IsConnected == true)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[PlcStatus] Reusing existing connection from {existingGlobal.GetHashCode()}");
+                    
+                    // 🔥 關鍵：接管 PlcManager（共用同一個連線）
+                    _plcManager = existingGlobal.CurrentManager;
+                    
+                    // 🔥 關鍵：將自己設為新的全局實例（這樣 PlcLabel 才能正確綁定到我）
+                    PlcContext.GlobalStatus = this;
+                    
+                    // 🔥 訂閱 PlcManager 的 ScanElapsedChanged 事件
+                    SubscribeToPlcManager();
+                    
+                    // 更新 UI 狀態
+                    UpdateUiState(ConnectionState.Connected);
+                    
+                    ComplianceContext.LogSystem("[PlcStatus] Took over existing PLC connection", LogLevel.Info, showInUi: false);
+                    
+                    // 🔥 立即觸發一次 ScanUpdated，讓所有 PlcLabel 能夠讀取數據
+                    ScanUpdated?.Invoke(_plcManager);
+                    
+                    // 🔥 啟動看門狗
+                    StartConnectionWatchdog();
+                    
+                    return;
+                }
+                
+                // 🔥 情況2: 沒有全局實例，或全局實例未連線
                 PlcContext.GlobalStatus = this;
                 ComplianceContext.LogSystem("System initialized. Main PLC set.", LogLevel.Info);
             }
 
-            if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(this)) return;
-
-            //IpDisplay.Text = $"{IpAddress}:{Port}";
-
-            // 🔥 改為非同步背景連線，不阻塞 UI
-            if (AutoConnect)
+            // 🔥 如果是 AutoConnect，則自動連線；否則顯示等待點擊的狀態
+            if (AutoConnect && (_plcManager == null || !_plcManager.IsConnected))
             {
-                // 不要使用 await，讓連線在背景執行
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        await ConnectAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[PlcStatus] Background connection failed: {ex.Message}");
-                    }
-                });
+                await ConnectAsync();
             }
-            else
+            else if (!AutoConnect)
             {
                 UpdateUiState(ConnectionState.Failed);
-                StatusText.Text = "Click To Connecting";
+                StatusText.Text = "Click to Connect";
+            }
+        }
+
+        /// <summary>
+        /// 🔥 訂閱 PlcManager 的 ScanElapsedChanged 事件
+        /// </summary>
+        private void SubscribeToPlcManager()
+        {
+            if (_plcManager is PlcManager pm && !_isEventSubscribed)
+            {
+                pm.ScanElapsedChanged += OnScanElapsedChanged;
+                _isEventSubscribed = true;
+                System.Diagnostics.Debug.WriteLine($"[PlcStatus] ScanElapsedChanged event subscribed (this={this.GetHashCode()})");
+            }
+        }
+
+        /// <summary>
+        /// 🔥 取消訂閱 PlcManager 的 ScanElapsedChanged 事件
+        /// </summary>
+        private void UnsubscribeFromPlcManager()
+        {
+            if (_plcManager is PlcManager pm && _isEventSubscribed)
+            {
+                pm.ScanElapsedChanged -= OnScanElapsedChanged;
+                _isEventSubscribed = false;
+                System.Diagnostics.Debug.WriteLine($"[PlcStatus] ScanElapsedChanged event unsubscribed (this={this.GetHashCode()})");
+            }
+        }
+
+        /// <summary>
+        /// 🔥 處理 PlcManager 的 ScanElapsedChanged 事件
+        /// </summary>
+        private void OnScanElapsedChanged(string scanInfo)
+        {
+            try
+            {
+                if (Dispatcher.HasShutdownStarted) return;
+                Dispatcher.BeginInvoke(() =>
+                {
+                    if (!Dispatcher.HasShutdownStarted)
+                    {
+                        // 🔥 scanInfo 已經是完整的字串（例如 "PLC Poll 耗時: 15 ms"），不需要再加 "ms"
+                        StatusText.Text = $"ONLINE ({scanInfo})";
+                        
+                        // 🔥 確保 UI 狀態是連線狀態
+                        StatusLight.Fill = new SolidColorBrush(Colors.LimeGreen);
+                        StatusLight.Effect = new DropShadowEffect { Color = Colors.LimeGreen, BlurRadius = 15, ShadowDepth = 0 };
+                        StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
+                    }
+                });
+                
+                // 觸發 ScanUpdated 事件
+                ScanUpdated?.Invoke(_plcManager!);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PlcStatus] OnScanElapsedChanged error: {ex.Message}");
             }
         }
 
@@ -126,10 +204,9 @@ namespace Stackdose.UI.Core.Controls
             try
             {
                 _isBusy = true;
-                // 手動點擊時，如果已經連線，則斷線 (並且停止自動重連的看門狗)
                 if (_plcManager != null && _plcManager.IsConnected)
                 {
-                    CancelWatchdog(); // 停止監控
+                    CancelWatchdog();
                     await DisconnectAsync();
                 }
                 else
@@ -140,31 +217,20 @@ namespace Stackdose.UI.Core.Controls
             finally { _isBusy = false; }
         }
 
-        /// <summary>
-        /// 🔥 修改後的連線邏輯：支援 3 次重試 + 啟動斷線偵測
-        /// </summary>
         private async Task ConnectAsync()
         {
-            UpdateUiState(ConnectionState.Connecting);
+            // 🔥 確保在 UI 執行緒上更新
+            await Dispatcher.InvokeAsync(() => UpdateUiState(ConnectionState.Connecting));
 
-            // 初始化 PLC Manager (若尚未建立)
             if (_plcManager == null)
             {
                 IPlcClient client = new FX3UPlcClient(null);
                 _plcManager = new PlcManager(client, null);
-                _plcManager.ScanElapsedChanged += (ms) =>
-                {
-                    try
-                    {
-                        if (Dispatcher.HasShutdownStarted) return;
-                        Dispatcher.Invoke(() => { if (!Dispatcher.HasShutdownStarted) StatusText.Text = $"ONLINE ({ms}ms)"; });
-                        ScanUpdated?.Invoke(_plcManager);
-                    }
-                    catch { }
-                };
             }
+            
+            // 🔥 確保訂閱事件
+            SubscribeToPlcManager();
 
-            // 🔥 重試迴圈邏輯
             bool success = false;
             int attempt = 0;
 
@@ -176,99 +242,46 @@ namespace Stackdose.UI.Core.Controls
                     string retryMsg = attempt > 1 ? $" (Attempt {attempt}/{MaxRetryCount})" : "";
                     ComplianceContext.LogSystem($"Connecting to PLC ({IpAddress}:{Port}){retryMsg}...", LogLevel.Info);
 
-                    if (attempt > 1) StatusText.Text = $"RETRYING ({attempt}/{MaxRetryCount})...";
+                    if (attempt > 1)
+                    {
+                        await Dispatcher.InvokeAsync(() => StatusText.Text = $"RETRYING ({attempt}/{MaxRetryCount})...");
+                    }
 
-                    // 嘗試連線
                     success = await _plcManager.InitializeAsync(IpAddress, Port, ScanInterval);
 
                     if (success)
                     {
-                        StatusText.Text = "CONNECTED";
+                        System.Diagnostics.Debug.WriteLine("[PlcStatus] Connection successful!");
+                        
+                        // 🔥 在 UI 執行緒上更新狀態
+                        await Dispatcher.InvokeAsync(() =>
+                        {
+                            UpdateUiState(ConnectionState.Connected);
+                            StatusText.Text = "CONNECTED";
+                        });
+                        
                         ComplianceContext.LogSystem($"PLC Connection Established ({IpAddress})", LogLevel.Success);
 
-                        // 🔥 1. 先註冊手動設定的 MonitorAddress（如果有）
-                        if (!string.IsNullOrWhiteSpace(MonitorAddress)) 
-                            RegisterMonitors(MonitorAddress);
+                        // 🔥 註冊所有監控位址
+                        RegisterAllMonitors();
 
-                        // 🔥 2. 自動註冊來自 SensorContext 的監控位址
-                        string sensorAddresses = SensorContext.GenerateMonitorAddresses();
-                        if (!string.IsNullOrWhiteSpace(sensorAddresses))
-                        {
-                            RegisterMonitors(sensorAddresses);
-                            ComplianceContext.LogSystem(
-                                $"[AutoRegister] Sensor: {sensorAddresses}", 
-                                LogLevel.Info,
-                                showInUi: false
-                            );
-                        }
-
-                        // 🔥 3. 自動註冊來自 PlcLabelContext 的監控位址
-                        string labelAddresses = PlcLabelContext.GenerateMonitorAddresses();
-                        if (!string.IsNullOrWhiteSpace(labelAddresses))
-                        {
-                            RegisterMonitors(labelAddresses);
-                            ComplianceContext.LogSystem(
-                                $"[AutoRegister] PlcLabel: {labelAddresses}", 
-                                LogLevel.Info,
-                                showInUi: false
-                            );
-                        }
-
-                        // 🔥 4. 自動註冊來自 PlcEventContext 的監控位址
-                        string eventAddresses = PlcEventContext.GenerateMonitorAddresses();
-                        if (!string.IsNullOrWhiteSpace(eventAddresses))
-                        {
-                            RegisterMonitors(eventAddresses);
-                            ComplianceContext.LogSystem(
-                                $"[AutoRegister] PlcEvent: {eventAddresses}", 
-                                LogLevel.Info,
-                                showInUi: false
-                            );
-                        }
-
-                        // 🔥 5. 自動註冊來自 RecipeContext 的監控位址
-                        string recipeAddresses = RecipeContext.GenerateMonitorAddresses();
-                        if (!string.IsNullOrWhiteSpace(recipeAddresses))
-                        {
-                            RegisterMonitors(recipeAddresses);
-                            ComplianceContext.LogSystem(
-                                $"[AutoRegister] Recipe: {recipeAddresses}", 
-                                LogLevel.Info,
-                                showInUi: false
-                            );
-                        }
-
-                        // 🔥 觸發連線成功事件（讓訂閱者可以執行自訂邏輯，例如下載 Recipe）
-                        ComplianceContext.LogSystem(
-                            "[PlcStatus] Triggering ConnectionEstablished event...",
-                            LogLevel.Info,
-                            showInUi: false
-                        );
-                        
                         ConnectionEstablished?.Invoke(_plcManager);
-                        
-                        ComplianceContext.LogSystem(
-                            $"[PlcStatus] ConnectionEstablished event triggered. Subscriber count: {ConnectionEstablished?.GetInvocationList().Length ?? 0}",
-                            LogLevel.Info,
-                            showInUi: false
-                        );
-
-                        // 🔥 連線成功後，啟動「看門狗」來偵測未來是否斷線
                         StartConnectionWatchdog();
                     }
                     else
                     {
-                        // 連線失敗
                         if (attempt <= MaxRetryCount)
                         {
                             ComplianceContext.LogSystem($"Connection failed. Retrying in 2s... ({attempt}/{MaxRetryCount})", LogLevel.Warning);
-                            // 等待 2 秒後重試
                             await Task.Delay(2000);
                         }
                         else
                         {
-                            // 超過次數，放棄
-                            StatusText.Text = "DISCONNECTED";
+                            await Dispatcher.InvokeAsync(() =>
+                            {
+                                UpdateUiState(ConnectionState.Failed);
+                                StatusText.Text = "DISCONNECTED";
+                            });
                             ComplianceContext.LogSystem($"PLC Connection Failed after {MaxRetryCount} attempts.", LogLevel.Error);
                         }
                     }
@@ -280,24 +293,92 @@ namespace Stackdose.UI.Core.Controls
                 }
             }
 
-            UpdateUiState(success ? ConnectionState.Connected : ConnectionState.Failed);
+            // 🔥 最終狀態更新
+            await Dispatcher.InvokeAsync(() => UpdateUiState(success ? ConnectionState.Connected : ConnectionState.Failed));
+        }
+
+        /// <summary>
+        /// 🔥 註冊所有監控位址（統一方法）
+        /// </summary>
+        private void RegisterAllMonitors()
+        {
+            if (_plcManager?.Monitor == null) return;
+
+            // 🔥 1. 註冊預設監控位址 D0，確保 Monitor 有東西可以輪詢
+            try { _plcManager.Monitor.Register("D0", 1); } catch { }
+
+            // 🔥 2. 註冊手動設定的 MonitorAddress（如果有）
+            if (!string.IsNullOrWhiteSpace(MonitorAddress))
+            {
+                RegisterMonitors(MonitorAddress);
+            }
+
+            // 🔥 3. 自動註冊來自 SensorContext 的監控位址
+            string sensorAddresses = SensorContext.GenerateMonitorAddresses();
+            if (!string.IsNullOrWhiteSpace(sensorAddresses))
+            {
+                RegisterMonitors(sensorAddresses);
+                ComplianceContext.LogSystem($"[AutoRegister] Sensor: {sensorAddresses}", LogLevel.Info, showInUi: false);
+            }
+
+            // 🔥 4. 自動註冊來自 PlcLabelContext 的監控位址
+            string labelAddresses = PlcLabelContext.GenerateMonitorAddresses();
+            if (!string.IsNullOrWhiteSpace(labelAddresses))
+            {
+                RegisterMonitors(labelAddresses);
+                ComplianceContext.LogSystem($"[AutoRegister] PlcLabel: {labelAddresses}", LogLevel.Info, showInUi: false);
+            }
+
+            // 🔥 5. 自動註冊來自 PlcEventContext 的監控位址
+            string eventAddresses = PlcEventContext.GenerateMonitorAddresses();
+            if (!string.IsNullOrWhiteSpace(eventAddresses))
+            {
+                RegisterMonitors(eventAddresses);
+                ComplianceContext.LogSystem($"[AutoRegister] PlcEvent: {eventAddresses}", LogLevel.Info, showInUi: false);
+            }
+
+            // 🔥 6. 自動註冊來自 RecipeContext 的監控位址
+            string recipeAddresses = RecipeContext.GenerateMonitorAddresses();
+            if (!string.IsNullOrWhiteSpace(recipeAddresses))
+            {
+                RegisterMonitors(recipeAddresses);
+                ComplianceContext.LogSystem($"[AutoRegister] Recipe: {recipeAddresses}", LogLevel.Info, showInUi: false);
+            }
+
+            System.Diagnostics.Debug.WriteLine("[PlcStatus] All monitors registered");
+        }
+
+        /// <summary>
+        /// 🔥 公開方法：重新註冊監控位址（當新的 PlcLabel 載入時呼叫）
+        /// </summary>
+        public void RefreshMonitors()
+        {
+            if (_plcManager?.Monitor == null || !_plcManager.IsConnected) return;
+
+            System.Diagnostics.Debug.WriteLine("[PlcStatus] RefreshMonitors called");
+
+            // 重新註冊來自 PlcLabelContext 的監控位址
+            string labelAddresses = PlcLabelContext.GenerateMonitorAddresses();
+            if (!string.IsNullOrWhiteSpace(labelAddresses))
+            {
+                RegisterMonitors(labelAddresses);
+                System.Diagnostics.Debug.WriteLine($"[PlcStatus] Refreshed PlcLabel monitors: {labelAddresses}");
+            }
         }
 
         private async Task DisconnectAsync()
         {
-            // 斷線時先取消看門狗，避免它以為斷線了又嘗試重連
             CancelWatchdog();
+            UnsubscribeFromPlcManager();
 
             if (_plcManager != null) await _plcManager.DisconnectAsync();
             UpdateUiState(ConnectionState.Failed);
-            StatusText.Text = "Click To Connecting";
+            StatusText.Text = "Click to Connect";
             ComplianceContext.LogSystem($"PLC Disconnected by User", LogLevel.Warning);
         }
 
-        // 🔥 新增：斷線偵測看門狗 (Watchdog)
         private void StartConnectionWatchdog()
         {
-            // 先清除舊的，確保只有一個在跑
             CancelWatchdog();
 
             _watchdogCts = new CancellationTokenSource();
@@ -307,26 +388,24 @@ namespace Stackdose.UI.Core.Controls
             {
                 while (!token.IsCancellationRequested)
                 {
-                    // 每 3 秒檢查一次狀態
-                    await Task.Delay(3000, token);
+                    try
+                    {
+                        await Task.Delay(3000, token);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        break;
+                    }
 
                     if (_plcManager != null && !_plcManager.IsConnected)
                     {
-                        // 😱 發現斷線了！(且不是使用者手動斷的)
-
-                        // 切回 UI 執行緒處理重連
-                        Dispatcher.Invoke(async () =>
+                        await Dispatcher.InvokeAsync(async () =>
                         {
-                            ComplianceContext.LogSystem("⚠️ Connection lost detected! Attempting to reconnect...", LogLevel.Error);
-
-                            // 停止這個看門狗迴圈 (ConnectAsync 成功後會再起一個新的)
+                            ComplianceContext.LogSystem("Connection lost detected! Attempting to reconnect...", LogLevel.Error);
                             CancelWatchdog();
-
-                            // 觸發重連邏輯 (這裡會再次執行 3 次重試)
                             await ConnectAsync();
                         });
-
-                        break; // 跳出迴圈
+                        break;
                     }
                 }
             }, token);
@@ -337,8 +416,6 @@ namespace Stackdose.UI.Core.Controls
             _watchdogCts?.Cancel();
             _watchdogCts = null;
         }
-
-        // ... (RegisterMonitors, Dispose, UpdateUiState 保持不變) ...
 
         private void RegisterMonitors(string config)
         {
@@ -365,21 +442,67 @@ namespace Stackdose.UI.Core.Controls
             }
         }
 
-        private void PlcStatus_Unloaded(object sender, RoutedEventArgs e) => Dispose();
+        private void PlcStatus_Unloaded(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[PlcStatus] Unloaded - this={this.GetHashCode()}, IsGlobal={IsGlobal}");
+            
+            // 🔥 如果是全局模式且是當前全局實例，不要清理，保持連線
+            if (IsGlobal && PlcContext.GlobalStatus == this)
+            {
+                // 🔥 不取消事件訂閱，不 Dispose，保持連線
+                // 下一個 PlcStatus 實例會接管這個連線
+                ComplianceContext.LogSystem("[PlcStatus] Global instance unloaded, keeping connection for next instance", LogLevel.Info, showInUi: false);
+                return;
+            }
+            
+            // 非全局模式才 Dispose
+            Dispose();
+        }
+        
         public void Dispose()
         {
-            CancelWatchdog(); // 記得釋放
-            if (_plcManager != null) { _plcManager.Dispose(); _plcManager = null; }
+            if (!IsGlobal || PlcContext.GlobalStatus != this)
+            {
+                CancelWatchdog();
+                UnsubscribeFromPlcManager();
+                
+                if (_plcManager != null) 
+                { 
+                    _plcManager.Dispose(); 
+                    _plcManager = null; 
+                }
+            }
         }
 
         private enum ConnectionState { Connecting, Connected, Failed }
         private void UpdateUiState(ConnectionState state)
         {
+            // 🔥 確保在 UI 執行緒上執行
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(() => UpdateUiState(state));
+                return;
+            }
+            
             switch (state)
             {
-                case ConnectionState.Connecting: StatusLight.Fill = new SolidColorBrush(Colors.Orange); StatusLight.Effect = null; StatusText.Text = "CONNECTING..."; StatusText.Foreground = new SolidColorBrush(Colors.Gray); break;
-                case ConnectionState.Connected: StatusLight.Fill = new SolidColorBrush(Colors.LimeGreen); StatusLight.Effect = new DropShadowEffect { Color = Colors.LimeGreen, BlurRadius = 15, ShadowDepth = 0 }; StatusText.Text = "CONNECTED"; StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen); break;
-                case ConnectionState.Failed: StatusLight.Fill = new SolidColorBrush(Colors.Red); StatusLight.Effect = new DropShadowEffect { Color = Colors.Red, BlurRadius = 10, ShadowDepth = 0 }; StatusText.Foreground = new SolidColorBrush(Colors.Red); break;
+                case ConnectionState.Connecting: 
+                    StatusLight.Fill = new SolidColorBrush(Colors.Orange); 
+                    StatusLight.Effect = null; 
+                    StatusText.Text = "CONNECTING..."; 
+                    StatusText.Foreground = new SolidColorBrush(Colors.Gray); 
+                    break;
+                case ConnectionState.Connected: 
+                    StatusLight.Fill = new SolidColorBrush(Colors.LimeGreen); 
+                    StatusLight.Effect = new DropShadowEffect { Color = Colors.LimeGreen, BlurRadius = 15, ShadowDepth = 0 }; 
+                    StatusText.Text = "CONNECTED"; 
+                    StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen); 
+                    break;
+                case ConnectionState.Failed: 
+                    StatusLight.Fill = new SolidColorBrush(Colors.Red); 
+                    StatusLight.Effect = new DropShadowEffect { Color = Colors.Red, BlurRadius = 10, ShadowDepth = 0 }; 
+                    StatusText.Foreground = new SolidColorBrush(Colors.Red); 
+                    break;
             }
         }
     }

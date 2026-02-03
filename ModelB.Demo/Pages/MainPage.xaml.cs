@@ -13,8 +13,6 @@ namespace ModelB.Demo.Pages
     public partial class MainPage : UserControl
     {
         private DispatcherTimer? _clockTimer;
-        private DateTime _processStartTime;
-        private bool _isProcessRunning = false;
 
         public MainPage()
         {
@@ -33,10 +31,20 @@ namespace ModelB.Demo.Pages
             _clockTimer.Tick += ClockTimer_Tick;
             _clockTimer.Start();
 
-            // Subscribe to PlcLabelContext for global status updates
+            // Subscribe to ProcessContext for global status
+            ProcessContext.StateChanged += OnProcessStateChanged;
+            ProcessContext.BatchNumberChanged += OnBatchNumberChanged;
+            ProcessContext.BatchIdChanged += OnBatchIdChanged;  // ?? 新增：訂閱 BatchId 變更
+            ProcessContext.CountChanged += OnCountChanged;
+
+            // Subscribe to PlcLabelContext for PLC value updates
             PlcLabelContext.ValueChanged += OnPlcValueChanged;
 
-            ComplianceContext.LogSystem("MainPage loaded, monitoring global status...", LogLevel.Info);
+            // Sync current state from ProcessContext
+            SyncFromProcessContext();
+
+            // ?? 移除重複的日誌記錄（只在 Debug 輸出）
+            System.Diagnostics.Debug.WriteLine("[MainPage] Loaded, monitoring global status...");
         }
 
         private void MainPage_Unloaded(object sender, RoutedEventArgs e)
@@ -46,6 +54,10 @@ namespace ModelB.Demo.Pages
             _clockTimer = null;
 
             // Unsubscribe events
+            ProcessContext.StateChanged -= OnProcessStateChanged;
+            ProcessContext.BatchNumberChanged -= OnBatchNumberChanged;
+            ProcessContext.BatchIdChanged -= OnBatchIdChanged;  // ?? 新增：取消訂閱
+            ProcessContext.CountChanged -= OnCountChanged;
             PlcLabelContext.ValueChanged -= OnPlcValueChanged;
         }
 
@@ -54,68 +66,153 @@ namespace ModelB.Demo.Pages
             // Update current time
             CurrentTimeText.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
-            // Update running time if process is running
-            if (_isProcessRunning)
+            // Update running time from ProcessContext
+            if (ProcessContext.CurrentState == Stackdose.UI.Core.Controls.ProcessState.Running)
             {
-                TimeSpan runningTime = DateTime.Now - _processStartTime;
-                RunningTimeText.Text = runningTime.ToString(@"hh\:mm\:ss");
+                RunningTimeText.Text = ProcessContext.RunningTime.ToString(@"hh\:mm\:ss");
             }
+        }
+
+        /// <summary>
+        /// Sync UI from ProcessContext on page load
+        /// </summary>
+        private void SyncFromProcessContext()
+        {
+            try
+            {
+                // Sync state
+                GlobalProcessStatus.ProcessState = ProcessContext.CurrentState;
+                
+                // ?? 修正：優先使用 BatchId（完整字串），否則使用 BatchNumber
+                if (!string.IsNullOrEmpty(ProcessContext.BatchId))
+                {
+                    BatchNumberText.Text = ProcessContext.BatchId;
+                }
+                else if (ProcessContext.BatchNumber > 0)
+                {
+                    BatchNumberText.Text = ProcessContext.BatchNumber.ToString();
+                }
+                else
+                {
+                    BatchNumberText.Text = "-";
+                }
+                
+                // Sync counts
+                CompletedCountText.Text = ProcessContext.CompletedCount.ToString();
+                DefectCountText.Text = ProcessContext.DefectCount.ToString();
+                
+                // Sync device status
+                if (PlcContext.GlobalStatus?.CurrentManager?.IsConnected == true)
+                {
+                    DeviceStatusText.Text = "Online";
+                    DeviceStatusText.Foreground = (System.Windows.Media.Brush)TryFindResource("Status.Success") 
+                        ?? System.Windows.Media.Brushes.Green;
+                }
+                else
+                {
+                    DeviceStatusText.Text = "Not Initialized";
+                    DeviceStatusText.Foreground = (System.Windows.Media.Brush)TryFindResource("Status.Warning") 
+                        ?? System.Windows.Media.Brushes.Orange;
+                }
+                
+                UpdateYieldRate();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[MainPage] SyncFromProcessContext error: {ex.Message}");
+            }
+        }
+
+        private void OnProcessStateChanged(Stackdose.UI.Core.Controls.ProcessState state)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                GlobalProcessStatus.ProcessState = state;
+                
+                if (state == Stackdose.UI.Core.Controls.ProcessState.Running)
+                {
+                    DeviceStatusText.Text = "Running";
+                    DeviceStatusText.Foreground = (System.Windows.Media.Brush)TryFindResource("Status.Success") 
+                        ?? System.Windows.Media.Brushes.Green;
+                }
+                else if (state == Stackdose.UI.Core.Controls.ProcessState.Idle)
+                {
+                    DeviceStatusText.Text = "Idle";
+                    DeviceStatusText.Foreground = (System.Windows.Media.Brush)TryFindResource("Status.Info") 
+                        ?? System.Windows.Media.Brushes.Cyan;
+                }
+            });
+        }
+
+        private void OnBatchNumberChanged(int batchNumber)
+        {
+            // ?? 當 BatchId 有值時，優先使用 BatchId
+            if (!string.IsNullOrEmpty(ProcessContext.BatchId)) return;
+            
+            Dispatcher.Invoke(() =>
+            {
+                BatchNumberText.Text = batchNumber > 0 ? batchNumber.ToString() : "-";
+            });
+        }
+
+        /// <summary>
+        /// ?? 新增：BatchId 變更事件處理
+        /// </summary>
+        private void OnBatchIdChanged(string batchId)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                BatchNumberText.Text = !string.IsNullOrEmpty(batchId) ? batchId : "-";
+            });
+        }
+
+        private void OnCountChanged(int completed, int defect)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                CompletedCountText.Text = completed.ToString();
+                DefectCountText.Text = defect.ToString();
+                UpdateYieldRate();
+            });
         }
 
         private void OnPlcValueChanged(object? sender, PlcLabelValueChangedEventArgs e)
         {
             try
             {
-                // Monitor batch number from D103
+                // Monitor batch number from D103 (also update ProcessContext)
                 if (e.Address == "D103" || e.Label == "Batch No")
                 {
-                    Dispatcher.Invoke(() =>
+                    if (e.Value is int batchNo && batchNo > 0)
                     {
-                        BatchNumberText.Text = e.Value?.ToString() ?? "-";
-                    });
+                        ProcessContext.BatchNumber = batchNo;
+                    }
                 }
 
-                // Monitor completed count (假設從 D200 讀取)
+                // Monitor completed count from D200 (also update ProcessContext)
                 if (e.Address == "D200" || e.Label == "Completed Count")
                 {
-                    Dispatcher.Invoke(() =>
+                    if (e.Value is int completed)
                     {
-                        CompletedCountText.Text = e.Value?.ToString() ?? "0";
-                        UpdateYieldRate();
-                    });
+                        ProcessContext.CompletedCount = completed;
+                    }
                 }
 
-                // Monitor defect count (假設從 D201 讀取)
+                // Monitor defect count from D201 (also update ProcessContext)
                 if (e.Address == "D201" || e.Label == "Defect Count")
                 {
-                    Dispatcher.Invoke(() =>
+                    if (e.Value is int defect)
                     {
-                        DefectCountText.Text = e.Value?.ToString() ?? "0";
-                        UpdateYieldRate();
-                    });
+                        ProcessContext.DefectCount = defect;
+                    }
                 }
 
-                // Monitor process state (假設從 M0 讀取)
+                // Monitor process state from M0 (also update ProcessContext)
                 if ((e.Address == "M0" || e.Label == "Process Running") && e.Value is bool isRunning)
                 {
-                    Dispatcher.Invoke(() =>
-                    {
-                        if (isRunning && !_isProcessRunning)
-                        {
-                            // Process started
-                            _isProcessRunning = true;
-                            _processStartTime = DateTime.Now;
-                            GlobalProcessStatus.ProcessState = Stackdose.UI.Core.Controls.ProcessState.Running;
-                            ComplianceContext.LogSystem("Process started on MainPage", LogLevel.Success);
-                        }
-                        else if (!isRunning && _isProcessRunning)
-                        {
-                            // Process stopped
-                            _isProcessRunning = false;
-                            GlobalProcessStatus.ProcessState = Stackdose.UI.Core.Controls.ProcessState.Idle;
-                            ComplianceContext.LogSystem("Process stopped on MainPage", LogLevel.Warning);
-                        }
-                    });
+                    ProcessContext.CurrentState = isRunning 
+                        ? Stackdose.UI.Core.Controls.ProcessState.Running 
+                        : Stackdose.UI.Core.Controls.ProcessState.Idle;
                 }
             }
             catch (Exception ex)
@@ -128,43 +225,29 @@ namespace ModelB.Demo.Pages
         {
             try
             {
-                if (int.TryParse(CompletedCountText.Text, out int completed) &&
-                    int.TryParse(DefectCountText.Text, out int defect))
+                double yieldRate = ProcessContext.YieldRate;
+                YieldRateText.Text = $"{yieldRate:F2} %";
+                
+                // Change color based on yield rate
+                if (yieldRate >= 95.0)
                 {
-                    int total = completed + defect;
-                    if (total > 0)
-                    {
-                        double yieldRate = (double)completed / total * 100.0;
-                        YieldRateText.Text = $"{yieldRate:F2} %";
-                        
-                        // Change color based on yield rate
-                        if (yieldRate >= 95.0)
-                        {
-                            YieldRateText.Foreground = (System.Windows.Media.Brush)TryFindResource("Status.Success") 
-                                ?? System.Windows.Media.Brushes.Green;
-                        }
-                        else if (yieldRate >= 85.0)
-                        {
-                            YieldRateText.Foreground = (System.Windows.Media.Brush)TryFindResource("Status.Warning") 
-                                ?? System.Windows.Media.Brushes.Orange;
-                        }
-                        else
-                        {
-                            YieldRateText.Foreground = (System.Windows.Media.Brush)TryFindResource("Status.Error") 
-                                ?? System.Windows.Media.Brushes.Red;
-                        }
-                    }
-                    else
-                    {
-                        YieldRateText.Text = "100.00 %";
-                        YieldRateText.Foreground = (System.Windows.Media.Brush)TryFindResource("Status.Success") 
-                            ?? System.Windows.Media.Brushes.Green;
-                    }
+                    YieldRateText.Foreground = (System.Windows.Media.Brush)TryFindResource("Status.Success") 
+                        ?? System.Windows.Media.Brushes.Green;
+                }
+                else if (yieldRate >= 85.0)
+                {
+                    YieldRateText.Foreground = (System.Windows.Media.Brush)TryFindResource("Status.Warning") 
+                        ?? System.Windows.Media.Brushes.Orange;
+                }
+                else
+                {
+                    YieldRateText.Foreground = (System.Windows.Media.Brush)TryFindResource("Status.Error") 
+                        ?? System.Windows.Media.Brushes.Red;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore calculation errors
+                System.Diagnostics.Debug.WriteLine($"[MainPage] UpdateYieldRate error: {ex.Message}");
             }
         }
     }

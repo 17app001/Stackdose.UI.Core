@@ -16,9 +16,14 @@ namespace Stackdose.UI.Core.Controls
         private CancellationTokenSource? _cancellationTokenSource;
         
         /// <summary>
-        /// 🔥 追蹤是否已初始化 Sensor 狀態（避免重複初始化）
+        /// 🔥 追蹤是否已初始化 Sensor 狀態（避免重複初始化）- 靜態變數，跨頁面保持
         /// </summary>
-        private bool _isInitialized = false;
+        private static bool _sensorStatesInitialized = false;
+        
+        /// <summary>
+        /// 🔥 追蹤是否已載入配置檔案
+        /// </summary>
+        private static bool _configLoaded = false;
 
         public SensorViewer()
         {
@@ -96,60 +101,37 @@ namespace Stackdose.UI.Core.Controls
         private void SensorViewer_Loaded(object sender, RoutedEventArgs e)
         {
             #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[SensorViewer] Loaded called. IsInitialized={_isInitialized}, MonitorRunning={_monitorTimer != null}");
+            System.Diagnostics.Debug.WriteLine($"[SensorViewer] Loaded called. SensorStatesInitialized={_sensorStatesInitialized}, ConfigLoaded={_configLoaded}");
             #endif
             
-            // 🔥 如果已經初始化過，只需要重新啟動監控（不重新初始化）
-            if (_isInitialized)
-            {
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine("[SensorViewer] Already initialized, restarting monitoring only.");
-                #endif
-                
-                // 🔥 重新啟動監控（如果已經連線且監控未運行）
-                if (AutoStart && 
-                    PlcContext.GlobalStatus?.CurrentManager?.IsConnected == true && 
-                    _monitorTimer == null)
-                {
-                    StartMonitoring();
-                }
-                return;
-            }
-            
-            // 設定為已初始化
-            _isInitialized = true;
-            
-            // 載入配置檔案
-            if (!string.IsNullOrEmpty(ConfigFile))
+            // 🔥 載入配置檔案（只載入一次）
+            if (!_configLoaded && !string.IsNullOrEmpty(ConfigFile))
             {
                 SensorContext.LoadFromJson(ConfigFile);
+                _configLoaded = true;
             }
 
-            // 🔥 只在第一次載入時訂閱 PlcStatus 事件
+            // 🔥 訂閱 PlcStatus 事件（只需要訂閱一次）
             if (PlcContext.GlobalStatus != null)
             {
-                // 移除舊的訂閱（如果存在）
+                // 移除舊的訂閱（避免重複訂閱）
                 PlcContext.GlobalStatus.ConnectionEstablished -= OnPlcConnectionEstablished;
-                
-                // 訂閱連線成功事件
                 PlcContext.GlobalStatus.ConnectionEstablished += OnPlcConnectionEstablished;
-
-                // 🔥 如果 PlcStatus 已經連線完成，立即執行註冊
-                if (PlcContext.GlobalStatus.CurrentManager != null && 
-                    PlcContext.GlobalStatus.CurrentManager.IsConnected &&
-                    !SensorContext.IsMonitorRegistered)
-                {
-                    OnPlcConnectionEstablished(PlcContext.GlobalStatus.CurrentManager);
-                }
             }
 
             // 綁定資料源
             BindSensorList();
 
-            // 🔥 自動啟動監控（只在第一次且已連線時）
+            // 🔥 自動啟動監控
             if (AutoStart && PlcContext.GlobalStatus?.CurrentManager?.IsConnected == true)
             {
-                InitializeSensorStates(PlcContext.GlobalStatus.CurrentManager);
+                // 🔥 只在第一次初始化 Sensor 狀態
+                if (!_sensorStatesInitialized)
+                {
+                    InitializeSensorStates(PlcContext.GlobalStatus.CurrentManager);
+                    _sensorStatesInitialized = true;
+                }
+                
                 StartMonitoring();
             }
         }
@@ -170,6 +152,7 @@ namespace Stackdose.UI.Core.Controls
             if (viewer.IsLoaded && !string.IsNullOrEmpty(e.NewValue as string))
             {
                 SensorContext.LoadFromJson((string)e.NewValue!);
+                _configLoaded = true;
                 viewer.BindSensorList();
             }
         }
@@ -224,7 +207,7 @@ namespace Stackdose.UI.Core.Controls
                 return; // PLC 未連線，跳過本次監控
             }
 
-            bool anyStateChanged = false; // 🔥 新增：追蹤是否有狀態改變
+            bool anyStateChanged = false;
 
             // 逐個檢查感測器
             foreach (var sensor in SensorContext.Sensors)
@@ -234,7 +217,6 @@ namespace Stackdose.UI.Core.Controls
                     bool isActive = await EvaluateSensor(sensor, manager);
                     string currentValue = sensor.CurrentValue;
 
-                    // 🔥 優化：只有狀態真正改變時才標記
                     bool oldState = sensor.IsActive;
                     
                     // 更新狀態 (會自動觸發警報事件)
@@ -255,7 +237,6 @@ namespace Stackdose.UI.Core.Controls
             // 更新統計資訊
             UpdateStatistics();
 
-            // 🔥 優化：只在狀態改變或勾選 Checkbox 時才重新篩選
             if (anyStateChanged || (ChkShowAlarmsOnly != null && ChkShowAlarmsOnly.IsChecked == true))
             {
                 Dispatcher.Invoke(() =>
@@ -276,7 +257,6 @@ namespace Stackdose.UI.Core.Controls
             string valueStr = sensor.Value.Trim();
             string mode = sensor.Mode.Trim().ToUpper();
 
-            // 🔥 優先使用 Monitor 快取資料（避免直接打 PLC）
             var monitor = manager.Monitor;
             bool useMonitor = monitor != null && monitor.IsRunning;
 
@@ -288,7 +268,7 @@ namespace Stackdose.UI.Core.Controls
 
                 if (bits.Length != expectedValues.Length)
                 {
-                    return false; // 配置錯誤
+                    return false;
                 }
 
                 bool[] results = new bool[bits.Length];
@@ -298,7 +278,6 @@ namespace Stackdose.UI.Core.Controls
                     int bitIndex = int.Parse(bits[i].Trim());
                     int expectedValue = int.Parse(expectedValues[i].Trim());
 
-                    // 🔥 優先從 Monitor 讀取
                     int bitValue;
                     if (useMonitor)
                     {
@@ -307,7 +286,6 @@ namespace Stackdose.UI.Core.Controls
                     }
                     else
                     {
-                        // Fallback: 直接讀取 PLC
                         int wordValue = await manager.ReadAsync(device);
                         bitValue = (wordValue >> bitIndex) & 1;
                     }
@@ -315,10 +293,8 @@ namespace Stackdose.UI.Core.Controls
                     results[i] = (bitValue == expectedValue);
                 }
 
-                // 儲存當前值 (用於顯示)
                 sensor.CurrentValue = string.Join(",", results.Select(r => r ? "1" : "0"));
 
-                // 根據 Mode 計算結果
                 if (mode == "AND")
                     return results.All(r => r);
                 else if (mode == "OR")
@@ -332,7 +308,6 @@ namespace Stackdose.UI.Core.Controls
                 int bitIndex = int.Parse(bitStr);
                 int expectedValue = int.Parse(valueStr);
 
-                // 🔥 優先從 Monitor 讀取
                 int bitValue;
                 if (useMonitor)
                 {
@@ -351,7 +326,6 @@ namespace Stackdose.UI.Core.Controls
             // === 模式 3: 數值比較 (COMPARE 模式) ===
             else if (mode == "COMPARE")
             {
-                // 🔥 優先從 Monitor 讀取
                 int currentValue;
                 if (useMonitor)
                 {
@@ -365,7 +339,6 @@ namespace Stackdose.UI.Core.Controls
 
                 sensor.CurrentValue = currentValue.ToString();
 
-                // 解析比較運算子 (例如 >75, <50, ==100)
                 var match = Regex.Match(valueStr, @"^([><=!]+)(\d+)$");
                 if (match.Success)
                 {
@@ -385,7 +358,7 @@ namespace Stackdose.UI.Core.Controls
                 }
             }
 
-            return false; // 無法判斷，預設為 false
+            return false;
         }
 
         #endregion
@@ -399,65 +372,43 @@ namespace Stackdose.UI.Core.Controls
         {
             if (EnableGrouping)
             {
-                // 分組顯示
                 var view = CollectionViewSource.GetDefaultView(SensorContext.Sensors);
                 view.GroupDescriptions.Clear();
                 view.GroupDescriptions.Add(new PropertyGroupDescription("Group"));
-                
-                // 🔥 新增：套用篩選器
                 view.Filter = ApplyFilter;
-                
                 SensorList.ItemsSource = view;
             }
             else
             {
-                // 平面顯示
                 var view = CollectionViewSource.GetDefaultView(SensorContext.Sensors);
-                
-                // 🔥 新增：套用篩選器
                 view.Filter = ApplyFilter;
-                
                 SensorList.ItemsSource = view;
             }
 
-            // 更新統計
             UpdateStatistics();
 
-            // 控制無資料提示
             NoDataHint.Visibility = SensorContext.Sensors.Count == 0 
                 ? Visibility.Visible 
                 : Visibility.Collapsed;
         }
 
-        /// <summary>
-        /// 🔥 新增：篩選器邏輯（根據 Checkbox 狀態決定是否顯示項目）
-        /// </summary>
         private bool ApplyFilter(object item)
         {
             if (item is not SensorConfig sensor)
                 return true;
 
-            // 如果 Checkbox 未勾選，顯示所有項目
             if (ChkShowAlarmsOnly == null || ChkShowAlarmsOnly.IsChecked != true)
                 return true;
 
-            // 如果 Checkbox 勾選，只顯示異常項目 (IsActive = true)
             return sensor.IsActive;
         }
 
-        /// <summary>
-        /// 🔥 新增：Checkbox 狀態改變時重新篩選
-        /// </summary>
         private void ChkShowAlarmsOnly_Changed(object sender, RoutedEventArgs e)
         {
-            // 重新套用篩選器
             var view = CollectionViewSource.GetDefaultView(SensorList.ItemsSource);
             view?.Refresh();
         }
 
-        /// <summary>
-        /// 更新統計資訊 (異常數量 / 總數)
-        /// </summary>
         private void UpdateStatistics()
         {
             int alarmCount = SensorContext.Sensors.Count(s => s.IsActive);
@@ -468,55 +419,26 @@ namespace Stackdose.UI.Core.Controls
         }
 
         /// <summary>
-        /// 🔥 新增：訂閱 PlcStatus 的連線成功事件
-        /// </summary>
-        private void SubscribeToPlcStatusEvents()
-        {
-            var status = PlcContext.GlobalStatus;
-            if (status == null)
-            {
-                ComplianceContext.LogSystem("[SensorViewer] PlcStatus not found in PlcContext.",LogLevel.Warning, showInUi: false);
-                return;
-            }
-
-            // 訂閱連線成功事件
-            status.ConnectionEstablished += OnPlcConnectionEstablished;
-
-            // 🔥 如果 PlcStatus 已經連線完成（在 SensorViewer 載入之前），立即註冊
-            if (status.CurrentManager != null && status.CurrentManager.IsConnected)
-            {
-                OnPlcConnectionEstablished(status.CurrentManager);
-            }
-        }
-
-        /// <summary>
-        /// 🔥 新增：當 PLC 連線成功時的回呼
+        /// 當 PLC 連線成功時的回呼
         /// </summary>
         private void OnPlcConnectionEstablished(IPlcManager manager)
         {
             try
             {
                 #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[SensorViewer] OnPlcConnectionEstablished called. IsInitialized={_isInitialized}, IsMonitorRegistered={SensorContext.IsMonitorRegistered}");
+                System.Diagnostics.Debug.WriteLine($"[SensorViewer] OnPlcConnectionEstablished called. SensorStatesInitialized={_sensorStatesInitialized}");
                 #endif
                 
-                // 🔥 如果已經初始化過，不重複執行
-                if (_isInitialized)
+                // 🔥 如果已經初始化過 Sensor 狀態，不重複執行
+                if (_sensorStatesInitialized)
                 {
-                    ComplianceContext.LogSystem("[SensorViewer] Already initialized, skipping OnPlcConnectionEstablished logic.",LogLevel.Info, showInUi: false);
-                    return;
-                }
-                
-                // 🔥 如果已經註冊過，不重複註冊
-                if (SensorContext.IsMonitorRegistered)
-                {
-                    ComplianceContext.LogSystem("[SensorViewer] Monitor addresses already registered, skipping.",LogLevel.Info, showInUi: false);
+                    System.Diagnostics.Debug.WriteLine("[SensorViewer] Sensor states already initialized, skipping.");
                     return;
                 }
 
                 if (manager.Monitor == null)
                 {
-                    ComplianceContext.LogSystem("[SensorViewer] Monitor not available.",LogLevel.Warning, showInUi: false);
+                    System.Diagnostics.Debug.WriteLine("[SensorViewer] Monitor not available.");
                     return;
                 }
 
@@ -525,29 +447,26 @@ namespace Stackdose.UI.Core.Controls
 
                 if (string.IsNullOrEmpty(monitorAddresses))
                 {
-                    ComplianceContext.LogSystem("[SensorViewer] No monitor addresses generated.",LogLevel.Warning, showInUi: false);
+                    System.Diagnostics.Debug.WriteLine("[SensorViewer] No monitor addresses generated.");
                     return;
                 }
 
-                ComplianceContext.LogSystem($"[SensorViewer] Monitor addresses prepared: {monitorAddresses}",LogLevel.Info, showInUi: false);
-                
-                // 🔥 註冊監控位址（SensorContext.GenerateMonitorAddresses 會設定 IsMonitorRegistered）
-                // 由 PlcStatus 的 ConnectAsync 自動呼叫 RegisterMonitors
+                System.Diagnostics.Debug.WriteLine($"[SensorViewer] Monitor addresses prepared: {monitorAddresses}");
             }
             catch (Exception ex)
             {
-                ComplianceContext.LogSystem($"[SensorViewer] Failed to prepare monitors: {ex.Message}",LogLevel.Error, showInUi: true);
+                System.Diagnostics.Debug.WriteLine($"[SensorViewer] Failed to prepare monitors: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 🔥 新增：初始化 Sensor 狀態（靜默讀取，不觸發警報）
+        /// 初始化 Sensor 狀態（靜默讀取，不觸發警報）- 只執行一次
         /// </summary>
         private async void InitializeSensorStates(IPlcManager manager)
         {
             if (manager == null || !manager.IsConnected)
             {
-                ComplianceContext.LogSystem("[SensorViewer] Cannot initialize sensor states: PLC not connected.",LogLevel.Warning, showInUi: false);
+                System.Diagnostics.Debug.WriteLine("[SensorViewer] Cannot initialize sensor states: PLC not connected.");
                 return;
             }
 
@@ -555,9 +474,7 @@ namespace Stackdose.UI.Core.Controls
             System.Diagnostics.Debug.WriteLine("[SensorViewer] InitializeSensorStates starting...");
             #endif
 
-            ComplianceContext.LogSystem("[SensorViewer] Initializing sensor states (silent)...",LogLevel.Info, showInUi: false);
-
-            var alarmSensors = new List<SensorConfig>(); // 🔥 收集異常 Sensor
+            var alarmSensors = new List<SensorConfig>();
 
             foreach (var sensor in SensorContext.Sensors)
             {
@@ -566,7 +483,7 @@ namespace Stackdose.UI.Core.Controls
                     bool isActive = await EvaluateSensor(sensor, manager);
                     string currentValue = sensor.CurrentValue;
 
-                    // 🔥 直接設定初始狀態，不呼叫 UpdateSensorState（避免觸發警報事件）
+                    // 直接設定初始狀態，不呼叫 UpdateSensorState（避免觸發警報事件）
                     sensor.IsActive = isActive;
                     sensor.CurrentValue = currentValue;
                     
@@ -577,7 +494,7 @@ namespace Stackdose.UI.Core.Controls
                         
                         ComplianceContext.LogSystem(
                             $"[Sensor] 初始狀態異常: {sensor.OperationDescription} ({sensor.Device}) = {currentValue}",
-                           LogLevel.Warning,
+                            LogLevel.Warning,
                             showInUi: true
                         );
                     }
@@ -591,14 +508,9 @@ namespace Stackdose.UI.Core.Controls
             // 更新統計
             UpdateStatistics();
 
-            ComplianceContext.LogSystem($"[SensorViewer] Sensor states initialized. Total alarms: {alarmSensors.Count}",LogLevel.Success, showInUi: false);
-
             #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[SensorViewer] InitializeSensorStates completed.");
+            System.Diagnostics.Debug.WriteLine($"[SensorViewer] InitializeSensorStates completed. Total alarms: {alarmSensors.Count}");
             #endif
-
-            // 🔥 MessageBox 警告已移除，僅保留 SensorView 顯示及 Log 記錄
-            // 使用者可透過 SensorView 介面查看所有感測器狀態
         }
 
         #endregion

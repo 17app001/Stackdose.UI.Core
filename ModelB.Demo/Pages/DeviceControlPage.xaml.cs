@@ -15,7 +15,6 @@ namespace ModelB.Demo.Pages
 
         private string _currentBatchNumber = string.Empty;
         private ProcessState _currentProcessState = ProcessState.Idle;
-        private bool _isDeviceInitialized = false;
         private System.Windows.Threading.DispatcherTimer? _initializationTimer;
 
         #endregion
@@ -26,6 +25,7 @@ namespace ModelB.Demo.Pages
         {
             InitializeComponent();
             this.Loaded += DeviceControlPage_Loaded;
+            this.Unloaded += DeviceControlPage_Unloaded;
         }
 
         #endregion
@@ -34,14 +34,34 @@ namespace ModelB.Demo.Pages
 
         private void DeviceControlPage_Loaded(object sender, RoutedEventArgs e)
         {
-            // Initialize components if needed
-            ComplianceContext.LogSystem("Device Control Page loaded", LogLevel.Info);
+            // ?? 只在第一次載入時記錄日誌（避免頁面切換時重複記錄）
+            // ComplianceContext.LogSystem("Device Control Page loaded", LogLevel.Info);
+            
+            // ?? 從 ProcessContext 同步狀態（使用全局的 IsDeviceInitialized）
+            _currentProcessState = ProcessContext.CurrentState;
+            _currentBatchNumber = !string.IsNullOrEmpty(ProcessContext.BatchId) 
+                ? ProcessContext.BatchId 
+                : (ProcessContext.BatchNumber > 0 ? $"BATCH-{ProcessContext.BatchNumber}" : string.Empty);
+            
+            // Sync UI
+            ProcessStatus.ProcessState = _currentProcessState;
+            if (!string.IsNullOrEmpty(_currentBatchNumber))
+            {
+                ProcessStatus.BatchNumber = _currentBatchNumber;
+            }
+            UpdateDeviceStatusDisplay();
+            UpdateButtonStates();
+            
+            // Subscribe to ProcessContext
+            ProcessContext.StateChanged += OnProcessStateChanged;
+            ProcessContext.DeviceInitializedChanged += OnDeviceInitializedChanged;
             
             // Debug: Check current user permissions
             var session = SecurityContext.CurrentSession;
             System.Diagnostics.Debug.WriteLine($"[DeviceControlPage] Current User: {session.CurrentUserName}");
             System.Diagnostics.Debug.WriteLine($"[DeviceControlPage] Current Level: {session.CurrentLevel}");
             System.Diagnostics.Debug.WriteLine($"[DeviceControlPage] IsLoggedIn: {session.IsLoggedIn}");
+            System.Diagnostics.Debug.WriteLine($"[DeviceControlPage] IsDeviceInitialized: {ProcessContext.IsDeviceInitialized}");
             
             // Quick login as Admin if not logged in
             if (!session.IsLoggedIn || session.CurrentLevel < Stackdose.UI.Core.Models.AccessLevel.Operator)
@@ -62,12 +82,42 @@ namespace ModelB.Demo.Pages
             UpdateDeviceStatusDisplay();
         }
 
+        private void DeviceControlPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            // ?? 取消訂閱事件
+            ProcessContext.StateChanged -= OnProcessStateChanged;
+            ProcessContext.DeviceInitializedChanged -= OnDeviceInitializedChanged;
+        }
+
+        private void OnProcessStateChanged(ProcessState state)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                _currentProcessState = state;
+                ProcessStatus.ProcessState = state;
+                UpdateDeviceStatusDisplay();
+                UpdateButtonStates();
+            });
+        }
+
+        /// <summary>
+        /// ?? 設備初始化狀態改變時的處理
+        /// </summary>
+        private void OnDeviceInitializedChanged(bool isInitialized)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                UpdateDeviceStatusDisplay();
+                UpdateButtonStates();
+            });
+        }
+
         /// <summary>
         /// 在設備初始化完成前禁用所有按鍵（除了 DeviceInit 按鈕）
         /// </summary>
         private void DisableAllButtonsUntilInit()
         {
-            if (!_isDeviceInitialized)
+            if (!ProcessContext.IsDeviceInitialized)
             {
                 // 只允許 DeviceInit 按鈕
                 BtnDeviceInit.IsEnabled = true;
@@ -76,11 +126,59 @@ namespace ModelB.Demo.Pages
                 BtnCancelProcess.IsEnabled = false;
                 BtnErrorReset.IsEnabled = false;
                 
-                ComplianceContext.LogSystem(
-                    "設備尚未初始化，所有功能按鈕已禁用。請先執行 Device Init。",
-                    LogLevel.Warning,
-                    showInUi: true
-                );
+                // ?? 移除重複的警告訊息，只在 Debug 輸出
+                System.Diagnostics.Debug.WriteLine("[DeviceControlPage] Device not initialized, buttons disabled");
+            }
+        }
+
+        /// <summary>
+        /// Update button enable/disable states based on current process state
+        /// </summary>
+        private void UpdateButtonStates()
+        {
+            if (!ProcessContext.IsDeviceInitialized)
+            {
+                BtnDeviceInit.IsEnabled = true;
+                BtnStartProcess.IsEnabled = false;
+                BtnPauseProcess.IsEnabled = false;
+                BtnCancelProcess.IsEnabled = false;
+                BtnErrorReset.IsEnabled = false;
+            }
+            else
+            {
+                BtnDeviceInit.IsEnabled = true;
+                BtnErrorReset.IsEnabled = true;
+                
+                switch (_currentProcessState)
+                {
+                    case ProcessState.Idle:
+                        BtnStartProcess.IsEnabled = true;
+                        BtnPauseProcess.IsEnabled = false;
+                        BtnCancelProcess.IsEnabled = false;
+                        BtnPauseProcess.Content = "Pause Process";
+                        break;
+                        
+                    case ProcessState.Running:
+                        BtnStartProcess.IsEnabled = false;
+                        BtnPauseProcess.IsEnabled = true;
+                        BtnCancelProcess.IsEnabled = true;
+                        BtnPauseProcess.Content = "Pause Process";
+                        break;
+                        
+                    case ProcessState.Paused:
+                        BtnStartProcess.IsEnabled = false;
+                        BtnPauseProcess.IsEnabled = true;
+                        BtnCancelProcess.IsEnabled = true;
+                        BtnPauseProcess.Content = "Resume Process";
+                        break;
+                        
+                    case ProcessState.Stopped:
+                        BtnStartProcess.IsEnabled = true;
+                        BtnPauseProcess.IsEnabled = false;
+                        BtnCancelProcess.IsEnabled = false;
+                        BtnPauseProcess.Content = "Pause Process";
+                        break;
+                }
             }
         }
 
@@ -127,7 +225,7 @@ namespace ModelB.Demo.Pages
             string statusText = "Unknown";
             var statusColor = System.Windows.Media.Brushes.Gray;
 
-            if (!_isDeviceInitialized)
+            if (!ProcessContext.IsDeviceInitialized)
             {
                 statusText = "Uninitialized";
                 statusColor = new System.Windows.Media.SolidColorBrush(
@@ -184,9 +282,8 @@ namespace ModelB.Demo.Pages
             BtnCancelProcess.IsEnabled = false;
             BtnErrorReset.IsEnabled = false;
             
-            // Set to Initializing state
-            _currentProcessState = ProcessState.Initializing;
-            ProcessStatus.ProcessState = ProcessState.Initializing;
+            // Set to Initializing state (update ProcessContext)
+            ProcessContext.CurrentState = ProcessState.Initializing;
             ProcessStatus.BatchNumber = "Device Init";
             UpdateDeviceStatusDisplay();
             
@@ -195,15 +292,15 @@ namespace ModelB.Demo.Pages
                 userId: username,
                 commandName: "Device Init",
                 category: "Device Control",
-                beforeState: _isDeviceInitialized ? "Ready" : "Uninitialized",
+                beforeState: ProcessContext.IsDeviceInitialized ? "Ready" : "Uninitialized",
                 afterState: "Initializing",
-                message: "設備初始化開始 - 5 秒倒數計時",
+                message: "Device initialization started - 5 second countdown",
                 batchId: "",
                 showInUi: true
             );
             
             ComplianceContext.LogSystem(
-                "設備初始化開始 - 請等待 5 秒...",
+                "Device initialization started - Please wait 5 seconds...",
                 LogLevel.Warning,
                 showInUi: true
             );
@@ -215,10 +312,6 @@ namespace ModelB.Demo.Pages
             };
             _initializationTimer.Tick += InitializationTimer_Tick;
             _initializationTimer.Start();
-            
-            // TODO: Implement actual device initialization logic
-            // Example: Write to PLC to start initialization sequence
-            // PlcContext.GlobalStatus?.CurrentManager?.WriteBit("M100", true);
         }
 
         private void InitializationTimer_Tick(object? sender, EventArgs e)
@@ -227,23 +320,15 @@ namespace ModelB.Demo.Pages
             _initializationTimer?.Stop();
             _initializationTimer = null;
             
-            // Mark device as initialized
-            _isDeviceInitialized = true;
-            _currentProcessState = ProcessState.Idle;
+            // ?? 使用全局 ProcessContext.IsDeviceInitialized
+            ProcessContext.IsDeviceInitialized = true;
             
-            // Hide process indicator
-            ProcessStatus.ProcessState = ProcessState.Idle;
+            // Update ProcessContext
+            ProcessContext.CurrentState = ProcessState.Idle;
             
             // Update status display
             UpdateDeviceStatusDisplay();
-            
-            // Enable buttons after initialization
-            BtnDeviceInit.IsEnabled = true;
-            BtnStartProcess.IsEnabled = true;
-            BtnErrorReset.IsEnabled = true;
-            // Pause and Cancel remain disabled until process starts
-            BtnPauseProcess.IsEnabled = false;
-            BtnCancelProcess.IsEnabled = false;
+            UpdateButtonStates();
             
             string username = SecurityContext.CurrentSession?.CurrentUserName ?? "Unknown";
             
@@ -254,20 +339,19 @@ namespace ModelB.Demo.Pages
                 category: "Device Control",
                 beforeState: "Initializing",
                 afterState: "Ready",
-                message: "設備初始化成功完成",
+                message: "Device initialization completed successfully",
                 batchId: "",
                 showInUi: true
             );
             
             ComplianceContext.LogSystem(
-                "設備初始化完成 - 設備已就緒可以開始生產",
+                "Device initialization complete - Device is now ready to start production",
                 LogLevel.Success,
                 showInUi: true
             );
             
-            // ?? 改用 CyberMessageBox
             CyberMessageBox.Show(
-                "設備初始化完成！\n設備已就緒，可以開始生產。\n\nDevice initialization completed!\nDevice is now ready to start production.",
+                "Device initialization completed!\nDevice is now ready, you can start production.",
                 "Device Init Complete",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information
@@ -277,11 +361,10 @@ namespace ModelB.Demo.Pages
         private void BtnStartProcess_Click(object sender, RoutedEventArgs e)
         {
             // Check if device is initialized
-            if (!_isDeviceInitialized)
+            if (!ProcessContext.IsDeviceInitialized)
             {
-                // ?? 改用 CyberMessageBox
                 CyberMessageBox.Show(
-                    "設備尚未初始化！\n請先執行設備初始化。\n\nDevice is not initialized!\nPlease initialize the device first.",
+                    "Device is not initialized!\nPlease initialize the device first.",
                     "Device Not Ready",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning
@@ -299,44 +382,43 @@ namespace ModelB.Demo.Pages
             {
                 _currentBatchNumber = dialog.BatchNumber;
                 
-                // Step 2: Update process state to Running
-                _currentProcessState = ProcessState.Running;
-                ProcessStatus.ProcessState = ProcessState.Running;
+                // ?? 更新 ProcessContext.BatchId（完整批號字串）
+                ProcessContext.BatchId = _currentBatchNumber;
+                
+                // Parse batch number to int for ProcessContext.BatchNumber
+                if (int.TryParse(_currentBatchNumber.Replace("BATCH-", "").Replace("-", ""), out int batchNo))
+                {
+                    ProcessContext.BatchNumber = batchNo;
+                }
+                
+                // Step 2: Update ProcessContext
+                ProcessContext.CurrentState = ProcessState.Running;
                 ProcessStatus.BatchNumber = _currentBatchNumber;
                 UpdateDeviceStatusDisplay();
+                UpdateButtonStates();
                 
-                // Step 3: Enable/Disable buttons
-                BtnStartProcess.IsEnabled = false;
-                BtnPauseProcess.IsEnabled = true;
-                BtnCancelProcess.IsEnabled = true;
-                
-                // Step 4: Log to OperationLogs table
+                // Step 3: Log to OperationLogs table
                 ComplianceContext.LogOperation(
                     userId: username,
                     commandName: "Start Process",
                     category: "Process Control",
                     beforeState: "Ready",
                     afterState: "Running",
-                    message: $"生產製程開始，批號：{_currentBatchNumber}",
+                    message: $"Production process started, Batch: {_currentBatchNumber}",
                     batchId: _currentBatchNumber,
                     showInUi: true
                 );
                 
                 ComplianceContext.LogSystem(
-                    $"生產開始 - 批號：{_currentBatchNumber}",
+                    $"Production started - Batch: {_currentBatchNumber}",
                     LogLevel.Success,
                     showInUi: true
                 );
-                
-                // TODO: Implement start process logic
-                // Example: Write to PLC to start production sequence
-                // PlcContext.GlobalStatus?.CurrentManager?.WriteBit("M101", true);
-                // PlcContext.GlobalStatus?.CurrentManager?.WriteWord("D103", batchIdNumeric);
             }
             else
             {
                 ComplianceContext.LogSystem(
-                    "生產開始已取消 - 使用者取消批號輸入",
+                    "Production start cancelled - User cancelled batch input",
                     LogLevel.Warning,
                     showInUi: true
                 );
@@ -349,22 +431,18 @@ namespace ModelB.Demo.Pages
             
             if (_currentProcessState == ProcessState.Running)
             {
-                // Pause the process
-                // ?? 改用 CyberMessageBox
                 var result = CyberMessageBox.Show(
-                    "確定要暫停當前製程嗎？\n\nAre you sure you want to pause the current process?",
+                    "Are you sure you want to pause the current process?",
                     "Pause Process",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    _currentProcessState = ProcessState.Paused;
-                    ProcessStatus.ProcessState = ProcessState.Paused;
+                    // Update ProcessContext
+                    ProcessContext.CurrentState = ProcessState.Paused;
                     UpdateDeviceStatusDisplay();
-                    
-                    // Update button text
-                    BtnPauseProcess.Content = "Resume Process";
+                    UpdateButtonStates();
                     
                     // Log operation
                     ComplianceContext.LogOperation(
@@ -373,30 +451,21 @@ namespace ModelB.Demo.Pages
                         category: "Process Control",
                         beforeState: "Running",
                         afterState: "Paused",
-                        message: $"製程已暫停 - 批號：{_currentBatchNumber}",
+                        message: $"Process paused - Batch: {_currentBatchNumber}",
                         batchId: _currentBatchNumber,
                         showInUi: true
                     );
                     
-                    // ?? 改用 CyberMessageBox
-                    CyberMessageBox.Show("製程已暫停\n\nProcess paused",
-                        "Pause Process",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                    
-                    // TODO: Implement pause logic
-                    // PlcContext.GlobalStatus?.CurrentManager?.WriteBit("M102", true);
+                    CyberMessageBox.Show("Process paused", "Pause Process",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             else if (_currentProcessState == ProcessState.Paused)
             {
-                // Resume the process
-                _currentProcessState = ProcessState.Running;
-                ProcessStatus.ProcessState = ProcessState.Running;
+                // Update ProcessContext
+                ProcessContext.CurrentState = ProcessState.Running;
                 UpdateDeviceStatusDisplay();
-                
-                // Update button text
-                BtnPauseProcess.Content = "Pause Process";
+                UpdateButtonStates();
                 
                 // Log operation
                 ComplianceContext.LogOperation(
@@ -405,19 +474,13 @@ namespace ModelB.Demo.Pages
                     category: "Process Control",
                     beforeState: "Paused",
                     afterState: "Running",
-                    message: $"製程已恢復 - 批號：{_currentBatchNumber}",
+                    message: $"Process resumed - Batch: {_currentBatchNumber}",
                     batchId: _currentBatchNumber,
                     showInUi: true
                 );
                 
-                // ?? 改用 CyberMessageBox
-                CyberMessageBox.Show("製程已恢復\n\nProcess resumed",
-                    "Resume Process",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-                
-                // TODO: Implement resume logic
-                // PlcContext.GlobalStatus?.CurrentManager?.WriteBit("M102", false);
+                CyberMessageBox.Show("Process resumed", "Resume Process",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -425,25 +488,18 @@ namespace ModelB.Demo.Pages
         {
             string username = SecurityContext.CurrentSession?.CurrentUserName ?? "Unknown";
             
-            // ?? 改用 CyberMessageBox
             var result = CyberMessageBox.Show(
-                "確定要取消當前製程嗎？\n此操作無法復原！\n\nAre you sure you want to cancel the current process?\nThis action cannot be undone!",
+                "Are you sure you want to cancel the current process?\nThis action cannot be undone!",
                 "Cancel Process",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
             if (result == MessageBoxResult.Yes)
             {
-                // Stop the process
-                _currentProcessState = ProcessState.Stopped;
-                ProcessStatus.ProcessState = ProcessState.Stopped;
+                // Update ProcessContext
+                ProcessContext.CurrentState = ProcessState.Stopped;
                 UpdateDeviceStatusDisplay();
-                
-                // Reset buttons
-                BtnStartProcess.IsEnabled = true;
-                BtnPauseProcess.IsEnabled = false;
-                BtnPauseProcess.Content = "Pause Process";
-                BtnCancelProcess.IsEnabled = false;
+                UpdateButtonStates();
                 
                 // Log operation
                 ComplianceContext.LogOperation(
@@ -452,13 +508,13 @@ namespace ModelB.Demo.Pages
                     category: "Process Control",
                     beforeState: _currentProcessState == ProcessState.Paused ? "Paused" : "Running",
                     afterState: "Cancelled",
-                    message: $"製程已取消（無法復原） - 批號：{_currentBatchNumber}",
+                    message: $"Process cancelled (cannot be undone) - Batch: {_currentBatchNumber}",
                     batchId: _currentBatchNumber,
                     showInUi: true
                 );
                 
                 ComplianceContext.LogSystem(
-                    $"生產已取消 - 批號：{_currentBatchNumber}",
+                    $"Production cancelled - Batch: {_currentBatchNumber}",
                     LogLevel.Error,
                     showInUi: true
                 );
@@ -474,19 +530,12 @@ namespace ModelB.Demo.Pages
                 timer.Tick += (s, ev) =>
                 {
                     timer.Stop();
-                    _currentProcessState = ProcessState.Idle;
-                    UpdateDeviceStatusDisplay();
+                    ProcessContext.CurrentState = ProcessState.Idle;
                 };
                 timer.Start();
                 
-                // ?? 改用 CyberMessageBox
-                CyberMessageBox.Show("製程已取消\n\nProcess cancelled",
-                    "Cancel Process",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-                
-                // TODO: Implement cancel logic
-                // PlcContext.GlobalStatus?.CurrentManager?.WriteBit("M103", true);
+                CyberMessageBox.Show("Process cancelled", "Cancel Process",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -494,7 +543,6 @@ namespace ModelB.Demo.Pages
         {
             string username = SecurityContext.CurrentSession?.CurrentUserName ?? "Unknown";
             
-            // ?? 改用 CyberMessageBox
             var result = CyberMessageBox.Show(
                 "確定要重置所有錯誤狀態嗎？\n\nAre you sure you want to reset all error states?",
                 "Error Reset",
@@ -515,14 +563,10 @@ namespace ModelB.Demo.Pages
                     showInUi: true
                 );
                 
-                // ?? 改用 CyberMessageBox
                 CyberMessageBox.Show("所有錯誤狀態已重置\n\nAll error states reset",
                     "Error Reset",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
-                
-                // TODO: Implement error reset logic
-                // PlcContext.GlobalStatus?.CurrentManager?.WriteBit("M104", true);
             }
         }
 

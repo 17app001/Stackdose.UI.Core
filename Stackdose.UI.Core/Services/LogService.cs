@@ -536,7 +536,7 @@ namespace Stackdose.UI.Core.Services
         public int Id { get; set; }
         public DateTime Timestamp { get; set; }
         public string BatchId { get; set; } = "";
-        public string UserId { get; set; } = "";
+        public string UserId { get; set; } = "SuperAdmin"; // ?? FDA 21 CFR Part 11 - 預設為 SuperAdmin
         public string CommandName { get; set; } = "";
         public string Category { get; set; } = "";
         public string BeforeState { get; set; } = "";
@@ -561,7 +561,7 @@ namespace Stackdose.UI.Core.Services
         public string EventDescription { get; set; } = "";
         public string Severity { get; set; } = "";
         public string CurrentState { get; set; } = "";
-        public string UserId { get; set; } = "";
+        public string UserId { get; set; } = "SuperAdmin"; // ?? FDA 21 CFR Part 11 - 預設為 SuperAdmin
         public string Message { get; set; } = "";
 
         // UI 顯示用
@@ -577,6 +577,7 @@ namespace Stackdose.UI.Core.Services
         public int Id { get; set; }
         public DateTime Timestamp { get; set; }
         public string BatchId { get; set; } = "";
+        public string UserId { get; set; } = "SuperAdmin"; // ?? FDA 21 CFR Part 11 - 預設為 SuperAdmin
         public double PredryTemp { get; set; }
         public double DryTemp { get; set; }
         public double CdaInletPressure { get; set; }

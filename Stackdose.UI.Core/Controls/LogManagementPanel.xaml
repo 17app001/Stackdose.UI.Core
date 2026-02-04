@@ -573,193 +573,229 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
 
-                            <!-- Operation Log Cards -->
+                            <!-- Operation Log Cards - Two Row Layout -->
                             <ItemsControl ItemsSource="{Binding CurrentOperationLogs}"
                                           Visibility="{Binding IsOperationMode, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border Style="{StaticResource LogCardStyle}" Margin="0,0,0,8">
                                             <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="140"/>
-                                                    <ColumnDefinition Width="120"/>
-                                                    <ColumnDefinition Width="150"/>
-                                                    <ColumnDefinition Width="150"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
 
-                                                <!-- Timestamp -->
-                                                <TextBlock Grid.Column="0" 
-                                                           Text="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}"
-                                                           Foreground="{DynamicResource Plc.Text.Value}"
-                                                           FontSize="14"
-                                                           FontFamily="Consolas"
-                                                           VerticalAlignment="Center"/>
+                                                <!-- Row 0: Timestamp + UserId (no label) -->
+                                                <Grid Grid.Row="0" Margin="0,0,0,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
 
-                                                <!-- User ID -->
-                                                <TextBlock Grid.Column="1" 
-                                                           Text="{Binding UserId}"
-                                                           Foreground="{DynamicResource Cyber.Text.Main}"
-                                                           FontSize="14"
-                                                           FontWeight="Medium"
-                                                           VerticalAlignment="Center"
-                                                           Margin="8,0,0,0"/>
-
-                                                <!-- Command Name -->
-                                                <TextBlock Grid.Column="2" 
-                                                           Text="{Binding CommandName}"
-                                                           Foreground="{DynamicResource Plc.Text.Title}"
-                                                           FontSize="14"
-                                                           FontWeight="Bold"
-                                                           VerticalAlignment="Center"
-                                                           Margin="8,0,0,0"/>
-
-                                                <!-- State Change -->
-                                                <StackPanel Grid.Column="3" 
-                                                            Orientation="Horizontal"
-                                                            VerticalAlignment="Center"
-                                                            Margin="8,0,0,0">
-                                                    <TextBlock Text="{Binding BeforeState}"
-                                                               Foreground="{DynamicResource Plc.Text.Label}"
+                                                    <!-- Timestamp -->
+                                                    <TextBlock Grid.Column="0" 
+                                                               Text="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}"
+                                                               Foreground="{DynamicResource Cyber.NeonBlue}"
                                                                FontSize="14"
+                                                               FontWeight="Bold"
+                                                               FontFamily="Consolas"
                                                                VerticalAlignment="Center"/>
-                                                    <TextBlock Text=" > "
-                                                               Foreground="{DynamicResource Cyber.Text.Main}"
-                                                               FontSize="14"
-                                                               Margin="4,0"
-                                                               VerticalAlignment="Center"/>
-                                                    <TextBlock Text="{Binding AfterState}"
+
+                                                    <!-- User ID (direct display, no label) -->
+                                                    <TextBlock Grid.Column="1" 
+                                                               Text="{Binding UserId}"
                                                                Foreground="{DynamicResource Sensor.Text.Title}"
-                                                               FontSize="14"
-                                                               FontWeight="Medium"
+                                                               FontSize="13"
+                                                               FontWeight="Bold"
+                                                               FontFamily="Consolas"
                                                                VerticalAlignment="Center"/>
-                                                </StackPanel>
+                                                </Grid>
 
-                                                <!-- Message -->
-                                                <TextBlock Grid.Column="4" 
-                                                           Text="{Binding Message}"
-                                                           Foreground="{DynamicResource Plc.Text.Label}"
-                                                           FontSize="12"
-                                                           TextWrapping="Wrap"
-                                                           VerticalAlignment="Center"
-                                                           Margin="8,0,0,0"/>
+                                                <!-- Row 1: Command + States + Message -->
+                                                <Grid Grid.Row="1">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="200"/>
+                                                        <ColumnDefinition Width="200"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Command Name -->
+                                                    <TextBlock Grid.Column="0" 
+                                                               Text="{Binding CommandName}"
+                                                               Foreground="{DynamicResource Plc.Text.Title}"
+                                                               FontSize="13"
+                                                               FontWeight="Bold"
+                                                               VerticalAlignment="Center"/>
+
+                                                    <!-- State Change -->
+                                                    <StackPanel Grid.Column="1" 
+                                                                Orientation="Horizontal"
+                                                                VerticalAlignment="Center"
+                                                                Margin="8,0,0,0">
+                                                        <TextBlock Text="{Binding BeforeState}"
+                                                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                                                   FontSize="12"
+                                                                   VerticalAlignment="Center"/>
+                                                        <TextBlock Text=" > "
+                                                                   Foreground="{DynamicResource Cyber.Text.Main}"
+                                                                   FontSize="12"
+                                                                   Margin="4,0"
+                                                                   VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{Binding AfterState}"
+                                                                   Foreground="{DynamicResource Sensor.Text.Title}"
+                                                                   FontSize="12"
+                                                                   FontWeight="Medium"
+                                                                   VerticalAlignment="Center"/>
+                                                    </StackPanel>
+
+                                                    <!-- Message -->
+                                                    <TextBlock Grid.Column="2" 
+                                                               Text="{Binding Message}"
+                                                               Foreground="{DynamicResource Plc.Text.Label}"
+                                                               FontSize="12"
+                                                               TextWrapping="Wrap"
+                                                               VerticalAlignment="Center"
+                                                               Margin="8,0,0,0"/>
+                                                </Grid>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
 
-                            <!-- Event Log Cards -->
+                            <!-- Event Log Cards - Two Row Layout with UserId -->
                             <ItemsControl ItemsSource="{Binding CurrentEventLogs}"
                                           Visibility="{Binding IsEventMode, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border Style="{StaticResource LogCardStyle}" Margin="0,0,0,8">
                                             <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="150"/>
-                                                    <ColumnDefinition Width="95"/>
-                                                    <ColumnDefinition Width="75"/>
-                                                    <ColumnDefinition Width="220"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
 
-                                                <!-- Timestamp -->
-                                                <TextBlock Grid.Column="0" 
-                                                           Text="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}"
-                                                           Foreground="{DynamicResource Plc.Text.Value}"
-                                                           FontSize="13"
-                                                           FontFamily="Consolas"
-                                                           VerticalAlignment="Center"/>
+                                                <!-- Row 0: Timestamp + UserId (no label) -->
+                                                <Grid Grid.Row="0" Margin="0,0,0,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
 
-                                                <!-- Event Type with fixed width -->
-                                                <Border Grid.Column="1" 
-                                                        CornerRadius="3"
-                                                        Padding="6,3"
-                                                        Margin="8,0,0,0"
-                                                        Width="85"
-                                                        VerticalAlignment="Center"
-                                                        HorizontalAlignment="Left">
-                                                    <Border.Style>
-                                                        <Style TargetType="Border">
-                                                            <Setter Property="Background" Value="#3B82F6"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding EventType}" Value="Alarm">
-                                                                    <Setter Property="Background" Value="#EF4444"/>
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding EventType}" Value="Warning">
-                                                                    <Setter Property="Background" Value="#F59E0B"/>
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding EventType}" Value="System Event">
-                                                                    <Setter Property="Background" Value="#3B82F6"/>
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding EventType}" Value="Safety Event">
-                                                                    <Setter Property="Background" Value="#8B5CF6"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Border.Style>
-                                                    <TextBlock Text="{Binding EventType}"
-                                                               Foreground="White"
-                                                               FontSize="11"
+                                                    <!-- Timestamp -->
+                                                    <TextBlock Grid.Column="0" 
+                                                               Text="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}"
+                                                               Foreground="{DynamicResource Cyber.NeonBlue}"
+                                                               FontSize="14"
                                                                FontWeight="Bold"
                                                                FontFamily="Consolas"
-                                                               HorizontalAlignment="Center"/>
-                                                </Border>
+                                                               VerticalAlignment="Center"/>
 
-                                                <!-- Severity with fixed width -->
-                                                <Border Grid.Column="2" 
-                                                        CornerRadius="3"
-                                                        Padding="6,3"
-                                                        Margin="8,0,0,0"
-                                                        Width="65"
-                                                        VerticalAlignment="Center"
-                                                        HorizontalAlignment="Left">
-                                                    <Border.Style>
-                                                        <Style TargetType="Border">
-                                                            <Setter Property="Background" Value="#6B7280"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding Severity}" Value="Critical">
-                                                                    <Setter Property="Background" Value="#DC2626"/>
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding Severity}" Value="Major">
-                                                                    <Setter Property="Background" Value="#EA580C"/>
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding Severity}" Value="Minor">
-                                                                    <Setter Property="Background" Value="#CA8A04"/>
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding Severity}" Value="Info">
-                                                                    <Setter Property="Background" Value="#2563EB"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Border.Style>
-                                                    <TextBlock Text="{Binding Severity}"
-                                                               Foreground="White"
-                                                               FontSize="11"
+                                                    <!-- User ID (direct display, no label) -->
+                                                    <TextBlock Grid.Column="1" 
+                                                               Text="{Binding UserId}"
+                                                               Foreground="{DynamicResource Sensor.Text.Title}"
+                                                               FontSize="13"
                                                                FontWeight="Bold"
                                                                FontFamily="Consolas"
-                                                               HorizontalAlignment="Center"/>
-                                                </Border>
+                                                               VerticalAlignment="Center"/>
+                                                </Grid>
 
-                                                <!-- Event Description -->
-                                                <TextBlock Grid.Column="3" 
-                                                           Text="{Binding EventDescription}"
-                                                           Foreground="{DynamicResource Plc.Text.Title}"
-                                                           FontSize="13"
-                                                           FontWeight="Bold"
-                                                           VerticalAlignment="Center"
-                                                           Margin="8,0,0,0"
-                                                           TextTrimming="CharacterEllipsis"/>
+                                                <!-- Row 1: Event Type + Severity + Description + Message -->
+                                                <Grid Grid.Row="1">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="110"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                        <ColumnDefinition Width="250"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
 
-                                                <!-- Message -->
-                                                <TextBlock Grid.Column="4" 
-                                                           Text="{Binding Message}"
-                                                           Foreground="{DynamicResource Plc.Text.Label}"
-                                                           FontSize="12"
-                                                           TextWrapping="Wrap"
-                                                           VerticalAlignment="Center"
-                                                           Margin="8,0,0,0"/>
+                                                    <!-- Event Type -->
+                                                    <Border Grid.Column="0" 
+                                                            CornerRadius="4"
+                                                            Padding="8,4"
+                                                            Margin="0,0,8,0"
+                                                            VerticalAlignment="Center"
+                                                            HorizontalAlignment="Left">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Background" Value="#3B82F6"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding EventType}" Value="Alarm">
+                                                                        <Setter Property="Background" Value="#EF4444"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding EventType}" Value="Warning">
+                                                                        <Setter Property="Background" Value="#F59E0B"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding EventType}" Value="System Event">
+                                                                        <Setter Property="Background" Value="#3B82F6"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding EventType}" Value="Safety Event">
+                                                                        <Setter Property="Background" Value="#8B5CF6"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <TextBlock Text="{Binding EventType}"
+                                                                   Foreground="White"
+                                                                   FontSize="11"
+                                                                   FontWeight="Bold"
+                                                                   FontFamily="Consolas"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+
+                                                    <!-- Severity -->
+                                                    <Border Grid.Column="1" 
+                                                            CornerRadius="4"
+                                                            Padding="8,4"
+                                                            Margin="0,0,8,0"
+                                                            VerticalAlignment="Center"
+                                                            HorizontalAlignment="Left">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Background" Value="#6B7280"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Severity}" Value="Critical">
+                                                                        <Setter Property="Background" Value="#DC2626"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Severity}" Value="Major">
+                                                                        <Setter Property="Background" Value="#EA580C"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Severity}" Value="Minor">
+                                                                        <Setter Property="Background" Value="#CA8A04"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Severity}" Value="Info">
+                                                                        <Setter Property="Background" Value="#2563EB"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <TextBlock Text="{Binding Severity}"
+                                                                   Foreground="White"
+                                                                   FontSize="11"
+                                                                   FontWeight="Bold"
+                                                                   FontFamily="Consolas"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+
+                                                    <!-- Event Description -->
+                                                    <TextBlock Grid.Column="2" 
+                                                               Text="{Binding EventDescription}"
+                                                               Foreground="{DynamicResource Plc.Text.Title}"
+                                                               FontSize="13"
+                                                               FontWeight="Bold"
+                                                               VerticalAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis"/>
+
+                                                    <!-- Message -->
+                                                    <TextBlock Grid.Column="3" 
+                                                               Text="{Binding Message}"
+                                                               Foreground="{DynamicResource Plc.Text.Label}"
+                                                               FontSize="12"
+                                                               TextWrapping="Wrap"
+                                                               VerticalAlignment="Center"
+                                                               Margin="8,0,0,0"/>
+                                                </Grid>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -774,72 +810,83 @@
                                         <Border Style="{StaticResource LogCardStyle}" Margin="0,0,0,8">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="150"/>
-                                                    <ColumnDefinition Width="180"/>
+                                                    <ColumnDefinition Width="160"/>
+                                                    <ColumnDefinition Width="120"/>
+                                                    <ColumnDefinition Width="160"/>
                                                     <ColumnDefinition Width="130"/>
                                                     <ColumnDefinition Width="130"/>
                                                     <ColumnDefinition Width="130"/>
                                                 </Grid.ColumnDefinitions>
 
-                                                <!-- Timestamp -->
+                                                <!-- Timestamp (wider) -->
                                                 <TextBlock Grid.Column="0" 
                                                            Text="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}"
                                                            Foreground="{DynamicResource Plc.Text.Value}"
-                                                           FontSize="14"
+                                                           FontSize="13"
                                                            FontFamily="Consolas"
                                                            VerticalAlignment="Center"/>
 
-                                                <!-- Batch ID - wider -->
+                                                <!-- User ID (NEW - FDA Compliance, wider) -->
                                                 <TextBlock Grid.Column="1" 
+                                                           Text="{Binding UserId}"
+                                                           Foreground="{DynamicResource Cyber.Text.Main}"
+                                                           FontSize="13"
+                                                           FontWeight="Medium"
+                                                           FontFamily="Consolas"
+                                                           VerticalAlignment="Center"
+                                                           Margin="8,0,0,0"/>
+
+                                                <!-- Batch ID -->
+                                                <TextBlock Grid.Column="2" 
                                                            Text="{Binding BatchId}"
                                                            Foreground="{DynamicResource Cyber.Text.Main}"
-                                                           FontSize="14"
+                                                           FontSize="13"
                                                            FontWeight="Medium"
                                                            FontFamily="Consolas"
                                                            VerticalAlignment="Center"
                                                            Margin="8,0,0,0"/>
 
                                                 <!-- PreDry Temp -->
-                                                <StackPanel Grid.Column="2" 
+                                                <StackPanel Grid.Column="3" 
                                                             Orientation="Horizontal"
                                                             VerticalAlignment="Center"
                                                             Margin="8,0,0,0">
                                                     <TextBlock Text="PreDry: "
                                                                Foreground="{DynamicResource Plc.Text.Label}"
-                                                               FontSize="13"/>
+                                                               FontSize="12"/>
                                                     <TextBlock Text="{Binding PredryTemp, StringFormat='{}{0:F1} C'}"
                                                                Foreground="{DynamicResource Sensor.Text.Title}"
-                                                               FontSize="14"
+                                                               FontSize="13"
                                                                FontWeight="Bold"
                                                                FontFamily="Consolas"/>
                                                 </StackPanel>
 
                                                 <!-- Dry Temp -->
-                                                <StackPanel Grid.Column="3" 
+                                                <StackPanel Grid.Column="4" 
                                                             Orientation="Horizontal"
                                                             VerticalAlignment="Center"
                                                             Margin="8,0,0,0">
                                                     <TextBlock Text="Dry: "
                                                                Foreground="{DynamicResource Plc.Text.Label}"
-                                                               FontSize="13"/>
+                                                               FontSize="12"/>
                                                     <TextBlock Text="{Binding DryTemp, StringFormat='{}{0:F1} C'}"
                                                                Foreground="{DynamicResource Sensor.Text.Title}"
-                                                               FontSize="14"
+                                                               FontSize="13"
                                                                FontWeight="Bold"
                                                                FontFamily="Consolas"/>
                                                 </StackPanel>
 
                                                 <!-- CDA Pressure -->
-                                                <StackPanel Grid.Column="4" 
+                                                <StackPanel Grid.Column="5" 
                                                             Orientation="Horizontal"
                                                             VerticalAlignment="Center"
                                                             Margin="8,0,0,0">
                                                     <TextBlock Text="CDA: "
                                                                Foreground="{DynamicResource Plc.Text.Label}"
-                                                               FontSize="13"/>
+                                                               FontSize="12"/>
                                                     <TextBlock Text="{Binding CdaInletPressure, StringFormat='{}{0:F1} bar'}"
                                                                Foreground="{DynamicResource Sensor.Text.Title}"
-                                                               FontSize="14"
+                                                               FontSize="13"
                                                                FontWeight="Bold"
                                                                FontFamily="Consolas"/>
                                                 </StackPanel>

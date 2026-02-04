@@ -180,12 +180,15 @@ namespace Stackdose.UI.Core.Helpers
         /// <param name="cdaInletPressure">設備入口氣壓</param>
         /// <remarks>
         /// 此方法使用批次寫入模式，符合 FDA 21 CFR Part 11 規範
-        /// 製程中每5秒記錄一筆資料
+        /// 製程中每5秒記錄一筆資料，包含操作使用者ID
         /// </remarks>
         public static void LogPeriodicData(string batchId, double predryTemp, double dryTemp, double cdaInletPressure)
         {
+            // 🔥 自動取得當前使用者ID以符合 FDA 21 CFR Part 11 規範
+            string userId = CurrentUser;
+            
             // Batch write mode: logs are queued first
-            SqliteLogger.LogPeriodicData(batchId, predryTemp, dryTemp, cdaInletPressure);
+            SqliteLogger.LogPeriodicData(batchId, userId, predryTemp, dryTemp, cdaInletPressure);
         }
 
         #endregion

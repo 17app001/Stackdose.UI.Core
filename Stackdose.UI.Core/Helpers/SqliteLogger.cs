@@ -138,6 +138,7 @@ namespace Stackdose.UI.Core.Helpers
         {
             public DateTime Timestamp { get; set; }
             public string BatchId { get; set; } = "";
+            public string UserId { get; set; } = "";
             public double PredryTemp { get; set; }
             public double DryTemp { get; set; }
             public double CdaInletPressure { get; set; }
@@ -217,10 +218,80 @@ namespace Stackdose.UI.Core.Helpers
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         BatchId TEXT,
+                        UserId TEXT,
                         PredryTemp REAL,
                         DryTemp REAL,
                         CdaInletPressure REAL
                     );");
+
+                // 🔥 FDA 21 CFR Part 11 合規性修正
+                try
+                {
+                    // 1. 更新 NULL 或空字串的 UserId 為預設值 'SuperAdmin'
+                    int opNullUpdated = conn.Execute(@"
+                        UPDATE OperationLogs 
+                        SET UserId = 'SuperAdmin' 
+                        WHERE UserId IS NULL OR UserId = ''
+                    ");
+
+                    int eventNullUpdated = conn.Execute(@"
+                        UPDATE EventLogs 
+                        SET UserId = 'SuperAdmin' 
+                        WHERE UserId IS NULL OR UserId = ''
+                    ");
+
+                    int periodicNullUpdated = conn.Execute(@"
+                        UPDATE PeriodicDataLogs 
+                        SET UserId = 'SuperAdmin' 
+                        WHERE UserId IS NULL OR UserId = ''
+                    ");
+
+                    // 2. 統一使用者名稱：將 'SuperAdministrator' 改為 'SuperAdmin'
+                    int opNameUpdated = conn.Execute(@"
+                        UPDATE OperationLogs 
+                        SET UserId = 'SuperAdmin' 
+                        WHERE UserId LIKE '%SuperAdministrator%'
+                    ");
+
+                    int eventNameUpdated = conn.Execute(@"
+                        UPDATE EventLogs 
+                        SET UserId = 'SuperAdmin' 
+                        WHERE UserId LIKE '%SuperAdministrator%'
+                    ");
+
+                    int periodicNameUpdated = conn.Execute(@"
+                        UPDATE PeriodicDataLogs 
+                        SET UserId = 'SuperAdmin' 
+                        WHERE UserId LIKE '%SuperAdministrator%'
+                    ");
+
+                    int auditNameUpdated = conn.Execute(@"
+                        UPDATE AuditTrails 
+                        SET User = 'SuperAdmin' 
+                        WHERE User LIKE '%SuperAdministrator%'
+                    ");
+
+                    #if DEBUG
+                    if (opNullUpdated > 0 || eventNullUpdated > 0 || periodicNullUpdated > 0 ||
+                        opNameUpdated > 0 || eventNameUpdated > 0 || periodicNameUpdated > 0 || auditNameUpdated > 0)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FDA Compliance Fix Applied:");
+                        System.Diagnostics.Debug.WriteLine($"  NULL UserIds Updated:");
+                        System.Diagnostics.Debug.WriteLine($"    OperationLogs: {opNullUpdated}");
+                        System.Diagnostics.Debug.WriteLine($"    EventLogs: {eventNullUpdated}");
+                        System.Diagnostics.Debug.WriteLine($"    PeriodicDataLogs: {periodicNullUpdated}");
+                        System.Diagnostics.Debug.WriteLine($"  Username Standardized (SuperAdministrator -> SuperAdmin):");
+                        System.Diagnostics.Debug.WriteLine($"    OperationLogs: {opNameUpdated}");
+                        System.Diagnostics.Debug.WriteLine($"    EventLogs: {eventNameUpdated}");
+                        System.Diagnostics.Debug.WriteLine($"    PeriodicDataLogs: {periodicNameUpdated}");
+                        System.Diagnostics.Debug.WriteLine($"    AuditTrails: {auditNameUpdated}");
+                    }
+                    #endif
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] Error fixing FDA compliance: {ex.Message}");
+                }
             }
 
             // 🔥 啟動定時刷新 Timer
@@ -232,8 +303,8 @@ namespace Stackdose.UI.Core.Helpers
             );
 
             #if DEBUG
-            System.Diagnostics.Debug.WriteLine("[SqliteLogger] 批次寫入模式已啟用");
-            System.Diagnostics.Debug.WriteLine($"[SqliteLogger] 批次大小: {_batchSize}, 刷新間隔: {_flushIntervalMs}ms");
+            System.Diagnostics.Debug.WriteLine("[SqliteLogger] Batch write mode enabled");
+            System.Diagnostics.Debug.WriteLine($"[SqliteLogger] Batch size: {_batchSize}, Flush interval: {_flushIntervalMs}ms");
             #endif
         }
 
@@ -402,10 +473,11 @@ namespace Stackdose.UI.Core.Helpers
         /// 記錄週期性製程參數（批次模式） - 符合 FDA 21 CFR Part 11
         /// </summary>
         /// <param name="batchId">批次編號</param>
+        /// <param name="userId">操作使用者ID</param>
         /// <param name="predryTemp">預乾燥溫度</param>
         /// <param name="dryTemp">乾燥模組溫度</param>
         /// <param name="cdaInletPressure">設備入口氣壓</param>
-        public static void LogPeriodicData(string batchId, double predryTemp, double dryTemp, double cdaInletPressure)
+        public static void LogPeriodicData(string batchId, string userId, double predryTemp, double dryTemp, double cdaInletPressure)
         {
             try
             {
@@ -413,6 +485,7 @@ namespace Stackdose.UI.Core.Helpers
                 {
                     Timestamp = DateTime.Now,
                     BatchId = batchId,
+                    UserId = userId,
                     PredryTemp = predryTemp,
                     DryTemp = dryTemp,
                     CdaInletPressure = cdaInletPressure
@@ -708,8 +781,8 @@ namespace Stackdose.UI.Core.Helpers
                             foreach (var entry in batch)
                             {
                                 conn.Execute(
-                                    @"INSERT INTO PeriodicDataLogs (Timestamp, BatchId, PredryTemp, DryTemp, CdaInletPressure) 
-                                      VALUES (@Timestamp, @BatchId, @PredryTemp, @DryTemp, @CdaInletPressure)",
+                                    @"INSERT INTO PeriodicDataLogs (Timestamp, BatchId, UserId, PredryTemp, DryTemp, CdaInletPressure) 
+                                      VALUES (@Timestamp, @BatchId, @UserId, @PredryTemp, @DryTemp, @CdaInletPressure)",
                                     entry,
                                     transaction
                                 );

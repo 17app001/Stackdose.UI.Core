@@ -20,9 +20,9 @@ namespace Stackdose.UI.Core.Controls
             #if DEBUG
             // DEBUG mode: Auto-fill superadmin (for testing)
             System.Diagnostics.Debug.WriteLine("[LoginDialog] DEBUG Mode: Auto-filling superadmin credentials");
-            UserIdTextBox.Text = "superadmin";
+            UserIdTextBox.Text = "UID-000001";
             PasswordBox.Password = "superadminsuperadmin";  // Pre-fill password for testing
-            System.Diagnostics.Debug.WriteLine("[LoginDialog] Tip: Use password 'superadminsuperadmin' to login");
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] Tip: Use UID-000001 / superadminsuperadmin to login");
             #else
             // RELEASE mode: Auto-fill current Windows username
             try
@@ -109,7 +109,7 @@ namespace Stackdose.UI.Core.Controls
                 return;
             }
 
-            // 使用非同步的登入邏輯（避免 UI 凍結）
+            // 使用非同步的登入邏輯（避開 UI 凍結）
             try
             {
                 #if DEBUG

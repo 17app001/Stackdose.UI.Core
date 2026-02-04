@@ -92,13 +92,27 @@
                 </Border>
 
                 <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+                    <!-- DisplayName -->
                     <TextBlock Text="{Binding UserName}" 
                                FontSize="13" 
                                FontWeight="Bold"
                                Foreground="{StaticResource TextPrimaryBrush}"/>
-                    <TextBlock Text="{Binding UserRole}" 
-                               FontSize="10" 
-                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                    <!-- UID and Role -->
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock x:Name="UserIdText"
+                                   Text="{Binding UserId}" 
+                                   FontSize="10" 
+                                   Foreground="#3498db"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,6,0"/>
+                        <TextBlock Text="|" 
+                                   FontSize="10" 
+                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   Margin="0,0,6,0"/>
+                        <TextBlock Text="{Binding UserRole}" 
+                                   FontSize="10" 
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </StackPanel>
                 </StackPanel>
 
                 <!-- Action Buttons -->

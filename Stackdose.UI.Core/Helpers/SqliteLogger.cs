@@ -227,65 +227,52 @@ namespace Stackdose.UI.Core.Helpers
                 // 🔥 FDA 21 CFR Part 11 合規性修正
                 try
                 {
-                    // 1. 更新 NULL 或空字串的 UserId 為預設值 'SuperAdmin'
-                    int opNullUpdated = conn.Execute(@"
+                    // 🔥 修正 OperationLogs - 所有不符合 "UID-" 開頭格式的都更新
+                    int opUpdated = conn.Execute(@"
                         UPDATE OperationLogs 
-                        SET UserId = 'SuperAdmin' 
-                        WHERE UserId IS NULL OR UserId = ''
+                        SET UserId = 'UID-000001 (Super Administrator)' 
+                        WHERE UserId IS NULL 
+                           OR UserId = ''
+                           OR UserId NOT LIKE 'UID-%(%)%'
                     ");
 
-                    int eventNullUpdated = conn.Execute(@"
+                    // 🔥 修正 EventLogs
+                    int eventUpdated = conn.Execute(@"
                         UPDATE EventLogs 
-                        SET UserId = 'SuperAdmin' 
-                        WHERE UserId IS NULL OR UserId = ''
+                        SET UserId = 'UID-000001 (Super Administrator)' 
+                        WHERE UserId IS NULL 
+                           OR UserId = ''
+                           OR UserId NOT LIKE 'UID-%(%)%'
                     ");
 
-                    int periodicNullUpdated = conn.Execute(@"
+                    // 🔥 修正 PeriodicDataLogs - 確保格式為 "UID-XXXXXX (DisplayName)"
+                    int periodicUpdated = conn.Execute(@"
                         UPDATE PeriodicDataLogs 
-                        SET UserId = 'SuperAdmin' 
-                        WHERE UserId IS NULL OR UserId = ''
+                        SET UserId = 'UID-000001 (Super Administrator)' 
+                        WHERE UserId IS NULL 
+                           OR UserId = ''
+                           OR UserId NOT LIKE 'UID-%(%)%'
                     ");
 
-                    // 2. 統一使用者名稱：將 'SuperAdministrator' 改為 'SuperAdmin'
-                    int opNameUpdated = conn.Execute(@"
-                        UPDATE OperationLogs 
-                        SET UserId = 'SuperAdmin' 
-                        WHERE UserId LIKE '%SuperAdministrator%'
-                    ");
-
-                    int eventNameUpdated = conn.Execute(@"
-                        UPDATE EventLogs 
-                        SET UserId = 'SuperAdmin' 
-                        WHERE UserId LIKE '%SuperAdministrator%'
-                    ");
-
-                    int periodicNameUpdated = conn.Execute(@"
-                        UPDATE PeriodicDataLogs 
-                        SET UserId = 'SuperAdmin' 
-                        WHERE UserId LIKE '%SuperAdministrator%'
-                    ");
-
-                    int auditNameUpdated = conn.Execute(@"
+                    // 🔥 修正 AuditTrails (User 欄位)
+                    int auditUpdated = conn.Execute(@"
                         UPDATE AuditTrails 
-                        SET User = 'SuperAdmin' 
-                        WHERE User LIKE '%SuperAdministrator%'
+                        SET User = 'UID-000001 (Super Administrator)' 
+                        WHERE User IS NULL 
+                           OR User = ''
+                           OR User NOT LIKE 'UID-%(%)%'
                     ");
 
                     #if DEBUG
-                    if (opNullUpdated > 0 || eventNullUpdated > 0 || periodicNullUpdated > 0 ||
-                        opNameUpdated > 0 || eventNameUpdated > 0 || periodicNameUpdated > 0 || auditNameUpdated > 0)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FDA Compliance Fix Applied:");
-                        System.Diagnostics.Debug.WriteLine($"  NULL UserIds Updated:");
-                        System.Diagnostics.Debug.WriteLine($"    OperationLogs: {opNullUpdated}");
-                        System.Diagnostics.Debug.WriteLine($"    EventLogs: {eventNullUpdated}");
-                        System.Diagnostics.Debug.WriteLine($"    PeriodicDataLogs: {periodicNullUpdated}");
-                        System.Diagnostics.Debug.WriteLine($"  Username Standardized (SuperAdministrator -> SuperAdmin):");
-                        System.Diagnostics.Debug.WriteLine($"    OperationLogs: {opNameUpdated}");
-                        System.Diagnostics.Debug.WriteLine($"    EventLogs: {eventNameUpdated}");
-                        System.Diagnostics.Debug.WriteLine($"    PeriodicDataLogs: {periodicNameUpdated}");
-                        System.Diagnostics.Debug.WriteLine($"    AuditTrails: {auditNameUpdated}");
-                    }
+                    int totalUpdated = opUpdated + eventUpdated + periodicUpdated + auditUpdated;
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] ====== FDA Compliance Fix Applied ======");
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] Updated User format to 'UID-XXXXXX (DisplayName)':");
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger]   OperationLogs: {opUpdated} records");
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger]   EventLogs: {eventUpdated} records");
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger]   PeriodicDataLogs: {periodicUpdated} records");
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger]   AuditTrails: {auditUpdated} records");
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger]   Total: {totalUpdated} records updated");
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] ========================================");
                     #endif
                 }
                 catch (Exception ex)
@@ -415,11 +402,14 @@ namespace Stackdose.UI.Core.Helpers
         {
             try
             {
+                // 🔥 確保 UserId 使用統一格式 (如果傳入的不是完整格式，嘗試補上)
+                string formattedUserId = FormatUserId(userId);
+                
                 _operationLogQueue.Enqueue(new OperationLogEntry
                 {
                     Timestamp = DateTime.Now,
                     BatchId = batchId,
-                    UserId = userId,
+                    UserId = formattedUserId,
                     CommandName = commandName,
                     Category = category,
                     BeforeState = beforeState,
@@ -445,6 +435,9 @@ namespace Stackdose.UI.Core.Helpers
         {
             try
             {
+                // 🔥 確保 UserId 使用統一格式
+                string formattedUserId = FormatUserId(userId);
+                
                 _eventLogQueue.Enqueue(new EventLogEntry
                 {
                     Timestamp = DateTime.Now,
@@ -454,7 +447,7 @@ namespace Stackdose.UI.Core.Helpers
                     EventDescription = eventDescription,
                     Severity = severity,
                     CurrentState = currentState,
-                    UserId = userId,
+                    UserId = formattedUserId,
                     Message = message
                 });
 
@@ -481,11 +474,21 @@ namespace Stackdose.UI.Core.Helpers
         {
             try
             {
+                // 🔥 確保 UserId 使用統一格式
+                string formattedUserId = FormatUserId(userId);
+                
+                #if DEBUG
+                if (userId != formattedUserId)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] LogPeriodicData - UserId formatted: '{userId}' -> '{formattedUserId}'");
+                }
+                #endif
+                
                 _periodicDataQueue.Enqueue(new PeriodicDataLogEntry
                 {
                     Timestamp = DateTime.Now,
                     BatchId = batchId,
-                    UserId = userId,
+                    UserId = formattedUserId,
                     PredryTemp = predryTemp,
                     DryTemp = dryTemp,
                     CdaInletPressure = cdaInletPressure
@@ -795,7 +798,9 @@ namespace Stackdose.UI.Core.Helpers
                     _batchFlushCount++;
 
                     #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] PeriodicDataLogs 批次寫入: {batch.Count} 筆 (累計: {_totalPeriodicDataLogs})");
+                    // 🔥 Show sample UserId for verification
+                    var sampleUserId = batch.FirstOrDefault()?.UserId ?? "N/A";
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] PeriodicDataLogs 批次寫入: {batch.Count} 筆 (累計: {_totalPeriodicDataLogs}) - Sample UserId: {sampleUserId}");
                     #endif
                 }
                 catch (Exception ex)
@@ -861,6 +866,51 @@ namespace Stackdose.UI.Core.Helpers
             var stats = GetStatistics();
             System.Diagnostics.Debug.WriteLine($"[SqliteLogger] Shutdown - 總計寫入: DataLogs={stats.DataLogs}, AuditLogs={stats.AuditLogs}, OperationLogs={stats.OperationLogs}, EventLogs={stats.EventLogs}, PeriodicDataLogs={stats.PeriodicDataLogs}, BatchFlushes={stats.BatchFlushes}");
             #endif
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        /// <summary>
+        /// 🔥 格式化 UserId 為統一格式 "UID-XXXXXX (DisplayName)"
+        /// 如果已經是完整格式則直接返回
+        /// </summary>
+        private static string FormatUserId(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return "System";
+            }
+            
+            // 如果已經包含括號，表示已經是完整格式
+            if (userId.Contains("(") && userId.Contains(")"))
+            {
+                return userId;
+            }
+            
+            // 嘗試從 SecurityContext 取得完整格式
+            try
+            {
+                var session = Helpers.SecurityContext.CurrentSession;
+                if (session?.CurrentUser != null)
+                {
+                    // 如果傳入的是 UID 或 DisplayName，都返回完整格式
+                    if (userId == session.CurrentUser.UserId || 
+                        userId == session.CurrentUser.DisplayName ||
+                        userId == session.CurrentUserName)
+                    {
+                        return $"{session.CurrentUser.UserId} ({session.CurrentUser.DisplayName})";
+                    }
+                }
+            }
+            catch
+            {
+                // 忽略錯誤
+            }
+            
+            // 無法取得完整格式，返回原始值
+            return userId;
         }
 
         #endregion

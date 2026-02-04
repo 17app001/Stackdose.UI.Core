@@ -94,26 +94,22 @@ namespace Stackdose.UI.Core.Services
                 System.Diagnostics.Debug.WriteLine("[UserManagementService] Checking default accounts...");
                 #endif
 
-                // 檢查是否已有 SuperAdmin 帳號
-                var superAdminCount = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM Users WHERE AccessLevel = @Level", 
-                    new { Level = (int)AccessLevel.SuperAdmin });
+                // ?? 首先：將所有舊格式的 UserId 轉換為 UID-XXXXXX 格式
+                MigrateUserIdsToUidFormat(conn);
+
+                // 檢查是否已有 SuperAdmin 帳號 (UID-000001)
+                var superAdminExists = conn.ExecuteScalar<int>(
+                    "SELECT COUNT(*) FROM Users WHERE UserId = @UserId",
+                    new { UserId = "UID-000001" });
 
                 #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[UserManagementService] SuperAdmin count: {superAdminCount}");
-                #endif
-
-                // 檢查 superadmin 帳號是否存在
-                var superAdminExists = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM Users WHERE UserId = @UserId",
-                    new { UserId = "superadmin" });
-
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[UserManagementService] superadmin account exists: {superAdminExists > 0}");
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] SuperAdmin (UID-000001) exists: {superAdminExists > 0}");
                 #endif
 
                 if (superAdminExists == 0)
                 {
-                    // 創建預設 SuperAdmin 帳號
-                    var (superHash, superSalt) = HashPassword("superadminsuperadmin");
+                    // 建立預設 SuperAdmin 帳號
+                    var (superHash, superSalt) = HashPassword("superadmin");
 
                     conn.Execute(@"
                         INSERT INTO Users (UserId, DisplayName, PasswordHash, Salt, AccessLevel, IsActive, 
@@ -122,8 +118,8 @@ namespace Stackdose.UI.Core.Services
                                @CreatedAt, @CreatedBy, @Email, @Department, @Remarks)",
                         new
                         {
-                            UserId = "superadmin",
-                            DisplayName = "Super Administrator",
+                            UserId = "UID-000001",
+                            DisplayName = "SuperAdmin",
                             PasswordHash = superHash,
                             Salt = superSalt,
                             AccessLevel = (int)AccessLevel.SuperAdmin,
@@ -136,63 +132,13 @@ namespace Stackdose.UI.Core.Services
                         });
 
                     #if DEBUG
-                    System.Diagnostics.Debug.WriteLine("[UserManagementService] ? Default SuperAdmin account created: superadmin / superadminsuperadmin");
-                    #endif
-                }
-                else
-                {
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine("[UserManagementService] SuperAdmin account already exists, skipping creation");
+                    System.Diagnostics.Debug.WriteLine("[UserManagementService] Default SuperAdmin created: UID-000001 / superadmin");
                     #endif
                 }
 
-                // 檢查是否已有 Admin 帳號
-                var adminExists = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM Users WHERE UserId = @UserId",
-                    new { UserId = "admin01" });
-
+                // 輸出所有使用者列表（測試用）
                 #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[UserManagementService] admin01 account exists: {adminExists > 0}");
-                #endif
-
-                if (adminExists == 0)
-                {
-                    // 創建預設 Admin 帳號
-                    var (hash, salt) = HashPassword("admin123");
-
-                    conn.Execute(@"
-                        INSERT INTO Users (UserId, DisplayName, PasswordHash, Salt, AccessLevel, IsActive, 
-                                          CreatedAt, CreatedBy, Email, Department, Remarks)
-                        VALUES (@UserId, @DisplayName, @PasswordHash, @Salt, @AccessLevel, @IsActive, 
-                               @CreatedAt, @CreatedBy, @Email, @Department, @Remarks)",
-                        new
-                        {
-                            UserId = "admin01",
-                            DisplayName = "System Administrator",
-                            PasswordHash = hash,
-                            Salt = salt,
-                            AccessLevel = (int)AccessLevel.Admin,
-                            IsActive = 1,
-                            CreatedAt = DateTime.Now,
-                            CreatedBy = "System",
-                            Email = "admin@stackdose.com",
-                            Department = "IT",
-                            Remarks = "Default system administrator account"
-                        });
-
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine("[UserManagementService] ? Default admin account created: admin01 / admin123");
-                    #endif
-                }
-                else
-                {
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine("[UserManagementService] Admin account already exists, skipping creation");
-                    #endif
-                }
-
-                // ?? 輸出所有使用者列表（調試用）
-                #if DEBUG
-                var allUsers = conn.Query<dynamic>("SELECT UserId, DisplayName, AccessLevel, IsActive FROM Users ORDER BY AccessLevel DESC");
+                var allUsers = conn.Query<dynamic>("SELECT UserId, DisplayName, AccessLevel, IsActive FROM Users ORDER BY AccessLevel DESC, UserId");
                 System.Diagnostics.Debug.WriteLine("[UserManagementService] Current users in database:");
                 foreach (var user in allUsers)
                 {
@@ -205,6 +151,166 @@ namespace Stackdose.UI.Core.Services
                 System.Diagnostics.Debug.WriteLine($"[UserManagementService] EnsureDefaultAdminExists Error: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"[UserManagementService] Stack trace: {ex.StackTrace}");
             }
+        }
+
+        /// <summary>
+        /// ?? 將舊格式的 UserId 轉換為 UID-XXXXXX 格式
+        /// 按權限等級排序：SuperAdmin -> Admin -> Supervisor -> Instructor -> Operator -> Guest
+        /// </summary>
+        private void MigrateUserIdsToUidFormat(SqliteConnection conn)
+        {
+            try
+            {
+                // 檢查是否已有 UID 格式的用戶（如果有，表示已經轉換過）
+                var uidCount = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM Users WHERE UserId LIKE 'UID-%'");
+                var totalCount = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM Users");
+                
+                // 如果所有用戶都已經是 UID 格式，跳過
+                if (uidCount == totalCount && totalCount > 0)
+                {
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine("[UserManagementService] All users already have UID format, skipping migration");
+                    #endif
+                    return;
+                }
+
+                // 取得所有非 UID 格式的用戶，按權限等級排序（高到低）
+                var usersToMigrate = conn.Query<dynamic>(@"
+                    SELECT Id, UserId, DisplayName, AccessLevel 
+                    FROM Users 
+                    WHERE UserId NOT LIKE 'UID-%'
+                    ORDER BY AccessLevel DESC, Id ASC
+                ").ToList();
+
+                if (usersToMigrate.Count == 0)
+                {
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine("[UserManagementService] No users need migration");
+                    #endif
+                    return;
+                }
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] Migrating {usersToMigrate.Count} users to UID format...");
+                #endif
+
+                // 取得當前最大的 UID 編號
+                int nextUidNumber = 1;
+                var maxUid = conn.ExecuteScalar<string>("SELECT MAX(UserId) FROM Users WHERE UserId LIKE 'UID-%'");
+                if (!string.IsNullOrEmpty(maxUid))
+                {
+                    var numPart = maxUid.Replace("UID-", "");
+                    if (int.TryParse(numPart, out int maxNum))
+                    {
+                        nextUidNumber = maxNum + 1;
+                    }
+                }
+
+                // 建立舊 UserId 到新 UserId 的對照表
+                var uidMapping = new Dictionary<string, string>();
+
+                // 開始轉換
+                foreach (var user in usersToMigrate)
+                {
+                    string oldUserId = user.UserId;
+                    string newUserId = $"UID-{nextUidNumber:D6}";
+                    
+                    uidMapping[oldUserId] = newUserId;
+
+                    // 更新 Users 表
+                    conn.Execute(
+                        "UPDATE Users SET UserId = @NewUserId WHERE Id = @Id",
+                        new { NewUserId = newUserId, Id = (int)user.Id });
+
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"  - {oldUserId} -> {newUserId} ({user.DisplayName}, Level {user.AccessLevel})");
+                    #endif
+
+                    nextUidNumber++;
+                }
+
+                // ?? 更新所有相關日誌記錄中的 UserId
+                UpdateLogUserIds(conn, uidMapping);
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] Migration completed. {usersToMigrate.Count} users migrated.");
+                #endif
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] MigrateUserIdsToUidFormat Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// ?? 更新所有日誌記錄中的 UserId
+        /// </summary>
+        private void UpdateLogUserIds(SqliteConnection conn, Dictionary<string, string> uidMapping)
+        {
+            try
+            {
+                foreach (var mapping in uidMapping)
+                {
+                    string oldId = mapping.Key;
+                    string newId = mapping.Value;
+
+                    // 更新 AuditTrails
+                    int auditUpdated = conn.Execute(
+                        "UPDATE AuditTrails SET User = @NewId WHERE User = @OldId",
+                        new { NewId = newId, OldId = oldId });
+
+                    // 更新 OperationLogs
+                    int opUpdated = conn.Execute(
+                        "UPDATE OperationLogs SET UserId = @NewId WHERE UserId = @OldId",
+                        new { NewId = newId, OldId = oldId });
+
+                    // 更新 EventLogs
+                    int eventUpdated = conn.Execute(
+                        "UPDATE EventLogs SET UserId = @NewId WHERE UserId = @OldId",
+                        new { NewId = newId, OldId = oldId });
+
+                    // 更新 PeriodicDataLogs
+                    int periodicUpdated = conn.Execute(
+                        "UPDATE PeriodicDataLogs SET UserId = @NewId WHERE UserId = @OldId",
+                        new { NewId = newId, OldId = oldId });
+
+                    #if DEBUG
+                    if (auditUpdated > 0 || opUpdated > 0 || eventUpdated > 0 || periodicUpdated > 0)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"  Log updates for {oldId} -> {newId}:");
+                        System.Diagnostics.Debug.WriteLine($"    AuditTrails: {auditUpdated}, OperationLogs: {opUpdated}, EventLogs: {eventUpdated}, PeriodicData: {periodicUpdated}");
+                    }
+                    #endif
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] UpdateLogUserIds Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// ?? 產生下一個可用的 UID
+        /// </summary>
+        public string GenerateNextUserId()
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            // 取得當前最大的 UID 編號
+            var maxUid = conn.ExecuteScalar<string>("SELECT MAX(UserId) FROM Users WHERE UserId LIKE 'UID-%'");
+            
+            int nextNumber = 1;
+            if (!string.IsNullOrEmpty(maxUid))
+            {
+                var numPart = maxUid.Replace("UID-", "");
+                if (int.TryParse(numPart, out int maxNum))
+                {
+                    nextNumber = maxNum + 1;
+                }
+            }
+
+            return $"UID-{nextNumber:D6}";
         }
 
         #endregion
@@ -248,8 +354,9 @@ namespace Stackdose.UI.Core.Services
 
         /// <summary>
         /// ?? 資料庫密碼驗證（用於本地創建的使用者）
+        /// 支援使用 UserId 或 DisplayName 登入
         /// </summary>
-        /// <param name="userId">使用者 ID</param>
+        /// <param name="userId">使用者 ID 或 DisplayName</param>
         /// <param name="password">明文密碼</param>
         /// <returns>驗證結果</returns>
         public async Task<(bool Success, string Message, UserAccount? User)> AuthenticateAsync(string userId, string password)
@@ -259,19 +366,29 @@ namespace Stackdose.UI.Core.Services
                 using var conn = new SqliteConnection(_connectionString);
                 await conn.OpenAsync();
 
-                // 查詢使用者
+                // ?? 查詢使用者：支援 UserId 或 DisplayName
                 var user = await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                    "SELECT * FROM Users WHERE UserId = @UserId AND IsActive = 1",
+                    "SELECT * FROM Users WHERE (UserId = @UserId OR DisplayName = @UserId) AND IsActive = 1",
                     new { UserId = userId });
 
                 if (user == null)
                 {
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[UserManagementService] AuthenticateAsync: User not found - {userId}");
+                    #endif
                     return (false, "使用者不存在或已停用", null);
                 }
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] AuthenticateAsync: Found user - {user.UserId} ({user.DisplayName})");
+                #endif
 
                 // 驗證密碼
                 if (!VerifyPassword(password, user.PasswordHash, user.Salt))
                 {
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[UserManagementService] AuthenticateAsync: Password mismatch for {userId}");
+                    #endif
                     return (false, "密碼錯誤", null);
                 }
 
@@ -282,10 +399,17 @@ namespace Stackdose.UI.Core.Services
 
                 user.LastLoginAt = DateTime.Now;
 
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] AuthenticateAsync: Login successful for {user.UserId}");
+                #endif
+
                 return (true, "驗證成功", user);
             }
             catch (Exception ex)
             {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] AuthenticateAsync Error: {ex.Message}");
+                #endif
                 return (false, $"驗證失敗: {ex.Message}", null);
             }
         }
@@ -309,30 +433,40 @@ namespace Stackdose.UI.Core.Services
                 using var conn = new SqliteConnection(_connectionString);
                 await conn.OpenAsync();
 
+                // ?? 如果傳入的 userId 不是 UID 格式，自動產生新的 UID
+                string actualUserId = userId;
+                if (!userId.StartsWith("UID-"))
+                {
+                    actualUserId = GenerateNextUserId();
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[UserManagementService] Auto-generated UserId: {actualUserId} (original: {userId})");
+                    #endif
+                }
+
                 // 檢查 UserId 是否已存在
                 var existing = await conn.QueryFirstOrDefaultAsync<UserAccount>(
                     "SELECT * FROM Users WHERE UserId = @UserId",
-                    new { UserId = userId });
+                    new { UserId = actualUserId });
 
                 if (existing != null)
                 {
-                    return (false, $"使用者 ID '{userId}' 已存在", null);
+                    return (false, $"User ID '{actualUserId}' already exists", null);
                 }
 
-                // 取得創建者資訊
+                // 取得建立者資訊
                 var creator = await conn.QueryFirstOrDefaultAsync<UserAccount>(
                     "SELECT * FROM Users WHERE Id = @Id",
                     new { Id = creatorUserId });
 
                 if (creator == null)
                 {
-                    return (false, "找不到創建者資訊", null);
+                    return (false, "Creator not found", null);
                 }
 
                 // 檢查權限
                 if (!CanManageUser(creator.AccessLevel, accessLevel))
                 {
-                    return (false, $"您沒有權限創建 {accessLevel} 等級的使用者", null);
+                    return (false, $"You don't have permission to create {accessLevel} level user", null);
                 }
 
                 // Hash 密碼
@@ -341,7 +475,7 @@ namespace Stackdose.UI.Core.Services
                 // 建立使用者
                 var newUser = new UserAccount
                 {
-                    UserId = userId,
+                    UserId = actualUserId,
                     DisplayName = displayName,
                     PasswordHash = hash,
                     Salt = salt,
@@ -355,7 +489,7 @@ namespace Stackdose.UI.Core.Services
                     Remarks = remarks
                 };
 
-                // 插入資料庫
+                // 寫入資料庫
                 var sql = @"
                     INSERT INTO Users (UserId, DisplayName, PasswordHash, Salt, AccessLevel, IsActive, 
                                       CreatedAt, CreatedByUserId, CreatedBy, Email, Department, Remarks)
@@ -365,7 +499,7 @@ namespace Stackdose.UI.Core.Services
 
                 newUser.Id = await conn.ExecuteScalarAsync<int>(sql, newUser);
 
-                // 記錄稽核日誌
+                // 記錄審計日誌
                 await LogAuditAsync(conn, new UserAuditLog
                 {
                     Timestamp = DateTime.Now,
@@ -373,15 +507,15 @@ namespace Stackdose.UI.Core.Services
                     OperatorUserName = creator.DisplayName,
                     Action = UserAuditAction.CreateUser,
                     TargetUserId = newUser.Id,
-                    TargetUserName = userId,
-                    Details = $"創建使用者: {displayName} ({accessLevel})"
+                    TargetUserName = actualUserId,
+                    Details = $"Created user: {displayName} ({accessLevel}), UID: {actualUserId}"
                 });
 
-                return (true, "使用者創建成功", newUser);
+                return (true, $"User created successfully: {actualUserId}", newUser);
             }
             catch (Exception ex)
             {
-                return (false, $"創建失敗: {ex.Message}", null);
+                return (false, $"Create failed: {ex.Message}", null);
             }
         }
 

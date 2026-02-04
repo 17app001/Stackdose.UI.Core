@@ -166,6 +166,10 @@ namespace Stackdose.UI.Core.Helpers
                     var timestamp = RandomDateTime(end, start);
                     var finalBatchId = string.IsNullOrEmpty(batchId) ? $"BATCH-{timestamp:yyyyMMdd}-{_random.Next(1000, 9999)}" : batchId;
 
+                    // ?? Generate random test user in FDA compliant format "UID-XXXXXX (DisplayName)"
+                    var userIndex = _random.Next(1, 6); // USER001-USER005
+                    var userId = $"UID-{userIndex:D6} (Test User {userIndex})";
+
                     var predryTemp = basePredryTemp + (_random.NextDouble() * 10 - 5);
                     var dryTemp = baseDryTemp + (_random.NextDouble() * 8 - 4);
                     var cdaPressure = basePressure + (_random.NextDouble() * 1.0 - 0.5);
@@ -183,13 +187,15 @@ namespace Stackdose.UI.Core.Helpers
                     dryTemp = Math.Max(65.0, Math.Min(90.0, dryTemp));
                     cdaPressure = Math.Max(4.5, Math.Min(7.5, cdaPressure));
 
+                    // ?? Now includes UserId for FDA 21 CFR Part 11 compliance
                     conn.Execute(
-                        @"INSERT INTO PeriodicDataLogs (Timestamp, BatchId, PredryTemp, DryTemp, CdaInletPressure) 
-                          VALUES (@Timestamp, @BatchId, @PredryTemp, @DryTemp, @CdaInletPressure)",
+                        @"INSERT INTO PeriodicDataLogs (Timestamp, BatchId, UserId, PredryTemp, DryTemp, CdaInletPressure) 
+                          VALUES (@Timestamp, @BatchId, @UserId, @PredryTemp, @DryTemp, @CdaInletPressure)",
                         new
                         {
                             Timestamp = timestamp,
                             BatchId = finalBatchId,
+                            UserId = userId,
                             PredryTemp = Math.Round(predryTemp, 2),
                             DryTemp = Math.Round(dryTemp, 2),
                             CdaInletPressure = Math.Round(cdaPressure, 3)

@@ -51,6 +51,17 @@ namespace Stackdose.UI.Templates.Controls
             }
         }
 
+        private string _userId = "";
+        public string UserId
+        {
+            get => _userId;
+            set
+            {
+                _userId = value;
+                OnPropertyChanged();
+            }
+        }
+
         private string _userRole = "Not Logged In";
         public string UserRole
         {
@@ -142,15 +153,37 @@ namespace Stackdose.UI.Templates.Controls
         {
             var session = SecurityContext.CurrentSession;
 
-            if (session.IsLoggedIn)
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[AppHeader] UpdateUserInfo called");
+            System.Diagnostics.Debug.WriteLine($"[AppHeader]   IsLoggedIn: {session.IsLoggedIn}");
+            System.Diagnostics.Debug.WriteLine($"[AppHeader]   CurrentUser: {session.CurrentUser != null}");
+            if (session.CurrentUser != null)
             {
-                UserName = session.CurrentUserName;
+                System.Diagnostics.Debug.WriteLine($"[AppHeader]   UserId: {session.CurrentUser.UserId}");
+                System.Diagnostics.Debug.WriteLine($"[AppHeader]   DisplayName: {session.CurrentUser.DisplayName}");
+                System.Diagnostics.Debug.WriteLine($"[AppHeader]   AccessLevel: {session.CurrentUser.AccessLevel}");
+            }
+            #endif
+
+            if (session.IsLoggedIn && session.CurrentUser != null)
+            {
+                UserName = session.CurrentUser.DisplayName ?? session.CurrentUserName;  // DisplayName
+                UserId = session.CurrentUser.UserId ?? "";  // UID-XXXXXX
                 UserRole = session.CurrentLevel.ToString();
+                
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[AppHeader] Updated - UserName: {UserName}, UserId: {UserId}, UserRole: {UserRole}");
+                #endif
             }
             else
             {
                 UserName = "Guest";
+                UserId = "";
                 UserRole = "Not Logged In";
+                
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[AppHeader] Set to Guest mode");
+                #endif
             }
         }
 

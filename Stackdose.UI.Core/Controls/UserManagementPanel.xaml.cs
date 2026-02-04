@@ -99,38 +99,50 @@ namespace Stackdose.UI.Core.Controls
                 _currentUserName = session.CurrentUserName;
                 _currentLevel = session.CurrentLevel;
                 
-                // ?? 復原：從資料庫查詢真正的 UserId
+                // ?? 修正：直接從 Session 取得 UserId 和 Id
                 try
                 {
-                    var allUsers = await _userService.GetAllUsersAsync();
-                    var currentUser = allUsers.FirstOrDefault(u => u.UserId == _currentUserName);
+                    var currentUser = session.CurrentUser;
                     
-                    if (currentUser != null)
+                    if (currentUser != null && currentUser.Id > 0)
                     {
+                        // ?? 直接使用 Session 中的使用者 Id
                         _currentUserId = currentUser.Id;
-                        System.Diagnostics.Debug.WriteLine($"[UserManagementPanel] 找到當前使用者: {_currentUserName}, Id={_currentUserId}");
+                        System.Diagnostics.Debug.WriteLine($"[UserManagementPanel] 當前使用者: {_currentUserName} (UserId={currentUser.UserId}), Id={_currentUserId}");
                     }
                     else
                     {
-                        // ?? 如果資料庫中找不到，使用 admin01 作為預設創建者
-                        var admin = allUsers.FirstOrDefault(u => u.UserId == "admin01");
-                        if (admin != null)
+                        // ?? Fallback: 從資料庫查詢（支援 UserId 或 DisplayName）
+                        var allUsers = await _userService.GetAllUsersAsync();
+                        var dbUser = allUsers.FirstOrDefault(u => 
+                            u.UserId == currentUser?.UserId || 
+                            u.DisplayName == _currentUserName ||
+                            u.UserId == _currentUserName);
+                        
+                        if (dbUser != null)
                         {
-                            _currentUserId = admin.Id;
-                            System.Diagnostics.Debug.WriteLine($"[UserManagementPanel] 當前使用者不在資料庫中，使用 admin01 作為創建者, Id={_currentUserId}");
-                            
-                            // ?? 改為只在 Debug 輸出，不顯示在 UI
-                            // 因為這是正常行為（AD 使用者不在本地資料庫）
+                            _currentUserId = dbUser.Id;
+                            System.Diagnostics.Debug.WriteLine($"[UserManagementPanel] 從資料庫找到使用者: {dbUser.DisplayName}, Id={_currentUserId}");
                         }
                         else
                         {
-                            CyberMessageBox.Show(
-                                "錯誤：找不到有效的創建者帳號\n請先確認 admin01 帳號存在",
-                                "錯誤",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Error
-                            );
-                            return;
+                            // ?? 最後嘗試：使用 UID-000001 (SuperAdmin) 作為預設建立者
+                            var superAdmin = allUsers.FirstOrDefault(u => u.UserId == "UID-000001");
+                            if (superAdmin != null)
+                            {
+                                _currentUserId = superAdmin.Id;
+                                System.Diagnostics.Debug.WriteLine($"[UserManagementPanel] 使用 SuperAdmin 作為建立者, Id={_currentUserId}");
+                            }
+                            else
+                            {
+                                CyberMessageBox.Show(
+                                    "錯誤：找不到有效的建立者帳號\n請確認資料庫中有 SuperAdmin 帳號",
+                                    "錯誤",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Error
+                                );
+                                return;
+                            }
                         }
                     }
                 }

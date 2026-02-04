@@ -29,9 +29,30 @@ namespace Stackdose.UI.Core.Helpers
         // public static string CurrentUser { get; set; } = "Operator_A";
         
         /// <summary>
-        /// 取得當前登入使用者的 UserId
+        /// 取得當前登入使用者的 UserId (UID-XXXXXX)
         /// </summary>
-        public static string CurrentUser => SecurityContext.CurrentSession?.CurrentUser?.UserId ?? "System";
+        public static string CurrentUserId => SecurityContext.CurrentSession?.CurrentUser?.UserId ?? "System";
+
+        /// <summary>
+        /// 取得當前登入使用者的 DisplayName
+        /// </summary>
+        public static string CurrentUserName => SecurityContext.CurrentSession?.CurrentUser?.DisplayName ?? "System";
+
+        /// <summary>
+        /// 取得當前登入使用者的完整顯示格式 (UID (DisplayName))
+        /// </summary>
+        public static string CurrentUser
+        {
+            get
+            {
+                var user = SecurityContext.CurrentSession?.CurrentUser;
+                if (user != null)
+                {
+                    return $"{user.UserId} ({user.DisplayName})";
+                }
+                return "System";
+            }
+        }
         
         // 1. 建立一個可綁定的集合 (這就是我們要綁定給 UI 的源頭)
         public static ObservableCollection<LogEntry> LiveLogs { get; } = new ObservableCollection<LogEntry>();
@@ -186,6 +207,10 @@ namespace Stackdose.UI.Core.Helpers
         {
             // 🔥 自動取得當前使用者ID以符合 FDA 21 CFR Part 11 規範
             string userId = CurrentUser;
+            
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[ComplianceContext] LogPeriodicData: BatchId={batchId}, UserId={userId}, PredryTemp={predryTemp}, DryTemp={dryTemp}, CDA={cdaInletPressure}");
+            #endif
             
             // Batch write mode: logs are queued first
             SqliteLogger.LogPeriodicData(batchId, userId, predryTemp, dryTemp, cdaInletPressure);

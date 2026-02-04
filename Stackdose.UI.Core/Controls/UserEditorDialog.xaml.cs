@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using Stackdose.UI.Core.Models;
+using Stackdose.UI.Core.Services;
 
 namespace Stackdose.UI.Core.Controls
 {
     /// <summary>
-    /// 使用者編輯對話視窗 - SQLite 版本
+    /// User Editor Dialog - SQLite Version
     /// </summary>
     public partial class UserEditorDialog : Window
     {
         private readonly AccessLevel _operatorAccessLevel;
         private readonly UserAccount? _editingUser;
         private readonly bool _isEditMode;
+        private readonly string _generatedUserId;
 
         #region Public Properties
 
@@ -30,7 +32,7 @@ namespace Stackdose.UI.Core.Controls
         #region Constructors
 
         /// <summary>
-        /// 新增使用者模式
+        /// Create/Edit User Mode
         /// </summary>
         public UserEditorDialog(UserAccount? user, AccessLevel operatorAccessLevel)
         {
@@ -39,6 +41,24 @@ namespace Stackdose.UI.Core.Controls
             _operatorAccessLevel = operatorAccessLevel;
             _editingUser = user;
             _isEditMode = user != null;
+
+            // Generate next UID for new user
+            if (!_isEditMode)
+            {
+                try
+                {
+                    var userService = new UserManagementService();
+                    _generatedUserId = userService.GenerateNextUserId();
+                }
+                catch
+                {
+                    _generatedUserId = "UID-000001";
+                }
+            }
+            else
+            {
+                _generatedUserId = user?.UserId ?? "";
+            }
 
             InitializeForm();
         }
@@ -49,13 +69,13 @@ namespace Stackdose.UI.Core.Controls
 
         private void InitializeForm()
         {
-            // 設定可選擇的權限等級
+            // Set available access levels
             var availableLevels = new List<AccessLevel>();
 
-            // 根據當前使用者權限決定可設定的權限
+            // Determine available levels based on operator's access level
             if (_operatorAccessLevel == AccessLevel.SuperAdmin)
             {
-                // SuperAdmin 可以設定所有等級
+                // SuperAdmin can set all levels
                 availableLevels.Add(AccessLevel.Operator);
                 availableLevels.Add(AccessLevel.Instructor);
                 availableLevels.Add(AccessLevel.Supervisor);
@@ -64,7 +84,7 @@ namespace Stackdose.UI.Core.Controls
             }
             else if (_operatorAccessLevel == AccessLevel.Admin)
             {
-                // Admin 可以設定 Operator ~ Admin（不包含 SuperAdmin）
+                // Admin can set Operator ~ Admin (not SuperAdmin)
                 availableLevels.Add(AccessLevel.Operator);
                 availableLevels.Add(AccessLevel.Instructor);
                 availableLevels.Add(AccessLevel.Supervisor);
@@ -84,19 +104,21 @@ namespace Stackdose.UI.Core.Controls
             AccessLevelComboBox.ItemsSource = availableLevels;
             AccessLevelComboBox.SelectedIndex = 0;
 
-            // 編輯模式
+            // Edit Mode
             if (_isEditMode && _editingUser != null)
             {
-                TitleText.Text = $"編輯使用者 - {_editingUser.UserId}";
+                TitleText.Text = $"Edit User - {_editingUser.UserId}";
                 UserIdTextBox.Text = _editingUser.UserId;
-                UserIdTextBox.IsReadOnly = true; // 不可修改 UserId
+                UserIdTextBox.IsReadOnly = true; // Cannot modify UserId
+                UserIdTextBox.IsEnabled = false;
+                UserIdTextBox.Foreground = System.Windows.Media.Brushes.Gray;
                 DisplayNameTextBox.Text = _editingUser.DisplayName;
                 AccessLevelComboBox.SelectedItem = _editingUser.AccessLevel;
                 EmailTextBox.Text = _editingUser.Email;
                 DepartmentTextBox.Text = _editingUser.Department;
                 RemarksTextBox.Text = _editingUser.Remarks;
 
-                // 編輯模式不需要輸入密碼
+                // Edit mode doesn't need password input
                 PasswordLabel.Visibility = Visibility.Collapsed;
                 PasswordBox.Visibility = Visibility.Collapsed;
                 ConfirmPasswordLabel.Visibility = Visibility.Collapsed;
@@ -104,7 +126,13 @@ namespace Stackdose.UI.Core.Controls
             }
             else
             {
-                TitleText.Text = "新增使用者";
+                // Create Mode - Auto-generate UID (read-only)
+                TitleText.Text = "Create New User";
+                UserIdTextBox.Text = _generatedUserId;
+                UserIdTextBox.IsReadOnly = true; // ?? UID is auto-generated, cannot modify
+                UserIdTextBox.IsEnabled = false;
+                UserIdTextBox.Foreground = System.Windows.Media.Brushes.LightGray;
+                UserIdTextBox.ToolTip = "User ID is auto-generated and cannot be modified";
             }
         }
 
@@ -119,22 +147,15 @@ namespace Stackdose.UI.Core.Controls
                 var userId = UserIdTextBox.Text.Trim();
                 var displayName = DisplayNameTextBox.Text.Trim();
 
-                // 驗證必填欄位
-                if (string.IsNullOrWhiteSpace(userId))
-                {
-                    CyberMessageBox.Show("請輸入使用者名稱", "驗證錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    UserIdTextBox.Focus();
-                    return;
-                }
-
+                // Validate required fields
                 if (string.IsNullOrWhiteSpace(displayName))
                 {
-                    CyberMessageBox.Show("請輸入顯示名稱", "驗證錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    CyberMessageBox.Show("Please enter Display Name", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     DisplayNameTextBox.Focus();
                     return;
                 }
 
-                // 新增模式需要驗證密碼
+                // Create mode needs password validation
                 if (!_isEditMode)
                 {
                     var password = PasswordBox.Password;
@@ -142,41 +163,41 @@ namespace Stackdose.UI.Core.Controls
 
                     if (string.IsNullOrWhiteSpace(password))
                     {
-                        CyberMessageBox.Show("請輸入密碼", "驗證錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        CyberMessageBox.Show("Please enter Password", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         PasswordBox.Focus();
                         return;
                     }
 
                     if (password.Length < 6)
                     {
-                        CyberMessageBox.Show("密碼長度至少需要 6 個字元", "驗證錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        CyberMessageBox.Show("Password must be at least 6 characters", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         PasswordBox.Focus();
                         return;
                     }
 
                     if (string.IsNullOrWhiteSpace(confirmPassword))
                     {
-                        CyberMessageBox.Show("請確認您的密碼", "驗證錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        CyberMessageBox.Show("Please confirm your password", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         ConfirmPasswordBox.Focus();
                         return;
                     }
 
                     if (password != confirmPassword)
                     {
-                        CyberMessageBox.Show("密碼不符合！\n請確保兩次密碼輸入的內容完全相同。", "密碼不一致", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        CyberMessageBox.Show("Passwords do not match!\nPlease make sure both passwords are the same.", "Password Mismatch", MessageBoxButton.OK, MessageBoxImage.Warning);
                         ConfirmPasswordBox.Clear();
                         PasswordBox.Focus();
                         return;
                     }
                 }
 
-                // 驗證通過
+                // Validation passed
                 DialogResult = true;
                 Close();
             }
             catch (Exception ex)
             {
-                CyberMessageBox.Show($"操作失敗: {ex.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
+                CyberMessageBox.Show($"Operation failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

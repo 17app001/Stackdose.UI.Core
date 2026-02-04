@@ -237,7 +237,8 @@
                         BorderBrush="{DynamicResource Sensor.Border}"
                         BorderThickness="1"
                         CornerRadius="6"
-                        Padding="20">
+                        Padding="20"
+                        Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="ABOUT"
                                    FontSize="18"
@@ -255,6 +256,38 @@
                             <Run Text="Framework: .NET 8.0"/><LineBreak/>
                             <Run Text="Copyright ? 2025 Stackdose. All rights reserved."/>
                         </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- Return to Desktop -->
+                <Border Background="{DynamicResource Sensor.Bg.Main}"
+                        BorderBrush="{DynamicResource Sensor.Border}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="SYSTEM CONTROL"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource Sensor.Text.Title}"
+                                   FontFamily="Consolas"
+                                   Margin="0,0,0,16"/>
+
+                        <TextBlock Text="For Administrator: Logout and close application to return to Windows desktop."
+                                   FontSize="14"
+                                   Foreground="{DynamicResource Plc.Text.Label}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,12"/>
+
+                        <Button Content="Logout &amp; Exit to Desktop"
+                                Background="{DynamicResource Button.Bg.Warning}"
+                                Foreground="White"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Padding="12,8"
+                                HorizontalAlignment="Right"
+                                Width="250"
+                                Click="ReturnToDesktop_Click"/>
                     </StackPanel>
                 </Border>
 

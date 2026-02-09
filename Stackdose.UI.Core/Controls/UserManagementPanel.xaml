@@ -148,13 +148,13 @@
                            Orientation="Horizontal"
                            VerticalAlignment="Center">
                     <Button x:Name="AddUserButton"
-                            Content="Add User"
+                            Content="新增使用者"
                             Style="{StaticResource ModernButtonStyle}"
                             Background="{DynamicResource Button.Bg.Success}"
                             Click="AddUserButton_Click"
                             Margin="0,0,8,0"/>
                     <Button x:Name="RefreshButton"
-                            Content="Refresh"
+                            Content="重新整理"
                             Style="{StaticResource ModernButtonStyle}"
                             Background="{DynamicResource Button.Bg.Info}"
                             Click="RefreshButton_Click"/>
@@ -163,17 +163,17 @@
         </Border>
 
         <!-- User List (Card View) -->
-        <ScrollViewer Grid.Row="1"
-                      VerticalScrollBarVisibility="Auto"
-                      Padding="12,0,12,12">
-            <ItemsControl x:Name="UserListPanel"
-                          ItemsSource="{Binding Users}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Style="{StaticResource UserCardStyle}"
-                                MouseLeftButtonDown="UserCard_MouseLeftButtonDown"
-                                Tag="{Binding}">
-                            <Grid>
+        <Grid Grid.Row="1" Margin="12,0,12,12">
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          Padding="0">
+                <ItemsControl x:Name="UserListPanel"
+                              ItemsSource="{Binding Users}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource UserCardStyle}"
+                                    MouseLeftButtonDown="UserCard_MouseLeftButtonDown"
+                                    Tag="{Binding}">
+                                <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
@@ -335,12 +335,12 @@
                                     </TextBlock>
                                 </Grid>
 
-                                <!-- Action Buttons -->
-                                <StackPanel Grid.Row="1" 
-                                           Orientation="Horizontal" 
-                                           HorizontalAlignment="Right"
-                                           Margin="0,12,0,0">
-                                    <Button Content="Edit"
+                                    <!-- Action Buttons -->
+                                    <StackPanel Grid.Row="1"
+                                                Orientation="Horizontal"
+                                                HorizontalAlignment="Right"
+                                                Margin="0,12,0,0">
+                                        <Button Content="編輯"
                                             Style="{StaticResource ModernButtonStyle}"
                                             Background="{DynamicResource Button.Bg.Success}"
                                             Padding="12,4"
@@ -348,7 +348,7 @@
                                             Margin="0,0,8,0"
                                             Tag="{Binding}"
                                             Click="EditUserButton_Click"/>
-                                    <Button Content="Reset Password"
+                                        <Button Content="重設密碼"
                                             Style="{StaticResource ModernButtonStyle}"
                                             Background="{DynamicResource Button.Bg.Warning}"
                                             Padding="12,4"
@@ -356,31 +356,55 @@
                                             Margin="0,0,8,0"
                                             Tag="{Binding}"
                                             Click="ResetPasswordButton_Click"/>
-                                    <Button Padding="12,4"
+                                        <Button Padding="12,4"
                                             FontSize="14"
                                             Tag="{Binding}"
                                             Click="ToggleActiveButton_Click">
-                                        <Button.Style>
-                                            <Style TargetType="Button" BasedOn="{StaticResource ModernButtonStyle}">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                                        <Setter Property="Background" Value="{DynamicResource Button.Bg.Error}"/>
-                                                        <Setter Property="Content" Value="Disable"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding IsActive}" Value="False">
-                                                        <Setter Property="Background" Value="{DynamicResource Button.Bg.Success}"/>
-                                                        <Setter Property="Content" Value="Enable"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Button.Style>
-                                    </Button>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource ModernButtonStyle}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                            <Setter Property="Background" Value="{DynamicResource Button.Bg.Error}"/>
+                                                            <Setter Property="Content" Value="停用"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                            <Setter Property="Background" Value="{DynamicResource Button.Bg.Success}"/>
+                                                            <Setter Property="Content" Value="啟用"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <Border IsHitTestVisible="False"
+                    Background="#33000000"
+                    CornerRadius="8"
+                    Padding="16"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Users.Count}" Value="0">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock Text="目前沒有可顯示的使用者"
+                           Foreground="{DynamicResource Plc.Text.Gray}"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           FontFamily="Microsoft JhengHei"/>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

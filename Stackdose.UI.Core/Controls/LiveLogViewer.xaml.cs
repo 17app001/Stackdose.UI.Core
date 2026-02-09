@@ -1,7 +1,9 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
 
@@ -109,9 +111,9 @@ namespace Stackdose.UI.Core.Controls
         {
             // 🔥 註銷 ThemeManager
             ThemeManager.Unregister(this);
-            
-            // 🔥 不要取消訂閱集合事件，因為頁面切換後還可能需要接收新日誌
-            // UnsubscribeFromCollection();
+
+            // 控制項卸載後應解除訂閱，避免重複訂閱與記憶體滯留
+            UnsubscribeFromCollection();
         }
 
         /// <summary>
@@ -145,14 +147,14 @@ namespace Stackdose.UI.Core.Controls
             System.Diagnostics.Debug.WriteLine("[LiveLogViewer] 刷新日誌顏色");
             #endif
             
-            if (LogList?.ItemsSource is not IEnumerable items)
+            if (LogList?.ItemsSource is not IEnumerable)
                 return;
 
             try
             {
-                // 強制 ListView 重新繪製所有項目
-                LogList.ItemsSource = null;
-                LogList.ItemsSource = items;
+                // 改用 View.Refresh 避免整個 ItemsSource 重新綁定
+                ICollectionView? view = CollectionViewSource.GetDefaultView(LogList.ItemsSource);
+                view?.Refresh();
                 
                 // 捲動到最後一項
                 ScrollToBottom();
@@ -230,7 +232,7 @@ namespace Stackdose.UI.Core.Controls
                 nameof(Source), 
                 typeof(IEnumerable), 
                 typeof(LiveLogViewer),
-                new PropertyMetadata(null, OnSourceChanged));
+                new PropertyMetadata(default(IEnumerable), OnSourceChanged));
 
         /// <summary>
         /// 取得或設定日誌資料來源

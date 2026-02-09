@@ -3,7 +3,6 @@ using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Models;
 using System;
 using System.Collections.ObjectModel;
-using System.Data;
 using System.Windows.Data;
 
 namespace Stackdose.UI.Core.Helpers
@@ -57,7 +56,7 @@ namespace Stackdose.UI.Core.Helpers
         // 1. 建立一個可綁定的集合 (這就是我們要綁定給 UI 的源頭)
         public static ObservableCollection<LogEntry> LiveLogs { get; } = new ObservableCollection<LogEntry>();
 
-        private static object _lock = new object();
+        private static readonly object _lock = new();
 
         #endregion
 
@@ -104,11 +103,11 @@ namespace Stackdose.UI.Core.Helpers
         /// </remarks>
         public static void LogAuditTrail(string deviceName, string address, string oldValue, string newValue, string reason = "Manual Operation", string parameter = "", string batchId = "", bool showInUi = true)
         {
-            // Batch write mode: logs are queued first - now includes parameter and batchId
-            SqliteLogger.LogAudit(CurrentUser, "WRITE", $"{deviceName}({address})", oldValue, newValue, reason, parameter, batchId);
-            
-            // Display in UI
-            AddToLiveLog($"[Audit] {deviceName} ({address}) : {oldValue} -> {newValue}", LogLevel.Warning, showInUi);
+            ExecuteWithUiLog(
+                persist: () => SqliteLogger.LogAudit(CurrentUser, "WRITE", $"{deviceName}({address})", oldValue, newValue, reason, parameter, batchId),
+                uiMessage: $"[Audit] {deviceName} ({address}) : {oldValue} -> {newValue}",
+                uiLevel: LogLevel.Warning,
+                showInUi: showInUi);
         }
 
         /// <summary>
@@ -150,14 +149,11 @@ namespace Stackdose.UI.Core.Helpers
         /// <param name="showInUi">是否顯示在 UI 日誌檢視器</param>
         public static void LogOperation(string userId, string commandName, string category, string beforeState, string afterState, string message, string batchId = "", bool showInUi = true)
         {
-            // Batch write mode: logs are queued first
-            SqliteLogger.LogOperation(userId, commandName, category, beforeState, afterState, message, batchId);
-            
-            // Display in UI
-            if (showInUi)
-            {
-                AddToLiveLog($"[Operation] {commandName} - {message}", LogLevel.Info, true);
-            }
+            ExecuteWithUiLog(
+                persist: () => SqliteLogger.LogOperation(userId, commandName, category, beforeState, afterState, message, batchId),
+                uiMessage: $"[Operation] {commandName} - {message}",
+                uiLevel: LogLevel.Info,
+                showInUi: showInUi);
         }
 
         /// <summary>
@@ -174,22 +170,11 @@ namespace Stackdose.UI.Core.Helpers
         /// <param name="showInUi">是否顯示在 UI 日誌檢視器</param>
         public static void LogEvent(string eventType, string eventCode, string eventDescription, string severity, string currentState, string userId, string message, string batchId = "", bool showInUi = true)
         {
-            // Batch write mode: logs are queued first
-            SqliteLogger.LogEvent(eventType, eventCode, eventDescription, severity, currentState, userId, message, batchId);
-            
-            // Display in UI
-            if (showInUi)
-            {
-                var level = severity switch
-                {
-                    "Critical" => LogLevel.Error,
-                    "Major" => LogLevel.Error,
-                    "Minor" => LogLevel.Warning,
-                    "Info" => LogLevel.Info,
-                    _ => LogLevel.Info
-                };
-                AddToLiveLog($"[Event] {eventDescription} - {message}", level, true);
-            }
+            ExecuteWithUiLog(
+                persist: () => SqliteLogger.LogEvent(eventType, eventCode, eventDescription, severity, currentState, userId, message, batchId),
+                uiMessage: $"[Event] {eventDescription} - {message}",
+                uiLevel: MapEventSeverity(severity),
+                showInUi: showInUi);
         }
 
         /// <summary>
@@ -321,6 +306,24 @@ namespace Stackdose.UI.Core.Helpers
         #endregion
 
         #region Private Helper Methods
+
+        private static void ExecuteWithUiLog(Action persist, string uiMessage, LogLevel uiLevel, bool showInUi)
+        {
+            persist();
+            AddToLiveLog(uiMessage, uiLevel, showInUi);
+        }
+
+        private static LogLevel MapEventSeverity(string severity)
+        {
+            return severity switch
+            {
+                "Critical" => LogLevel.Error,
+                "Major" => LogLevel.Error,
+                "Minor" => LogLevel.Warning,
+                "Info" => LogLevel.Info,
+                _ => LogLevel.Info
+            };
+        }
 
         /// <summary>
         /// 加入即時日誌到 UI 顯示集合

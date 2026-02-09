@@ -7,68 +7,47 @@ using System.Windows.Media;
 namespace Stackdose.UI.Core.Controls
 {
     /// <summary>
-    /// Secured Button with Permission Control and Theme Support
+    /// Secured button with permission checks and theme-aware colors.
     /// </summary>
     public partial class SecuredButton : UserControl
     {
+        private readonly bool _isDesignMode;
+        private bool _securityEventSubscribed;
+
         public SecuredButton()
         {
             InitializeComponent();
-            
-            // ?? ¿À¨d¨Oß_¶b≥]≠pº“¶°
-            bool isDesignMode = System.ComponentModel.DesignerProperties.GetIsInDesignMode(this);
-            
-            if (!isDesignMode)
+
+            _isDesignMode = ControlRuntime.IsDesignMode(this);
+
+            Loaded += SecuredButton_Loaded;
+            Unloaded += SecuredButton_Unloaded;
+
+            if (_isDesignMode)
             {
-                // ∞ı¶ÊÆ…°G≠qæ\≈v≠≠≈‹ßÛ®∆•Û
-                SecurityContext.AccessLevelChanged += OnAccessLevelChanged;
-                
-                // ™Ï©l§∆≈v≠≠™¨∫A
-                UpdateAuthorization();
-                
-                // ∑Ì±±®Ó∂µ®¯∏¸Æ…®˙Æ¯≠qæ\
-                this.Unloaded += (s, e) => SecurityContext.AccessLevelChanged -= OnAccessLevelChanged;
+                IsAuthorized = true;
             }
             else
             {
-                // ?? ≥]≠pÆ…°G±j®Ó≥]©w¨∞§w±¬≈v°]≈˝©“¶≥´ˆ∂s≥£•i®£°^
-                IsAuthorized = true;
+                SubscribeSecurityEvents();
+                UpdateAuthorization();
             }
-            
-            // ?? ™Ï©l§∆•D√D√C¶‚
+
             UpdateThemeColors();
-            
-            // ?? ≠qæ\ Loaded ®∆•Û°]≥]≠pÆ…∏ıπL≈v≠≠¿À¨d°^
-            this.Loaded += (s, e) =>
-            {
-                UpdateThemeColors();
-                
-                // ∞ı¶ÊÆ…§~ßÛ∑s≈v≠≠
-                if (!isDesignMode)
-                {
-                    UpdateAuthorization();
-                }
-            };
         }
 
         #region Dependency Properties
 
-        /// <summary>
-        /// ´ˆ∂s§∫Æe
-        /// </summary>
         public new static readonly DependencyProperty ContentProperty =
-            DependencyProperty.Register("Content", typeof(object), typeof(SecuredButton), 
+            DependencyProperty.Register("Content", typeof(object), typeof(SecuredButton),
                 new PropertyMetadata("Button"));
-        
+
         public new object Content
         {
             get => GetValue(ContentProperty);
             set => SetValue(ContentProperty, value);
         }
 
-        /// <summary>
-        /// ©“ª›≈v≠≠µ•Ø≈
-        /// </summary>
         public static readonly DependencyProperty RequiredLevelProperty =
             DependencyProperty.Register("RequiredLevel", typeof(AccessLevel), typeof(SecuredButton),
                 new PropertyMetadata(AccessLevel.Operator, OnRequiredLevelChanged));
@@ -79,11 +58,8 @@ namespace Stackdose.UI.Core.Controls
             set => SetValue(RequiredLevelProperty, value);
         }
 
-        /// <summary>
-        /// ¨Oß_§w±¬≈v°]¶€∞ ≠p∫‚°^
-        /// </summary>
         public static readonly DependencyProperty IsAuthorizedProperty =
-            DependencyProperty.Register("IsAuthorized", typeof(bool), typeof(SecuredButton), 
+            DependencyProperty.Register("IsAuthorized", typeof(bool), typeof(SecuredButton),
                 new PropertyMetadata(false));
 
         public bool IsAuthorized
@@ -92,9 +68,6 @@ namespace Stackdose.UI.Core.Controls
             private set => SetValue(IsAuthorizedProperty, value);
         }
 
-        /// <summary>
-        /// ´ˆ∂s√C¶‚•D√D
-        /// </summary>
         public static readonly DependencyProperty ThemeProperty =
             DependencyProperty.Register("Theme", typeof(ButtonTheme), typeof(SecuredButton),
                 new PropertyMetadata(ButtonTheme.Normal, OnThemeChanged));
@@ -105,11 +78,8 @@ namespace Stackdose.UI.Core.Controls
             set => SetValue(ThemeProperty, value);
         }
 
-        /// <summary>
-        /// §u®„¥£•‹§Â¶r°]¶€∞ •Õ¶®°^
-        /// </summary>
         public static readonly DependencyProperty TooltipTextProperty =
-            DependencyProperty.Register("TooltipText", typeof(string), typeof(SecuredButton), 
+            DependencyProperty.Register("TooltipText", typeof(string), typeof(SecuredButton),
                 new PropertyMetadata(string.Empty));
 
         public string TooltipText
@@ -118,11 +88,8 @@ namespace Stackdose.UI.Core.Controls
             private set => SetValue(TooltipTextProperty, value);
         }
 
-        /// <summary>
-        /// æﬁß@¶W∫Ÿ°]•Œ©Û§Èªx∞Oø˝°^
-        /// </summary>
         public static readonly DependencyProperty OperationNameProperty =
-            DependencyProperty.Register("OperationName", typeof(string), typeof(SecuredButton), 
+            DependencyProperty.Register("OperationName", typeof(string), typeof(SecuredButton),
                 new PropertyMetadata(string.Empty));
 
         public string OperationName
@@ -131,13 +98,10 @@ namespace Stackdose.UI.Core.Controls
             set => SetValue(OperationNameProperty, value);
         }
 
-        /// <summary>
-        /// ≠I¥∫µe®Í°]∞Ú©Û•D√D°^
-        /// </summary>
         public static readonly DependencyProperty BackgroundBrushProperty =
-            DependencyProperty.Register("BackgroundBrush", typeof(Brush), typeof(SecuredButton), 
+            DependencyProperty.Register("BackgroundBrush", typeof(Brush), typeof(SecuredButton),
                 new FrameworkPropertyMetadata(
-                    new SolidColorBrush(Color.FromRgb(0x60, 0x7D, 0x8B)), 
+                    new SolidColorBrush(Color.FromRgb(0x60, 0x7D, 0x8B)),
                     FrameworkPropertyMetadataOptions.AffectsRender,
                     OnBackgroundBrushChanged));
 
@@ -149,19 +113,16 @@ namespace Stackdose.UI.Core.Controls
 
         private static void OnBackgroundBrushChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            #if DEBUG
-            if (d is SecuredButton button)
+#if DEBUG
+            if (d is SecuredButton)
             {
-                System.Diagnostics.Debug.WriteLine($"[SecuredButton] BackgroundBrush Changed: {e.NewValue}");
+                System.Diagnostics.Debug.WriteLine($"[SecuredButton] BackgroundBrush changed: {e.NewValue}");
             }
-            #endif
+#endif
         }
 
-        /// <summary>
-        /// ∑∆π´ƒa∞±µe®Í°]∞Ú©Û•D√D°^
-        /// </summary>
         public static readonly DependencyProperty HoverBrushProperty =
-            DependencyProperty.Register("HoverBrush", typeof(Brush), typeof(SecuredButton), 
+            DependencyProperty.Register("HoverBrush", typeof(Brush), typeof(SecuredButton),
                 new FrameworkPropertyMetadata(
                     new SolidColorBrush(Color.FromRgb(0x45, 0x5A, 0x64)),
                     FrameworkPropertyMetadataOptions.AffectsRender));
@@ -174,139 +135,147 @@ namespace Stackdose.UI.Core.Controls
 
         #endregion
 
-        #region ®∆•Û
+        #region Events
 
-        /// <summary>
-        /// ¬I¿ª®∆•Û°]•u¶≥¶b¶≥≈v≠≠Æ…§~∑|ƒ≤µo°^
-        /// </summary>
         public event RoutedEventHandler? Click;
 
-        private void InnerButton_Click(object sender, RoutedEventArgs e)
+        private void SecuredButton_Loaded(object sender, RoutedEventArgs e)
         {
-            // ßÛ∑s¨°∞ Æ…∂°°]®æ§Ó¶€∞ µn•X°^
-            SecurityContext.UpdateActivity();
+            UpdateThemeColors();
 
-            // ¶A¶∏¿À¨d≈v≠≠°]¬˘≠´´O¿I°^
-            if (!SecurityContext.HasAccess(RequiredLevel))
+            if (_isDesignMode)
             {
-                string opName = !string.IsNullOrEmpty(OperationName) ? OperationName : Content?.ToString() ?? "¶πæﬁß@";
-                SecurityContext.CheckAccess(RequiredLevel, opName);
+                IsAuthorized = true;
                 return;
             }
 
-            // ƒ≤µo•~≥° Click ®∆•Û
+            SubscribeSecurityEvents();
+            UpdateAuthorization();
+        }
+
+        private void SecuredButton_Unloaded(object sender, RoutedEventArgs e)
+        {
+            UnsubscribeSecurityEvents();
+        }
+
+        private void InnerButton_Click(object sender, RoutedEventArgs e)
+        {
+            SecurityContext.UpdateActivity();
+
+            if (!SecurityContext.HasAccess(RequiredLevel))
+            {
+                var operation = string.IsNullOrWhiteSpace(OperationName)
+                    ? Content?.ToString() ?? "Ê≠§Êìç‰Ωú"
+                    : OperationName;
+
+                SecurityContext.CheckAccess(RequiredLevel, operation);
+                return;
+            }
+
             Click?.Invoke(this, e);
         }
 
-        #endregion
-
-        #region ≈v≠≠ªP•D√DßÛ∑s
-
-        /// <summary>
-        /// ∑Ì≈v≠≠µ•Ø≈≈‹ßÛÆ…ƒ≤µo
-        /// </summary>
         private void OnAccessLevelChanged(object? sender, EventArgs e)
         {
             Dispatcher.BeginInvoke(UpdateAuthorization);
         }
 
-        /// <summary>
-        /// ∑Ì©“ª›≈v≠≠µ•Ø≈≈‹ßÛÆ…ƒ≤µo
-        /// </summary>
+        #endregion
+
+        #region State Update
+
         private static void OnRequiredLevelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is SecuredButton button)
+            if (d is not SecuredButton button)
             {
-                // ?? •u¶b∞ı¶ÊÆ…ßÛ∑s≈v≠≠
-                bool isDesignMode = System.ComponentModel.DesignerProperties.GetIsInDesignMode(button);
-                if (!isDesignMode)
-                {
-                    button.UpdateAuthorization();
-                }
-                else
-                {
-                    // ≥]≠pÆ…°G±j®Ó±“•Œ
-                    button.IsAuthorized = true;
-                }
+                return;
             }
+
+            if (button._isDesignMode)
+            {
+                button.IsAuthorized = true;
+                return;
+            }
+
+            button.UpdateAuthorization();
         }
 
-        /// <summary>
-        /// ∑Ì•D√D≈‹ßÛÆ…ƒ≤µo
-        /// </summary>
         private static void OnThemeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is SecuredButton button)
             {
-                // ?? •ﬂßYßÛ∑s√C¶‚°]≥]≠pÆ…§]∑|∞ı¶Ê°^
                 button.UpdateThemeColors();
             }
         }
 
-        /// <summary>
-        /// ßÛ∑s±¬≈v™¨∫A
-        /// </summary>
         private void UpdateAuthorization()
         {
-            // ?? ¿À¨d≥]≠pº“¶°
-            bool isDesignMode = System.ComponentModel.DesignerProperties.GetIsInDesignMode(this);
-            
-            if (isDesignMode)
+            if (_isDesignMode)
             {
-                // ?? ≥]≠pÆ…°G±j®Ó≥]©w¨∞§w±¬≈v
                 IsAuthorized = true;
                 TooltipText = $"Design Mode - {RequiredLevel}";
                 return;
             }
 
-            // ∞ı¶ÊÆ…°GπÍª⁄¿À¨d≈v≠≠
-            bool hasAccess = SecurityContext.HasAccess(RequiredLevel);
+            var hasAccess = SecurityContext.HasAccess(RequiredLevel);
             IsAuthorized = hasAccess;
 
-            // ßÛ∑s§u®„¥£•‹
             if (hasAccess)
             {
-                TooltipText = $"Permission: {RequiredLevel} ?";
+                TooltipText = $"Permission: {RequiredLevel}";
+                return;
             }
-            else
-            {
-                string currentLevel = SecurityContext.CurrentSession.CurrentLevel.ToString();
-                TooltipText = $"Required: {RequiredLevel}\nCurrent: {currentLevel} ?";
-            }
+
+            var currentLevel = SecurityContext.CurrentSession.CurrentLevel;
+            TooltipText = $"Required: {RequiredLevel}{Environment.NewLine}Current: {currentLevel}";
         }
 
-        /// <summary>
-        /// ßÛ∑s•D√D√C¶‚
-        /// </summary>
         private void UpdateThemeColors()
         {
             try
             {
                 var (background, hover) = Theme switch
                 {
-                    ButtonTheme.Normal => ("#607D8B", "#455A64"),      // Blue Grey
-                    ButtonTheme.Primary => ("#2196F3", "#1976D2"),     // Blue
-                    ButtonTheme.Success => ("#4CAF50", "#388E3C"),     // Green
-                    ButtonTheme.Warning => ("#FF9800", "#F57C00"),     // Orange
-                    ButtonTheme.Error => ("#F44336", "#D32F2F"),       // Red
-                    ButtonTheme.Info => ("#00BCD4", "#0097A7"),        // Cyan
+                    ButtonTheme.Normal => ("#607D8B", "#455A64"),
+                    ButtonTheme.Primary => ("#2196F3", "#1976D2"),
+                    ButtonTheme.Success => ("#4CAF50", "#388E3C"),
+                    ButtonTheme.Warning => ("#FF9800", "#F57C00"),
+                    ButtonTheme.Error => ("#F44336", "#D32F2F"),
+                    ButtonTheme.Info => ("#00BCD4", "#0097A7"),
                     _ => ("#607D8B", "#455A64")
                 };
 
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[SecuredButton] UpdateThemeColors: Theme={Theme}, Background={background}");
-                #endif
-
-                // ?? ®œ•Œ SetValue ¶”§£¨Oƒ›©  setter°]ßÛæA¶X DependencyProperty°^
                 SetValue(BackgroundBrushProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString(background)));
                 SetValue(HoverBrushProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString(hover)));
             }
             catch (Exception ex)
             {
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[SecuredButton] UpdateThemeColors Error: {ex.Message}");
-                #endif
+#if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[SecuredButton] UpdateThemeColors error: {ex.Message}");
+#endif
             }
+        }
+
+        private void SubscribeSecurityEvents()
+        {
+            if (_securityEventSubscribed)
+            {
+                return;
+            }
+
+            SecurityContext.AccessLevelChanged += OnAccessLevelChanged;
+            _securityEventSubscribed = true;
+        }
+
+        private void UnsubscribeSecurityEvents()
+        {
+            if (!_securityEventSubscribed)
+            {
+                return;
+            }
+
+            SecurityContext.AccessLevelChanged -= OnAccessLevelChanged;
+            _securityEventSubscribed = false;
         }
 
         #endregion

@@ -7,15 +7,23 @@ using System.Windows.Input;
 namespace Stackdose.UI.Core.Controls
 {
     /// <summary>
-    /// ¨Ï¥ÎªÌµn¤J¹ï¸Üµøµ¡
+    /// Login dialog for application authentication.
     /// </summary>
     public partial class LoginDialog : Window
     {
+        private const int MinimumLoadingDurationMs = 500;
+
         public bool LoginSuccessful { get; private set; } = false;
 
         public LoginDialog()
         {
             InitializeComponent();
+            InitializeDefaultUserId();
+            WireWindowEvents();
+        }
+
+        private void InitializeDefaultUserId()
+        {
 
             #if DEBUG
             // DEBUG mode: Auto-fill superadmin (for testing)
@@ -38,7 +46,10 @@ namespace Stackdose.UI.Core.Controls
                 UserIdTextBox.Text = Environment.UserName; // Fallback
             }
             #endif
+        }
 
+        private void WireWindowEvents()
+        {
             // Support Enter key for login
             this.KeyDown += (s, e) =>
             {
@@ -56,7 +67,7 @@ namespace Stackdose.UI.Core.Controls
             this.Loaded += (s, e) =>
             {
                 #if DEBUG
-                System.Diagnostics.Debug.WriteLine("[LoginDialog] Window loaded, focusing PasswordBox (username pre-filled: admin01)");
+                System.Diagnostics.Debug.WriteLine("[LoginDialog] Window loaded, focusing PasswordBox");
                 #else
                 System.Diagnostics.Debug.WriteLine("[LoginDialog] Window loaded, focusing PasswordBox");
                 #endif
@@ -78,50 +89,28 @@ namespace Stackdose.UI.Core.Controls
             System.Diagnostics.Debug.WriteLine("[LoginDialog] LoginButton_Click called");
             #endif
 
-            // ²M°£¿ù»~°T®§
+            // Clear previous error.
             ErrorPanel.Visibility = Visibility.Collapsed;
-            
-            // Åã¥Ü¸ü¤J´£¥Ü
+
+            // Show loading state.
             ShowLoading(true);
 
-            // Àò¨ú¿é¤J
-            string userId = UserIdTextBox.Text.Trim();
-            string password = PasswordBox.Password;
+            var userId = UserIdTextBox.Text.Trim();
+            var password = PasswordBox.Password;
 
             #if DEBUG
             System.Diagnostics.Debug.WriteLine($"[LoginDialog] Attempting login for user: {userId}");
             #endif
 
-            // ÅçÃÒ¿é¤J
-            if (string.IsNullOrWhiteSpace(userId))
+            if (!ValidateCredentials(userId, password))
             {
                 ShowLoading(false);
-                ShowError("½Ğ¿é¤J±b¸¹ (Please enter User ID)");
-                UserIdTextBox.Focus();
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(password))
-            {
-                ShowLoading(false);
-                ShowError("½Ğ¿é¤J±K½X (Please enter Password)");
-                PasswordBox.Focus();
-                return;
-            }
-
-            // ¨Ï¥Î«D¦P¨Bªºµn¤JÅŞ¿è¡]Á×¶} UI ­áµ²¡^
             try
             {
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine("[LoginDialog] Calling SecurityContext.Login...");
-                #endif
-
-                // ©µ¿ğ¤@ÂI®É¶¡Åı¸ü¤J°Êµe¥i¨£¡]¦Ü¤ÖÅã¥Ü 500ms¡^
-                var loginTask = System.Threading.Tasks.Task.Run(() => SecurityContext.Login(userId, password));
-                var delayTask = System.Threading.Tasks.Task.Delay(500);
-                
-                await System.Threading.Tasks.Task.WhenAll(loginTask, delayTask);
-                bool success = loginTask.Result;
+                var success = await AuthenticateAsync(userId, password);
 
                 #if DEBUG
                 System.Diagnostics.Debug.WriteLine($"[LoginDialog] Login result: {success}");
@@ -131,46 +120,11 @@ namespace Stackdose.UI.Core.Controls
 
                 if (success)
                 {
-                    // Åã¥Üµn¤J¦¨¥\°T®§
-                    var user = SecurityContext.CurrentSession.CurrentUser;
-                    
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[LoginDialog] Login successful for: {user?.DisplayName} ({user?.AccessLevel})");
-                    #endif
-
-                    ComplianceContext.LogSystem(
-                        $"[LoginDialog] Login successful: {user?.DisplayName} ({user?.AccessLevel})",
-                        LogLevel.Success,
-                        showInUi: false
-                    );
-
-                    LoginSuccessful = true;
-                    
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine("[LoginDialog] Setting DialogResult = true and closing");
-                    #endif
-                    
-                    this.DialogResult = true;
-                    this.Close();
+                    HandleLoginSuccess();
                 }
                 else
                 {
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine("[LoginDialog] Login failed");
-                    #endif
-
-                    // µn¤J¥¢±Ñ¡AÅã¥Ü¸Ô²Óªº¿ù»~°T®§
-                    ShowError($"µn¤J¥¢±Ñ Login Failed\n" +
-                             $"±b¸¹: {userId}\n\n" +
-                             $"¥i¯à­ì¦]:\n" +
-                             $"? ±b¸¹©Î±K½X¿ù»~\n" +
-                             $"? ±b¸¹¤w³Q°±¥Î\n\n" +
-                             $"½Ğ½T»{:\n" +
-                             $"1. ¨Ï¥Î¥¿½Tªº±b¸¹©M±K½X\n" +
-                             $"2. ±b¸¹ª¬ºA¬°±Ò¥Î\n" +
-                             $"3. ¦p»İ¨ó§U½ĞÁpµ¸¨t²ÎºŞ²z­û");
-                    PasswordBox.Clear();
-                    PasswordBox.Focus();
+                    HandleLoginFailure(userId);
                 }
             }
             catch (Exception ex)
@@ -181,8 +135,78 @@ namespace Stackdose.UI.Core.Controls
                 #endif
 
                 ShowLoading(false);
-                ShowError($"µn¤J¿ù»~ Login Error:\n{ex.Message}");
+                ShowError($"ç™»å…¥ç™¼ç”ŸéŒ¯èª¤ (Login Error):\n{ex.Message}");
             }
+        }
+
+        private static async Task<bool> AuthenticateAsync(string userId, string password)
+        {
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] Calling SecurityContext.Login...");
+#endif
+
+            var loginTask = Task.Run(() => SecurityContext.Login(userId, password));
+            var delayTask = Task.Delay(MinimumLoadingDurationMs);
+
+            await Task.WhenAll(loginTask, delayTask);
+            return loginTask.Result;
+        }
+
+        private bool ValidateCredentials(string userId, string password)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                ShowError("è«‹è¼¸å…¥å¸³è™Ÿ (Please enter User ID)");
+                UserIdTextBox.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                ShowError("è«‹è¼¸å…¥å¯†ç¢¼ (Please enter Password)");
+                PasswordBox.Focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        private void HandleLoginSuccess()
+        {
+            var user = SecurityContext.CurrentSession.CurrentUser;
+
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[LoginDialog] Login successful for: {user?.DisplayName} ({user?.AccessLevel})");
+#endif
+
+            ComplianceContext.LogSystem(
+                $"[LoginDialog] Login successful: {user?.DisplayName} ({user?.AccessLevel})",
+                LogLevel.Success,
+                showInUi: false);
+
+            LoginSuccessful = true;
+            DialogResult = true;
+            Close();
+        }
+
+        private void HandleLoginFailure(string userId)
+        {
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] Login failed");
+#endif
+
+            ShowError($"ç™»å…¥å¤±æ•— (Login Failed)\n" +
+                     $"å¸³è™Ÿ: {userId}\n\n" +
+                     "å¯èƒ½åŸå› :\n" +
+                     "- å¸³è™Ÿæˆ–å¯†ç¢¼éŒ¯èª¤\n" +
+                     "- å¸³è™Ÿå·²åœç”¨\n\n" +
+                     "è«‹ç¢ºèª:\n" +
+                     "1. ä½¿ç”¨æ­£ç¢ºçš„å¸³è™Ÿèˆ‡å¯†ç¢¼\n" +
+                     "2. å¸³è™Ÿç‹€æ…‹ä»ç‚ºå•Ÿç”¨\n" +
+                     "3. å¦‚éœ€å”åŠ©è«‹è¯çµ¡ç³»çµ±ç®¡ç†å“¡");
+
+            PasswordBox.Clear();
+            PasswordBox.Focus();
         }
 
         private void CancelButton_Click(object? sender, RoutedEventArgs? e)
@@ -212,7 +236,7 @@ namespace Stackdose.UI.Core.Controls
         }
 
         /// <summary>
-        /// Åã¥Ü©ÎÁôÂÃ¸ü¤J´£¥Ü
+        /// Shows or hides loading UI state.
         /// </summary>
         private void ShowLoading(bool show)
         {
@@ -221,7 +245,7 @@ namespace Stackdose.UI.Core.Controls
                 LoadingPanel.Visibility = Visibility.Visible;
                 ErrorPanel.Visibility = Visibility.Collapsed;
                 
-                // ¸T¥Î«ö¶sÁ×§K­«½ÆÂIÀ»
+                // Temporarily disable inputs while logging in.
                 UserIdTextBox.IsEnabled = false;
                 PasswordBox.IsEnabled = false;
                 
@@ -233,7 +257,7 @@ namespace Stackdose.UI.Core.Controls
             {
                 LoadingPanel.Visibility = Visibility.Collapsed;
                 
-                // ­«·s±Ò¥Î¿é¤JÄæ¦ì©M«ö¶s
+                // Re-enable inputs when loading ends.
                 UserIdTextBox.IsEnabled = true;
                 PasswordBox.IsEnabled = true;
                 
@@ -250,13 +274,13 @@ namespace Stackdose.UI.Core.Controls
             #endif
 
             // Display password reset instructions
-            string message = "±K½X­«³]»¡©ú Password Reset Instructions\n\n" +
-                           "½ĞÁpµ¸¨t²ÎºŞ²z­û­«³]±K½X\n\n" +
+            string message = "å¯†ç¢¼é‡è¨­èªªæ˜ (Password Reset Instructions)\n\n" +
+                           "è«‹è¯çµ¡ç³»çµ±ç®¡ç†å“¡å”åŠ©é‡è¨­å¯†ç¢¼\n\n" +
                            "To reset your password:\n" +
                            "1. Contact system administrator\n" +
                            "2. Provide your User ID\n" +
                            "3. Follow the password reset procedure\n\n" +
-                           "¶}µo/´ú¸ÕÀô¹Ò¹w³]±b¸¹:\n" +
+                           "é–‹ç™¼/æ¸¬è©¦é è¨­å¸³è™Ÿ:\n" +
                            "Development/Testing:\n" +
                            "- Username: admin01\n" +
                            "- Password: admin123";
@@ -276,18 +300,18 @@ namespace Stackdose.UI.Core.Controls
         }
         
         /// <summary>
-        /// ¨¾¤îÂIÀ»¾B¸n®ÉÃö³¬¹ï¸Ü®Ø
+        /// Prevent click-through on dialog overlay.
         /// </summary>
         private void Overlay_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            // ¤£°õ¦æ¥ô¦ó¾Ş§@ - ¨¾¤îÂIÀ»¾B¸n®ÉÃö³¬¹ï¸Ü®Ø
+            // Block bubbling to underlying window.
             e.Handled = true;
         }
         
         /// <summary>
-        /// Åã¥Üµn¤J¹ï¸Üµøµ¡
+        /// Shows login dialog and returns auth result.
         /// </summary>
-        /// <returns>¬O§_µn¤J¦¨¥\</returns>
+        /// <returns>True if login succeeds.</returns>
         public static bool ShowLoginDialog()
         {
             #if DEBUG
@@ -318,7 +342,7 @@ namespace Stackdose.UI.Core.Controls
                 #endif
                 
                 MessageBox.Show(
-                    $"µn¤J¹ï¸Ü®Øµo¥Í¿ù»~ Login Dialog Error:\n\n{ex.Message}",
+                    $"ç™»å…¥è¦–çª—ç™¼ç”ŸéŒ¯èª¤ (Login Dialog Error):\n\n{ex.Message}",
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error

@@ -6,18 +6,20 @@
              mc:Ignorable="d" d:DesignWidth="700" Height="343">
 
 	<UserControl.Resources>
-		<!-- 現代按鈕樣式 -->
+		<!-- Modern button style -->
 		<Style x:Key="ModernButtonStyle" TargetType="Button">
+			<Setter Property="Cursor" Value="Hand"/>
 			<Setter Property="Template">
 				<Setter.Value>
 					<ControlTemplate TargetType="Button">
 						<Border Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="1"
-                                CornerRadius="3">
+                                CornerRadius="5"
+                                Opacity="0.95">
 							<ContentPresenter HorizontalAlignment="Center" 
-                                              VerticalAlignment="Center"
-                                              Margin="6,3"/>
+                                               VerticalAlignment="Center"
+                                               Margin="6,3"/>
 						</Border>
 						<ControlTemplate.Triggers>
 							<Trigger Property="IsMouseOver" Value="True">
@@ -35,11 +37,11 @@
 			</Setter>
 		</Style>
 
-		<!-- 精簡輸入框樣式 -->
+		<!-- Compact text input style -->
 		<Style x:Key="CompactTextBoxStyle" TargetType="TextBox">
-			<Setter Property="Background" Value="White"/>
-			<Setter Property="Foreground" Value="Black"/>
-			<Setter Property="BorderBrush" Value="#AAAAAA"/>
+			<Setter Property="Background" Value="{DynamicResource Plc.Bg.Main}"/>
+			<Setter Property="Foreground" Value="{DynamicResource Cyber.Text.Main}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource Plc.Border}"/>
 			<Setter Property="BorderThickness" Value="1"/>
 			<Setter Property="Padding" Value="4,2"/>
 			<Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -58,7 +60,7 @@
 			</Setter>
 		</Style>
 
-		<!-- 下拉選單樣式 -->
+		<!-- Dropdown style -->
 		<Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
 			<Setter Property="Foreground" Value="White"/>
 			<Setter Property="Background" Value="#2C3E50"/>
@@ -172,8 +174,8 @@
 	<Border Background="{DynamicResource Plc.Bg.Dark}" 
             BorderBrush="{DynamicResource Plc.Border}" 
             BorderThickness="1" 
-            CornerRadius="4"
-            Padding="8">
+            CornerRadius="6"
+            Padding="10">
 		<Grid>
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto"/>
@@ -185,18 +187,19 @@
 				<RowDefinition Height="Auto"/>
 			</Grid.RowDefinitions>
 
-			<!-- 標題列 -->
+			<!-- Header -->
 			<Border Grid.Row="0"
                     Background="Transparent"
                     Padding="2,0">
-				<TextBlock Text="PrintHeadControl"
-                           FontSize="11"
-                           FontWeight="Bold"
-                           Foreground="#ECF0F1"
-                           VerticalAlignment="Center"/>
+				<TextBlock Text="PrintHead Controller"
+				           FontSize="12"
+				           FontWeight="Bold"
+				           FontFamily="Consolas"
+				           Foreground="{DynamicResource Cyber.Text.Main}"
+				           VerticalAlignment="Center"/>
 			</Border>
 
-			<!-- 頂部控制列 -->
+			<!-- Top control row -->
 			<Border Grid.Row="2"
                     Background="#2C3E50"
                     BorderBrush="#34495E"
@@ -214,17 +217,17 @@
 						<ColumnDefinition Width="Auto"/>
 					</Grid.ColumnDefinitions>
 
-					<!-- 閃噴控制組 -->
+					<!-- Flash control -->
 					<StackPanel Grid.Column="0" Orientation="Horizontal">
 						<TextBlock Text="閃噴頻率"
-                                   FontSize="9"
-                                   FontWeight="Bold"
-                                   Foreground="#ECF0F1"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,6,0"/>
+						            FontSize="9"
+						            FontWeight="Bold"
+						            Foreground="{DynamicResource Cyber.Text.Main}"
+						            VerticalAlignment="Center"
+						            Margin="0,0,6,0"/>
 
-						<Border Background="White"
-                                BorderBrush="#AAAAAA"
+						<Border Background="{DynamicResource Plc.Bg.Main}"
+						        BorderBrush="{DynamicResource Plc.Border}"
                                 BorderThickness="1"
                                 CornerRadius="2"
                                 Padding="4,2">
@@ -237,10 +240,10 @@
                                          Background="Transparent"
                                          VerticalContentAlignment="Center"/>
 								<TextBlock Text="KHz"
-                                           FontSize="8"
-                                           Foreground="#666666"
-                                           VerticalAlignment="Center"
-                                           Margin="3,0,0,0"/>
+                                            FontSize="8"
+								           Foreground="{DynamicResource Plc.Text.Default}"
+                                            VerticalAlignment="Center"
+                                            Margin="3,0,0,0"/>
 							</StackPanel>
 						</Border>
 					</StackPanel>
@@ -292,7 +295,7 @@
 				</Grid>
 			</Border>
 
-			<!-- 主要內容區域 -->
+			<!-- Main content -->
 			<Grid Grid.Row="4">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="120"/>
@@ -300,7 +303,7 @@
 					<ColumnDefinition Width="*"/>
 				</Grid.ColumnDefinitions>
 
-				<!-- 左側控制面板 -->
+				<!-- Left panel -->
 				<Border Grid.Column="0"
                         Background="#2C3E50"
                         BorderBrush="#34495E"
@@ -411,7 +414,7 @@
 					</StackPanel>
 				</Border>
 
-				<!-- 中央圖片預覽區域 -->
+				<!-- Image preview -->
 				<Border Grid.Column="2"
                         Background="#1E1E1E"
                         BorderBrush="#34495E"
@@ -433,7 +436,7 @@
 				</Border>
 			</Grid>
 
-			<!-- 底部狀態列 -->
+			<!-- Footer status -->
 			<Border Grid.Row="6"
                     Background="#2C3E50"
                     BorderBrush="#34495E"

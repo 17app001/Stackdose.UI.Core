@@ -5,8 +5,55 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Stackdose.UI.Core.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="400" d:DesignWidth="300"
-             x:Name="root">
+              d:DesignHeight="400" d:DesignWidth="300"
+              x:Name="root">
+
+    <UserControl.Resources>
+        <Style x:Key="PanelInputStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="{DynamicResource Plc.Bg.Dark}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Cyber.Text.Main}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Plc.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="PrimaryActionStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Status.Warning}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5"
+                                Opacity="0.95">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="1"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.82"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -14,7 +61,7 @@
         </Grid.RowDefinitions>
 
         <!-- PrintHead Status List -->
-        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Margin="10" Background="#1a1a2e">
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Margin="10" Background="{DynamicResource Plc.Bg.Dark}">
             <StackPanel x:Name="PrintHeadContainer">
                 <!-- PrintHead controls will be added dynamically in code-behind -->
             </StackPanel>
@@ -24,8 +71,8 @@
         <Border Grid.Row="1" 
                 BorderBrush="#FFA726" 
                 BorderThickness="2" 
-                CornerRadius="5" 
-                Padding="8" 
+                CornerRadius="6" 
+                Padding="10" 
                 Margin="10"
                 Background="{DynamicResource Plc.Bg.Main}">
             <Grid>
@@ -35,14 +82,14 @@
                 </Grid.RowDefinitions>
 
                 <!-- Input Box -->
-                <Grid Grid.Row="0" Margin="0,0,0,5">
+                <Grid Grid.Row="0" Margin="0,0,0,6">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Grid.Column="0" 
-                               Text="Khz:" 
+                               Text="KHz:" 
                                FontSize="11" 
                                Foreground="{DynamicResource Cyber.Text.Muted}" 
                                VerticalAlignment="Center" 
@@ -50,13 +97,8 @@
 
                     <TextBox Grid.Column="1" 
                              x:Name="FlashTimesTextBox"
+                             Style="{StaticResource PanelInputStyle}"
                              Height="28" 
-                             Background="{DynamicResource Cyber.Bg.Dark}" 
-                             Foreground="{DynamicResource Cyber.Text.Main}" 
-                             BorderBrush="{DynamicResource Plc.Border}" 
-                             BorderThickness="1"
-                             Padding="5"
-                             FontSize="12"
                              Text="0.1,1,1,1"
                              VerticalContentAlignment="Center"/>
                 </Grid>
@@ -65,13 +107,9 @@
                 <Button Grid.Row="1" 
                         x:Name="FlashButton"
                         Content="Flash PrintHead" 
+                        Style="{StaticResource PrimaryActionStyle}"
                         Height="32"
-                        Background="#FFA726" 
-                        Foreground="Black" 
-                        BorderBrush="#FF6F00" 
-                        BorderThickness="2"
-                        FontSize="12"
-                        FontWeight="Bold"
+                        Background="{DynamicResource Button.Bg.Warning}" 
                         HorizontalAlignment="Stretch"
                         Click="FlashButton_Click"
                         Cursor="Hand"/>

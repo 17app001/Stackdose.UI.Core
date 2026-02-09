@@ -12,7 +12,7 @@
             BorderBrush="{DynamicResource Plc.Border}" 
             BorderThickness="1" 
             CornerRadius="8"
-            Padding="6"
+            Padding="8"
             HorizontalAlignment="Stretch">
         <Grid>
             <Grid.RowDefinitions>
@@ -25,13 +25,13 @@
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="8"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="8"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="8"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="8"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
@@ -40,7 +40,7 @@
                     <Ellipse x:Name="StatusLight" 
                              Width="10" 
                              Height="10" 
-                             Fill="#ff4757">
+                             Fill="{DynamicResource Status.Error}">
                         <Ellipse.Effect>
                             <DropShadowEffect x:Name="StatusGlow" 
                                               Color="#ff4757" 
@@ -56,18 +56,21 @@
                     <TextBlock Text="{Binding HeadName, ElementName=root, FallbackValue='PrintHead 1'}" 
                                FontSize="12" 
                                FontWeight="Bold"
+                               FontFamily="Microsoft JhengHei"
                                Foreground="{DynamicResource Plc.Text.Label}"/>
                     <TextBlock x:Name="BoardAddressText" 
                                Text="N/A" 
-                               FontSize="8" 
-                               Foreground="Gray"
+                               FontSize="9" 
+                               FontFamily="Consolas"
+                               Foreground="{DynamicResource Plc.Text.Default}"
                                Margin="0,1,0,0"/>
                     <!-- Status display -->
                     <TextBlock x:Name="StateText"
                                Text="IDLE"
                                FontSize="9"
                                FontWeight="Bold"
-                               Foreground="#808080"
+                               FontFamily="Consolas"
+                               Foreground="{DynamicResource Status.Offline}"
                                Margin="0,2,0,0"
                                HorizontalAlignment="Left"/>
                 </StackPanel>
@@ -77,15 +80,16 @@
                            Grid.Column="4"
                            Text="N/A" 
                            FontSize="12" 
-                           Foreground="#00d4ff" 
+                           Foreground="{DynamicResource Plc.Text.Value}" 
                            FontWeight="Bold"
+                           FontFamily="Consolas"
                            VerticalAlignment="Center"/>
 
                 <!-- Power ON/OFF Button -->
                 <ToggleButton x:Name="PowerButton"
-                              Grid.Column="6"
-                              Width="26"
-                              Height="26"
+                               Grid.Column="6"
+                              Width="28"
+                              Height="28"
                               VerticalAlignment="Center"
                               Cursor="Hand"
                               Checked="PowerButton_Checked"
@@ -97,11 +101,11 @@
                                     <ControlTemplate TargetType="ToggleButton">
                                         <Grid>
                                             <!-- Circle Background -->
-                                            <Ellipse x:Name="CircleBackground"
-                                                     Width="26"
-                                                     Height="26"
-                                                     Fill="#2c3e50"
-                                                     Stroke="#34495e"
+                                             <Ellipse x:Name="CircleBackground"
+                                                     Width="28"
+                                                     Height="28"
+                                                     Fill="{DynamicResource Cyber.Bg.Panel}"
+                                                     Stroke="{DynamicResource Cyber.Border}"
                                                      StrokeThickness="1.5"/>
                                             
                                             <!-- Power Icon (Circle with vertical line) -->
@@ -163,7 +167,7 @@
                         Cursor="Hand">
                     <TextBlock x:Name="ExpandIcon"
                                Text="&#x25BC;"
-                               FontSize="7"
+                               FontSize="8"
                                Foreground="{DynamicResource Plc.Text.Label}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
@@ -183,7 +187,7 @@
                     BorderBrush="{DynamicResource Plc.Border}" 
                     BorderThickness="1" 
                     CornerRadius="5"
-                    Padding="6"
+                    Padding="8"
                     Visibility="Collapsed">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -200,12 +204,13 @@
                             BorderBrush="{DynamicResource Plc.Border}" 
                             BorderThickness="1" 
                             CornerRadius="3"
-                            Padding="5">
+                            Padding="6">
                         <StackPanel>
                             <TextBlock Text="Voltages" 
-                                       FontSize="8" 
-                                       Foreground="Gray"
+                                       FontSize="9" 
+                                       Foreground="{DynamicResource Plc.Text.Default}"
                                        FontWeight="Bold"
+                                       FontFamily="Consolas"
                                        HorizontalAlignment="Center"/>
                             <ItemsControl x:Name="VoltagesPanel" 
                                           HorizontalAlignment="Center"
@@ -217,15 +222,16 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="#1a1a2e" 
-                                                BorderBrush="#2c3e50" 
+                                        <Border Background="{DynamicResource Cyber.Bg.Panel}" 
+                                                BorderBrush="{DynamicResource Cyber.Border}" 
                                                 BorderThickness="1" 
                                                 CornerRadius="2"
-                                                Padding="3,1"
+                                                Padding="4,2"
                                                 Margin="2">
                                             <TextBlock Text="{Binding}" 
-                                                       FontSize="8" 
-                                                       Foreground="#ffd700" 
+                                                       FontSize="9" 
+                                                       Foreground="{DynamicResource PrintHead.Accent.Voltage}" 
+                                                       FontFamily="Consolas"
                                                        FontWeight="Bold"/>
                                         </Border>
                                     </DataTemplate>
@@ -240,16 +246,17 @@
                             BorderBrush="{DynamicResource Plc.Border}" 
                             BorderThickness="1" 
                             CornerRadius="3"
-                            Padding="5">
+                            Padding="6">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <TextBlock Text="Encoder: " 
-                                       FontSize="8" 
-                                       Foreground="Gray"
+                                       FontSize="9" 
+                                       Foreground="{DynamicResource Plc.Text.Default}"
                                        FontWeight="Bold"/>
                             <TextBlock x:Name="EncoderText" 
                                        Text="N/A" 
-                                       FontSize="8" 
-                                       Foreground="#00ff7f" 
+                                       FontSize="9" 
+                                       Foreground="{DynamicResource PrintHead.Accent.Encoder}" 
+                                       FontFamily="Consolas"
                                        FontWeight="Bold"/>
                         </StackPanel>
                     </Border>
@@ -260,16 +267,17 @@
                             BorderBrush="{DynamicResource Plc.Border}" 
                             BorderThickness="1" 
                             CornerRadius="3"
-                            Padding="5">
+                            Padding="6">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <TextBlock Text="PrintIndex: " 
-                                       FontSize="8" 
-                                       Foreground="Gray"
+                                       FontSize="9" 
+                                       Foreground="{DynamicResource Plc.Text.Default}"
                                        FontWeight="Bold"/>
                             <TextBlock x:Name="PrintIndexText" 
                                        Text="N/A" 
-                                       FontSize="8" 
-                                       Foreground="#ff69b4" 
+                                       FontSize="9" 
+                                       Foreground="{DynamicResource PrintHead.Accent.PrintIndex}" 
+                                       FontFamily="Consolas"
                                        FontWeight="Bold"/>
                         </StackPanel>
                     </Border>

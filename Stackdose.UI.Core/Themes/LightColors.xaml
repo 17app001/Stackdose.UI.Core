@@ -40,6 +40,13 @@
     <SolidColorBrush x:Key="Log.Text.Normal" Color="#212121"/>
     <SolidColorBrush x:Key="Log.Text.Time" Color="#616161"/>
 
+    <!-- ========== Overlay / Surface Alpha Colors ========== -->
+    <SolidColorBrush x:Key="Overlay.Bg.Scrim" Color="#80000000"/>
+    <SolidColorBrush x:Key="Overlay.Bg.Panel" Color="#14000000"/>
+    <SolidColorBrush x:Key="Overlay.Bg.Medium" Color="#12000000"/>
+    <SolidColorBrush x:Key="Overlay.Bg.Light" Color="#0A000000"/>
+    <SolidColorBrush x:Key="Overlay.Highlight.Info" Color="#140091EA"/>
+
     <!-- ========== SecuredButton Colors ========== -->
     <SolidColorBrush x:Key="Button.Bg.Primary" Color="#2196F3"/>
     <SolidColorBrush x:Key="Button.Bg.Success" Color="#4CAF50"/>
@@ -54,5 +61,10 @@
     <SolidColorBrush x:Key="Status.Error" Color="#F44336"/>
     <SolidColorBrush x:Key="Status.Info" Color="#2196F3"/>
     <SolidColorBrush x:Key="Status.Offline" Color="#9E9E9E"/>
+
+    <!-- ========== PrintHead Accent Colors ========== -->
+    <SolidColorBrush x:Key="PrintHead.Accent.Voltage" Color="#C49000"/>
+    <SolidColorBrush x:Key="PrintHead.Accent.Encoder" Color="#2E7D32"/>
+    <SolidColorBrush x:Key="PrintHead.Accent.PrintIndex" Color="#AD1457"/>
 
 </ResourceDictionary>

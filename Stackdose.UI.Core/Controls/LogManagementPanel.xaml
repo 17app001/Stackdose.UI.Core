@@ -45,6 +45,79 @@
                 <Setter Property="Padding" Value="8,4"/>
                 <Setter Property="HorizontalAlignment" Value="Left"/>
             </Style>
+
+            <Style x:Key="FilterToggleStyle" TargetType="ToggleButton">
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="FontFamily" Value="Consolas"/>
+                <Setter Property="Height" Value="32"/>
+                <Setter Property="Width" Value="132"/>
+                <Setter Property="Margin" Value="0,0,8,0"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border x:Name="ToggleBorder"
+                                    Background="{TemplateBinding Background}"
+                                    CornerRadius="5"
+                                    Opacity="0.82">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ToggleBorder" Property="Opacity" Value="0.95"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="ToggleBorder" Property="Opacity" Value="1"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="CompactToggleStyle" TargetType="ToggleButton" BasedOn="{StaticResource FilterToggleStyle}">
+                <Setter Property="Height" Value="28"/>
+                <Setter Property="Width" Value="74"/>
+                <Setter Property="FontSize" Value="11"/>
+                <Setter Property="Margin" Value="0,0,6,0"/>
+            </Style>
+
+            <Style x:Key="QueryButtonStyle" TargetType="Button">
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Width" Value="100"/>
+                <Setter Property="Height" Value="34"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontFamily" Value="Microsoft JhengHei"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="ButtonBorder"
+                                    Background="{TemplateBinding Background}"
+                                    CornerRadius="6"
+                                    Opacity="0.95">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ButtonBorder" Property="Opacity" Value="1"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.82"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -74,52 +147,29 @@
                 <!-- Row 0: Log Type Buttons -->
                 <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <ToggleButton Content="AUDIT TRAIL"
+                                  Style="{StaticResource FilterToggleStyle}"
                                   Background="#E85B4A"
                                   IsChecked="{Binding IsAuditTrailMode}"
-                                  Click="AuditTrailButton_Click"
-                                  Width="130"
-                                  Height="32"
-                                  Margin="0,0,8,0"
-                                  Foreground="White"
-                                  FontWeight="Bold"
-                                  FontSize="12"
-                                  FontFamily="Consolas"/>
+                                  Click="AuditTrailButton_Click"/>
                     
                     <ToggleButton Content="OPERATION"
+                                  Style="{StaticResource FilterToggleStyle}"
                                   Background="#3AA0FF"
                                   IsChecked="{Binding IsOperationMode}"
-                                  Click="OperationButton_Click"
-                                  Width="130"
-                                  Height="32"
-                                  Margin="0,0,8,0"
-                                  Foreground="White"
-                                  FontWeight="Bold"
-                                  FontSize="12"
-                                  FontFamily="Consolas"/>
+                                  Click="OperationButton_Click"/>
                     
                     <ToggleButton Content="EVENT"
+                                  Style="{StaticResource FilterToggleStyle}"
                                   Background="#FFB020"
                                   IsChecked="{Binding IsEventMode}"
-                                  Click="EventButton_Click"
-                                  Width="130"
-                                  Height="32"
-                                  Margin="0,0,8,0"
-                                  Foreground="White"
-                                  FontWeight="Bold"
-                                  FontSize="12"
-                                  FontFamily="Consolas"/>
+                                  Click="EventButton_Click"/>
                     
                     <ToggleButton Content="PERIODIC DATA"
+                                  Style="{StaticResource FilterToggleStyle}"
                                   Background="#3AC977"
                                   IsChecked="{Binding IsPeriodicDataMode}"
                                   Click="PeriodicDataButton_Click"
-                                  Width="130"
-                                  Height="32"
-                                  Margin="0,0,24,0"
-                                  Foreground="White"
-                                  FontWeight="Bold"
-                                  FontSize="12"
-                                  FontFamily="Consolas"/>
+                                  Margin="0,0,24,0"/>
 
                     <TextBlock Text="FROM"
                                Foreground="{DynamicResource Plc.Text.Label}"
@@ -150,26 +200,17 @@
                 </StackPanel>
 
                 <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="Query"
+                    <Button Content="查詢"
+                            Style="{StaticResource QueryButtonStyle}"
                             Click="QueryButton_Click"
                             Background="{DynamicResource Button.Bg.Info}"
-                            Foreground="White"
-                            Width="90"
-                            Height="32"
-                            Margin="0,0,8,0"
-                            FontWeight="Bold"
-                            FontSize="14"
-                            FontFamily="Microsoft JhengHei"/>
+                            Margin="0,0,8,0"/>
                     
-                    <Button Content="Export PDF"
+                    <Button Content="匯出 PDF"
+                            Style="{StaticResource QueryButtonStyle}"
                             Click="ExportPdfButton_Click"
                             Background="#A78BFA"
-                            Foreground="White"
-                            Width="90"
-                            Height="32"
-                            FontWeight="Bold"
-                            FontSize="14"
-                            FontFamily="Microsoft JhengHei"/>
+                            Width="108"/>
                 </StackPanel>
 
                 <!-- Row 1: Event Severity Filter (only visible in Event mode) -->
@@ -186,69 +227,40 @@
                                Margin="0,0,12,0"/>
                     
                     <ToggleButton Content="ALL"
+                                  Style="{StaticResource CompactToggleStyle}"
                                   x:Name="SeverityAllBtn"
                                   IsChecked="{Binding IsSeverityAll, Mode=TwoWay}"
                                   Click="SeverityAll_Click"
-                                  Width="70"
-                                  Height="28"
-                                  Margin="0,0,6,0"
-                                  Background="#6B7280"
-                                  Foreground="White"
-                                  FontWeight="Bold"
-                                  FontSize="11"
-                                  FontFamily="Consolas"/>
+                                  Background="#6B7280"/>
                     
                     <ToggleButton Content="CRITICAL"
+                                  Style="{StaticResource CompactToggleStyle}"
                                   x:Name="SeverityCriticalBtn"
                                   IsChecked="{Binding IsSeverityCritical, Mode=TwoWay}"
                                   Click="SeverityCritical_Click"
                                   Width="80"
-                                  Height="28"
-                                  Margin="0,0,6,0"
-                                  Background="#DC2626"
-                                  Foreground="White"
-                                  FontWeight="Bold"
-                                  FontSize="11"
-                                  FontFamily="Consolas"/>
+                                  Background="#DC2626"/>
                     
                     <ToggleButton Content="MAJOR"
+                                  Style="{StaticResource CompactToggleStyle}"
                                   x:Name="SeverityMajorBtn"
                                   IsChecked="{Binding IsSeverityMajor, Mode=TwoWay}"
                                   Click="SeverityMajor_Click"
-                                  Width="70"
-                                  Height="28"
-                                  Margin="0,0,6,0"
-                                  Background="#EA580C"
-                                  Foreground="White"
-                                  FontWeight="Bold"
-                                  FontSize="11"
-                                  FontFamily="Consolas"/>
+                                  Background="#EA580C"/>
                     
                     <ToggleButton Content="MINOR"
+                                  Style="{StaticResource CompactToggleStyle}"
                                   x:Name="SeverityMinorBtn"
                                   IsChecked="{Binding IsSeverityMinor, Mode=TwoWay}"
                                   Click="SeverityMinor_Click"
-                                  Width="70"
-                                  Height="28"
-                                  Margin="0,0,6,0"
-                                  Background="#CA8A04"
-                                  Foreground="White"
-                                  FontWeight="Bold"
-                                  FontSize="11"
-                                  FontFamily="Consolas"/>
+                                  Background="#CA8A04"/>
                     
                     <ToggleButton Content="INFO"
+                                  Style="{StaticResource CompactToggleStyle}"
                                   x:Name="SeverityInfoBtn"
                                   IsChecked="{Binding IsSeverityInfo, Mode=TwoWay}"
                                   Click="SeverityInfo_Click"
-                                  Width="70"
-                                  Height="28"
-                                  Margin="0,0,6,0"
-                                  Background="#2563EB"
-                                  Foreground="White"
-                                  FontWeight="Bold"
-                                  FontSize="11"
-                                  FontFamily="Consolas"/>
+                                  Background="#2563EB"/>
 
                     <TextBlock Text="|"
                                Foreground="{DynamicResource Plc.Border}"
@@ -265,56 +277,33 @@
                                Margin="0,0,12,0"/>
 
                     <ToggleButton Content="Alarm"
+                                  Style="{StaticResource CompactToggleStyle}"
                                   x:Name="EventTypeAlarmBtn"
                                   IsChecked="{Binding IsEventTypeAlarm, Mode=TwoWay}"
                                   Click="EventTypeAlarm_Click"
-                                  Width="70"
-                                  Height="28"
-                                  Margin="0,0,6,0"
-                                  Background="#EF4444"
-                                  Foreground="White"
-                                  FontWeight="Bold"
-                                  FontSize="11"
-                                  FontFamily="Consolas"/>
+                                  Background="#EF4444"/>
 
                     <ToggleButton Content="Warning"
+                                  Style="{StaticResource CompactToggleStyle}"
                                   x:Name="EventTypeWarningBtn"
                                   IsChecked="{Binding IsEventTypeWarning, Mode=TwoWay}"
                                   Click="EventTypeWarning_Click"
                                   Width="75"
-                                  Height="28"
-                                  Margin="0,0,6,0"
-                                  Background="#F59E0B"
-                                  Foreground="White"
-                                  FontWeight="Bold"
-                                  FontSize="11"
-                                  FontFamily="Consolas"/>
+                                  Background="#F59E0B"/>
 
                     <ToggleButton Content="System"
+                                  Style="{StaticResource CompactToggleStyle}"
                                   x:Name="EventTypeSystemBtn"
                                   IsChecked="{Binding IsEventTypeSystem, Mode=TwoWay}"
                                   Click="EventTypeSystem_Click"
-                                  Width="70"
-                                  Height="28"
-                                  Margin="0,0,6,0"
-                                  Background="#3B82F6"
-                                  Foreground="White"
-                                  FontWeight="Bold"
-                                  FontSize="11"
-                                  FontFamily="Consolas"/>
+                                  Background="#3B82F6"/>
 
                     <ToggleButton Content="Safety"
+                                  Style="{StaticResource CompactToggleStyle}"
                                   x:Name="EventTypeSafetyBtn"
                                   IsChecked="{Binding IsEventTypeSafety, Mode=TwoWay}"
                                   Click="EventTypeSafety_Click"
-                                  Width="70"
-                                  Height="28"
-                                  Margin="0,0,6,0"
-                                  Background="#8B5CF6"
-                                  Foreground="White"
-                                  FontWeight="Bold"
-                                  FontSize="11"
-                                  FontFamily="Consolas"/>
+                                  Background="#8B5CF6"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -945,6 +934,39 @@
                             </ItemsControl>
                         </Grid>
                     </ScrollViewer>
+
+                    <Border Grid.Row="1"
+                            IsHitTestVisible="False"
+                            Background="#28000000"
+                            CornerRadius="8"
+                            Padding="16,10"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CurrentRecordCount}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel>
+                            <TextBlock Text="沒有符合條件的紀錄"
+                                       Foreground="{DynamicResource Plc.Text.Gray}"
+                                       FontFamily="Microsoft JhengHei"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="請調整日期、類型或嚴重度篩選條件"
+                                       Foreground="{DynamicResource Plc.Text.Label}"
+                                       FontFamily="Microsoft JhengHei"
+                                       FontSize="12"
+                                       Margin="0,4,0,0"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Border>
         </Grid>

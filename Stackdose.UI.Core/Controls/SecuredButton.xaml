@@ -18,6 +18,7 @@
             Padding="15,8"
             FontSize="14"
             FontWeight="Medium"
+            FocusVisualStyle="{x:Null}"
             Cursor="Hand">
         
         <Button.Style>
@@ -29,8 +30,9 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
                             <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="Transparent"
                                     CornerRadius="5"
-                                    BorderThickness="0">
+                                    BorderThickness="1">
                                 <Border.Effect>
                                     <DropShadowEffect Color="Black" 
                                                       BlurRadius="10" 
@@ -46,8 +48,15 @@
                 </Setter>
                 
                 <Style.Triggers>
+                    <Trigger Property="IsKeyboardFocused" Value="True">
+                        <Setter Property="BorderBrush" Value="#80FFFFFF"/>
+                    </Trigger>
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="Background" Value="{Binding HoverBrush, ElementName=root}"/>
+                    </Trigger>
+
+                    <Trigger Property="IsPressed" Value="True">
+                        <Setter Property="Opacity" Value="0.9"/>
                     </Trigger>
                     
                     <Trigger Property="IsEnabled" Value="False">

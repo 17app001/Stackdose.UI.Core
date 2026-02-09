@@ -41,6 +41,17 @@ namespace Stackdose.UI.Core.Helpers
         private static int _batchSize = 100;          // Batch size
         private static int _flushIntervalMs = 5000;   // Flush interval (ms)
 
+        // SQL statements
+        private const string InsertDataLogsSql = "INSERT INTO DataLogs (Timestamp, LabelName, Address, Value) VALUES (@Timestamp, @LabelName, @Address, @Value)";
+        private const string InsertAuditTrailsSql = @"INSERT INTO AuditTrails (Timestamp, BatchId, User, Action, TargetDevice, OldValue, NewValue, Reason, Parameter)
+                                                     VALUES (@Timestamp, @BatchId, @User, @Action, @TargetDevice, @OldValue, @NewValue, @Reason, @Parameter)";
+        private const string InsertOperationLogsSql = @"INSERT INTO OperationLogs (Timestamp, BatchId, UserId, CommandName, Category, BeforeState, AfterState, Message)
+                                                        VALUES (@Timestamp, @BatchId, @UserId, @CommandName, @Category, @BeforeState, @AfterState, @Message)";
+        private const string InsertEventLogsSql = @"INSERT INTO EventLogs (Timestamp, BatchId, EventType, EventCode, EventDescription, Severity, CurrentState, UserId, Message)
+                                                    VALUES (@Timestamp, @BatchId, @EventType, @EventCode, @EventDescription, @Severity, @CurrentState, @UserId, @Message)";
+        private const string InsertPeriodicDataLogsSql = @"INSERT INTO PeriodicDataLogs (Timestamp, BatchId, UserId, PredryTemp, DryTemp, CdaInletPressure)
+                                                           VALUES (@Timestamp, @BatchId, @UserId, @PredryTemp, @DryTemp, @CdaInletPressure)";
+
         // Statistics
         private static long _totalDataLogs = 0;
         private static long _totalAuditLogs = 0;
@@ -281,13 +292,7 @@ namespace Stackdose.UI.Core.Helpers
                 }
             }
 
-            // 🔥 啟動定時刷新 Timer
-            _flushTimer = new System.Threading.Timer(
-                callback: _ => FlushAll(),
-                state: null,
-                dueTime: _flushIntervalMs,
-                period: _flushIntervalMs
-            );
+            RestartFlushTimer();
 
             #if DEBUG
             System.Diagnostics.Debug.WriteLine("[SqliteLogger] Batch write mode enabled");
@@ -305,14 +310,7 @@ namespace Stackdose.UI.Core.Helpers
             _batchSize = batchSize;
             _flushIntervalMs = flushIntervalMs;
 
-            // 重啟 Timer
-            _flushTimer?.Dispose();
-            _flushTimer = new System.Threading.Timer(
-                callback: _ => FlushAll(),
-                state: null,
-                dueTime: _flushIntervalMs,
-                period: _flushIntervalMs
-            );
+            RestartFlushTimer();
 
             #if DEBUG
             System.Diagnostics.Debug.WriteLine($"[SqliteLogger] 批次參數已更新: BatchSize={_batchSize}, Interval={_flushIntervalMs}ms");
@@ -526,61 +524,19 @@ namespace Stackdose.UI.Core.Helpers
         /// </summary>
         private static void FlushDataLogs()
         {
-            if (_dataLogQueue.IsEmpty) return;
-
-            lock (_flushLock)
-            {
-                if (_dataLogQueue.IsEmpty) return;
-
-                try
+            TryFlushQueue(
+                queue: _dataLogQueue,
+                writeEntry: (conn, transaction, entry) => conn.Execute(InsertDataLogsSql, entry, transaction),
+                beforeFlush: count => BatchFlushStarted?.Invoke(count, 0),
+                afterFlush: count => BatchFlushCompleted?.Invoke(count, 0),
+                onSuccess: count =>
                 {
-                    var batch = new List<DataLogEntry>();
-
-                    // 取出所有待寫入項目
-                    while (_dataLogQueue.TryDequeue(out var entry))
-                    {
-                        batch.Add(entry);
-                    }
-
-                    if (batch.Count == 0) return;
-
-                    // 🔥 觸發批次刷新開始事件
-                    BatchFlushStarted?.Invoke(batch.Count, 0);
-
-                    // 🔥 批次寫入資料庫
-                    using (var conn = new SqliteConnection(_connectionString))
-                    {
-                        conn.Open();
-                        using (var transaction = conn.BeginTransaction())
-                        {
-                            foreach (var entry in batch)
-                            {
-                                conn.Execute(
-                                    "INSERT INTO DataLogs (Timestamp, LabelName, Address, Value) VALUES (@Timestamp, @LabelName, @Address, @Value)",
-                                    entry,
-                                    transaction
-                                );
-                            }
-                            transaction.Commit();
-                        }
-                    }
-
-                    // 更新統計
-                    _totalDataLogs += batch.Count;
-                    _batchFlushCount++;
-
-                    // 🔥 觸發批次刷新完成事件
-                    BatchFlushCompleted?.Invoke(batch.Count, 0);
-
+                    _totalDataLogs += count;
                     #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] DataLogs 批次寫入: {batch.Count} 筆 (累計: {_totalDataLogs})");
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] DataLogs 批次寫入: {count} 筆 (累計: {_totalDataLogs})");
                     #endif
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FlushDataLogs Error: {ex.Message}");
-                }
-            }
+                },
+                onError: ex => System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FlushDataLogs Error: {ex.Message}"));
         }
 
         /// <summary>
@@ -588,62 +544,19 @@ namespace Stackdose.UI.Core.Helpers
         /// </summary>
         private static void FlushAuditLogs()
         {
-            if (_auditLogQueue.IsEmpty) return;
-
-            lock (_flushLock)
-            {
-                if (_auditLogQueue.IsEmpty) return;
-
-                try
+            TryFlushQueue(
+                queue: _auditLogQueue,
+                writeEntry: (conn, transaction, entry) => conn.Execute(InsertAuditTrailsSql, entry, transaction),
+                beforeFlush: count => BatchFlushStarted?.Invoke(0, count),
+                afterFlush: count => BatchFlushCompleted?.Invoke(0, count),
+                onSuccess: count =>
                 {
-                    var batch = new List<AuditLogEntry>();
-
-                    // 取出所有待寫入項目
-                    while (_auditLogQueue.TryDequeue(out var entry))
-                    {
-                        batch.Add(entry);
-                    }
-
-                    if (batch.Count == 0) return;
-
-                    // 🔥 觸發批次刷新開始事件
-                    BatchFlushStarted?.Invoke(0, batch.Count);
-
-                    // 🔥 批次寫入資料庫
-                    using (var conn = new SqliteConnection(_connectionString))
-                    {
-                        conn.Open();
-                        using (var transaction = conn.BeginTransaction())
-                        {
-                            foreach (var entry in batch)
-                            {
-                                conn.Execute(
-                                    @"INSERT INTO AuditTrails (Timestamp, BatchId, User, Action, TargetDevice, OldValue, NewValue, Reason, Parameter) 
-                                      VALUES (@Timestamp, @BatchId, @User, @Action, @TargetDevice, @OldValue, @NewValue, @Reason, @Parameter)",
-                                    entry,
-                                    transaction
-                                );
-                            }
-                            transaction.Commit();
-                        }
-                    }
-
-                    // 更新統計
-                    _totalAuditLogs += batch.Count;
-                    _batchFlushCount++;
-
-                    // 🔥 觸發批次刷新完成事件
-                    BatchFlushCompleted?.Invoke(0, batch.Count);
-
+                    _totalAuditLogs += count;
                     #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] AuditLogs 批次寫入: {batch.Count} 筆 (累計: {_totalAuditLogs})");
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] AuditLogs 批次寫入: {count} 筆 (累計: {_totalAuditLogs})");
                     #endif
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FlushAuditLogs Error: {ex.Message}");
-                }
-            }
+                },
+                onError: ex => System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FlushAuditLogs Error: {ex.Message}"));
         }
 
         /// <summary>
@@ -651,53 +564,17 @@ namespace Stackdose.UI.Core.Helpers
         /// </summary>
         private static void FlushOperationLogs()
         {
-            if (_operationLogQueue.IsEmpty) return;
-
-            lock (_flushLock)
-            {
-                if (_operationLogQueue.IsEmpty) return;
-
-                try
+            TryFlushQueue(
+                queue: _operationLogQueue,
+                writeEntry: (conn, transaction, entry) => conn.Execute(InsertOperationLogsSql, entry, transaction),
+                onSuccess: count =>
                 {
-                    var batch = new List<OperationLogEntry>();
-
-                    while (_operationLogQueue.TryDequeue(out var entry))
-                    {
-                        batch.Add(entry);
-                    }
-
-                    if (batch.Count == 0) return;
-
-                    using (var conn = new SqliteConnection(_connectionString))
-                    {
-                        conn.Open();
-                        using (var transaction = conn.BeginTransaction())
-                        {
-                            foreach (var entry in batch)
-                            {
-                                conn.Execute(
-                                    @"INSERT INTO OperationLogs (Timestamp, BatchId, UserId, CommandName, Category, BeforeState, AfterState, Message) 
-                                      VALUES (@Timestamp, @BatchId, @UserId, @CommandName, @Category, @BeforeState, @AfterState, @Message)",
-                                    entry,
-                                    transaction
-                                );
-                            }
-                            transaction.Commit();
-                        }
-                    }
-
-                    _totalOperationLogs += batch.Count;
-                    _batchFlushCount++;
-
+                    _totalOperationLogs += count;
                     #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] OperationLogs 批次寫入: {batch.Count} 筆 (累計: {_totalOperationLogs})");
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] OperationLogs 批次寫入: {count} 筆 (累計: {_totalOperationLogs})");
                     #endif
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FlushOperationLogs Error: {ex.Message}");
-                }
-            }
+                },
+                onError: ex => System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FlushOperationLogs Error: {ex.Message}"));
         }
 
         /// <summary>
@@ -705,53 +582,17 @@ namespace Stackdose.UI.Core.Helpers
         /// </summary>
         private static void FlushEventLogs()
         {
-            if (_eventLogQueue.IsEmpty) return;
-
-            lock (_flushLock)
-            {
-                if (_eventLogQueue.IsEmpty) return;
-
-                try
+            TryFlushQueue(
+                queue: _eventLogQueue,
+                writeEntry: (conn, transaction, entry) => conn.Execute(InsertEventLogsSql, entry, transaction),
+                onSuccess: count =>
                 {
-                    var batch = new List<EventLogEntry>();
-
-                    while (_eventLogQueue.TryDequeue(out var entry))
-                    {
-                        batch.Add(entry);
-                    }
-
-                    if (batch.Count == 0) return;
-
-                    using (var conn = new SqliteConnection(_connectionString))
-                    {
-                        conn.Open();
-                        using (var transaction = conn.BeginTransaction())
-                        {
-                            foreach (var entry in batch)
-                            {
-                                conn.Execute(
-                                    @"INSERT INTO EventLogs (Timestamp, BatchId, EventType, EventCode, EventDescription, Severity, CurrentState, UserId, Message) 
-                                      VALUES (@Timestamp, @BatchId, @EventType, @EventCode, @EventDescription, @Severity, @CurrentState, @UserId, @Message)",
-                                    entry,
-                                    transaction
-                                );
-                            }
-                            transaction.Commit();
-                        }
-                    }
-
-                    _totalEventLogs += batch.Count;
-                    _batchFlushCount++;
-
+                    _totalEventLogs += count;
                     #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] EventLogs 批次寫入: {batch.Count} 筆 (累計: {_totalEventLogs})");
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] EventLogs 批次寫入: {count} 筆 (累計: {_totalEventLogs})");
                     #endif
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FlushEventLogs Error: {ex.Message}");
-                }
-            }
+                },
+                onError: ex => System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FlushEventLogs Error: {ex.Message}"));
         }
 
         /// <summary>
@@ -759,55 +600,17 @@ namespace Stackdose.UI.Core.Helpers
         /// </summary>
         private static void FlushPeriodicDataLogs()
         {
-            if (_periodicDataQueue.IsEmpty) return;
-
-            lock (_flushLock)
-            {
-                if (_periodicDataQueue.IsEmpty) return;
-
-                try
+            TryFlushQueue(
+                queue: _periodicDataQueue,
+                writeEntry: (conn, transaction, entry) => conn.Execute(InsertPeriodicDataLogsSql, entry, transaction),
+                onSuccess: count =>
                 {
-                    var batch = new List<PeriodicDataLogEntry>();
-
-                    while (_periodicDataQueue.TryDequeue(out var entry))
-                    {
-                        batch.Add(entry);
-                    }
-
-                    if (batch.Count == 0) return;
-
-                    using (var conn = new SqliteConnection(_connectionString))
-                    {
-                        conn.Open();
-                        using (var transaction = conn.BeginTransaction())
-                        {
-                            foreach (var entry in batch)
-                            {
-                                conn.Execute(
-                                    @"INSERT INTO PeriodicDataLogs (Timestamp, BatchId, UserId, PredryTemp, DryTemp, CdaInletPressure) 
-                                      VALUES (@Timestamp, @BatchId, @UserId, @PredryTemp, @DryTemp, @CdaInletPressure)",
-                                    entry,
-                                    transaction
-                                );
-                            }
-                            transaction.Commit();
-                        }
-                    }
-
-                    _totalPeriodicDataLogs += batch.Count;
-                    _batchFlushCount++;
-
+                    _totalPeriodicDataLogs += count;
                     #if DEBUG
-                    // 🔥 Show sample UserId for verification
-                    var sampleUserId = batch.FirstOrDefault()?.UserId ?? "N/A";
-                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] PeriodicDataLogs 批次寫入: {batch.Count} 筆 (累計: {_totalPeriodicDataLogs}) - Sample UserId: {sampleUserId}");
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] PeriodicDataLogs 批次寫入: {count} 筆 (累計: {_totalPeriodicDataLogs})");
                     #endif
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FlushPeriodicDataLogs Error: {ex.Message}");
-                }
-            }
+                },
+                onError: ex => System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FlushPeriodicDataLogs Error: {ex.Message}"));
         }
 
         #endregion
@@ -872,6 +675,77 @@ namespace Stackdose.UI.Core.Helpers
 
         #region Helper Methods
 
+        private static void RestartFlushTimer()
+        {
+            _flushTimer?.Dispose();
+            _flushTimer = new System.Threading.Timer(
+                callback: _ => FlushAll(),
+                state: null,
+                dueTime: _flushIntervalMs,
+                period: _flushIntervalMs
+            );
+        }
+
+        private static void TryFlushQueue<TEntry>(
+            ConcurrentQueue<TEntry> queue,
+            Action<SqliteConnection, SqliteTransaction, TEntry> writeEntry,
+            Action<int> onSuccess,
+            Action<Exception> onError,
+            Action<int>? beforeFlush = null,
+            Action<int>? afterFlush = null)
+        {
+            if (queue.IsEmpty)
+            {
+                return;
+            }
+
+            lock (_flushLock)
+            {
+                if (queue.IsEmpty)
+                {
+                    return;
+                }
+
+                try
+                {
+                    var batch = new List<TEntry>();
+                    while (queue.TryDequeue(out var entry))
+                    {
+                        batch.Add(entry);
+                    }
+
+                    if (batch.Count == 0)
+                    {
+                        return;
+                    }
+
+                    beforeFlush?.Invoke(batch.Count);
+
+                    using (var conn = new SqliteConnection(_connectionString))
+                    {
+                        conn.Open();
+                        using (var transaction = conn.BeginTransaction())
+                        {
+                            foreach (var entry in batch)
+                            {
+                                writeEntry(conn, transaction, entry);
+                            }
+
+                            transaction.Commit();
+                        }
+                    }
+
+                    _batchFlushCount++;
+                    onSuccess(batch.Count);
+                    afterFlush?.Invoke(batch.Count);
+                }
+                catch (Exception ex)
+                {
+                    onError(ex);
+                }
+            }
+        }
+
         /// <summary>
         /// 🔥 格式化 UserId 為統一格式 "UID-XXXXXX (DisplayName)"
         /// 如果已經是完整格式則直接返回
@@ -904,9 +778,11 @@ namespace Stackdose.UI.Core.Helpers
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // 忽略錯誤
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FormatUserId fallback: {ex.Message}");
+                #endif
             }
             
             // 無法取得完整格式，返回原始值

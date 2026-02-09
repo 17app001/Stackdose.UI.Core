@@ -1,5 +1,4 @@
-﻿using Stackdose.UI.Core.Models;
-using Stackdose.UI.Core.Services;
+using Stackdose.UI.Core.Models;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
@@ -17,6 +16,8 @@ namespace Stackdose.UI.Core.Helpers
     /// </summary>
     public static class SecurityContext
     {
+        private static readonly string _loginDebugLogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "login_debug.log");
+
         #region 靜態屬性
 
         /// <summary>
@@ -66,42 +67,27 @@ namespace Stackdose.UI.Core.Helpers
         public static bool Login(string userId, string password)
         {
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            
-            // 🔥 寫入檔案日誌（確保能看到）
-            var logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "login_debug.log");
-            void WriteLog(string message)
-            {
-                try
-                {
-                    System.IO.File.AppendAllText(logPath, $"[{DateTime.Now:HH:mm:ss.fff}] {message}\n");
-                    System.Diagnostics.Debug.WriteLine($"[SecurityContext] {message}");
-                }
-                catch { }
-            }
-            
-            WriteLog($"========================================");
-            WriteLog($"Login START: {userId}");
-            WriteLog($"Mode: SQLite Database Authentication");
-            WriteLog($"========================================");
+
+            WriteLoginDebug("========================================");
+            WriteLoginDebug($"Login START: {userId}");
+            WriteLoginDebug("Mode: SQLite Database Authentication");
+            WriteLoginDebug("========================================");
 
             // 🔥 資料庫驗證
             try
             {
-                WriteLog($"[Step 1] 嘗試資料庫驗證...");
+                WriteLoginDebug("[Step 1] 嘗試資料庫驗證...");
                 var userService = new Stackdose.UI.Core.Services.UserManagementService();
                 var dbResult = userService.AuthenticateAsync(userId, password).Result;
                 
                 if (dbResult.Success && dbResult.User != null)
                 {
-                    WriteLog($"✅ 資料庫驗證成功");
-                    WriteLog($"   UserId: {dbResult.User.UserId}");
-                    WriteLog($"   DisplayName: {dbResult.User.DisplayName}");
-                    WriteLog($"   AccessLevel: {dbResult.User.AccessLevel}");
-                    
-                    // 設定 Session
-                    CurrentSession.CurrentUser = dbResult.User;
-                    CurrentSession.LoginTime = DateTime.Now;
-                    CurrentSession.LastActivityTime = DateTime.Now;
+                    WriteLoginDebug("✅ 資料庫驗證成功");
+                    WriteLoginDebug($"   UserId: {dbResult.User.UserId}");
+                    WriteLoginDebug($"   DisplayName: {dbResult.User.DisplayName}");
+                    WriteLoginDebug($"   AccessLevel: {dbResult.User.AccessLevel}");
+
+                    SessionCoordinator.BeginSession(dbResult.User);
                     
                     // 記錄到 Audit Trail (不包含 "via Database" 字樣)
                     ComplianceContext.LogAuditTrail(
@@ -126,19 +112,19 @@ namespace Stackdose.UI.Core.Helpers
                     // 啟動自動登出計時器
                     if (EnableAutoLogout)
                     {
-                        StartAutoLogoutTimer();
+                        AutoLogoutCoordinator.Start();
                     }
 
                     stopwatch.Stop();
-                    WriteLog($"========================================");
-                    WriteLog($"✅ Login COMPLETED in {stopwatch.ElapsedMilliseconds}ms");
-                    WriteLog($"========================================");
+                    WriteLoginDebug("========================================");
+                    WriteLoginDebug($"✅ Login COMPLETED in {stopwatch.ElapsedMilliseconds}ms");
+                    WriteLoginDebug("========================================");
                     
                     return true;
                 }
                 else
                 {
-                    WriteLog($"❌ 資料庫驗證失敗: {dbResult.Message}");
+                    WriteLoginDebug($"❌ 資料庫驗證失敗: {dbResult.Message}");
                     
                     ComplianceContext.LogSystem(
                         $"Login Failed: {userId} - {dbResult.Message}",
@@ -160,7 +146,7 @@ namespace Stackdose.UI.Core.Helpers
             }
             catch (Exception ex)
             {
-                WriteLog($"❌ 資料庫驗證錯誤: {ex.Message}");
+                WriteLoginDebug($"❌ 資料庫驗證錯誤: {ex.Message}");
                 
                 ComplianceContext.LogSystem(
                     $"Authentication Error: {ex.Message}",
@@ -178,69 +164,8 @@ namespace Stackdose.UI.Core.Helpers
         /// <param name="level">權限等級</param>
         public static void QuickLogin(AccessLevel level = AccessLevel.Admin)
         {
-            UserAccount? user = null;
-            
-            // 🔥 修正：根據權限等級決定要載入的使用者
-            switch (level)
-            {
-                case AccessLevel.Admin:
-                    // 🔥 嘗試從資料庫載入 admin01（改為新預設帳號）
-                    user = LoadUserFromDatabase("admin01");
-                    if (user == null)
-                    {
-                        System.Diagnostics.Debug.WriteLine("[SecurityContext] QuickLogin: admin01 not found in database, creating temporary user");
-                        user = new UserAccount
-                        {
-                            Id = 1,
-                            UserId = "admin01",
-                            DisplayName = "系統管理員 (Admin)",
-                            PasswordHash = HashPassword("admin01admin01"),
-                            AccessLevel = AccessLevel.Admin,
-                            IsActive = true,
-                            CreatedBy = "System",
-                            CreatedAt = DateTime.Now
-                        };
-                    }
-                    break;
-                    
-                case AccessLevel.Guest:
-                    // 🔥 建立 Guest 臨時帳號
-                    System.Diagnostics.Debug.WriteLine("[SecurityContext] QuickLogin: Creating Guest user");
-                    user = new UserAccount
-                    {
-                        Id = 0,
-                        UserId = "Guest",
-                        DisplayName = "訪客 (Guest)",
-                        PasswordHash = string.Empty,
-                        Salt = string.Empty,
-                        AccessLevel = AccessLevel.Guest,
-                        IsActive = true,
-                        CreatedBy = "System",
-                        CreatedAt = DateTime.Now
-                    };
-                    break;
-                    
-                default:
-                    // 🔥 其他權限等級，建立臨時帳號
-                    System.Diagnostics.Debug.WriteLine($"[SecurityContext] QuickLogin: Creating temporary {level} user");
-                    user = new UserAccount
-                    {
-                        Id = (int)level,
-                        UserId = level.ToString(),
-                        DisplayName = $"{level} (Temporary)",
-                        PasswordHash = string.Empty,
-                        Salt = string.Empty,
-                        AccessLevel = level,
-                        IsActive = true,
-                        CreatedBy = "System",
-                        CreatedAt = DateTime.Now
-                    };
-                    break;
-            }
-
-            CurrentSession.CurrentUser = user;
-            CurrentSession.LoginTime = DateTime.Now;
-            CurrentSession.LastActivityTime = DateTime.Now;
+            var user = AuthenticationCoordinator.CreateQuickLoginUser(level);
+            SessionCoordinator.BeginSession(user);
 
             ComplianceContext.LogSystem(
                 $"[QUICK] Quick Login: {user.DisplayName} (Level: {user.AccessLevel})",
@@ -255,7 +180,7 @@ namespace Stackdose.UI.Core.Helpers
             // 🔥 修正：Guest 不需要自動登出計時器
             if (EnableAutoLogout && level != AccessLevel.Guest)
             {
-                StartAutoLogoutTimer();
+                AutoLogoutCoordinator.Start();
             }
         }
 
@@ -288,14 +213,14 @@ namespace Stackdose.UI.Core.Helpers
             );
 
             // 2. 清除工作階段
-            CurrentSession.CurrentUser = null;
+            SessionCoordinator.EndSession();
 
             // 3. 觸發事件
             LogoutOccurred?.Invoke(null, EventArgs.Empty);
             AccessLevelChanged?.Invoke(null, EventArgs.Empty);
 
             // 4. 停止自動登出計時器
-            StopAutoLogoutTimer();
+            AutoLogoutCoordinator.Stop();
         }
 
         /// <summary>
@@ -303,10 +228,7 @@ namespace Stackdose.UI.Core.Helpers
         /// </summary>
         public static void UpdateActivity()
         {
-            if (CurrentSession.IsLoggedIn)
-            {
-                CurrentSession.LastActivityTime = DateTime.Now;
-            }
+            SessionCoordinator.TouchActivity();
         }
 
         #endregion
@@ -368,25 +290,12 @@ namespace Stackdose.UI.Core.Helpers
 
         private static void StartAutoLogoutTimer()
         {
-            StopAutoLogoutTimer();
-
-            _autoLogoutTimer = new System.Threading.Timer(_ =>
-            {
-                if (!CurrentSession.IsLoggedIn || !EnableAutoLogout)
-                    return;
-
-                var idleTime = DateTime.Now - CurrentSession.LastActivityTime;
-                if (idleTime.TotalMinutes >= AutoLogoutMinutes)
-                {
-                    Application.Current?.Dispatcher.Invoke(() => Logout(isAutoLogout: true));
-                }
-            }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30)); // 每 30 秒檢查一次
+            AutoLogoutCoordinator.Start();
         }
 
         private static void StopAutoLogoutTimer()
         {
-            _autoLogoutTimer?.Dispose();
-            _autoLogoutTimer = null;
+            AutoLogoutCoordinator.Stop();
         }
 
         #endregion
@@ -486,6 +395,132 @@ namespace Stackdose.UI.Core.Helpers
         #endregion
 
         #region 輔助方法
+
+        private static void WriteLoginDebug(string message)
+        {
+            try
+            {
+                File.AppendAllText(_loginDebugLogPath, $"[{DateTime.Now:HH:mm:ss.fff}] {message}{Environment.NewLine}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SecurityContext] Login debug log write failed: {ex.Message}");
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[SecurityContext] {message}");
+        }
+
+        private static class SessionCoordinator
+        {
+            public static void BeginSession(UserAccount user)
+            {
+                CurrentSession.CurrentUser = user;
+                CurrentSession.LoginTime = DateTime.Now;
+                CurrentSession.LastActivityTime = DateTime.Now;
+            }
+
+            public static void EndSession()
+            {
+                CurrentSession.CurrentUser = null;
+            }
+
+            public static void TouchActivity()
+            {
+                if (CurrentSession.IsLoggedIn)
+                {
+                    CurrentSession.LastActivityTime = DateTime.Now;
+                }
+            }
+        }
+
+        private static class AuthenticationCoordinator
+        {
+            public static UserAccount CreateQuickLoginUser(AccessLevel level)
+            {
+                switch (level)
+                {
+                    case AccessLevel.Admin:
+                    {
+                        var adminUser = LoadUserFromDatabase("admin01");
+                        if (adminUser != null)
+                        {
+                            return adminUser;
+                        }
+
+                        System.Diagnostics.Debug.WriteLine("[SecurityContext] QuickLogin: admin01 not found in database, creating temporary user");
+                        return new UserAccount
+                        {
+                            Id = 1,
+                            UserId = "admin01",
+                            DisplayName = "系統管理員 (Admin)",
+                            PasswordHash = HashPassword("admin01admin01"),
+                            AccessLevel = AccessLevel.Admin,
+                            IsActive = true,
+                            CreatedBy = "System",
+                            CreatedAt = DateTime.Now
+                        };
+                    }
+
+                    case AccessLevel.Guest:
+                        System.Diagnostics.Debug.WriteLine("[SecurityContext] QuickLogin: Creating Guest user");
+                        return new UserAccount
+                        {
+                            Id = 0,
+                            UserId = "Guest",
+                            DisplayName = "訪客 (Guest)",
+                            PasswordHash = string.Empty,
+                            Salt = string.Empty,
+                            AccessLevel = AccessLevel.Guest,
+                            IsActive = true,
+                            CreatedBy = "System",
+                            CreatedAt = DateTime.Now
+                        };
+
+                    default:
+                        System.Diagnostics.Debug.WriteLine($"[SecurityContext] QuickLogin: Creating temporary {level} user");
+                        return new UserAccount
+                        {
+                            Id = (int)level,
+                            UserId = level.ToString(),
+                            DisplayName = $"{level} (Temporary)",
+                            PasswordHash = string.Empty,
+                            Salt = string.Empty,
+                            AccessLevel = level,
+                            IsActive = true,
+                            CreatedBy = "System",
+                            CreatedAt = DateTime.Now
+                        };
+                }
+            }
+        }
+
+        private static class AutoLogoutCoordinator
+        {
+            public static void Start()
+            {
+                Stop();
+
+                _autoLogoutTimer = new System.Threading.Timer(_ =>
+                {
+                    if (!CurrentSession.IsLoggedIn || !EnableAutoLogout)
+                    {
+                        return;
+                    }
+
+                    var idleTime = DateTime.Now - CurrentSession.LastActivityTime;
+                    if (idleTime.TotalMinutes >= AutoLogoutMinutes)
+                    {
+                        Application.Current?.Dispatcher.Invoke(() => Logout(isAutoLogout: true));
+                    }
+                }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+            }
+
+            public static void Stop()
+            {
+                _autoLogoutTimer?.Dispose();
+                _autoLogoutTimer = null;
+            }
+        }
 
         /// <summary>
         /// 取得權限等級的顯示名稱

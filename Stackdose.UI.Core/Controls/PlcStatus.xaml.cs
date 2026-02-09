@@ -13,6 +13,9 @@ namespace Stackdose.UI.Core.Controls
 {
     public partial class PlcStatus : UserControl, IDisposable
     {
+        private const int RetryDelayMs = 2000;
+        private const int WatchdogPollingIntervalMs = 3000;
+
         private IPlcManager? _plcManager;
         private bool _isBusy = false;
 
@@ -219,82 +222,109 @@ namespace Stackdose.UI.Core.Controls
 
         private async Task ConnectAsync()
         {
-            // 🔥 確保在 UI 執行緒上更新
             await Dispatcher.InvokeAsync(() => UpdateUiState(ConnectionState.Connecting));
 
-            if (_plcManager == null)
-            {
-                IPlcClient client = new FX3UPlcClient(null);
-                _plcManager = new PlcManager(client, null);
-            }
-            
-            // 🔥 確保訂閱事件
+            EnsurePlcManager();
             SubscribeToPlcManager();
 
-            bool success = false;
-            int attempt = 0;
+            var success = await TryConnectWithRetriesAsync();
+            await Dispatcher.InvokeAsync(() => UpdateUiState(success ? ConnectionState.Connected : ConnectionState.Failed));
+        }
+
+        private void EnsurePlcManager()
+        {
+            if (_plcManager != null)
+            {
+                return;
+            }
+
+            IPlcClient client = new FX3UPlcClient(null);
+            _plcManager = new PlcManager(client, null);
+        }
+
+        private async Task<bool> TryConnectWithRetriesAsync()
+        {
+            var success = false;
+            var attempt = 0;
 
             while (!success && attempt <= MaxRetryCount)
             {
                 attempt++;
                 try
                 {
-                    string retryMsg = attempt > 1 ? $" (Attempt {attempt}/{MaxRetryCount})" : "";
-                    ComplianceContext.LogSystem($"Connecting to PLC ({IpAddress}:{Port}){retryMsg}...", LogLevel.Info);
-
-                    if (attempt > 1)
-                    {
-                        await Dispatcher.InvokeAsync(() => StatusText.Text = $"RETRYING ({attempt}/{MaxRetryCount})...");
-                    }
-
-                    success = await _plcManager.InitializeAsync(IpAddress, Port, ScanInterval);
-
-                    if (success)
-                    {
-                        System.Diagnostics.Debug.WriteLine("[PlcStatus] Connection successful!");
-                        
-                        // 🔥 在 UI 執行緒上更新狀態
-                        await Dispatcher.InvokeAsync(() =>
-                        {
-                            UpdateUiState(ConnectionState.Connected);
-                            StatusText.Text = "CONNECTED";
-                        });
-                        
-                        ComplianceContext.LogSystem($"PLC Connection Established ({IpAddress})", LogLevel.Success);
-
-                        // 🔥 註冊所有監控位址
-                        RegisterAllMonitors();
-
-                        ConnectionEstablished?.Invoke(_plcManager);
-                        StartConnectionWatchdog();
-                    }
-                    else
-                    {
-                        if (attempt <= MaxRetryCount)
-                        {
-                            ComplianceContext.LogSystem($"Connection failed. Retrying in 2s... ({attempt}/{MaxRetryCount})", LogLevel.Warning);
-                            await Task.Delay(2000);
-                        }
-                        else
-                        {
-                            await Dispatcher.InvokeAsync(() =>
-                            {
-                                UpdateUiState(ConnectionState.Failed);
-                                StatusText.Text = "DISCONNECTED";
-                            });
-                            ComplianceContext.LogSystem($"PLC Connection Failed after {MaxRetryCount} attempts.", LogLevel.Error);
-                        }
-                    }
+                    success = await ExecuteConnectAttemptAsync(attempt);
                 }
                 catch (Exception ex)
                 {
-                    ComplianceContext.LogSystem($"PLC Error: {ex.Message}", LogLevel.Error);
-                    if (attempt <= MaxRetryCount) await Task.Delay(2000);
+                    await HandleConnectExceptionAsync(ex, attempt);
                 }
             }
 
-            // 🔥 最終狀態更新
-            await Dispatcher.InvokeAsync(() => UpdateUiState(success ? ConnectionState.Connected : ConnectionState.Failed));
+            return success;
+        }
+
+        private async Task<bool> ExecuteConnectAttemptAsync(int attempt)
+        {
+            string retryMsg = attempt > 1 ? $" (Attempt {attempt}/{MaxRetryCount})" : "";
+            ComplianceContext.LogSystem($"Connecting to PLC ({IpAddress}:{Port}){retryMsg}...", LogLevel.Info);
+
+            if (attempt > 1)
+            {
+                await Dispatcher.InvokeAsync(() => StatusText.Text = $"RETRYING ({attempt}/{MaxRetryCount})...");
+            }
+
+            var connected = await _plcManager!.InitializeAsync(IpAddress, Port, ScanInterval);
+            if (connected)
+            {
+                await HandleConnectSuccessAsync();
+                return true;
+            }
+
+            await HandleConnectFailureAsync(attempt);
+            return false;
+        }
+
+        private async Task HandleConnectSuccessAsync()
+        {
+            System.Diagnostics.Debug.WriteLine("[PlcStatus] Connection successful!");
+
+            await Dispatcher.InvokeAsync(() =>
+            {
+                UpdateUiState(ConnectionState.Connected);
+                StatusText.Text = "CONNECTED";
+            });
+
+            ComplianceContext.LogSystem($"PLC Connection Established ({IpAddress})", LogLevel.Success);
+            RegisterAllMonitors();
+
+            ConnectionEstablished?.Invoke(_plcManager!);
+            StartConnectionWatchdog();
+        }
+
+        private async Task HandleConnectFailureAsync(int attempt)
+        {
+            if (attempt <= MaxRetryCount)
+            {
+                ComplianceContext.LogSystem($"Connection failed. Retrying in 2s... ({attempt}/{MaxRetryCount})", LogLevel.Warning);
+                await Task.Delay(RetryDelayMs);
+                return;
+            }
+
+            await Dispatcher.InvokeAsync(() =>
+            {
+                UpdateUiState(ConnectionState.Failed);
+                StatusText.Text = "DISCONNECTED";
+            });
+            ComplianceContext.LogSystem($"PLC Connection Failed after {MaxRetryCount} attempts.", LogLevel.Error);
+        }
+
+        private async Task HandleConnectExceptionAsync(Exception ex, int attempt)
+        {
+            ComplianceContext.LogSystem($"PLC Error: {ex.Message}", LogLevel.Error);
+            if (attempt <= MaxRetryCount)
+            {
+                await Task.Delay(RetryDelayMs);
+            }
         }
 
         /// <summary>
@@ -305,7 +335,7 @@ namespace Stackdose.UI.Core.Controls
             if (_plcManager?.Monitor == null) return;
 
             // 🔥 1. 註冊預設監控位址 D0，確保 Monitor 有東西可以輪詢
-            try { _plcManager.Monitor.Register("D0", 1); } catch { }
+            RegisterMonitorAddress("D0", 1);
 
             // 🔥 2. 註冊手動設定的 MonitorAddress（如果有）
             if (!string.IsNullOrWhiteSpace(MonitorAddress))
@@ -313,37 +343,7 @@ namespace Stackdose.UI.Core.Controls
                 RegisterMonitors(MonitorAddress);
             }
 
-            // 🔥 3. 自動註冊來自 SensorContext 的監控位址
-            string sensorAddresses = SensorContext.GenerateMonitorAddresses();
-            if (!string.IsNullOrWhiteSpace(sensorAddresses))
-            {
-                RegisterMonitors(sensorAddresses);
-                ComplianceContext.LogSystem($"[AutoRegister] Sensor: {sensorAddresses}", LogLevel.Info, showInUi: false);
-            }
-
-            // 🔥 4. 自動註冊來自 PlcLabelContext 的監控位址
-            string labelAddresses = PlcLabelContext.GenerateMonitorAddresses();
-            if (!string.IsNullOrWhiteSpace(labelAddresses))
-            {
-                RegisterMonitors(labelAddresses);
-                ComplianceContext.LogSystem($"[AutoRegister] PlcLabel: {labelAddresses}", LogLevel.Info, showInUi: false);
-            }
-
-            // 🔥 5. 自動註冊來自 PlcEventContext 的監控位址
-            string eventAddresses = PlcEventContext.GenerateMonitorAddresses();
-            if (!string.IsNullOrWhiteSpace(eventAddresses))
-            {
-                RegisterMonitors(eventAddresses);
-                ComplianceContext.LogSystem($"[AutoRegister] PlcEvent: {eventAddresses}", LogLevel.Info, showInUi: false);
-            }
-
-            // 🔥 6. 自動註冊來自 RecipeContext 的監控位址
-            string recipeAddresses = RecipeContext.GenerateMonitorAddresses();
-            if (!string.IsNullOrWhiteSpace(recipeAddresses))
-            {
-                RegisterMonitors(recipeAddresses);
-                ComplianceContext.LogSystem($"[AutoRegister] Recipe: {recipeAddresses}", LogLevel.Info, showInUi: false);
-            }
+            RegisterAutoMonitorAddresses();
 
             System.Diagnostics.Debug.WriteLine("[PlcStatus] All monitors registered");
         }
@@ -384,31 +384,44 @@ namespace Stackdose.UI.Core.Controls
             _watchdogCts = new CancellationTokenSource();
             var token = _watchdogCts.Token;
 
-            Task.Run(async () =>
-            {
-                while (!token.IsCancellationRequested)
-                {
-                    try
-                    {
-                        await Task.Delay(3000, token);
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        break;
-                    }
+            Task.Run(() => WatchdogLoopAsync(token), token);
+        }
 
-                    if (_plcManager != null && !_plcManager.IsConnected)
-                    {
-                        await Dispatcher.InvokeAsync(async () =>
-                        {
-                            ComplianceContext.LogSystem("Connection lost detected! Attempting to reconnect...", LogLevel.Error);
-                            CancelWatchdog();
-                            await ConnectAsync();
-                        });
-                        break;
-                    }
+        private async Task WatchdogLoopAsync(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    await Task.Delay(WatchdogPollingIntervalMs, token);
                 }
-            }, token);
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
+
+                if (IsConnectionLost())
+                {
+                    await HandleConnectionLostAsync();
+                    break;
+                }
+            }
+        }
+
+        private bool IsConnectionLost()
+        {
+            return _plcManager != null && !_plcManager.IsConnected;
+        }
+
+        private async Task HandleConnectionLostAsync()
+        {
+            await Dispatcher.InvokeAsync(() =>
+            {
+                ComplianceContext.LogSystem("Connection lost detected! Attempting to reconnect...", LogLevel.Error);
+                CancelWatchdog();
+            });
+
+            await ConnectAsync();
         }
 
         private void CancelWatchdog()
@@ -433,12 +446,51 @@ namespace Stackdose.UI.Core.Controls
                         string nextToken = parts[i + 1].Trim();
                         if (int.TryParse(nextToken, out int parsedLen)) { length = parsedLen; i++; }
                     }
-                    try { _plcManager.Monitor.Register(current, length); } catch { }
+                    RegisterMonitorAddress(current, length);
                 }
             }
             else
             {
-                try { _plcManager.Monitor.Register(config, MonitorLength); } catch { }
+                RegisterMonitorAddress(config, MonitorLength);
+            }
+        }
+
+        private void RegisterAutoMonitorAddresses()
+        {
+            foreach (var source in GetAutoMonitorSources())
+            {
+                if (string.IsNullOrWhiteSpace(source.Addresses))
+                {
+                    continue;
+                }
+
+                RegisterMonitors(source.Addresses);
+                ComplianceContext.LogSystem($"[AutoRegister] {source.Name}: {source.Addresses}", LogLevel.Info, showInUi: false);
+            }
+        }
+
+        private static IEnumerable<(string Name, string Addresses)> GetAutoMonitorSources()
+        {
+            yield return ("Sensor", SensorContext.GenerateMonitorAddresses());
+            yield return ("PlcLabel", PlcLabelContext.GenerateMonitorAddresses());
+            yield return ("PlcEvent", PlcEventContext.GenerateMonitorAddresses());
+            yield return ("Recipe", RecipeContext.GenerateMonitorAddresses());
+        }
+
+        private void RegisterMonitorAddress(string address, int length)
+        {
+            if (_plcManager?.Monitor == null)
+            {
+                return;
+            }
+
+            try
+            {
+                _plcManager.Monitor.Register(address, length);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PlcStatus] Register monitor failed: {address}, len={length}, error={ex.Message}");
             }
         }
 
@@ -447,7 +499,7 @@ namespace Stackdose.UI.Core.Controls
             System.Diagnostics.Debug.WriteLine($"[PlcStatus] Unloaded - this={this.GetHashCode()}, IsGlobal={IsGlobal}");
             
             // 🔥 如果是全局模式且是當前全局實例，不要清理，保持連線
-            if (IsGlobal && PlcContext.GlobalStatus == this)
+            if (ShouldKeepGlobalConnection())
             {
                 // 🔥 不取消事件訂閱，不 Dispose，保持連線
                 // 下一個 PlcStatus 實例會接管這個連線
@@ -461,7 +513,7 @@ namespace Stackdose.UI.Core.Controls
         
         public void Dispose()
         {
-            if (!IsGlobal || PlcContext.GlobalStatus != this)
+            if (!ShouldKeepGlobalConnection())
             {
                 CancelWatchdog();
                 UnsubscribeFromPlcManager();
@@ -472,6 +524,11 @@ namespace Stackdose.UI.Core.Controls
                     _plcManager = null; 
                 }
             }
+        }
+
+        private bool ShouldKeepGlobalConnection()
+        {
+            return IsGlobal && PlcContext.GlobalStatus == this;
         }
 
         private enum ConnectionState { Connecting, Connected, Failed }

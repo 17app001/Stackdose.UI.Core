@@ -13,26 +13,129 @@
         ResizeMode="NoResize"
         ShowInTaskbar="False"
         Topmost="True">
-    
+    <Window.Resources>
+        <Style x:Key="FieldTextStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource Cyber.Text.Muted}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <Style x:Key="InputBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Background" Value="{DynamicResource Cyber.Bg.Card}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Plc.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="InputBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="0"
+                                          VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="InputBorder" Property="BorderBrush" Value="{DynamicResource Button.Bg.Info}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PasswordBoxStyle" TargetType="PasswordBox">
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Background" Value="{DynamicResource Cyber.Bg.Card}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Plc.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border x:Name="InputBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="0"
+                                          VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="InputBorder" Property="BorderBrush" Value="{DynamicResource Button.Bg.Info}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DialogButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid>
-        <!-- Full-screen black semi-transparent overlay -->
-        <Rectangle Fill="#CC000000"
-                   MouseDown="Overlay_MouseDown"/>
-        
-        <!-- Login dialog (centered) -->
-        <Border Background="#1E1E1E" 
-                BorderBrush="#00BCD4" 
-                BorderThickness="2" 
-                CornerRadius="10"
+        <Rectangle Fill="{DynamicResource Overlay.Bg.Scrim}" MouseDown="Overlay_MouseDown"/>
+
+        <Border Background="{DynamicResource Plc.Bg.Main}"
+                BorderBrush="{DynamicResource Button.Bg.Info}"
+                BorderThickness="2"
+                CornerRadius="12"
                 Padding="30"
-                Width="450"
-                Height="500"
+                Width="460"
+                MinHeight="460"
+                MaxHeight="560"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
             <Border.Effect>
-                <DropShadowEffect Color="#00BCD4" BlurRadius="20" ShadowDepth="0" Opacity="0.5"/>
+                <DropShadowEffect Color="{Binding BorderBrush.(SolidColorBrush.Color), RelativeSource={RelativeSource AncestorType=Border}}"
+                                  BlurRadius="24"
+                                  ShadowDepth="0"
+                                  Opacity="0.5"/>
             </Border.Effect>
-            
+
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -42,132 +145,64 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Header -->
-                <StackPanel Grid.Row="0" Margin="0,0,0,30">
-                    <TextBlock Text="User Login" 
-                               FontSize="24" 
-                               FontWeight="Bold" 
-                               Foreground="#00BCD4"
+                <StackPanel Grid.Row="0" Margin="0,0,0,24">
+                    <TextBlock Text="User Login"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource Button.Bg.Info}"
                                HorizontalAlignment="Center"/>
-                    <TextBlock Text="SQLite User Authentication" 
-                               FontSize="12" 
-                               Foreground="#9E9E9E"
+                    <TextBlock Text="SQLite User Authentication"
+                               FontSize="12"
+                               Foreground="{DynamicResource Plc.Text.Default}"
                                HorizontalAlignment="Center"
-                               Margin="0,5,0,0"/>
+                               Margin="0,6,0,0"/>
                 </StackPanel>
 
-                <!-- Login Form -->
                 <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                    <!-- User ID -->
-                    <TextBlock Text="User ID" 
-                               Foreground="#E0E0E0" 
-                               FontSize="14" 
-                               FontWeight="SemiBold"
-                               Margin="0,0,0,10"/>
+                    <TextBlock Text="User ID" Style="{StaticResource FieldTextStyle}"/>
                     <TextBox x:Name="UserIdTextBox"
-                             Height="45"
-                             Padding="12,10"
-                             FontSize="14"
-                             Background="#2C2C2C"
-                             Foreground="White"
-                             BorderBrush="#424242"
-                             BorderThickness="1"
-                             VerticalContentAlignment="Center"
-                             Margin="0,0,0,20"
-                             Text="superadmin">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="TextBox">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                                    CornerRadius="5">
-                                                <ScrollViewer x:Name="PART_ContentHost" 
-                                                            Margin="0"
-                                                            VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
+                             Style="{StaticResource InputBoxStyle}"
+                             Margin="0,0,0,20"/>
 
-                    <!-- Password -->
-                    <TextBlock Text="Password" 
-                               Foreground="#E0E0E0" 
-                               FontSize="14"
-                               FontWeight="SemiBold" 
-                               Margin="0,0,0,10"/>
+                    <TextBlock Text="Password" Style="{StaticResource FieldTextStyle}"/>
                     <PasswordBox x:Name="PasswordBox"
-                                 Height="45"
-                                 Padding="12,10"
-                                 FontSize="14"
-                                 Background="#2C2C2C"
-                                 Foreground="White"
-                                 BorderBrush="#424242"
-                                 BorderThickness="1"
-                                 VerticalContentAlignment="Center">
-                        <PasswordBox.Style>
-                            <Style TargetType="PasswordBox">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="PasswordBox">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                                    CornerRadius="5">
-                                                <ScrollViewer x:Name="PART_ContentHost" 
-                                                            Margin="0"
-                                                            VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </PasswordBox.Style>
-                    </PasswordBox>
+                                 Style="{StaticResource PasswordBoxStyle}"/>
                 </StackPanel>
 
-                <!-- Error Message Area -->
-                <Border Grid.Row="2" 
+                <Border Grid.Row="2"
                         x:Name="ErrorPanel"
-                        Height="60" 
-                        Margin="0,20,0,10"
-                        Background="#2C2C2C"
-                        BorderBrush="#FF5252"
+                        MinHeight="56"
+                        Margin="0,20,0,8"
+                        Background="{DynamicResource Cyber.Bg.Card}"
+                        BorderBrush="{DynamicResource Status.Error}"
                         BorderThickness="1"
-                        CornerRadius="5"
+                        CornerRadius="6"
                         Padding="10"
                         Visibility="Collapsed">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <TextBlock x:Name="ErrorText"
-                                   Foreground="#FF5252"
+                                   Foreground="{DynamicResource Status.Error}"
                                    FontSize="12"
                                    TextWrapping="Wrap"
                                    Text="Error message placeholder"/>
                     </ScrollViewer>
                 </Border>
 
-                <!-- Loading Indicator -->
                 <Border Grid.Row="2"
                         x:Name="LoadingPanel"
-                        Height="60"
-                        Margin="0,20,0,10"
-                        Background="#2C2C2C"
-                        BorderBrush="#00BCD4"
+                        MinHeight="56"
+                        Margin="0,20,0,8"
+                        Background="{DynamicResource Cyber.Bg.Card}"
+                        BorderBrush="{DynamicResource Button.Bg.Info}"
                         BorderThickness="1"
-                        CornerRadius="5"
+                        CornerRadius="6"
                         Padding="10"
                         Visibility="Collapsed">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <!-- Loading Animation -->
                         <Border Width="24" Height="24" Margin="0,0,12,0">
                             <Grid>
-                                <Ellipse Width="24" Height="24" 
-                                         Stroke="#00BCD4" 
+                                <Ellipse Width="24" Height="24"
+                                         Stroke="{DynamicResource Button.Bg.Info}"
                                          StrokeThickness="3"
                                          StrokeDashArray="4,2">
                                     <Ellipse.RenderTransform>
@@ -191,15 +226,14 @@
                         </Border>
                         <TextBlock x:Name="LoadingText"
                                    Text="Logging in..."
-                                   Foreground="#00BCD4"
+                                   Foreground="{DynamicResource Button.Bg.Info}"
                                    FontSize="14"
                                    FontWeight="Medium"
                                    VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
 
-                <!-- Buttons -->
-                <Grid Grid.Row="3" Margin="0,15,0,0">
+                <Grid Grid.Row="3" Margin="0,12,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="10"/>
@@ -208,100 +242,25 @@
 
                     <Button Grid.Column="0"
                             Content="Login"
-                            Height="45"
-                            Background="#00BCD4"
-                            Foreground="White"
-                            BorderThickness="0"
-                            FontSize="14"
-                            FontWeight="Medium"
-                            Cursor="Hand"
-                            Click="LoginButton_Click">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Background" Value="#00BCD4"/>
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    CornerRadius="5"
-                                                    BorderThickness="0">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#00ACC1"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                            IsDefault="True"
+                            Style="{StaticResource DialogButtonStyle}"
+                            Background="{DynamicResource Button.Bg.Info}"
+                            Click="LoginButton_Click"/>
 
                     <Button Grid.Column="2"
                             Content="Cancel"
-                            Height="45"
-                            Background="#424242"
-                            Foreground="White"
-                            BorderThickness="0"
-                            FontSize="14"
-                            FontWeight="Medium"
-                            Cursor="Hand"
-                            Click="CancelButton_Click">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Background" Value="#424242"/>
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    CornerRadius="5"
-                                                    BorderThickness="0">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#616161"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                            IsCancel="True"
+                            Style="{StaticResource DialogButtonStyle}"
+                            Background="{DynamicResource Plc.Border}"
+                            Click="CancelButton_Click"/>
                 </Grid>
 
-                <!-- Forgot Password Link --><!--
-                <Button Grid.Row="4"
-                        x:Name="ForgotPasswordButton" 
-                        Content="Forgot Password" 
-                        HorizontalAlignment="Center" 
-                        Margin="0,10,0,0" 
-                        FontSize="11" 
-                        Foreground="#00BCD4" 
-                        Background="Transparent" 
-                        BorderThickness="0" 
-                        Cursor="Hand"
-                        Click="ForgotPasswordButton_Click">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <TextBlock Text="{TemplateBinding Content}" 
-                                                 Foreground="{TemplateBinding Foreground}" 
-                                                 FontSize="{TemplateBinding FontSize}"
-                                                 TextDecorations="Underline"/>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </Button.Style>
-                </Button>-->
+                <TextBlock Grid.Row="4"
+                           Margin="0,12,0,0"
+                           Text="Press Enter to login, Esc to cancel"
+                           Foreground="{DynamicResource Plc.Text.Gray}"
+                           FontSize="11"
+                           HorizontalAlignment="Center"/>
             </Grid>
         </Border>
     </Grid>

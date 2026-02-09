@@ -15,32 +15,28 @@
     </UserControl.Resources>
 
     <Border x:Name="FrameBorder"
-            Background="{Binding FrameBackground, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ColorThemeConverter}}">
+             Background="{Binding FrameBackground, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ColorThemeConverter}}">
         <Border.Style>
             <Style TargetType="Border">
-                <!-- 預設樣式（矩形有框）-->
                 <Setter Property="BorderBrush" Value="{DynamicResource Plc.Border}"/>
                 <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="CornerRadius" Value="4"/>
-                <Setter Property="Padding" Value="10,5"/>
+                <Setter Property="CornerRadius" Value="6"/>
+                <Setter Property="Padding" Value="10,6"/>
                 
                 <Style.Triggers>
-                    <!-- 🔥 當 FrameBackground = Default 時使用預設背景 -->
                     <DataTrigger Binding="{Binding FrameBackground, ElementName=Root}" Value="Default">
                         <Setter Property="Background" Value="{DynamicResource Plc.Bg.Main}"/>
                     </DataTrigger>
                     
-                    <!-- 當 ShowFrame = False 時，移除邊框和背景 -->
                     <DataTrigger Binding="{Binding ShowFrame, ElementName=Root}" Value="False">
                         <Setter Property="BorderThickness" Value="0"/>
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="Padding" Value="0"/>
                     </DataTrigger>
                     
-                    <!-- 🔥 當 FrameShape = Circle 時，調整為圓形 -->
                     <DataTrigger Binding="{Binding FrameShape, ElementName=Root}" Value="Circle">
                         <Setter Property="CornerRadius" Value="500"/>
-                        <Setter Property="Padding" Value="15"/>
+                        <Setter Property="Padding" Value="14"/>
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
@@ -65,11 +61,11 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- 標籤 (第一行) -->
             <TextBlock Grid.Row="0"
                        Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='Label'}" 
                        Foreground="{Binding LabelForeground, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ColorThemeConverter}}"
                        FontSize="{Binding LabelFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                       FontFamily="Microsoft JhengHei"
                        HorizontalAlignment="{Binding LabelAlignment, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        TextTrimming="CharacterEllipsis" 
                        VerticalAlignment="Center"
@@ -96,28 +92,24 @@
                        VerticalAlignment="Center">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
-                        <!-- 預設顯示 Value -->
                         <Setter Property="Text" Value="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='123.4'}"/>
+                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
 
                         <Style.Triggers>
-                            <!-- 圓形時自動置中 -->
                             <DataTrigger Binding="{Binding FrameShape, ElementName=Root}" Value="Circle">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
                             </DataTrigger>
                             
-                            <!-- 當數值為 "-" (初始值) 時，顯示 DefaultValue -->
                             <DataTrigger Binding="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="-">
                                 <Setter Property="Text" Value="{Binding DefaultValue, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                 <Setter Property="Opacity" Value="0.5"/>
                             </DataTrigger>
 
-                            <!-- 當數值為空字串時 -->
                             <DataTrigger Binding="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="">
                                 <Setter Property="Text" Value="{Binding DefaultValue, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                 <Setter Property="Opacity" Value="0.5"/>
                             </DataTrigger>
 
-                            <!-- 當數值為 null 時 -->
                             <DataTrigger Binding="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="{x:Null}">
                                 <Setter Property="Text" Value="{Binding DefaultValue, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                 <Setter Property="Opacity" Value="0.5"/>
@@ -127,11 +119,11 @@
                 </TextBlock.Style>
             </TextBlock>
 
-            <!-- 位址 (左下角) -->
             <TextBlock Grid.Row="2"
                        Text="{Binding Address, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='D0'}" 
                        Foreground="{DynamicResource Plc.Text.Default}" 
                        FontSize="9" 
+                       FontFamily="Consolas"
                        VerticalAlignment="Center" 
                        HorizontalAlignment="Left"
                        Margin="0,2,0,0"

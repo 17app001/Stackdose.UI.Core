@@ -1,16 +1,16 @@
-﻿<UserControl x:Class="Stackdose.UI.Core.Controls.PlcStatus"
+<UserControl x:Class="Stackdose.UI.Core.Controls.PlcStatus"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="50" d:DesignWidth="220">
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="56" d:DesignWidth="236">
 
     <Border x:Name="MainBorder"
-            BorderBrush="{DynamicResource Plc.Text.Value}" 
-            Background="{DynamicResource Plc.Bg.Main}" 
-            CornerRadius="4" 
-            Padding="10">
+            BorderBrush="{DynamicResource Plc.Text.Value}"
+            Background="{DynamicResource Plc.Bg.Main}"
+            CornerRadius="6"
+            Padding="12,10">
         <Border.Style>
             <Style TargetType="Border">
                 <Setter Property="BorderThickness" Value="1"/>
@@ -21,61 +21,74 @@
                 </Style.Triggers>
             </Style>
         </Border.Style>
+
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- 狀態燈 -->
-            <Ellipse x:Name="StatusLight" 
-                     Width="20" 
-                     Height="20" 
-                     Fill="{DynamicResource Status.Offline}" 
-                     Stroke="White" 
-                     StrokeThickness="1" 
-                     Margin="0,0,15,0">
+            <Ellipse x:Name="StatusLight"
+                     Width="20"
+                     Height="20"
+                     Fill="{DynamicResource Status.Offline}"
+                     Stroke="White"
+                     StrokeThickness="1"
+                     Margin="0,0,12,0"
+                     VerticalAlignment="Center">
                 <Ellipse.Effect>
-                    <DropShadowEffect Color="White" BlurRadius="5" ShadowDepth="0" Opacity="0.5"/>
+                    <DropShadowEffect Color="White" BlurRadius="6" ShadowDepth="0" Opacity="0.5"/>
                 </Ellipse.Effect>
             </Ellipse>
 
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-
-                <!-- 第一行：標題 + ScanInterval 顯示 -->
                 <Grid Margin="0,0,0,2">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="PLC CONNECTION" 
-                               Foreground="{DynamicResource Plc.Text.Label}" 
-                               FontSize="10" 
-                               FontWeight="Bold" 
+                    <TextBlock Text="PLC CONNECTION"
+                               Foreground="{DynamicResource Plc.Text.Label}"
+                               FontSize="10"
+                               FontWeight="Bold"
+                               FontFamily="Consolas"
                                VerticalAlignment="Center"/>
 
-                    <!-- 新增：顯示 ScanInterval (例如 "⟳ 100 ms") -->
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="[R] " 
-                                   Foreground="{DynamicResource Plc.Text.Default}" 
-                                   FontSize="9" 
-                                   Margin="0,1,0,0"/>
-                        <TextBlock Text="{Binding ScanInterval, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                   Foreground="{DynamicResource Plc.Text.Default}" 
-                                   FontSize="10" 
-                                   FontWeight="SemiBold"/>
-                        <TextBlock Text=" ms" 
-                                   Foreground="{DynamicResource Plc.Text.Default}" 
-                                   FontSize="10"/>
-                    </StackPanel>
+                    <Border Grid.Column="1"
+                            Background="{DynamicResource Overlay.Bg.Panel}"
+                            CornerRadius="4"
+                            Padding="6,1"
+                            VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="SCAN"
+                                       Foreground="{DynamicResource Plc.Text.Default}"
+                                       FontFamily="Consolas"
+                                       FontSize="8"
+                                       FontWeight="Bold"
+                                       Margin="0,0,4,0"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding ScanInterval, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                       Foreground="{DynamicResource Plc.Text.Default}"
+                                       FontFamily="Consolas"
+                                       FontSize="10"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text=" ms"
+                                       Foreground="{DynamicResource Plc.Text.Default}"
+                                       FontFamily="Consolas"
+                                       FontSize="10"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
                 </Grid>
 
-               
-                <TextBlock x:Name="StatusText" 
-                           Text="Waiting..." 
-                           Foreground="{DynamicResource Plc.Text.Default}" 
-                           FontSize="10"/>
+                <TextBlock x:Name="StatusText"
+                           Text="Waiting..."
+                           Foreground="{DynamicResource Plc.Text.Default}"
+                           FontSize="11"
+                           FontFamily="Consolas"
+                           TextTrimming="CharacterEllipsis"/>
             </StackPanel>
         </Grid>
     </Border>

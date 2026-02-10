@@ -7,7 +7,7 @@
              mc:Ignorable="d"
              d:DesignHeight="900" d:DesignWidth="1600">
 
-    <Grid>
+    <Grid Background="{DynamicResource Surface.Bg.Page}">
         <Grid.RowDefinitions>
             <RowDefinition Height="60"/>
             <!-- Header -->
@@ -19,13 +19,11 @@
         <Border MouseLeftButtonDown="Header_DragMove">
             <!-- Header -->
             <controls:AppHeader x:Name="AppHeaderControl"
-                           Grid.Row="0"
-                           PageTitle="Home Overview"
-                           UserName="Admin"
-                           UserRole="Administrator"
-                           LogoutClicked="OnLogout"
-                           MinimizeClicked="OnMinimize"
-                           CloseClicked="OnClose"/>
+                            Grid.Row="0"
+                            PageTitle="Home Overview"
+                            LogoutClicked="OnLogout"
+                            MinimizeClicked="OnMinimize"
+                            CloseClicked="OnClose"/>
         </Border>
         <!-- Main Content Area -->
         <Grid Grid.Row="1">
@@ -41,10 +39,12 @@
                                     NavigationRequested="OnNavigate"/>
 
             <!-- Dynamic Content Area -->
-            <Border Grid.Column="1"
-                    Background="{StaticResource BackgroundBrush}">
+                <Border Grid.Column="1"
+                    Background="{DynamicResource Surface.Bg.Panel}"
+                    BorderBrush="{DynamicResource Surface.Border.Default}"
+                    BorderThickness="1,0,0,0">
                 <ContentControl x:Name="ContentArea"
-                               Margin="30"/>
+                               Margin="20,16,20,20"/>
             </Border>
         </Grid>
 

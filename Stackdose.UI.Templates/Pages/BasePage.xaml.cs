@@ -1,40 +1,38 @@
+using Stackdose.UI.Templates.Controls;
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using Stackdose.UI.Templates.Controls;
 
 namespace Stackdose.UI.Templates.Pages
 {
-    /// <summary>
-    /// BasePage.xaml ªº¤¬°ÊÅÞ¿è
-    /// </summary>
     public partial class BasePage : UserControl
     {
         public static readonly DependencyProperty PageTitleProperty =
-            DependencyProperty.Register(nameof(PageTitle), typeof(string), typeof(BasePage), 
+            DependencyProperty.Register(nameof(PageTitle), typeof(string), typeof(BasePage),
                 new PropertyMetadata("Page Title"));
 
         public static readonly DependencyProperty ContentAreaProperty =
-            DependencyProperty.Register(nameof(ContentArea), typeof(object), typeof(BasePage), 
+            DependencyProperty.Register(nameof(ContentArea), typeof(object), typeof(BasePage),
                 new PropertyMetadata(null));
 
         public static readonly DependencyProperty LogoutRequestedProperty =
-            DependencyProperty.Register(nameof(LogoutRequested), typeof(RoutedEventHandler), typeof(BasePage), 
+            DependencyProperty.Register(nameof(LogoutRequested), typeof(RoutedEventHandler), typeof(BasePage),
                 new PropertyMetadata(null));
 
         public static readonly DependencyProperty SwitchUserRequestedProperty =
-            DependencyProperty.Register(nameof(SwitchUserRequested), typeof(RoutedEventHandler), typeof(BasePage), 
+            DependencyProperty.Register(nameof(SwitchUserRequested), typeof(RoutedEventHandler), typeof(BasePage),
                 new PropertyMetadata(null));
 
         public static readonly DependencyProperty MinimizeRequestedProperty =
-            DependencyProperty.Register(nameof(MinimizeRequested), typeof(RoutedEventHandler), typeof(BasePage), 
+            DependencyProperty.Register(nameof(MinimizeRequested), typeof(RoutedEventHandler), typeof(BasePage),
                 new PropertyMetadata(null));
 
         public static readonly DependencyProperty CloseRequestedProperty =
-            DependencyProperty.Register(nameof(CloseRequested), typeof(RoutedEventHandler), typeof(BasePage), 
+            DependencyProperty.Register(nameof(CloseRequested), typeof(RoutedEventHandler), typeof(BasePage),
                 new PropertyMetadata(null));
 
         public static readonly DependencyProperty NavigationRequestedProperty =
-            DependencyProperty.Register(nameof(NavigationRequested), typeof(EventHandler<NavigationItem>), typeof(BasePage), 
+            DependencyProperty.Register(nameof(NavigationRequested), typeof(EventHandler<NavigationItem>), typeof(BasePage),
                 new PropertyMetadata(null));
 
         public string PageTitle

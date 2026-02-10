@@ -16,25 +16,18 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Background="{DynamicResource Cyber.Bg.Dark}">
+    <Grid Background="{DynamicResource Surface.Bg.Page}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Top Action Bar -->
-
-        <!-- Main Content: UserManagementPanel from Core -->
-        <Border Grid.Row="1"
-                Background="{DynamicResource Sensor.Bg.Main}"
-                BorderBrush="{DynamicResource Sensor.Border}"
+        <Border Grid.Row="0"
+                Background="{DynamicResource Surface.Bg.Panel}"
+                BorderBrush="{DynamicResource Surface.Border.Default}"
                 BorderThickness="1"
                 CornerRadius="6"
                 Margin="16,0,16,16">
-            
-            <!-- Core Component -->
             <core:UserManagementPanel x:Name="UserManagementPanel"/>
-            
         </Border>
     </Grid>
 </UserControl>

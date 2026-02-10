@@ -10,13 +10,11 @@ namespace Stackdose.UI.Templates.Controls
         {
             InitializeComponent();
 
-            // reasonable defaults
-            AccentBrush = Brushes.White;
-            StatusBrush = Brushes.Gray;
+            AccentBrush = TryFindResource("TextPrimaryBrush") as Brush ?? Brushes.White;
+            StatusBrush = TryFindResource("TextTertiaryBrush") as Brush ?? Brushes.Gray;
             BatchLabel = "Batch No.";
         }
 
-        // Title / Batch / Recipe / Status
         public string Title { get => (string)GetValue(TitleProperty); set => SetValue(TitleProperty, value); }
         public static readonly DependencyProperty TitleProperty =
             DependencyProperty.Register(nameof(Title), typeof(string), typeof(MachineCard), new PropertyMetadata("Machine"));
@@ -37,7 +35,6 @@ namespace Stackdose.UI.Templates.Controls
         public static readonly DependencyProperty StatusTextProperty =
             DependencyProperty.Register(nameof(StatusText), typeof(string), typeof(MachineCard), new PropertyMetadata("Idle"));
 
-        // Brushes
         public Brush AccentBrush { get => (Brush)GetValue(AccentBrushProperty); set => SetValue(AccentBrushProperty, value); }
         public static readonly DependencyProperty AccentBrushProperty =
             DependencyProperty.Register(nameof(AccentBrush), typeof(Brush), typeof(MachineCard), new PropertyMetadata(Brushes.White));
@@ -46,7 +43,6 @@ namespace Stackdose.UI.Templates.Controls
         public static readonly DependencyProperty StatusBrushProperty =
             DependencyProperty.Register(nameof(StatusBrush), typeof(Brush), typeof(MachineCard), new PropertyMetadata(Brushes.Gray));
 
-        // Metrics (labels/values)
         public string LeftTopLabel { get => (string)GetValue(LeftTopLabelProperty); set => SetValue(LeftTopLabelProperty, value); }
         public static readonly DependencyProperty LeftTopLabelProperty =
             DependencyProperty.Register(nameof(LeftTopLabel), typeof(string), typeof(MachineCard), new PropertyMetadata(""));

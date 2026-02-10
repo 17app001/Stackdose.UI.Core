@@ -1,3 +1,7 @@
+using Stackdose.Abstractions.Logging;
+using Stackdose.UI.Core.Controls;
+using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Models;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -5,29 +9,15 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using Stackdose.UI.Core.Controls;
-using Stackdose.UI.Core.Helpers;
 
 namespace Stackdose.UI.Templates.Controls
 {
-    /// <summary>
-    /// AppHeader - À³¥Îµ{¦¡¼ĞÃD¦C¡]¾ã¦X SecurityContext¡^
-    /// </summary>
     public partial class AppHeader : UserControl, INotifyPropertyChanged
     {
-        #region Private Fields
-
-        /// <summary>
-        /// °lÂÜ¬O§_¬°¥ş¿Ã¹õ¼Ò¦¡
-        /// </summary>
-        private bool _isFullscreen = true; // ¹w³]¬° true¡A¦]¬° MainWindow ¹w³]¥ş¿Ã¹õ
-
-        #endregion
-
-        #region Dependency Properties
+        private bool _isFullscreen = true;
 
         public static readonly DependencyProperty PageTitleProperty =
-            DependencyProperty.Register(nameof(PageTitle), typeof(string), typeof(AppHeader), 
+            DependencyProperty.Register(nameof(PageTitle), typeof(string), typeof(AppHeader),
                 new PropertyMetadata("Page Title"));
 
         public string PageTitle
@@ -35,10 +25,6 @@ namespace Stackdose.UI.Templates.Controls
             get => (string)GetValue(PageTitleProperty);
             set => SetValue(PageTitleProperty, value);
         }
-
-        #endregion
-
-        #region Properties (°ÊºA¸j©w¨ì SecurityContext)
 
         private string _userName = "Guest";
         public string UserName
@@ -51,7 +37,7 @@ namespace Stackdose.UI.Templates.Controls
             }
         }
 
-        private string _userId = "";
+        private string _userId = string.Empty;
         public string UserId
         {
             get => _userId;
@@ -73,175 +59,98 @@ namespace Stackdose.UI.Templates.Controls
             }
         }
 
-        #endregion
-
-        #region Events («O¯d¦V¥~³qª¾¯à¤O)
-
         public event RoutedEventHandler? LogoutClicked;
         public event RoutedEventHandler? MinimizeClicked;
         public event RoutedEventHandler? CloseClicked;
         public event RoutedEventHandler? SwitchUserClicked;
         public event RoutedEventHandler? FullscreenClicked;
 
-        #endregion
-
-        #region Constructor
-
         public AppHeader()
         {
             InitializeComponent();
-            
-            // ³]©w DataContext
             DataContext = this;
 
-            // ­q¾\ SecurityContext ¨Æ¥ó
-            SecurityContext.LoginSuccess += OnLoginSuccess;
-            SecurityContext.LogoutOccurred += OnLogoutOccurred;
-
-            // ªì©l¤Æ¨Ï¥ÎªÌ¸ê°T
-            UpdateUserInfo();
-
-            // ¸ü¤J®É§ó·s
             Loaded += AppHeader_Loaded;
             Unloaded += AppHeader_Unloaded;
         }
 
-        #endregion
-
-        #region Lifecycle Events
-
         private void AppHeader_Loaded(object sender, RoutedEventArgs e)
         {
+            SecurityContext.LoginSuccess += OnLoginSuccess;
+            SecurityContext.LogoutOccurred += OnLogoutOccurred;
             UpdateUserInfo();
         }
 
         private void AppHeader_Unloaded(object sender, RoutedEventArgs e)
         {
-            // ¨ú®ø­q¾\¨Æ¥ó
             SecurityContext.LoginSuccess -= OnLoginSuccess;
             SecurityContext.LogoutOccurred -= OnLogoutOccurred;
         }
 
-        #endregion
-
-        #region SecurityContext Events
-
-        private void OnLoginSuccess(object? sender, Stackdose.UI.Core.Models.UserAccount user)
+        private void OnLoginSuccess(object? sender, UserAccount user)
         {
-            Dispatcher.BeginInvoke(() =>
-            {
-                UpdateUserInfo();
-            });
+            Dispatcher.BeginInvoke(UpdateUserInfo);
         }
 
         private void OnLogoutOccurred(object? sender, EventArgs e)
         {
-            Dispatcher.BeginInvoke(() =>
-            {
-                UpdateUserInfo();
-            });
+            Dispatcher.BeginInvoke(UpdateUserInfo);
         }
 
-        #endregion
-
-        #region Helper Methods
-
-        /// <summary>
-        /// §ó·s¨Ï¥ÎªÌ¸ê°TÅã¥Ü
-        /// </summary>
         private void UpdateUserInfo()
         {
             var session = SecurityContext.CurrentSession;
 
-            #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[AppHeader] UpdateUserInfo called");
-            System.Diagnostics.Debug.WriteLine($"[AppHeader]   IsLoggedIn: {session.IsLoggedIn}");
-            System.Diagnostics.Debug.WriteLine($"[AppHeader]   CurrentUser: {session.CurrentUser != null}");
-            if (session.CurrentUser != null)
-            {
-                System.Diagnostics.Debug.WriteLine($"[AppHeader]   UserId: {session.CurrentUser.UserId}");
-                System.Diagnostics.Debug.WriteLine($"[AppHeader]   DisplayName: {session.CurrentUser.DisplayName}");
-                System.Diagnostics.Debug.WriteLine($"[AppHeader]   AccessLevel: {session.CurrentUser.AccessLevel}");
-            }
-            #endif
-
             if (session.IsLoggedIn && session.CurrentUser != null)
             {
-                UserName = session.CurrentUser.DisplayName ?? session.CurrentUserName;  // DisplayName
-                UserId = session.CurrentUser.UserId ?? "";  // UID-XXXXXX
+                UserName = session.CurrentUser.DisplayName ?? session.CurrentUserName;
+                UserId = session.CurrentUser.UserId ?? string.Empty;
                 UserRole = session.CurrentLevel.ToString();
-                
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[AppHeader] Updated - UserName: {UserName}, UserId: {UserId}, UserRole: {UserRole}");
-                #endif
+                return;
             }
-            else
-            {
-                UserName = "Guest";
-                UserId = "";
-                UserRole = "Not Logged In";
-                
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[AppHeader] Set to Guest mode");
-                #endif
-            }
+
+            UserName = "Guest";
+            UserId = string.Empty;
+            UserRole = "Not Logged In";
         }
 
-        #endregion
-
-        #region Button Click Handlers
-
-        /// <summary>
-        /// µn¥X«ö¶sÂIÀ»
-        /// </summary>
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 var result = CyberMessageBox.Show(
-                    "½T©w­nµn¥X¶Ü¡H",
-                    "µn¥X½T»{",
+                    "ç¢ºå®šè¦ç™»å‡ºå—ï¼Ÿ",
+                    "ç™»å‡ºç¢ºèª",
                     MessageBoxButton.YesNo,
-                    MessageBoxImage.Question
-                );
+                    MessageBoxImage.Question);
 
-                if (result == MessageBoxResult.Yes)
+                if (result != MessageBoxResult.Yes)
                 {
-                    SecurityContext.Logout();
-                    
-                    // Ä²µo¨Æ¥ó¡]¦V«á¬Û®e¡^
-                    LogoutClicked?.Invoke(this, e);
-
-                    // ? ²¾°£³o¸Ìªº LoginDialog¡I
-                    // Åı MainWindow.OnLogoutOccurred ²Î¤@³B²zµn¤J¹ï¸Ü®ØªºÅã¥Ü
-                    // Á×§K¥X²{¨â­Óµn¤Jµøµ¡
+                    return;
                 }
+
+                SecurityContext.Logout();
+                LogoutClicked?.Invoke(this, e);
             }
             catch (Exception ex)
             {
                 CyberMessageBox.Show(
-                    $"µn¥X¥¢±Ñ: {ex.Message}",
-                    "¿ù»~",
+                    $"ç™»å‡ºå¤±æ•—: {ex.Message}",
+                    "éŒ¯èª¤",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                    MessageBoxImage.Error);
             }
         }
 
-        /// <summary>
-        /// ¤Á´«¨Ï¥ÎªÌ«ö¶sÂIÀ»
-        /// </summary>
         private void SwitchUserButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // ?? ·s¼W½T»{¹ï¸Ü®Ø
                 var result = CyberMessageBox.Show(
-                    "½T©w­n¤Á´«±b¸¹¶Ü¡H",
-                    "¤Á´«±b¸¹½T»{",
+                    "ç¢ºå®šè¦åˆ‡æ›å¸³è™Ÿå—ï¼Ÿ",
+                    "åˆ‡æ›å¸³è™Ÿç¢ºèª",
                     MessageBoxButton.YesNo,
-                    MessageBoxImage.Question
-                );
+                    MessageBoxImage.Question);
 
                 if (result != MessageBoxResult.Yes)
                 {
@@ -251,172 +160,137 @@ namespace Stackdose.UI.Templates.Controls
                 var dialog = new LoginDialog
                 {
                     Owner = Window.GetWindow(this),
-                    Title = "¤Á´«¨Ï¥ÎªÌ"
+                    Title = "åˆ‡æ›ä½¿ç”¨è€…"
                 };
 
                 if (dialog.ShowDialog() == true)
                 {
-                    // µn¤J¦¨¥\·|¦Û°ÊÄ²µo SecurityContext.LoginSuccess ¨Æ¥ó
-                    // UpdateUserInfo() ·|³Q¦Û°Ê©I¥s
-                    
-                    // Ä²µo¨Æ¥ó¡]¦V¥~³qª¾¡^
                     SwitchUserClicked?.Invoke(this, e);
                 }
             }
             catch (Exception ex)
             {
                 CyberMessageBox.Show(
-                    $"¤Á´«¨Ï¥ÎªÌ¥¢±Ñ: {ex.Message}",
-                    "¿ù»~",
+                    $"åˆ‡æ›ä½¿ç”¨è€…å¤±æ•—: {ex.Message}",
+                    "éŒ¯èª¤",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                    MessageBoxImage.Error);
             }
         }
 
-        /// <summary>
-        /// ³Ì¤p¤Æ«ö¶sÂIÀ»
-        /// </summary>
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 var window = Window.GetWindow(this);
-                if (window != null)
+                if (window == null)
                 {
-                    window.WindowState = WindowState.Minimized;
+                    return;
                 }
 
-                // Ä²µo¨Æ¥ó¡]¦V¥~³qª¾¡^
+                window.WindowState = WindowState.Minimized;
                 MinimizeClicked?.Invoke(this, e);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[AppHeader] Minimize Error: {ex.Message}");
+                ComplianceContext.LogSystem($"[AppHeader] Minimize failed: {ex.Message}", LogLevel.Error, showInUi: false);
             }
         }
 
-        /// <summary>
-        /// ¥ş¿Ã¹õ¤Á´««ö¶sÂIÀ»
-        /// </summary>
         private void FullscreenButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 var window = Window.GetWindow(this);
-                if (window == null) return;
-
-                System.Diagnostics.Debug.WriteLine($"[AppHeader] Fullscreen Toggle - Current: {_isFullscreen}");
+                if (window == null)
+                {
+                    return;
+                }
 
                 if (_isFullscreen)
                 {
-                    // ¥Ø«e¬O¥ş¿Ã¹õ¼Ò¦¡¡AÁÙ­ì¬°µøµ¡¼Ò¦¡
-                    System.Diagnostics.Debug.WriteLine("[AppHeader] Switching to Windowed Mode");
-                    
-                    // ¥ıÁÙ­ì WindowState¡A¦A§ï WindowStyle¡]Á×§K½Ä¬ğ¡^
                     window.WindowState = WindowState.Normal;
-                    
-                    // ¨Ï¥Î Dispatcher ©µ¿ğ°õ¦æ WindowStyle ÅÜ§ó
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
                         window.WindowStyle = WindowStyle.SingleBorderWindow;
                         window.ResizeMode = ResizeMode.CanResize;
                     }), System.Windows.Threading.DispatcherPriority.Background);
-                    
                     _isFullscreen = false;
-                    
-                    // §ó·s«ö¶s¹Ï¥Ü¬°¥ş¿Ã¹õ¹Ï¥Ü¡]¥|­Ó¨¤¦V¥~¡^
-                    if (sender is Button btn && btn.Content is Path path)
-                    {
-                        path.Data = Geometry.Parse("M0,0 L8,0 L8,2 L2,2 L2,8 L0,8 Z M10,0 L18,0 L18,8 L16,8 L16,2 L10,2 Z M0,10 L2,10 L2,16 L8,16 L8,18 L0,18 Z M16,16 L16,10 L18,10 L18,18 L10,18 L10,16 Z");
-                        btn.ToolTip = "Enter Fullscreen";
-                    }
+                    UpdateFullscreenIcon(sender as Button, isFullscreen: false);
                 }
                 else
                 {
-                    // ¥Ø«e¬Oµøµ¡¼Ò¦¡¡A¤Á´«¨ì¥ş¿Ã¹õ¼Ò¦¡
-                    System.Diagnostics.Debug.WriteLine("[AppHeader] Switching to Fullscreen Mode");
-                    
-                    // ¥ı§ï WindowStyle¡A¦A³Ì¤j¤Æ¡]Á×§K½Ä¬ğ¡^
                     window.WindowStyle = WindowStyle.None;
                     window.ResizeMode = ResizeMode.NoResize;
-                    
-                    // ¨Ï¥Î Dispatcher ©µ¿ğ°õ¦æ WindowState ÅÜ§ó
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
                         window.WindowState = WindowState.Maximized;
                     }), System.Windows.Threading.DispatcherPriority.Background);
-                    
                     _isFullscreen = true;
-                    
-                    // §ó·s«ö¶s¹Ï¥Ü¬°ÁÙ­ì¹Ï¥Ü¡]¥|­Ó¨¤¦V¤º¡^
-                    if (sender is Button btn && btn.Content is Path path)
-                    {
-                        path.Data = Geometry.Parse("M2,0 L2,2 L0,2 L0,8 L6,8 L6,6 L8,6 L8,0 Z M10,0 L10,6 L12,6 L12,8 L18,8 L18,2 L16,2 L16,0 Z M0,10 L0,16 L6,16 L6,18 L8,18 L8,12 L6,12 L6,10 Z M12,10 L10,10 L10,18 L16,18 L16,16 L18,16 L18,10 Z");
-                        btn.ToolTip = "Exit Fullscreen";
-                    }
+                    UpdateFullscreenIcon(sender as Button, isFullscreen: true);
                 }
 
-                System.Diagnostics.Debug.WriteLine($"[AppHeader] Fullscreen Toggle - After: {_isFullscreen}");
-                
-                // Ä²µo¨Æ¥ó¡]¦V¥~³qª¾¡^
                 FullscreenClicked?.Invoke(this, e);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[AppHeader] Fullscreen Error: {ex.Message}");
+                ComplianceContext.LogSystem($"[AppHeader] Fullscreen toggle failed: {ex.Message}", LogLevel.Error, showInUi: false);
                 CyberMessageBox.Show(
                     $"Full screen toggle failed: {ex.Message}",
                     "Error",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                    MessageBoxImage.Error);
             }
         }
 
-        /// <summary>
-        /// Ãö³¬«ö¶sÂIÀ»
-        /// </summary>
+        private static void UpdateFullscreenIcon(Button? button, bool isFullscreen)
+        {
+            if (button?.Content is not Path path)
+            {
+                return;
+            }
+
+            if (isFullscreen)
+            {
+                path.Data = Geometry.Parse("F0 M2,5 H11 V14 H2 Z M4,7 V12 H9 V7 Z M7,2 H16 V11 H7 Z M9,4 V9 H14 V4 Z");
+                button.ToolTip = "Exit Fullscreen";
+            }
+            else
+            {
+                path.Data = Geometry.Parse("F0 M3,3 H15 V15 H3 Z M5,5 V13 H13 V5 Z");
+                button.ToolTip = "Enter Fullscreen";
+            }
+        }
+
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 var result = CyberMessageBox.Show(
-                    "½T©w­nÃö³¬µ{¦¡¶Ü¡H",
-                    "Ãö³¬½T»{",
+                    "ç¢ºå®šè¦é—œé–‰ç¨‹å¼å—ï¼Ÿ",
+                    "é—œé–‰ç¢ºèª",
                     MessageBoxButton.YesNo,
-                    MessageBoxImage.Question
-                );
+                    MessageBoxImage.Question);
 
-                if (result == MessageBoxResult.Yes)
+                if (result != MessageBoxResult.Yes)
                 {
-                    var window = Window.GetWindow(this);
-                    if (window != null)
-                    {
-                        window.Close();
-                    }
-
-                    // Ä²µo¨Æ¥ó¡]¦V«á¬Û®e¡^
-                    CloseClicked?.Invoke(this, e);
+                    return;
                 }
+
+                Window.GetWindow(this)?.Close();
+                CloseClicked?.Invoke(this, e);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[AppHeader] Close Error: {ex.Message}");
+                ComplianceContext.LogSystem($"[AppHeader] Close failed: {ex.Message}", LogLevel.Error, showInUi: false);
             }
         }
 
-        #endregion
-
-        #region INotifyPropertyChanged
-
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
-        #endregion
     }
 }

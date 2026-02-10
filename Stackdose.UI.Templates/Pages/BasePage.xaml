@@ -15,7 +15,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-<Grid>
+    <Grid Background="{DynamicResource Surface.Bg.Page}">
         <Grid.RowDefinitions>
             <RowDefinition Height="60"/>
             <RowDefinition Height="*"/>
@@ -33,7 +33,7 @@
         <!-- Main Content Area -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="220"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
@@ -42,11 +42,12 @@
                                     NavigationRequested="LeftNavigation_NavigationRequested"/>
 
             <!-- Content Area -->
-            <Border Grid.Column="1" 
-                    Background="{DynamicResource Cyber.Bg.Panel}"
-                    BorderBrush="{DynamicResource Cyber.Border}"
+            <Border Grid.Column="1"
+                    Background="{DynamicResource Surface.Bg.Panel}"
+                    BorderBrush="{DynamicResource Surface.Border.Default}"
                     BorderThickness="1,0,0,0">
-                <ContentPresenter Content="{Binding ContentArea, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                <ContentPresenter Margin="20,16,20,20"
+                                  Content="{Binding ContentArea, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
             </Border>
         </Grid>
 

@@ -57,7 +57,7 @@
                                    FontWeight="Bold"
                                    Foreground="{StaticResource WarningBrush}"/>
                     </StackPanel>
-                    <TextBlock Text="Merdury Co. - Pharmaceutical 3D Printing System" 
+                    <TextBlock Text="Mercury Co. - Pharmaceutical 3D Printing System" 
                                FontSize="10" 
                                Foreground="{StaticResource TextTertiaryBrush}"
                                Margin="0,1,0,0"/>
@@ -264,8 +264,8 @@
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
-                        <!-- Exit Fullscreen Icon (corners inward) - Default icon -->
-                        <Path Data="M2,0 L2,2 L0,2 L0,8 L6,8 L6,6 L8,6 L8,0 Z M10,0 L10,6 L12,6 L12,8 L18,8 L18,2 L16,2 L16,0 Z M0,10 L0,16 L6,16 L6,18 L8,18 L8,12 L6,12 L6,10 Z M12,10 L10,10 L10,18 L16,18 L16,16 L18,16 L18,10 Z"
+                        <!-- Default: currently fullscreen, show "exit fullscreen" icon -->
+                        <Path Data="F0 M2,5 H11 V14 H2 Z M4,7 V12 H9 V7 Z M7,2 H16 V11 H7 Z M9,4 V9 H14 V4 Z"
                               Fill="{StaticResource TextPrimaryBrush}"
                               Stretch="Uniform"
                               Width="16"

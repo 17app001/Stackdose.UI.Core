@@ -1,53 +1,58 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Primary Colors -->
-    <Color x:Key="PrimaryColor">#00d4ff</Color>
-    <Color x:Key="PrimaryDarkColor">#0099cc</Color>
-    <Color x:Key="PrimaryLightColor">#33ddff</Color>
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Core;component/Themes/Theme.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
 
-    <!-- Background Colors -->
-    <Color x:Key="BackgroundColor">#1a1a2e</Color>
-    <Color x:Key="CardBackgroundColor">#16213e</Color>
-    <Color x:Key="DarkBackgroundColor">#0f3460</Color>
-    <Color x:Key="HoverBackgroundColor">#1e2a47</Color>
-    <Color x:Key="DarkerBackgroundColor">#0a1628</Color>
+    <!-- Legacy-compatible color keys mapped from Core semantic/domain tokens -->
+    <Color x:Key="PrimaryColor">{Binding Source={StaticResource Accent.Primary}, Path=Color}</Color>
+    <Color x:Key="PrimaryDarkColor">{Binding Source={StaticResource Action.Primary}, Path=Color}</Color>
+    <Color x:Key="PrimaryLightColor">{Binding Source={StaticResource Action.Info}, Path=Color}</Color>
 
-    <!-- Text Colors -->
-    <Color x:Key="TextPrimaryColor">#FFFFFF</Color>
-    <Color x:Key="TextSecondaryColor">#95a5a6</Color>
-    <Color x:Key="TextTertiaryColor">#7f8c8d</Color>
-    <Color x:Key="TextMutedColor">#34495e</Color>
+    <Color x:Key="BackgroundColor">{Binding Source={StaticResource Surface.Bg.Page}, Path=Color}</Color>
+    <Color x:Key="CardBackgroundColor">{Binding Source={StaticResource Surface.Bg.Card}, Path=Color}</Color>
+    <Color x:Key="DarkBackgroundColor">{Binding Source={StaticResource Surface.Bg.Panel}, Path=Color}</Color>
+    <Color x:Key="HoverBackgroundColor">{Binding Source={StaticResource Overlay.Bg.Light}, Path=Color}</Color>
+    <Color x:Key="DarkerBackgroundColor">{Binding Source={StaticResource Surface.Bg.Control}, Path=Color}</Color>
 
-    <!-- Status Colors -->
-    <Color x:Key="SuccessColor">#2ecc71</Color>
-    <Color x:Key="WarningColor">#f39c12</Color>
-    <Color x:Key="ErrorColor">#e74c3c</Color>
-    <Color x:Key="InfoColor">#3498db</Color>
+    <Color x:Key="TextPrimaryColor">{Binding Source={StaticResource Text.Primary}, Path=Color}</Color>
+    <Color x:Key="TextSecondaryColor">{Binding Source={StaticResource Text.Secondary}, Path=Color}</Color>
+    <Color x:Key="TextTertiaryColor">{Binding Source={StaticResource Text.Tertiary}, Path=Color}</Color>
+    <Color x:Key="TextMutedColor">{Binding Source={StaticResource Text.Secondary}, Path=Color}</Color>
 
-    <!-- Border Colors -->
-    <Color x:Key="BorderColor">#00d4ff</Color>
-    <Color x:Key="BorderSecondaryColor">#34495e</Color>
+    <Color x:Key="SuccessColor">{Binding Source={StaticResource Action.Success}, Path=Color}</Color>
+    <Color x:Key="WarningColor">{Binding Source={StaticResource Action.Warning}, Path=Color}</Color>
+    <Color x:Key="ErrorColor">{Binding Source={StaticResource Action.Error}, Path=Color}</Color>
+    <Color x:Key="InfoColor">{Binding Source={StaticResource Action.Info}, Path=Color}</Color>
 
-    <!-- Brushes -->
+    <Color x:Key="BorderColor">{Binding Source={StaticResource Surface.Border.Default}, Path=Color}</Color>
+    <Color x:Key="BorderSecondaryColor">{Binding Source={StaticResource Surface.Border.Strong}, Path=Color}</Color>
+
+    <!-- Legacy-compatible brush keys -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
     <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource PrimaryDarkColor}"/>
     <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
     <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource CardBackgroundColor}"/>
     <SolidColorBrush x:Key="DarkBackgroundBrush" Color="{StaticResource DarkBackgroundColor}"/>
     <SolidColorBrush x:Key="HoverBackgroundBrush" Color="{StaticResource HoverBackgroundColor}"/>
-    
+
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
     <SolidColorBrush x:Key="TextTertiaryBrush" Color="{StaticResource TextTertiaryColor}"/>
     <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}"/>
-    
+
     <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
     <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
     <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}"/>
     <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}"/>
-    
+
     <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
     <SolidColorBrush x:Key="BorderSecondaryBrush" Color="{StaticResource BorderSecondaryColor}"/>
+
+    <!-- Additional utility brushes for template controls -->
+    <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="{Binding Source={StaticResource Overlay.Bg.Panel}, Path=Color}"/>
+    <SolidColorBrush x:Key="DisabledTextBrush" Color="{Binding Source={StaticResource Text.Tertiary}, Path=Color}"/>
+    <SolidColorBrush x:Key="DangerAccentBrush" Color="{Binding Source={StaticResource Status.Error}, Path=Color}"/>
 
 </ResourceDictionary>

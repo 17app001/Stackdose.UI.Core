@@ -3,27 +3,33 @@ using System.Windows;
 namespace Stackdose.UI.Core.Controls
 {
     /// <summary>
-    /// ¿é¤J¹ï¸Ü®Ø
+    /// Text input dialog for user-provided values.
     /// </summary>
     public partial class InputDialog : Window
     {
-        public new string Title { get; set; } = string.Empty;
+        public string DialogTitle { get; set; } = string.Empty;
         public string Prompt { get; set; } = string.Empty;
         public string InputText => InputTextBox.Text;
 
         public InputDialog(string title, string prompt)
         {
             InitializeComponent();
-            Title = title;
+            DialogTitle = title;
             Prompt = prompt;
             DataContext = this;
+
+            Loaded += (_, _) =>
+            {
+                InputTextBox.Focus();
+                InputTextBox.SelectAll();
+            };
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(InputText))
             {
-                MessageBox.Show("½Ğ¿é¤J¤º®e", "´£¥Ü", MessageBoxButton.OK, MessageBoxImage.Information);
+                CyberMessageBox.Show("è«‹è¼¸å…¥å…§å®¹", "æç¤º", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 

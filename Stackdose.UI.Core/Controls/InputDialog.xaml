@@ -3,28 +3,124 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Stackdose.UI.Core.Controls"
         mc:Ignorable="d"
-        Title="{Binding Title}" Height="200" Width="400"
+        Title="{Binding DialogTitle}"
+        Width="450"
+        Height="300"
+        MinWidth="400"
+        MinHeight="280"
         WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource Cyber.Bg.Dark}"
+        WindowStyle="None"
+        AllowsTransparency="True"
         ResizeMode="NoResize">
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
 
-        <!-- Prompt Text -->
-        <TextBlock x:Name="PromptTextBlock" Grid.Row="0" Text="{Binding Prompt}" Margin="0,0,0,10"/>
+    <Window.Resources>
+        <Style x:Key="DialogInputStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="{DynamicResource Cyber.Bg.Panel}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Cyber.Text.Bright}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Cyber.Border.Strong}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Microsoft JhengHei"/>
+            <Setter Property="VerticalContentAlignment" Value="Top"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="InputBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="InputBorder" Property="BorderBrush" Value="{DynamicResource Cyber.NeonBlue}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 
-        <!-- Input Box -->
-        <TextBox x:Name="InputTextBox" Grid.Row="1" Margin="0,0,0,20" AcceptsReturn="True" TextWrapping="Wrap"/>
+    <Border BorderBrush="{DynamicResource Cyber.NeonBlue}" BorderThickness="2" CornerRadius="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <!-- Buttons -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button x:Name="OkButton" Content="OK" Width="80" Height="30" Margin="0,0,10,0" Click="OkButton_Click"/>
-            <Button x:Name="CancelButton" Content="Cancel" Width="80" Height="30" Click="CancelButton_Click"/>
-        </StackPanel>
-    </Grid>
+            <!-- Title Bar -->
+            <Border Grid.Row="0"
+                    Background="{DynamicResource Cyber.Bg.Panel}"
+                    CornerRadius="6,6,0,0"
+                    Padding="20,15"
+                    BorderBrush="{DynamicResource Cyber.Border.Strong}"
+                    BorderThickness="0,0,0,2">
+                <TextBlock Text="{Binding DialogTitle}"
+                         Foreground="{DynamicResource Cyber.NeonBlue}"
+                         FontSize="18"
+                         FontWeight="Bold"/>
+            </Border>
+
+            <!-- Content Area -->
+            <Grid Grid.Row="1" Margin="20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           x:Name="PromptTextBlock"
+                           Text="{Binding Prompt}"
+                           Foreground="{DynamicResource Cyber.Text.Muted}"
+                           FontSize="13"
+                           FontFamily="Microsoft JhengHei"
+                           TextWrapping="Wrap"/>
+
+                <TextBox Grid.Row="2"
+                         x:Name="InputTextBox"
+                         Style="{StaticResource DialogInputStyle}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Disabled"/>
+            </Grid>
+
+            <!-- Action Buttons -->
+            <Border Grid.Row="2"
+                    Background="{DynamicResource Cyber.Bg.Panel}"
+                    CornerRadius="0,0,6,6"
+                    Padding="20,15"
+                    BorderBrush="{DynamicResource Cyber.Border.Strong}"
+                    BorderThickness="0,2,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="OkButton"
+                            Content="確定"
+                            IsDefault="True"
+                            Width="100"
+                            Height="35"
+                            Background="{DynamicResource Cyber.NeonBlue}"
+                            Foreground="White"
+                            FontWeight="Medium"
+                            Margin="0,0,10,0"
+                            Click="OkButton_Click"/>
+                    <Button x:Name="CancelButton"
+                            Content="取消"
+                            IsCancel="True"
+                            Width="100"
+                            Height="35"
+                            Background="#607D8B"
+                            Foreground="White"
+                            FontWeight="Medium"
+                            Click="CancelButton_Click"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
 </Window>

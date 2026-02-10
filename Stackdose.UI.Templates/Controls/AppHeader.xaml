@@ -102,7 +102,7 @@
                         <TextBlock x:Name="UserIdText"
                                    Text="{Binding UserId}" 
                                    FontSize="10" 
-                                   Foreground="#3498db"
+                                   Foreground="{StaticResource InfoBrush}"
                                    FontWeight="SemiBold"
                                    Margin="0,0,6,0"/>
                         <TextBlock Text="|" 
@@ -145,7 +145,7 @@
                                 </Setter>
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#c0392b"/>
+                                        <Setter Property="Opacity" Value="0.88"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
@@ -189,7 +189,7 @@
                                 </Setter>
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#2980b9"/>
+                                        <Setter Property="Opacity" Value="0.88"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
@@ -225,7 +225,7 @@
                                 </Setter>
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#e67e22"/>
+                                        <Setter Property="Opacity" Value="0.88"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
@@ -259,7 +259,7 @@
                                 </Setter>
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#27ae60"/>
+                                        <Setter Property="Opacity" Value="0.88"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
@@ -300,7 +300,7 @@
                                 </Setter>
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#c0392b"/>
+                                        <Setter Property="Opacity" Value="0.88"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>

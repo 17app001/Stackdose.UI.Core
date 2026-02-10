@@ -67,4 +67,28 @@
     <SolidColorBrush x:Key="PrintHead.Accent.Encoder" Color="#2E7D32"/>
     <SolidColorBrush x:Key="PrintHead.Accent.PrintIndex" Color="#AD1457"/>
 
+    <!-- ========== Semantic Alias Tokens (v1) ========== -->
+    <!-- Surface -->
+    <SolidColorBrush x:Key="Surface.Bg.Page" Color="{Binding Source={StaticResource Cyber.Bg.Dark}, Path=Color}"/>
+    <SolidColorBrush x:Key="Surface.Bg.Panel" Color="{Binding Source={StaticResource Cyber.Bg.Panel}, Path=Color}"/>
+    <SolidColorBrush x:Key="Surface.Bg.Card" Color="{Binding Source={StaticResource Cyber.Bg.Card}, Path=Color}"/>
+    <SolidColorBrush x:Key="Surface.Bg.Control" Color="{Binding Source={StaticResource Plc.Bg.Main}, Path=Color}"/>
+
+    <!-- Border -->
+    <SolidColorBrush x:Key="Surface.Border.Default" Color="{Binding Source={StaticResource Cyber.Border}, Path=Color}"/>
+    <SolidColorBrush x:Key="Surface.Border.Strong" Color="{Binding Source={StaticResource Cyber.Border.Strong}, Path=Color}"/>
+
+    <!-- Text -->
+    <SolidColorBrush x:Key="Text.Primary" Color="{Binding Source={StaticResource Cyber.Text.Main}, Path=Color}"/>
+    <SolidColorBrush x:Key="Text.Secondary" Color="{Binding Source={StaticResource Cyber.Text.Muted}, Path=Color}"/>
+    <SolidColorBrush x:Key="Text.Tertiary" Color="{Binding Source={StaticResource Plc.Text.Default}, Path=Color}"/>
+
+    <!-- Accent / Action -->
+    <SolidColorBrush x:Key="Accent.Primary" Color="{Binding Source={StaticResource Cyber.NeonBlue}, Path=Color}"/>
+    <SolidColorBrush x:Key="Action.Primary" Color="{Binding Source={StaticResource Button.Bg.Primary}, Path=Color}"/>
+    <SolidColorBrush x:Key="Action.Success" Color="{Binding Source={StaticResource Button.Bg.Success}, Path=Color}"/>
+    <SolidColorBrush x:Key="Action.Warning" Color="{Binding Source={StaticResource Button.Bg.Warning}, Path=Color}"/>
+    <SolidColorBrush x:Key="Action.Error" Color="{Binding Source={StaticResource Button.Bg.Error}, Path=Color}"/>
+    <SolidColorBrush x:Key="Action.Info" Color="{Binding Source={StaticResource Button.Bg.Info}, Path=Color}"/>
+
 </ResourceDictionary>

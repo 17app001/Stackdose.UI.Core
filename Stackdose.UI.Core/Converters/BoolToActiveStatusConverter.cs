@@ -1,26 +1,26 @@
-using System;
-using System.Globalization;
-using System.Windows.Data;
-
-namespace Stackdose.UI.Core.Converters
-{
-    /// <summary>
-    /// ¥¬ªL­È¨ì¬¡ÅDª¬ºAÂà´«¾¹
-    /// </summary>
-    public class BoolToActiveStatusConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is bool isActive)
-            {
-                return isActive ? "¬¡ÅD" : "°±¥Î";
-            }
-            return "¥¼ª¾";
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
+using System;
+using System.Globalization;
+using System.Windows.Data;
+
+namespace Stackdose.UI.Core.Converters
+{
+    /// <summary>
+    /// å¸ƒæ—å€¼åˆ°æ´»èºç‹€æ…‹è½‰æ›å™¨
+    /// </summary>
+    public class BoolToActiveStatusConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool isActive)
+            {
+                return isActive ? "æ´»èº" : "åœç”¨";
+            }
+            return "æœªçŸ¥";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

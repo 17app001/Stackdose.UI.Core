@@ -1,588 +1,588 @@
-using System;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using Stackdose.Abstractions.Logging;
-using Stackdose.UI.Core.Helpers;
-using Stackdose.UI.Core.Models;
-
-namespace Stackdose.UI.Core.Controls
-{
-    /// <summary>
-    /// PLC Device Editor - ¥Î©ó¤â°ÊÅª¨ú©M¼g¤J PLC ¸Ë¸m¼Æ­È
-    /// ¤ä´©¡GBit (M/X/Y)¡BWord (D/R)¡BWord Bit (D100.5 ©Î R2002,0)
-    /// </summary>
-    public partial class PlcDeviceEditor : UserControl
-    {
-        public PlcDeviceEditor()
-        {
-            InitializeComponent();
-            
-            // ­q¾\Åv­­ÅÜ§ó¨Æ¥ó
-            SecurityContext.AccessLevelChanged += OnAccessLevelChanged;
-            
-            // ªì©l¤ÆÅv­­ª¬ºA
-            UpdateAuthorization();
-            
-            // ±±¨î¶µ¨ø¸ü®É¨ú®ø­q¾\
-            this.Unloaded += (s, e) => SecurityContext.AccessLevelChanged -= OnAccessLevelChanged;
-            
-            // ? ±±¨î¶µ¸ü¤J®É¡A¦Û°Êµù¥UºÊ±±¦a§}
-            this.Loaded += OnControlLoaded;
-        }
-
-        /// <summary>
-        /// ±±¨î¶µ¸ü¤J®É¡A¦Û°Êµù¥UºÊ±±¦a§}
-        /// </summary>
-        private void OnControlLoaded(object sender, RoutedEventArgs e)
-        {
-            // ¦pªG¦³³]©w Address¡A¦Û°Êµù¥U¨ìºÊ±±ªA°È
-            if (!string.IsNullOrWhiteSpace(Address))
-            {
-                RegisterMonitorAddress();
-            }
-        }
-
-        /// <summary>
-        /// µù¥UºÊ±±¦a§}¡]®Ú¾Ú DWord ¼Ò¦¡¨M©wµù¥U¼Æ¶q¡^
-        /// </summary>
-        private void RegisterMonitorAddress()
-        {
-            var status = PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
-            var manager = status?.CurrentManager;
-
-            if (manager?.Monitor == null) return;
-
-            string addr = Address?.Trim().ToUpper() ?? "";
-            if (string.IsNullOrEmpty(addr)) return;
-
-            // ¸ÑªR¦a§}
-            var match = System.Text.RegularExpressions.Regex.Match(addr, @"^([DR])(\d+)$");
-            if (!match.Success) return; // ¥u¤ä´© D/R ¸Ë¸m
-
-            // DWord ¼Ò¦¡»İ­nµù¥U¨â­Ó³sÄò¼È¦s¾¹
-            int length = IsDWordMode ? 2 : 1;
-
-            manager.Monitor.Register(addr, length);
-
-            #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[PlcDeviceEditor] Auto-registered: {addr}:{length}");
-            #endif
-        }
-
-        #region Dependency Properties
-
-        public static readonly DependencyProperty LabelProperty =
-            DependencyProperty.Register("Label", typeof(string), typeof(PlcDeviceEditor), new PropertyMetadata("Device Editor"));
-        public string Label
-        {
-            get => (string)GetValue(LabelProperty);
-            set => SetValue(LabelProperty, value);
-        }
-
-        public static readonly DependencyProperty AddressProperty =
-            DependencyProperty.Register("Address", typeof(string), typeof(PlcDeviceEditor), new PropertyMetadata(""));
-        public string Address
-        {
-            get => (string)GetValue(AddressProperty);
-            set => SetValue(AddressProperty, value);
-        }
-
-        public static readonly DependencyProperty ValueProperty =
-            DependencyProperty.Register("Value", typeof(string), typeof(PlcDeviceEditor), new PropertyMetadata(""));
-        public string Value
-        {
-            get => (string)GetValue(ValueProperty);
-            set => SetValue(ValueProperty, value);
-        }
-
-        public static readonly DependencyProperty ReasonProperty =
-            DependencyProperty.Register("Reason", typeof(string), typeof(PlcDeviceEditor), new PropertyMetadata("Manual Operation"));
-        public string Reason
-        {
-            get => (string)GetValue(ReasonProperty);
-            set => SetValue(ReasonProperty, value);
-        }
-
-        public static readonly DependencyProperty EnableAuditTrailProperty =
-            DependencyProperty.Register("EnableAuditTrail", typeof(bool), typeof(PlcDeviceEditor), new PropertyMetadata(true));
-        public bool EnableAuditTrail
-        {
-            get => (bool)GetValue(EnableAuditTrailProperty);
-            set => SetValue(EnableAuditTrailProperty, value);
-        }
-
-        public static readonly DependencyProperty RequiredLevelProperty =
-            DependencyProperty.Register("RequiredLevel", typeof(AccessLevel), typeof(PlcDeviceEditor),
-                new PropertyMetadata(AccessLevel.Supervisor, OnRequiredLevelChanged));
-        public AccessLevel RequiredLevel
-        {
-            get => (AccessLevel)GetValue(RequiredLevelProperty);
-            set => SetValue(RequiredLevelProperty, value);
-        }
-
-        public static readonly DependencyProperty IsAuthorizedProperty =
-            DependencyProperty.Register("IsAuthorized", typeof(bool), typeof(PlcDeviceEditor), new PropertyMetadata(false));
-        public bool IsAuthorized
-        {
-            get => (bool)GetValue(IsAuthorizedProperty);
-            private set => SetValue(IsAuthorizedProperty, value);
-        }
-
-        #endregion
-
-        #region Åv­­±±¨î
-
-        private void OnAccessLevelChanged(object? sender, EventArgs e)
-        {
-            Dispatcher.BeginInvoke(UpdateAuthorization);
-        }
-
-        private static void OnRequiredLevelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is PlcDeviceEditor editor)
-            {
-                bool isDesignMode = System.ComponentModel.DesignerProperties.GetIsInDesignMode(editor);
-                if (!isDesignMode)
-                {
-                    editor.UpdateAuthorization();
-                }
-                else
-                {
-                    editor.IsAuthorized = true;
-                }
-            }
-        }
-
-        private void UpdateAuthorization()
-        {
-            bool isDesignMode = System.ComponentModel.DesignerProperties.GetIsInDesignMode(this);
-            
-            if (isDesignMode)
-            {
-                IsAuthorized = true;
-            }
-            else
-            {
-                IsAuthorized = SecurityContext.HasAccess(RequiredLevel);
-            }
-
-            UpdateUIState();
-        }
-
-        private void UpdateUIState()
-        {
-            // UI ª¬ºA³z¹L XAML ¸j©w±±¨î
-        }
-
-        #endregion
-
-        #region DataType Selection
-
-        /// <summary>
-        /// DWord CheckBox ¤Ä¿ï¨Æ¥ó
-        /// </summary>
-        private void ChkDWord_Checked(object sender, RoutedEventArgs e)
-        {
-            #if DEBUG
-            System.Diagnostics.Debug.WriteLine("[PlcDeviceEditor] DataType: DWord (32-bit)");
-            #endif
-            
-            // ? ­«·sµù¥UºÊ±±¦a§}¡]DWord »İ­n 2 ­Ó¼È¦s¾¹¡^
-            RegisterMonitorAddress();
-        }
-
-        /// <summary>
-        /// DWord CheckBox ¨ú®ø¤Ä¿ï¨Æ¥ó
-        /// </summary>
-        private void ChkDWord_Unchecked(object sender, RoutedEventArgs e)
-        {
-            #if DEBUG
-            System.Diagnostics.Debug.WriteLine("[PlcDeviceEditor] DataType: Word (16-bit)");
-            #endif
-            
-            // ? ­«·sµù¥UºÊ±±¦a§}¡]Word ¥u»İ­n 1 ­Ó¼È¦s¾¹¡^
-            RegisterMonitorAddress();
-        }
-
-        /// <summary>
-        /// §PÂ_·í«e¬O§_¬° DWord ¼Ò¦¡
-        /// </summary>
-        private bool IsDWordMode => ChkDWord?.IsChecked == true;
-
-        #endregion
-
-        #region Read/Write ¾Ş§@
-
-        private async void BtnRead_Click(object sender, RoutedEventArgs e)
-        {
-            if (!IsAuthorized)
-            {
-                string opName = !string.IsNullOrEmpty(Label) ? $"Åª¨ú {Label}" : "Åª¨ú PLC";
-                SecurityContext.CheckAccess(RequiredLevel, opName);
-                await ShowFeedback(false);
-                return;
-            }
-
-            var status = PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
-            var manager = status?.CurrentManager;
-
-            if (manager == null || !manager.IsConnected)
-            {
-                await ShowFeedback(false);
-                return;
-            }
-
-            string addr = Address?.Trim().ToUpper() ?? "";
-            string reason = string.IsNullOrWhiteSpace(Reason) ? "Manual Read" : Reason.Trim();
-
-            if (string.IsNullOrEmpty(addr))
-            {
-                await ShowFeedback(false);
-                return;
-            }
-
-            try
-            {
-                var wordBitMatch = Regex.Match(addr, @"^([DRW][0-9]+)[.,]([0-9A-Fa-f]+)$");
-                bool isPureBit = Regex.IsMatch(addr, @"^[MXY][0-9]+$");
-
-                long readValue;  // §ï¬° long ¥H¤ä´© DWord
-                bool readSuccess = false;
-
-                // ?? DWord Åª¨ú¼Ò¦¡
-                if (IsDWordMode && !isPureBit && !wordBitMatch.Success)
-                {
-                    var dwordValue = manager.ReadDWord(addr);
-                    if (dwordValue.HasValue)
-                    {
-                        readValue = dwordValue.Value;
-                        readSuccess = true;
-                        
-                        #if DEBUG
-                        System.Diagnostics.Debug.WriteLine($"[PlcDeviceEditor] DWord Read: {addr} = {readValue}");
-                        #endif
-                    }
-                    else
-                    {
-                        await ShowFeedback(false);
-                        return;
-                    }
-                }
-                // Word Bit ¼Ò¦¡
-                else if (wordBitMatch.Success)
-                {
-                    string wordAddr = wordBitMatch.Groups[1].Value;
-                    string bitIndexStr = wordBitMatch.Groups[2].Value;
-                    int bitIndex = Convert.ToInt32(bitIndexStr, 16);
-                    
-                    if (bitIndex < 0 || bitIndex > 15)
-                    {
-                        await ShowFeedback(false);
-                        return;
-                    }
-
-                    int wordValue = await manager.ReadAsync(wordAddr);
-                    readValue = (wordValue >> bitIndex) & 1;
-                    readSuccess = true;
-                }
-                // Pure Bit ¼Ò¦¡
-                else if (isPureBit)
-                {
-                    readValue = await manager.ReadAsync(addr);
-                    readSuccess = true;
-                }
-                // Word ¼Ò¦¡¡]¹w³]¡^
-                else
-                {
-                    readValue = await manager.ReadAsync(addr);
-                    readSuccess = true;
-                }
-
-                if (readSuccess)
-                {
-                    Value = readValue.ToString();
-                    
-                    if (EnableAuditTrail)
-                    {
-                        ComplianceContext.LogAuditTrail(
-                            deviceName: Label,
-                            address: addr,
-                            oldValue: "N/A",
-                            newValue: readValue.ToString(),
-                            reason: $"{reason} (Read)",
-                            showInUi: false
-                        );
-                    }
-
-                    await ShowFeedback(true);
-                }
-                else
-                {
-                    await ShowFeedback(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (EnableAuditTrail)
-                {
-                    ComplianceContext.LogSystem($"[ERROR] Read failed: {Label}({addr}) - {ex.Message}", LogLevel.Error);
-                }
-                await ShowFeedback(false);
-            }
-        }
-
-        private async void BtnWrite_Click(object sender, RoutedEventArgs e)
-        {
-            if (!IsAuthorized)
-            {
-                string opName = !string.IsNullOrEmpty(Label) ? $"¼g¤J {Label}" : "¼g¤J PLC";
-                SecurityContext.CheckAccess(RequiredLevel, opName);
-                await ShowFeedback(false);
-                return;
-            }
-
-            var status = PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
-            var manager = status?.CurrentManager;
-
-            if (manager == null || !manager.IsConnected)
-            {
-                await ShowFeedback(false);
-                return;
-            }
-
-            string addr = Address?.Trim().ToUpper() ?? "";
-            string valStr = Value?.Trim() ?? "";
-            string reason = string.IsNullOrWhiteSpace(Reason) ? "Manual Operation" : Reason.Trim();
-
-            if (string.IsNullOrEmpty(addr) || string.IsNullOrEmpty(valStr))
-            {
-                await ShowFeedback(false);
-                return;
-            }
-
-            try
-            {
-                var wordBitMatch = Regex.Match(addr, @"^([DRW][0-9]+)[.,]([0-9A-Fa-f]+)$");
-                bool isPureBit = Regex.IsMatch(addr, @"^[MXY][0-9]+$");
-
-                string oldValue = "";
-                bool writeSuccess = false;
-
-                // ?? DWord ¼g¤J¼Ò¦¡
-                if (IsDWordMode && !isPureBit && !wordBitMatch.Success)
-                {
-                    if (!uint.TryParse(valStr, out uint numVal))
-                    {
-                        await ShowFeedback(false);
-                        return;
-                    }
-
-                    // Åª¨ú·í«e­È
-                    try
-                    {
-                        var currentDWord = manager.ReadDWord(addr);
-                        oldValue = currentDWord.HasValue ? currentDWord.Value.ToString() : "Unknown";
-                    }
-                    catch
-                    {
-                        oldValue = "Unknown";
-                    }
-
-                    // ?? DWord ¼g¤J»İ­n¤À¦¨¨â­Ó Word
-                    // Low Word (D65) = numVal & 0xFFFF
-                    // High Word (D66) = (numVal >> 16) & 0xFFFF
-                    
-                    ushort lowWord = (ushort)(numVal & 0xFFFF);
-                    ushort highWord = (ushort)((numVal >> 16) & 0xFFFF);
-                    
-                    // ¸ÑªR¦ì§}¡]¨Ò¦p D65 ¡÷ D65, D66¡^
-                    var match = Regex.Match(addr, @"^([A-Z]+)(\d+)$");
-                    if (!match.Success)
-                    {
-                        await ShowFeedback(false);
-                        return;
-                    }
-                    
-                    string deviceType = match.Groups[1].Value;
-                    int baseAddr = int.Parse(match.Groups[2].Value);
-                    
-                    // ¼g¤J§C¦ì Word
-                    bool writeLowSuccess = await manager.WriteAsync($"{deviceType}{baseAddr},{lowWord}");
-                    if (!writeLowSuccess)
-                    {
-                        await ShowFeedback(false);
-                        return;
-                    }
-                    
-                    // ¼g¤J°ª¦ì Word
-                    bool writeHighSuccess = await manager.WriteAsync($"{deviceType}{baseAddr + 1},{highWord}");
-                    writeSuccess = writeLowSuccess && writeHighSuccess;
-                    
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[PlcDeviceEditor] DWord Write: {addr} = {numVal} (Low:{lowWord}, High:{highWord})");
-                    #endif
-                    
-                    if (writeSuccess && EnableAuditTrail)
-                    {
-                        ComplianceContext.LogAuditTrail(
-                            deviceName: Label,
-                            address: addr,
-                            oldValue: oldValue,
-                            newValue: numVal.ToString(),
-                            reason: reason
-                        );
-                    }
-
-                    await ShowFeedback(writeSuccess);
-                }
-                else if (wordBitMatch.Success)
-                {
-                    string wordAddr = wordBitMatch.Groups[1].Value;
-                    string bitIndexStr = wordBitMatch.Groups[2].Value;
-                    int bitIndex = Convert.ToInt32(bitIndexStr, 16);
-                    
-                    if (bitIndex < 0 || bitIndex > 15)
-                    {
-                        await ShowFeedback(false);
-                        return;
-                    }
-
-                    int writeBitVal = ParseBitValue(valStr);
-                    if (writeBitVal == -1)
-                    {
-                        await ShowFeedback(false);
-                        return;
-                    }
-
-                    int currentWordVal = await manager.ReadAsync(wordAddr);
-                    int oldBitVal = (currentWordVal >> bitIndex) & 1;
-                    oldValue = oldBitVal.ToString();
-
-                    int newWordVal = writeBitVal == 1 
-                        ? currentWordVal | (1 << bitIndex) 
-                        : currentWordVal & ~(1 << bitIndex);
-
-                    writeSuccess = await manager.WriteAsync($"{wordAddr},{newWordVal}");
-                    
-                    if (writeSuccess && EnableAuditTrail)
-                    {
-                        ComplianceContext.LogAuditTrail(
-                            deviceName: Label,
-                            address: addr,
-                            oldValue: oldValue,
-                            newValue: writeBitVal.ToString(),
-                            reason: reason
-                        );
-                    }
-
-                    await ShowFeedback(writeSuccess);
-                }
-                else if (isPureBit)
-                {
-                    int writeBitVal = ParseBitValue(valStr);
-                    if (writeBitVal == -1)
-                    {
-                        await ShowFeedback(false);
-                        return;
-                    }
-
-                    try
-                    {
-                        int currentBitVal = await manager.ReadAsync(addr);
-                        oldValue = currentBitVal.ToString();
-                    }
-                    catch
-                    {
-                        oldValue = "Unknown";
-                    }
-
-                    writeSuccess = await manager.WriteAsync($"{addr},{writeBitVal}");
-                    
-                    if (writeSuccess && EnableAuditTrail)
-                    {
-                        ComplianceContext.LogAuditTrail(
-                            deviceName: Label,
-                            address: addr,
-                            oldValue: oldValue,
-                            newValue: writeBitVal.ToString(),
-                            reason: reason
-                        );
-                    }
-
-                    await ShowFeedback(writeSuccess);
-                }
-                else
-                {
-                    if (!int.TryParse(valStr, out int numVal))
-                    {
-                        await ShowFeedback(false);
-                        return;
-                    }
-
-                    try
-                    {
-                        int currentVal = await manager.ReadAsync(addr);
-                        oldValue = currentVal.ToString();
-                    }
-                    catch
-                    {
-                        oldValue = "Unknown";
-                    }
-
-                    writeSuccess = await manager.WriteAsync($"{addr},{valStr}");
-                    
-                    if (writeSuccess && EnableAuditTrail)
-                    {
-                        ComplianceContext.LogAuditTrail(
-                            deviceName: Label,
-                            address: addr,
-                            oldValue: oldValue,
-                            newValue: valStr,
-                            reason: reason
-                        );
-                    }
-
-                    await ShowFeedback(writeSuccess);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (EnableAuditTrail)
-                {
-                    ComplianceContext.LogSystem($"[ERROR] Write failed: {Label}({addr}) - {ex.Message}", LogLevel.Error);
-                }
-                await ShowFeedback(false);
-            }
-        }
-
-        #endregion
-
-        #region Helper Methods
-
-        private int ParseBitValue(string valStr)
-        {
-            valStr = valStr.ToLower();
-            if (valStr == "0" || valStr == "false" || valStr == "off") return 0;
-            if (valStr == "1" || valStr == "true" || valStr == "on") return 1;
-            return -1;
-        }
-
-        private async Task ShowFeedback(bool success)
-        {
-            var color = success ? Colors.LimeGreen : Colors.Red;
-
-            TxtValue.BorderBrush = new SolidColorBrush(color);
-            TxtValue.BorderThickness = new Thickness(2);
-
-            await Task.Delay(500);
-
-            TxtValue.BorderBrush = new SolidColorBrush(Color.FromRgb(0x55, 0x55, 0x55));
-            TxtValue.BorderThickness = new Thickness(1);
-        }
-
-        #endregion
-    }
-}
+using System;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using Stackdose.Abstractions.Logging;
+using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Models;
+
+namespace Stackdose.UI.Core.Controls
+{
+    /// <summary>
+    /// PLC Device Editor - ç”¨æ–¼æ‰‹å‹•è®€å–å’Œå¯«å…¥ PLC è£ç½®æ•¸å€¼
+    /// æ”¯æ´ï¼šBit (M/X/Y)ã€Word (D/R)ã€Word Bit (D100.5 æˆ– R2002,0)
+    /// </summary>
+    public partial class PlcDeviceEditor : UserControl
+    {
+        public PlcDeviceEditor()
+        {
+            InitializeComponent();
+            
+            // è¨‚é–±æ¬Šé™è®Šæ›´äº‹ä»¶
+            SecurityContext.AccessLevelChanged += OnAccessLevelChanged;
+            
+            // åˆå§‹åŒ–æ¬Šé™ç‹€æ…‹
+            UpdateAuthorization();
+            
+            // æ§åˆ¶é …å¸è¼‰æ™‚å–æ¶ˆè¨‚é–±
+            this.Unloaded += (s, e) => SecurityContext.AccessLevelChanged -= OnAccessLevelChanged;
+            
+            // ? æ§åˆ¶é …è¼‰å…¥æ™‚ï¼Œè‡ªå‹•è¨»å†Šç›£æ§åœ°å€
+            this.Loaded += OnControlLoaded;
+        }
+
+        /// <summary>
+        /// æ§åˆ¶é …è¼‰å…¥æ™‚ï¼Œè‡ªå‹•è¨»å†Šç›£æ§åœ°å€
+        /// </summary>
+        private void OnControlLoaded(object sender, RoutedEventArgs e)
+        {
+            // å¦‚æœæœ‰è¨­å®š Addressï¼Œè‡ªå‹•è¨»å†Šåˆ°ç›£æ§æœå‹™
+            if (!string.IsNullOrWhiteSpace(Address))
+            {
+                RegisterMonitorAddress();
+            }
+        }
+
+        /// <summary>
+        /// è¨»å†Šç›£æ§åœ°å€ï¼ˆæ ¹æ“š DWord æ¨¡å¼æ±ºå®šè¨»å†Šæ•¸é‡ï¼‰
+        /// </summary>
+        private void RegisterMonitorAddress()
+        {
+            var status = PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
+            var manager = status?.CurrentManager;
+
+            if (manager?.Monitor == null) return;
+
+            string addr = Address?.Trim().ToUpper() ?? "";
+            if (string.IsNullOrEmpty(addr)) return;
+
+            // è§£æåœ°å€
+            var match = System.Text.RegularExpressions.Regex.Match(addr, @"^([DR])(\d+)$");
+            if (!match.Success) return; // åªæ”¯æ´ D/R è£ç½®
+
+            // DWord æ¨¡å¼éœ€è¦è¨»å†Šå…©å€‹é€£çºŒæš«å­˜å™¨
+            int length = IsDWordMode ? 2 : 1;
+
+            manager.Monitor.Register(addr, length);
+
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[PlcDeviceEditor] Auto-registered: {addr}:{length}");
+            #endif
+        }
+
+        #region Dependency Properties
+
+        public static readonly DependencyProperty LabelProperty =
+            DependencyProperty.Register("Label", typeof(string), typeof(PlcDeviceEditor), new PropertyMetadata("Device Editor"));
+        public string Label
+        {
+            get => (string)GetValue(LabelProperty);
+            set => SetValue(LabelProperty, value);
+        }
+
+        public static readonly DependencyProperty AddressProperty =
+            DependencyProperty.Register("Address", typeof(string), typeof(PlcDeviceEditor), new PropertyMetadata(""));
+        public string Address
+        {
+            get => (string)GetValue(AddressProperty);
+            set => SetValue(AddressProperty, value);
+        }
+
+        public static readonly DependencyProperty ValueProperty =
+            DependencyProperty.Register("Value", typeof(string), typeof(PlcDeviceEditor), new PropertyMetadata(""));
+        public string Value
+        {
+            get => (string)GetValue(ValueProperty);
+            set => SetValue(ValueProperty, value);
+        }
+
+        public static readonly DependencyProperty ReasonProperty =
+            DependencyProperty.Register("Reason", typeof(string), typeof(PlcDeviceEditor), new PropertyMetadata("Manual Operation"));
+        public string Reason
+        {
+            get => (string)GetValue(ReasonProperty);
+            set => SetValue(ReasonProperty, value);
+        }
+
+        public static readonly DependencyProperty EnableAuditTrailProperty =
+            DependencyProperty.Register("EnableAuditTrail", typeof(bool), typeof(PlcDeviceEditor), new PropertyMetadata(true));
+        public bool EnableAuditTrail
+        {
+            get => (bool)GetValue(EnableAuditTrailProperty);
+            set => SetValue(EnableAuditTrailProperty, value);
+        }
+
+        public static readonly DependencyProperty RequiredLevelProperty =
+            DependencyProperty.Register("RequiredLevel", typeof(AccessLevel), typeof(PlcDeviceEditor),
+                new PropertyMetadata(AccessLevel.Supervisor, OnRequiredLevelChanged));
+        public AccessLevel RequiredLevel
+        {
+            get => (AccessLevel)GetValue(RequiredLevelProperty);
+            set => SetValue(RequiredLevelProperty, value);
+        }
+
+        public static readonly DependencyProperty IsAuthorizedProperty =
+            DependencyProperty.Register("IsAuthorized", typeof(bool), typeof(PlcDeviceEditor), new PropertyMetadata(false));
+        public bool IsAuthorized
+        {
+            get => (bool)GetValue(IsAuthorizedProperty);
+            private set => SetValue(IsAuthorizedProperty, value);
+        }
+
+        #endregion
+
+        #region æ¬Šé™æ§åˆ¶
+
+        private void OnAccessLevelChanged(object? sender, EventArgs e)
+        {
+            Dispatcher.BeginInvoke(UpdateAuthorization);
+        }
+
+        private static void OnRequiredLevelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is PlcDeviceEditor editor)
+            {
+                bool isDesignMode = System.ComponentModel.DesignerProperties.GetIsInDesignMode(editor);
+                if (!isDesignMode)
+                {
+                    editor.UpdateAuthorization();
+                }
+                else
+                {
+                    editor.IsAuthorized = true;
+                }
+            }
+        }
+
+        private void UpdateAuthorization()
+        {
+            bool isDesignMode = System.ComponentModel.DesignerProperties.GetIsInDesignMode(this);
+            
+            if (isDesignMode)
+            {
+                IsAuthorized = true;
+            }
+            else
+            {
+                IsAuthorized = SecurityContext.HasAccess(RequiredLevel);
+            }
+
+            UpdateUIState();
+        }
+
+        private void UpdateUIState()
+        {
+            // UI ç‹€æ…‹é€é XAML ç¶å®šæ§åˆ¶
+        }
+
+        #endregion
+
+        #region DataType Selection
+
+        /// <summary>
+        /// DWord CheckBox å‹¾é¸äº‹ä»¶
+        /// </summary>
+        private void ChkDWord_Checked(object sender, RoutedEventArgs e)
+        {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine("[PlcDeviceEditor] DataType: DWord (32-bit)");
+            #endif
+            
+            // ? é‡æ–°è¨»å†Šç›£æ§åœ°å€ï¼ˆDWord éœ€è¦ 2 å€‹æš«å­˜å™¨ï¼‰
+            RegisterMonitorAddress();
+        }
+
+        /// <summary>
+        /// DWord CheckBox å–æ¶ˆå‹¾é¸äº‹ä»¶
+        /// </summary>
+        private void ChkDWord_Unchecked(object sender, RoutedEventArgs e)
+        {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine("[PlcDeviceEditor] DataType: Word (16-bit)");
+            #endif
+            
+            // ? é‡æ–°è¨»å†Šç›£æ§åœ°å€ï¼ˆWord åªéœ€è¦ 1 å€‹æš«å­˜å™¨ï¼‰
+            RegisterMonitorAddress();
+        }
+
+        /// <summary>
+        /// åˆ¤æ–·ç•¶å‰æ˜¯å¦ç‚º DWord æ¨¡å¼
+        /// </summary>
+        private bool IsDWordMode => ChkDWord?.IsChecked == true;
+
+        #endregion
+
+        #region Read/Write æ“ä½œ
+
+        private async void BtnRead_Click(object sender, RoutedEventArgs e)
+        {
+            if (!IsAuthorized)
+            {
+                string opName = !string.IsNullOrEmpty(Label) ? $"è®€å– {Label}" : "è®€å– PLC";
+                SecurityContext.CheckAccess(RequiredLevel, opName);
+                await ShowFeedback(false);
+                return;
+            }
+
+            var status = PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
+            var manager = status?.CurrentManager;
+
+            if (manager == null || !manager.IsConnected)
+            {
+                await ShowFeedback(false);
+                return;
+            }
+
+            string addr = Address?.Trim().ToUpper() ?? "";
+            string reason = string.IsNullOrWhiteSpace(Reason) ? "Manual Read" : Reason.Trim();
+
+            if (string.IsNullOrEmpty(addr))
+            {
+                await ShowFeedback(false);
+                return;
+            }
+
+            try
+            {
+                var wordBitMatch = Regex.Match(addr, @"^([DRW][0-9]+)[.,]([0-9A-Fa-f]+)$");
+                bool isPureBit = Regex.IsMatch(addr, @"^[MXY][0-9]+$");
+
+                long readValue;  // æ”¹ç‚º long ä»¥æ”¯æ´ DWord
+                bool readSuccess = false;
+
+                // ?? DWord è®€å–æ¨¡å¼
+                if (IsDWordMode && !isPureBit && !wordBitMatch.Success)
+                {
+                    var dwordValue = manager.ReadDWord(addr);
+                    if (dwordValue.HasValue)
+                    {
+                        readValue = dwordValue.Value;
+                        readSuccess = true;
+                        
+                        #if DEBUG
+                        System.Diagnostics.Debug.WriteLine($"[PlcDeviceEditor] DWord Read: {addr} = {readValue}");
+                        #endif
+                    }
+                    else
+                    {
+                        await ShowFeedback(false);
+                        return;
+                    }
+                }
+                // Word Bit æ¨¡å¼
+                else if (wordBitMatch.Success)
+                {
+                    string wordAddr = wordBitMatch.Groups[1].Value;
+                    string bitIndexStr = wordBitMatch.Groups[2].Value;
+                    int bitIndex = Convert.ToInt32(bitIndexStr, 16);
+                    
+                    if (bitIndex < 0 || bitIndex > 15)
+                    {
+                        await ShowFeedback(false);
+                        return;
+                    }
+
+                    int wordValue = await manager.ReadAsync(wordAddr);
+                    readValue = (wordValue >> bitIndex) & 1;
+                    readSuccess = true;
+                }
+                // Pure Bit æ¨¡å¼
+                else if (isPureBit)
+                {
+                    readValue = await manager.ReadAsync(addr);
+                    readSuccess = true;
+                }
+                // Word æ¨¡å¼ï¼ˆé è¨­ï¼‰
+                else
+                {
+                    readValue = await manager.ReadAsync(addr);
+                    readSuccess = true;
+                }
+
+                if (readSuccess)
+                {
+                    Value = readValue.ToString();
+                    
+                    if (EnableAuditTrail)
+                    {
+                        ComplianceContext.LogAuditTrail(
+                            deviceName: Label,
+                            address: addr,
+                            oldValue: "N/A",
+                            newValue: readValue.ToString(),
+                            reason: $"{reason} (Read)",
+                            showInUi: false
+                        );
+                    }
+
+                    await ShowFeedback(true);
+                }
+                else
+                {
+                    await ShowFeedback(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (EnableAuditTrail)
+                {
+                    ComplianceContext.LogSystem($"[ERROR] Read failed: {Label}({addr}) - {ex.Message}", LogLevel.Error);
+                }
+                await ShowFeedback(false);
+            }
+        }
+
+        private async void BtnWrite_Click(object sender, RoutedEventArgs e)
+        {
+            if (!IsAuthorized)
+            {
+                string opName = !string.IsNullOrEmpty(Label) ? $"å¯«å…¥ {Label}" : "å¯«å…¥ PLC";
+                SecurityContext.CheckAccess(RequiredLevel, opName);
+                await ShowFeedback(false);
+                return;
+            }
+
+            var status = PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
+            var manager = status?.CurrentManager;
+
+            if (manager == null || !manager.IsConnected)
+            {
+                await ShowFeedback(false);
+                return;
+            }
+
+            string addr = Address?.Trim().ToUpper() ?? "";
+            string valStr = Value?.Trim() ?? "";
+            string reason = string.IsNullOrWhiteSpace(Reason) ? "Manual Operation" : Reason.Trim();
+
+            if (string.IsNullOrEmpty(addr) || string.IsNullOrEmpty(valStr))
+            {
+                await ShowFeedback(false);
+                return;
+            }
+
+            try
+            {
+                var wordBitMatch = Regex.Match(addr, @"^([DRW][0-9]+)[.,]([0-9A-Fa-f]+)$");
+                bool isPureBit = Regex.IsMatch(addr, @"^[MXY][0-9]+$");
+
+                string oldValue = "";
+                bool writeSuccess = false;
+
+                // ?? DWord å¯«å…¥æ¨¡å¼
+                if (IsDWordMode && !isPureBit && !wordBitMatch.Success)
+                {
+                    if (!uint.TryParse(valStr, out uint numVal))
+                    {
+                        await ShowFeedback(false);
+                        return;
+                    }
+
+                    // è®€å–ç•¶å‰å€¼
+                    try
+                    {
+                        var currentDWord = manager.ReadDWord(addr);
+                        oldValue = currentDWord.HasValue ? currentDWord.Value.ToString() : "Unknown";
+                    }
+                    catch
+                    {
+                        oldValue = "Unknown";
+                    }
+
+                    // ?? DWord å¯«å…¥éœ€è¦åˆ†æˆå…©å€‹ Word
+                    // Low Word (D65) = numVal & 0xFFFF
+                    // High Word (D66) = (numVal >> 16) & 0xFFFF
+                    
+                    ushort lowWord = (ushort)(numVal & 0xFFFF);
+                    ushort highWord = (ushort)((numVal >> 16) & 0xFFFF);
+                    
+                    // è§£æä½å€ï¼ˆä¾‹å¦‚ D65 â†’ D65, D66ï¼‰
+                    var match = Regex.Match(addr, @"^([A-Z]+)(\d+)$");
+                    if (!match.Success)
+                    {
+                        await ShowFeedback(false);
+                        return;
+                    }
+                    
+                    string deviceType = match.Groups[1].Value;
+                    int baseAddr = int.Parse(match.Groups[2].Value);
+                    
+                    // å¯«å…¥ä½ä½ Word
+                    bool writeLowSuccess = await manager.WriteAsync($"{deviceType}{baseAddr},{lowWord}");
+                    if (!writeLowSuccess)
+                    {
+                        await ShowFeedback(false);
+                        return;
+                    }
+                    
+                    // å¯«å…¥é«˜ä½ Word
+                    bool writeHighSuccess = await manager.WriteAsync($"{deviceType}{baseAddr + 1},{highWord}");
+                    writeSuccess = writeLowSuccess && writeHighSuccess;
+                    
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[PlcDeviceEditor] DWord Write: {addr} = {numVal} (Low:{lowWord}, High:{highWord})");
+                    #endif
+                    
+                    if (writeSuccess && EnableAuditTrail)
+                    {
+                        ComplianceContext.LogAuditTrail(
+                            deviceName: Label,
+                            address: addr,
+                            oldValue: oldValue,
+                            newValue: numVal.ToString(),
+                            reason: reason
+                        );
+                    }
+
+                    await ShowFeedback(writeSuccess);
+                }
+                else if (wordBitMatch.Success)
+                {
+                    string wordAddr = wordBitMatch.Groups[1].Value;
+                    string bitIndexStr = wordBitMatch.Groups[2].Value;
+                    int bitIndex = Convert.ToInt32(bitIndexStr, 16);
+                    
+                    if (bitIndex < 0 || bitIndex > 15)
+                    {
+                        await ShowFeedback(false);
+                        return;
+                    }
+
+                    int writeBitVal = ParseBitValue(valStr);
+                    if (writeBitVal == -1)
+                    {
+                        await ShowFeedback(false);
+                        return;
+                    }
+
+                    int currentWordVal = await manager.ReadAsync(wordAddr);
+                    int oldBitVal = (currentWordVal >> bitIndex) & 1;
+                    oldValue = oldBitVal.ToString();
+
+                    int newWordVal = writeBitVal == 1 
+                        ? currentWordVal | (1 << bitIndex) 
+                        : currentWordVal & ~(1 << bitIndex);
+
+                    writeSuccess = await manager.WriteAsync($"{wordAddr},{newWordVal}");
+                    
+                    if (writeSuccess && EnableAuditTrail)
+                    {
+                        ComplianceContext.LogAuditTrail(
+                            deviceName: Label,
+                            address: addr,
+                            oldValue: oldValue,
+                            newValue: writeBitVal.ToString(),
+                            reason: reason
+                        );
+                    }
+
+                    await ShowFeedback(writeSuccess);
+                }
+                else if (isPureBit)
+                {
+                    int writeBitVal = ParseBitValue(valStr);
+                    if (writeBitVal == -1)
+                    {
+                        await ShowFeedback(false);
+                        return;
+                    }
+
+                    try
+                    {
+                        int currentBitVal = await manager.ReadAsync(addr);
+                        oldValue = currentBitVal.ToString();
+                    }
+                    catch
+                    {
+                        oldValue = "Unknown";
+                    }
+
+                    writeSuccess = await manager.WriteAsync($"{addr},{writeBitVal}");
+                    
+                    if (writeSuccess && EnableAuditTrail)
+                    {
+                        ComplianceContext.LogAuditTrail(
+                            deviceName: Label,
+                            address: addr,
+                            oldValue: oldValue,
+                            newValue: writeBitVal.ToString(),
+                            reason: reason
+                        );
+                    }
+
+                    await ShowFeedback(writeSuccess);
+                }
+                else
+                {
+                    if (!int.TryParse(valStr, out int numVal))
+                    {
+                        await ShowFeedback(false);
+                        return;
+                    }
+
+                    try
+                    {
+                        int currentVal = await manager.ReadAsync(addr);
+                        oldValue = currentVal.ToString();
+                    }
+                    catch
+                    {
+                        oldValue = "Unknown";
+                    }
+
+                    writeSuccess = await manager.WriteAsync($"{addr},{valStr}");
+                    
+                    if (writeSuccess && EnableAuditTrail)
+                    {
+                        ComplianceContext.LogAuditTrail(
+                            deviceName: Label,
+                            address: addr,
+                            oldValue: oldValue,
+                            newValue: valStr,
+                            reason: reason
+                        );
+                    }
+
+                    await ShowFeedback(writeSuccess);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (EnableAuditTrail)
+                {
+                    ComplianceContext.LogSystem($"[ERROR] Write failed: {Label}({addr}) - {ex.Message}", LogLevel.Error);
+                }
+                await ShowFeedback(false);
+            }
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        private int ParseBitValue(string valStr)
+        {
+            valStr = valStr.ToLower();
+            if (valStr == "0" || valStr == "false" || valStr == "off") return 0;
+            if (valStr == "1" || valStr == "true" || valStr == "on") return 1;
+            return -1;
+        }
+
+        private async Task ShowFeedback(bool success)
+        {
+            var color = success ? Colors.LimeGreen : Colors.Red;
+
+            TxtValue.BorderBrush = new SolidColorBrush(color);
+            TxtValue.BorderThickness = new Thickness(2);
+
+            await Task.Delay(500);
+
+            TxtValue.BorderBrush = new SolidColorBrush(Color.FromRgb(0x55, 0x55, 0x55));
+            TxtValue.BorderThickness = new Thickness(1);
+        }
+
+        #endregion
+    }
+}

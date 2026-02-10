@@ -1,138 +1,138 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Windows;
-using Stackdose.UI.Core.Services;
-
-namespace Stackdose.UI.Core.Controls
-{
-    /// <summary>
-    /// ∏s≤’∫ﬁ≤zπÔ∏‹µ¯µ°
-    /// </summary>
-    public partial class GroupManagementDialog : Window
-    {
-        private readonly WindowsAccountService _accountService;
-        private readonly WindowsAccountService.UserInfo _userInfo;
-        private readonly List<GroupItem> _groups = new List<GroupItem>();
-
-        public class GroupItem : INotifyPropertyChanged
-        {
-            private bool _isSelected;
-            public string GroupName { get; set; } = string.Empty;
-            public string DisplayName { get; set; } = string.Empty;
-            public bool WasInitiallySelected { get; set; }
-
-            public bool IsSelected
-            {
-                get => _isSelected;
-                set
-                {
-                    _isSelected = value;
-                    OnPropertyChanged(nameof(IsSelected));
-                }
-            }
-
-            public event PropertyChangedEventHandler? PropertyChanged;
-            protected void OnPropertyChanged(string propertyName)
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-
-        public GroupManagementDialog(WindowsAccountService accountService, WindowsAccountService.UserInfo userInfo)
-        {
-            InitializeComponent();
-
-            _accountService = accountService;
-            _userInfo = userInfo;
-
-            InitializeForm();
-        }
-
-        private void InitializeForm()
-        {
-            TitleText.Text = $"∏s≤’∫ﬁ≤z - {_userInfo.DisplayName}";
-
-            // ?? App_ ∏s≤’≤M≥Ê
-            var appGroups = new Dictionary<string, string>
-            {
-                ["App_Operators"] = "App_Operators (æﬁß@≠˚)",
-                ["App_Instructors"] = "App_Instructors (´¸æ…≠˚)",
-                ["App_Supervisors"] = "App_Supervisors (•D∫ﬁ)",
-                ["App_Admins"] = "App_Admins (∫ﬁ≤z≠˚)"
-            };
-
-            foreach (var group in appGroups)
-            {
-                var isSelected = _userInfo.Groups.Contains(group.Key);
-                _groups.Add(new GroupItem
-                {
-                    GroupName = group.Key,
-                    DisplayName = group.Value,
-                    IsSelected = isSelected,
-                    WasInitiallySelected = isSelected
-                });
-            }
-
-            GroupListView.ItemsSource = _groups;
-        }
-
-        private async void OkButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var errors = new List<string>();
-
-                // ?? ≥B≤z∑sºW/≤æ∞£∏s≤’
-                foreach (var group in _groups)
-                {
-                    if (group.IsSelected && !group.WasInitiallySelected)
-                    {
-                        // •[§J∏s≤’
-                        var result = await System.Threading.Tasks.Task.Run(() => 
-                            _accountService.AddUserToGroup(_userInfo.SamAccountName, group.GroupName));
-
-                        if (!result.Success)
-                        {
-                            errors.Add($"•[§J {group.DisplayName} •¢±—: {result.Message}");
-                        }
-                    }
-                    else if (!group.IsSelected && group.WasInitiallySelected)
-                    {
-                        // ≤æ∞£∏s≤’
-                        var result = await System.Threading.Tasks.Task.Run(() => 
-                            _accountService.RemoveUserFromGroup(_userInfo.SamAccountName, group.GroupName));
-
-                        if (!result.Success)
-                        {
-                            errors.Add($"≤æ∞£ {group.DisplayName} •¢±—: {result.Message}");
-                        }
-                    }
-                }
-
-                if (errors.Count > 0)
-                {
-                    CyberMessageBox.Show(
-                        $"≥°§¿æﬁß@•¢±—:\n\n{string.Join("\n", errors)}",
-                        "ƒµßi",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                }
-
-                DialogResult = true;
-                Close();
-            }
-            catch (Exception ex)
-            {
-                CyberMessageBox.Show($"æﬁß@•¢±—: {ex.Message}", "ø˘ª~", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = false;
-            Close();
-        }
-    }
-}
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Windows;
+using Stackdose.UI.Core.Services;
+
+namespace Stackdose.UI.Core.Controls
+{
+    /// <summary>
+    /// Áæ§ÁµÑÁÆ°ÁêÜÂ∞çË©±Ë¶ñÁ™ó
+    /// </summary>
+    public partial class GroupManagementDialog : Window
+    {
+        private readonly WindowsAccountService _accountService;
+        private readonly WindowsAccountService.UserInfo _userInfo;
+        private readonly List<GroupItem> _groups = new List<GroupItem>();
+
+        public class GroupItem : INotifyPropertyChanged
+        {
+            private bool _isSelected;
+            public string GroupName { get; set; } = string.Empty;
+            public string DisplayName { get; set; } = string.Empty;
+            public bool WasInitiallySelected { get; set; }
+
+            public bool IsSelected
+            {
+                get => _isSelected;
+                set
+                {
+                    _isSelected = value;
+                    OnPropertyChanged(nameof(IsSelected));
+                }
+            }
+
+            public event PropertyChangedEventHandler? PropertyChanged;
+            protected void OnPropertyChanged(string propertyName)
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        public GroupManagementDialog(WindowsAccountService accountService, WindowsAccountService.UserInfo userInfo)
+        {
+            InitializeComponent();
+
+            _accountService = accountService;
+            _userInfo = userInfo;
+
+            InitializeForm();
+        }
+
+        private void InitializeForm()
+        {
+            TitleText.Text = $"Áæ§ÁµÑÁÆ°ÁêÜ - {_userInfo.DisplayName}";
+
+            // ?? App_ Áæ§ÁµÑÊ∏ÖÂñÆ
+            var appGroups = new Dictionary<string, string>
+            {
+                ["App_Operators"] = "App_Operators (Êìç‰ΩúÂì°)",
+                ["App_Instructors"] = "App_Instructors (ÊåáÂ∞éÂì°)",
+                ["App_Supervisors"] = "App_Supervisors (‰∏ªÁÆ°)",
+                ["App_Admins"] = "App_Admins (ÁÆ°ÁêÜÂì°)"
+            };
+
+            foreach (var group in appGroups)
+            {
+                var isSelected = _userInfo.Groups.Contains(group.Key);
+                _groups.Add(new GroupItem
+                {
+                    GroupName = group.Key,
+                    DisplayName = group.Value,
+                    IsSelected = isSelected,
+                    WasInitiallySelected = isSelected
+                });
+            }
+
+            GroupListView.ItemsSource = _groups;
+        }
+
+        private async void OkButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var errors = new List<string>();
+
+                // ?? ËôïÁêÜÊñ∞Â¢û/ÁßªÈô§Áæ§ÁµÑ
+                foreach (var group in _groups)
+                {
+                    if (group.IsSelected && !group.WasInitiallySelected)
+                    {
+                        // Âä†ÂÖ•Áæ§ÁµÑ
+                        var result = await System.Threading.Tasks.Task.Run(() => 
+                            _accountService.AddUserToGroup(_userInfo.SamAccountName, group.GroupName));
+
+                        if (!result.Success)
+                        {
+                            errors.Add($"Âä†ÂÖ• {group.DisplayName} Â§±Êïó: {result.Message}");
+                        }
+                    }
+                    else if (!group.IsSelected && group.WasInitiallySelected)
+                    {
+                        // ÁßªÈô§Áæ§ÁµÑ
+                        var result = await System.Threading.Tasks.Task.Run(() => 
+                            _accountService.RemoveUserFromGroup(_userInfo.SamAccountName, group.GroupName));
+
+                        if (!result.Success)
+                        {
+                            errors.Add($"ÁßªÈô§ {group.DisplayName} Â§±Êïó: {result.Message}");
+                        }
+                    }
+                }
+
+                if (errors.Count > 0)
+                {
+                    CyberMessageBox.Show(
+                        $"ÈÉ®ÂàÜÊìç‰ΩúÂ§±Êïó:\n\n{string.Join("\n", errors)}",
+                        "Ë≠¶Âëä",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                }
+
+                DialogResult = true;
+                Close();
+            }
+            catch (Exception ex)
+            {
+                CyberMessageBox.Show($"Êìç‰ΩúÂ§±Êïó: {ex.Message}", "ÈåØË™§", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+            Close();
+        }
+    }
+}

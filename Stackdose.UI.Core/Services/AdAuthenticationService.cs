@@ -1,608 +1,608 @@
-using System;
-using System.Collections.Generic;
-using System.DirectoryServices.AccountManagement;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Stackdose.UI.Core.Services
-{
-    /// <summary>
-    /// Windows AD ÅçÃÒªA°È
-    /// </summary>
-    /// <remarks>
-    /// <para>´£¨Ñ Windows Active Directory ¥H¤U¥\¯à¡G</para>
-    /// <list type="bullet">
-    /// <item>ÅçÃÒ AD ¨Ï¥ÎªÌ±b±K</item>
-    /// <item>¨ú±o AD ¨Ï¥ÎªÌ¸ê°T¡]Åã¥Ü¦WºÙ¡BEmail¡B¸s²Õµ¥¡^</item>
-    /// <item>¤ä´© Domain »P LocalMachine ¨âºØÅçÃÒ¼Ò¦¡</item>
-    /// <item>¦Û°Ê°»´ú·í«eµn¤Jªº Windows ¨Ï¥ÎªÌ</item>
-    /// <item>¤ä´© App_ ¸s²ÕÅv­­ÀË´ú¡]App_Operators¡BApp_Instructors¡BApp_Supervisors¡BApp_Admins¡^</item>
-    /// <item>¤º«Ø¶W®É±±¨î¡]5¬í¡^¨¾¤îÅçÃÒ¥d¦º</item>
-    /// </list>
-    /// </remarks>
-    /// <example>
-    /// °ò¥»¥Îªk¡G
-    /// <code>
-    /// var adService = new AdAuthenticationService();
-    /// 
-    /// // ÅçÃÒ AD ¨Ï¥ÎªÌ
-    /// var result = adService.Authenticate("username", "password");
-    /// if (result.IsSuccess)
-    /// {
-    ///     Console.WriteLine($"Welcome, {result.DisplayName}!");
-    ///     Console.WriteLine($"Permission: {result.PermissionLevel}");
-    ///     Console.WriteLine($"Groups: {string.Join(", ", result.UserGroups)}");
-    /// }
-    /// </code>
-    /// </example>
-    public class AdAuthenticationService
-    {
-        #region Constants
-
-        // ¥|­Ó App_ ¸s²Õ±`¼Æ
-        private const string APP_OPERATORS_GROUP = "App_Operators";
-        private const string APP_INSTRUCTORS_GROUP = "App_Instructors";
-        private const string APP_SUPERVISORS_GROUP = "App_Supervisors";
-        private const string APP_ADMINS_GROUP = "App_Admins";
-
-        // ÅçÃÒ¶W®É³]©w¡]5¬í¡^
-        private const int VALIDATION_TIMEOUT_MS = 2000; // ?? 5000 ?? 2000
-
-        #endregion
-
-        #region Private Fields
-
-        private readonly string? _domainName;
-        private readonly ContextType _contextType;
-
-        #endregion
-
-        #region Constructor
-
-        /// <summary>
-        /// «Øºc¨ç¼Æ
-        /// </summary>
-        /// <param name="domainName">AD ºô°ì¦WºÙ¡]null «h¦Û°Ê°»´ú¡^</param>
-        /// <param name="useLocalMachine">¬O§_¨Ï¥Î¥»¾÷ÅçÃÒ¡]¹w³] false¡A¨Ï¥Î Domain¡^</param>
-        public AdAuthenticationService(string? domainName = null, bool useLocalMachine = false)
-        {
-            _domainName = domainName;
-            _contextType = useLocalMachine ? ContextType.Machine : ContextType.Domain;
-
-            #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] Initialized: Type={_contextType}, Domain={_domainName ?? "Auto-Detect"}");
-            #endif
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// ÅçÃÒ¨Ï¥ÎªÌ±b±K - §¹¾ãª©¥»¡]¦^¶Ç¸Ô²Ó¸ê°T©M¸s²Õ¡^
-        /// </summary>
-        /// <param name="username">¨Ï¥ÎªÌ¦WºÙ</param>
-        /// <param name="password">±K½X</param>
-        /// <param name="contextType">ÅçÃÒ¼Ò¦¡¡]Domain ©Î Machine¡^</param>
-        /// <returns>ÅçÃÒµ²ªG</returns>
-        public AuthenticationResult Authenticate(string username, string password, ContextType? contextType = null)
-        {
-            AuthenticationResult result = new AuthenticationResult();
-
-            try
-            {
-                // ¿é¤JÅçÃÒ
-                if (string.IsNullOrWhiteSpace(username))
-                {
-                    result.ErrorMessage = "¨Ï¥ÎªÌ¦WºÙ¤£¥i¬°ªÅ";
-                    return result;
-                }
-
-                if (string.IsNullOrWhiteSpace(password))
-                {
-                    result.ErrorMessage = "±K½X¤£¥i¬°ªÅ";
-                    return result;
-                }
-
-                // ¨Ï¥Î Task »P CancellationToken ¹ê§@¶W®É¾÷¨î
-                using (var cts = new CancellationTokenSource(VALIDATION_TIMEOUT_MS))
-                {
-                    var authTask = Task.Run(() => PerformAuthentication(username, password, contextType ?? _contextType), cts.Token);
-
-                    try
-                    {
-                        // µ¥«İÅçÃÒ§¹¦¨©Î¶W®É
-                        if (authTask.Wait(VALIDATION_TIMEOUT_MS))
-                        {
-                            result = authTask.Result;
-                        }
-                        else
-                        {
-                            result.ErrorMessage = "ÅçÃÒ¶W®É¡A½ĞÀË¬dºô¸ô³s½u©Î±b¸¹³]©w";
-                            System.Diagnostics.Debug.WriteLine("[WARNING] Authentication timeout");
-                        }
-                    }
-                    catch (AggregateException ae)
-                    {
-                        // ³B²z Task ¤º³¡ªº¨Ò¥~
-                        var innerException = ae.InnerException;
-                        result.ErrorMessage = "ÅçÃÒ¹Lµ{µo¥Í¿ù»~";
-                        result.ExceptionMessage = innerException?.Message ?? ae.Message;
-                        System.Diagnostics.Debug.WriteLine($"[ERROR] Authentication failed: {innerException?.Message}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                result.ErrorMessage = "¨t²Î¿ù»~";
-                result.ExceptionMessage = ex.Message;
-                System.Diagnostics.Debug.WriteLine($"[ERROR] Unexpected error: {ex.Message}");
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// §Ö³tÅçÃÒ - ¥u¦^¶Ç¦¨¥\/¥¢±Ñ¡]Â²¤Æª©¡A¤£´£¨Ñ¸Ô²Ó¸ê°T¡^
-        /// </summary>
-        /// <param name="username">¨Ï¥ÎªÌ¦WºÙ</param>
-        /// <param name="password">±K½X</param>
-        /// <returns>ÅçÃÒ¬O§_¦¨¥\</returns>
-        public bool ValidateCredentials(string username, string password)
-        {
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
-            {
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine("[AdAuthenticationService] ValidateCredentials: Empty username or password");
-                #endif
-                return false;
-            }
-
-            try
-            {
-                using (var cts = new CancellationTokenSource(VALIDATION_TIMEOUT_MS))
-                {
-                    var validationTask = Task.Run(() =>
-                    {
-                        using (PrincipalContext context = new PrincipalContext(_contextType))
-                        {
-                            return context.ValidateCredentials(username, password);
-                        }
-                    }, cts.Token);
-
-                    if (validationTask.Wait(VALIDATION_TIMEOUT_MS))
-                    {
-                        return validationTask.Result;
-                    }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine("[WARNING] Validation timeout");
-                        return false;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[ERROR] Validation failed: {ex.Message}");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// ¨ú±o AD ¨Ï¥ÎªÌ¸ê°T
-        /// </summary>
-        /// <param name="username">¨Ï¥ÎªÌ¦WºÙ</param>
-        /// <returns>¨Ï¥ÎªÌ¸ê°T¡]§ä¤£¨ì®É¦^¶Ç null¡^</returns>
-        public AdUserInfo? GetUserInfo(string username)
-        {
-            if (string.IsNullOrWhiteSpace(username))
-                return null;
-
-            try
-            {
-                using (var context = CreatePrincipalContext())
-                using (var user = UserPrincipal.FindByIdentity(context, username))
-                {
-                    if (user == null)
-                    {
-                        #if DEBUG
-                        System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] GetUserInfo: User '{username}' not found");
-                        #endif
-                        return null;
-                    }
-
-                    var userInfo = new AdUserInfo
-                    {
-                        Username = user.SamAccountName ?? username,
-                        DisplayName = user.DisplayName ?? username,
-                        Email = user.EmailAddress,
-                        GivenName = user.GivenName,
-                        Surname = user.Surname,
-                        Description = user.Description,
-                        IsEnabled = user.Enabled ?? true
-                    };
-
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] GetUserInfo: {username} => {userInfo.DisplayName}");
-                    #endif
-
-                    return userInfo;
-                }
-            }
-            catch (Exception ex)
-            {
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] GetUserInfo Error: {ex.Message}");
-                #endif
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// ¨ú±o·í«eµn¤Jªº Windows ¨Ï¥ÎªÌ¦WºÙ
-        /// </summary>
-        /// <returns>¨Ï¥ÎªÌ¦WºÙ¡]¤£§t Domain¡^</returns>
-        public static string GetCurrentWindowsUser()
-        {
-            try
-            {
-                string fullName = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
-                
-                // ²¾°£ Domain «eºó¡]¨Ò¦p¡GDOMAIN\username -> username¡^
-                if (fullName.Contains("\\"))
-                {
-                    return fullName.Split('\\').Last();
-                }
-                
-                return fullName;
-            }
-            catch
-            {
-                return Environment.UserName;
-            }
-        }
-
-        /// <summary>
-        /// ¨ú±o·í«eµn¤Jªº Windows ¨Ï¥ÎªÌ§¹¾ã¦WºÙ¡]§t Domain¡^
-        /// </summary>
-        /// <returns>§¹¾ã¨Ï¥ÎªÌ¦WºÙ¡]¨Ò¦p¡GDOMAIN\username¡^</returns>
-        public static string GetCurrentWindowsUserWithDomain()
-        {
-            try
-            {
-                return System.Security.Principal.WindowsIdentity.GetCurrent().Name;
-            }
-            catch
-            {
-                return $"{Environment.UserDomainName}\\{Environment.UserName}";
-            }
-        }
-
-        /// <summary>
-        /// ÀË¬d AD ªA°È¬O§_¥i¥Î
-        /// </summary>
-        /// <returns>¬O§_¥i¥Î</returns>
-        public bool IsAvailable()
-        {
-            try
-            {
-                using (var context = CreatePrincipalContext())
-                {
-                    // ¹Á¸Õ¬d¸ß·í«e¨Ï¥ÎªÌ¡A¥H´ú¸Õ AD ³s½u
-                    var currentUser = GetCurrentWindowsUser();
-                    using (var user = UserPrincipal.FindByIdentity(context, currentUser))
-                    {
-                        return user != null;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] IsAvailable Error: {ex.Message}");
-                #endif
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// ÀË¬d¬O§_¦bºô°ìÀô¹Ò¤¤
-        /// </summary>
-        /// <returns>¦pªG¦bºô°ìÀô¹Ò«h¦^¶Ç true¡A§_«h¦^¶Ç false</returns>
-        public static bool IsInDomain()
-        {
-            try
-            {
-                return !string.IsNullOrEmpty(Environment.UserDomainName) &&
-                       !Environment.UserDomainName.Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// ¨ú±o«ØÄ³ªºÅçÃÒ¼Ò¦¡ - ®Ú¾ÚÀô¹Ò¦Û°Ê§PÂ_
-        /// </summary>
-        /// <returns>«ØÄ³ªº ContextType</returns>
-        public static ContextType GetRecommendedContextType()
-        {
-            return IsInDomain() ? ContextType.Domain : ContextType.Machine;
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        /// <summary>
-        /// °õ¦æÅçÃÒªº®Ö¤ß¤èªk¡]­I´º°õ¦æ¡^
-        /// </summary>
-        private AuthenticationResult PerformAuthentication(string username, string password, ContextType contextType)
-        {
-            AuthenticationResult result = new AuthenticationResult();
-
-            try
-            {
-                // «Ø¥ß Principal Context
-                using (PrincipalContext context = new PrincipalContext(contextType))
-                {
-                    // §Ö³tÅçÃÒ±b±K
-                    System.Diagnostics.Debug.WriteLine($"[INFO] Validating credentials for user: {username}");
-                    
-                    bool isValid = context.ValidateCredentials(username, password);
-
-                    if (isValid)
-                    {
-                        System.Diagnostics.Debug.WriteLine("[INFO] Credentials validated successfully");
-
-                        // ÅçÃÒ¦¨¥\¡A¨ú±o¨Ï¥ÎªÌ¸Ô²Ó¸ê°T
-                        using (UserPrincipal? userPrincipal = UserPrincipal.FindByIdentity(context, username))
-                        {
-                            if (userPrincipal != null)
-                            {
-                                // ¨ú±oºô°ì©Î¾÷¾¹¦WºÙ
-                                string domain = contextType == ContextType.Domain
-                                    ? Environment.UserDomainName
-                                    : Environment.MachineName;
-
-                                // ³]©wÅçÃÒµ²ªG
-                                result.IsSuccess = true;
-                                result.FullUsername = $"{domain}\\{userPrincipal.SamAccountName}";
-                                result.DisplayName = userPrincipal.DisplayName ?? username;
-                                result.Email = userPrincipal.EmailAddress ?? "N/A";
-                                
-                                // ¨ú±o¨Ï¥ÎªÌ¸s²Õ¸ê°T
-                                result.UserGroups = GetUserGroups(userPrincipal);
-                                
-                                // §PÂ_Åv­­µ¥¯Å
-                                result.PermissionLevel = DeterminePermissionLevel(result.UserGroups);
-
-                                System.Diagnostics.Debug.WriteLine($"[INFO] User authenticated: {result.FullUsername}");
-                                System.Diagnostics.Debug.WriteLine($"[INFO] Permission Level: {result.PermissionLevel}");
-                                System.Diagnostics.Debug.WriteLine($"[INFO] Groups: {string.Join(", ", result.UserGroups)}");
-                            }
-                            else
-                            {
-                                // ³Æ´©¡GµLªk¨ú±o UserPrincipal ®É¨Ï¥Î°ò¥»¸ê°T
-                                result.IsSuccess = true;
-                                result.FullUsername = $"{Environment.MachineName}\\{username}";
-                                result.DisplayName = username;
-                                result.Email = "N/A";
-                                result.UserGroups = new List<string> { "Users" };
-                                result.PermissionLevel = "Standard User";
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // ÅçÃÒ¥¢±Ñ - §Ö³t¦^¶Ç
-                        result.ErrorMessage = "±b¸¹©Î±K½X¿ù»~";
-                        System.Diagnostics.Debug.WriteLine($"[WARNING] Invalid credentials for user: {username}");
-                    }
-                }
-            }
-            catch (PrincipalServerDownException ex)
-            {
-                result.ErrorMessage = "µLªk³s½uÅçÃÒ¦øªA¾¹";
-                result.ExceptionMessage = ex.Message;
-                System.Diagnostics.Debug.WriteLine($"[ERROR] Server down: {ex.Message}");
-            }
-            catch (PrincipalOperationException ex)
-            {
-                result.ErrorMessage = "ÅçÃÒ¾Ş§@¿ù»~¡A½ĞÀË¬d±b¸¹³]©w";
-                result.ExceptionMessage = ex.Message;
-                System.Diagnostics.Debug.WriteLine($"[ERROR] Operation error: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                result.ErrorMessage = "¨t²Î¿ù»~";
-                result.ExceptionMessage = ex.Message;
-                System.Diagnostics.Debug.WriteLine($"[ERROR] Unexpected error: {ex.Message}");
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// ¨ú±o¨Ï¥ÎªÌ©ÒÄİªº¸s²Õ²M³æ
-        /// </summary>
-        /// <param name="userPrincipal">¨Ï¥ÎªÌ¥DÅé</param>
-        /// <returns>¸s²Õ¦WºÙ²M³æ</returns>
-        private List<string> GetUserGroups(UserPrincipal userPrincipal)
-        {
-            List<string> groups = new List<string>();
-
-            try
-            {
-                // ¨ú±o¨Ï¥ÎªÌ©ÒÄİªº¸s²Õ
-                var groupCollection = userPrincipal.GetGroups();
-                
-                foreach (Principal group in groupCollection)
-                {
-                    groups.Add(group.Name);
-                }
-
-                // ¦pªG¨S¦³¨ú±o¥ô¦ó¸s²Õ¡A¦Ü¤Ö¥[¤J¹w³]¸s²Õ
-                if (groups.Count == 0)
-                {
-                    groups.Add("Users");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[WARNING] Failed to retrieve user groups: {ex.Message}");
-                groups.Add("Users"); // ¹w³]¸s²Õ
-            }
-
-            return groups;
-        }
-
-        /// <summary>
-        /// ®Ú¾Ú¸s²Õ¦¨­ûÃö«Y§PÂ_¨Ï¥ÎªÌªºÅv­­µ¥¯Å
-        /// </summary>
-        /// <param name="groups">¨Ï¥ÎªÌ©ÒÄİ¸s²Õ</param>
-        /// <returns>Åv­­µ¥¯Å´y­z</returns>
-        private string DeterminePermissionLevel(List<string> groups)
-        {
-            // ±N¸s²Õ¦WºÙÂà¬°¤p¼g¥H«K©¿²¤¤j¤p¼g®t²§
-            var groupsLower = groups.Select(g => g.ToLower()).ToList();
-
-            // §PÂ_Åv­­µ¥¯Å¡]±q°ª¨ì§C¡^
-            // L4: App_Admins
-            if (groupsLower.Contains(APP_ADMINS_GROUP.ToLower()))
-            {
-                return "Admin (L4)";
-            }
-            // L3: App_Supervisors
-            else if (groupsLower.Contains(APP_SUPERVISORS_GROUP.ToLower()))
-            {
-                return "Supervisor (L3)";
-            }
-            // L2: App_Instructors
-            else if (groupsLower.Contains(APP_INSTRUCTORS_GROUP.ToLower()))
-            {
-                return "Instructor (L2)";
-            }
-            // L1: App_Operators
-            else if (groupsLower.Contains(APP_OPERATORS_GROUP.ToLower()))
-            {
-                return "Operator (L1)";
-            }
-            // Domain/Local Admins
-            else if (groupsLower.Any(g => g.Contains("domain admins") || g.Contains("enterprise admins")))
-            {
-                return "Domain Administrator";
-            }
-            else if (groupsLower.Any(g => g.Contains("administrators") || g.Contains("admin")))
-            {
-                return "Administrator";
-            }
-            // Standard Users
-            else if (groupsLower.Any(g => g.Contains("users")))
-            {
-                return "Standard User";
-            }
-            else
-            {
-                return "Standard User"; // ¹w³]Åv­­
-            }
-        }
-
-        /// <summary>
-        /// «Ø¥ß PrincipalContext
-        /// </summary>
-        private PrincipalContext CreatePrincipalContext()
-        {
-            try
-            {
-                if (_contextType == ContextType.Domain && !string.IsNullOrWhiteSpace(_domainName))
-                {
-                    return new PrincipalContext(ContextType.Domain, _domainName);
-                }
-                else
-                {
-                    return new PrincipalContext(_contextType);
-                }
-            }
-            catch (Exception ex)
-            {
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] CreatePrincipalContext Error: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] Falling back to LocalMachine context");
-                #endif
-                
-                // Fallback ¨ì¥»¾÷ÅçÃÒ
-                return new PrincipalContext(ContextType.Machine);
-            }
-        }
-
-        #endregion
-    }
-
-    #region AuthenticationResult Class
-
-    /// <summary>
-    /// ÅçÃÒµ²ªGÃş§O - ¦^¶Ç§¹¾ãªºÅçÃÒ¸ê°T»P¿ù»~°T®§
-    /// </summary>
-    public class AuthenticationResult
-    {
-        /// <summary>ÅçÃÒ¬O§_¦¨¥\</summary>
-        public bool IsSuccess { get; set; }
-        
-        /// <summary>§¹¾ã¨Ï¥ÎªÌ¦WºÙ (Domain\Username)</summary>
-        public string FullUsername { get; set; } = string.Empty;
-        
-        /// <summary>¨Ï¥ÎªÌÅã¥Ü¦WºÙ</summary>
-        public string DisplayName { get; set; } = string.Empty;
-        
-        /// <summary>¨Ï¥ÎªÌ¹q¤l¶l¥ó</summary>
-        public string Email { get; set; } = string.Empty;
-        
-        /// <summary>¨Ï¥ÎªÌ©ÒÄİ¸s²Õ²M³æ</summary>
-        public List<string> UserGroups { get; set; } = new List<string>();
-        
-        /// <summary>¨Ï¥ÎªÌÅv­­µ¥¯Å¡]®Ú¾Ú¸s²Õ§P©w¡^</summary>
-        public string PermissionLevel { get; set; } = "Standard User";
-        
-        /// <summary>¿ù»~°T®§¡]ÅçÃÒ¥¢±Ñ®É¡^</summary>
-        public string ErrorMessage { get; set; } = string.Empty;
-        
-        /// <summary>¨Ò¥~°T®§¡]µo¥Í¨Ò¥~®É¡^</summary>
-        public string ExceptionMessage { get; set; } = string.Empty;
-    }
-
-    #endregion
-
-    #region AdUserInfo Class
-
-    /// <summary>
-    /// AD ¨Ï¥ÎªÌ¸ê°T
-    /// </summary>
-    public class AdUserInfo
-    {
-        /// <summary>¨Ï¥ÎªÌ¦WºÙ¡]SamAccountName¡^</summary>
-        public string Username { get; set; } = string.Empty;
-
-        /// <summary>Åã¥Ü¦WºÙ</summary>
-        public string DisplayName { get; set; } = string.Empty;
-
-        /// <summary>Email</summary>
-        public string? Email { get; set; }
-
-        /// <summary>¦W¦r</summary>
-        public string? GivenName { get; set; }
-
-        /// <summary>©m¤ó</summary>
-        public string? Surname { get; set; }
-
-        /// <summary>´y­z</summary>
-        public string? Description { get; set; }
-
-        /// <summary>¬O§_±Ò¥Î</summary>
-        public bool IsEnabled { get; set; } = true;
-    }
-
-    #endregion
-}
+using System;
+using System.Collections.Generic;
+using System.DirectoryServices.AccountManagement;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Stackdose.UI.Core.Services
+{
+    /// <summary>
+    /// Windows AD é©—è­‰æœå‹™
+    /// </summary>
+    /// <remarks>
+    /// <para>æä¾› Windows Active Directory ä»¥ä¸‹åŠŸèƒ½ï¼š</para>
+    /// <list type="bullet">
+    /// <item>é©—è­‰ AD ä½¿ç”¨è€…å¸³å¯†</item>
+    /// <item>å–å¾— AD ä½¿ç”¨è€…è³‡è¨Šï¼ˆé¡¯ç¤ºåç¨±ã€Emailã€ç¾¤çµ„ç­‰ï¼‰</item>
+    /// <item>æ”¯æ´ Domain èˆ‡ LocalMachine å…©ç¨®é©—è­‰æ¨¡å¼</item>
+    /// <item>è‡ªå‹•åµæ¸¬ç•¶å‰ç™»å…¥çš„ Windows ä½¿ç”¨è€…</item>
+    /// <item>æ”¯æ´ App_ ç¾¤çµ„æ¬Šé™æª¢æ¸¬ï¼ˆApp_Operatorsã€App_Instructorsã€App_Supervisorsã€App_Adminsï¼‰</item>
+    /// <item>å…§å»ºè¶…æ™‚æ§åˆ¶ï¼ˆ5ç§’ï¼‰é˜²æ­¢é©—è­‰å¡æ­»</item>
+    /// </list>
+    /// </remarks>
+    /// <example>
+    /// åŸºæœ¬ç”¨æ³•ï¼š
+    /// <code>
+    /// var adService = new AdAuthenticationService();
+    /// 
+    /// // é©—è­‰ AD ä½¿ç”¨è€…
+    /// var result = adService.Authenticate("username", "password");
+    /// if (result.IsSuccess)
+    /// {
+    ///     Console.WriteLine($"Welcome, {result.DisplayName}!");
+    ///     Console.WriteLine($"Permission: {result.PermissionLevel}");
+    ///     Console.WriteLine($"Groups: {string.Join(", ", result.UserGroups)}");
+    /// }
+    /// </code>
+    /// </example>
+    public class AdAuthenticationService
+    {
+        #region Constants
+
+        // å››å€‹ App_ ç¾¤çµ„å¸¸æ•¸
+        private const string APP_OPERATORS_GROUP = "App_Operators";
+        private const string APP_INSTRUCTORS_GROUP = "App_Instructors";
+        private const string APP_SUPERVISORS_GROUP = "App_Supervisors";
+        private const string APP_ADMINS_GROUP = "App_Admins";
+
+        // é©—è­‰è¶…æ™‚è¨­å®šï¼ˆ5ç§’ï¼‰
+        private const int VALIDATION_TIMEOUT_MS = 2000; // ?? 5000 ?? 2000
+
+        #endregion
+
+        #region Private Fields
+
+        private readonly string? _domainName;
+        private readonly ContextType _contextType;
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// å»ºæ§‹å‡½æ•¸
+        /// </summary>
+        /// <param name="domainName">AD ç¶²åŸŸåç¨±ï¼ˆnull å‰‡è‡ªå‹•åµæ¸¬ï¼‰</param>
+        /// <param name="useLocalMachine">æ˜¯å¦ä½¿ç”¨æœ¬æ©Ÿé©—è­‰ï¼ˆé è¨­ falseï¼Œä½¿ç”¨ Domainï¼‰</param>
+        public AdAuthenticationService(string? domainName = null, bool useLocalMachine = false)
+        {
+            _domainName = domainName;
+            _contextType = useLocalMachine ? ContextType.Machine : ContextType.Domain;
+
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] Initialized: Type={_contextType}, Domain={_domainName ?? "Auto-Detect"}");
+            #endif
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// é©—è­‰ä½¿ç”¨è€…å¸³å¯† - å®Œæ•´ç‰ˆæœ¬ï¼ˆå›å‚³è©³ç´°è³‡è¨Šå’Œç¾¤çµ„ï¼‰
+        /// </summary>
+        /// <param name="username">ä½¿ç”¨è€…åç¨±</param>
+        /// <param name="password">å¯†ç¢¼</param>
+        /// <param name="contextType">é©—è­‰æ¨¡å¼ï¼ˆDomain æˆ– Machineï¼‰</param>
+        /// <returns>é©—è­‰çµæœ</returns>
+        public AuthenticationResult Authenticate(string username, string password, ContextType? contextType = null)
+        {
+            AuthenticationResult result = new AuthenticationResult();
+
+            try
+            {
+                // è¼¸å…¥é©—è­‰
+                if (string.IsNullOrWhiteSpace(username))
+                {
+                    result.ErrorMessage = "ä½¿ç”¨è€…åç¨±ä¸å¯ç‚ºç©º";
+                    return result;
+                }
+
+                if (string.IsNullOrWhiteSpace(password))
+                {
+                    result.ErrorMessage = "å¯†ç¢¼ä¸å¯ç‚ºç©º";
+                    return result;
+                }
+
+                // ä½¿ç”¨ Task èˆ‡ CancellationToken å¯¦ä½œè¶…æ™‚æ©Ÿåˆ¶
+                using (var cts = new CancellationTokenSource(VALIDATION_TIMEOUT_MS))
+                {
+                    var authTask = Task.Run(() => PerformAuthentication(username, password, contextType ?? _contextType), cts.Token);
+
+                    try
+                    {
+                        // ç­‰å¾…é©—è­‰å®Œæˆæˆ–è¶…æ™‚
+                        if (authTask.Wait(VALIDATION_TIMEOUT_MS))
+                        {
+                            result = authTask.Result;
+                        }
+                        else
+                        {
+                            result.ErrorMessage = "é©—è­‰è¶…æ™‚ï¼Œè«‹æª¢æŸ¥ç¶²è·¯é€£ç·šæˆ–å¸³è™Ÿè¨­å®š";
+                            System.Diagnostics.Debug.WriteLine("[WARNING] Authentication timeout");
+                        }
+                    }
+                    catch (AggregateException ae)
+                    {
+                        // è™•ç† Task å…§éƒ¨çš„ä¾‹å¤–
+                        var innerException = ae.InnerException;
+                        result.ErrorMessage = "é©—è­‰éç¨‹ç™¼ç”ŸéŒ¯èª¤";
+                        result.ExceptionMessage = innerException?.Message ?? ae.Message;
+                        System.Diagnostics.Debug.WriteLine($"[ERROR] Authentication failed: {innerException?.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                result.ErrorMessage = "ç³»çµ±éŒ¯èª¤";
+                result.ExceptionMessage = ex.Message;
+                System.Diagnostics.Debug.WriteLine($"[ERROR] Unexpected error: {ex.Message}");
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// å¿«é€Ÿé©—è­‰ - åªå›å‚³æˆåŠŸ/å¤±æ•—ï¼ˆç°¡åŒ–ç‰ˆï¼Œä¸æä¾›è©³ç´°è³‡è¨Šï¼‰
+        /// </summary>
+        /// <param name="username">ä½¿ç”¨è€…åç¨±</param>
+        /// <param name="password">å¯†ç¢¼</param>
+        /// <returns>é©—è­‰æ˜¯å¦æˆåŠŸ</returns>
+        public bool ValidateCredentials(string username, string password)
+        {
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[AdAuthenticationService] ValidateCredentials: Empty username or password");
+                #endif
+                return false;
+            }
+
+            try
+            {
+                using (var cts = new CancellationTokenSource(VALIDATION_TIMEOUT_MS))
+                {
+                    var validationTask = Task.Run(() =>
+                    {
+                        using (PrincipalContext context = new PrincipalContext(_contextType))
+                        {
+                            return context.ValidateCredentials(username, password);
+                        }
+                    }, cts.Token);
+
+                    if (validationTask.Wait(VALIDATION_TIMEOUT_MS))
+                    {
+                        return validationTask.Result;
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("[WARNING] Validation timeout");
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ERROR] Validation failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// å–å¾— AD ä½¿ç”¨è€…è³‡è¨Š
+        /// </summary>
+        /// <param name="username">ä½¿ç”¨è€…åç¨±</param>
+        /// <returns>ä½¿ç”¨è€…è³‡è¨Šï¼ˆæ‰¾ä¸åˆ°æ™‚å›å‚³ nullï¼‰</returns>
+        public AdUserInfo? GetUserInfo(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                return null;
+
+            try
+            {
+                using (var context = CreatePrincipalContext())
+                using (var user = UserPrincipal.FindByIdentity(context, username))
+                {
+                    if (user == null)
+                    {
+                        #if DEBUG
+                        System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] GetUserInfo: User '{username}' not found");
+                        #endif
+                        return null;
+                    }
+
+                    var userInfo = new AdUserInfo
+                    {
+                        Username = user.SamAccountName ?? username,
+                        DisplayName = user.DisplayName ?? username,
+                        Email = user.EmailAddress,
+                        GivenName = user.GivenName,
+                        Surname = user.Surname,
+                        Description = user.Description,
+                        IsEnabled = user.Enabled ?? true
+                    };
+
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] GetUserInfo: {username} => {userInfo.DisplayName}");
+                    #endif
+
+                    return userInfo;
+                }
+            }
+            catch (Exception ex)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] GetUserInfo Error: {ex.Message}");
+                #endif
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// å–å¾—ç•¶å‰ç™»å…¥çš„ Windows ä½¿ç”¨è€…åç¨±
+        /// </summary>
+        /// <returns>ä½¿ç”¨è€…åç¨±ï¼ˆä¸å« Domainï¼‰</returns>
+        public static string GetCurrentWindowsUser()
+        {
+            try
+            {
+                string fullName = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+                
+                // ç§»é™¤ Domain å‰ç¶´ï¼ˆä¾‹å¦‚ï¼šDOMAIN\username -> usernameï¼‰
+                if (fullName.Contains("\\"))
+                {
+                    return fullName.Split('\\').Last();
+                }
+                
+                return fullName;
+            }
+            catch
+            {
+                return Environment.UserName;
+            }
+        }
+
+        /// <summary>
+        /// å–å¾—ç•¶å‰ç™»å…¥çš„ Windows ä½¿ç”¨è€…å®Œæ•´åç¨±ï¼ˆå« Domainï¼‰
+        /// </summary>
+        /// <returns>å®Œæ•´ä½¿ç”¨è€…åç¨±ï¼ˆä¾‹å¦‚ï¼šDOMAIN\usernameï¼‰</returns>
+        public static string GetCurrentWindowsUserWithDomain()
+        {
+            try
+            {
+                return System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+            }
+            catch
+            {
+                return $"{Environment.UserDomainName}\\{Environment.UserName}";
+            }
+        }
+
+        /// <summary>
+        /// æª¢æŸ¥ AD æœå‹™æ˜¯å¦å¯ç”¨
+        /// </summary>
+        /// <returns>æ˜¯å¦å¯ç”¨</returns>
+        public bool IsAvailable()
+        {
+            try
+            {
+                using (var context = CreatePrincipalContext())
+                {
+                    // å˜—è©¦æŸ¥è©¢ç•¶å‰ä½¿ç”¨è€…ï¼Œä»¥æ¸¬è©¦ AD é€£ç·š
+                    var currentUser = GetCurrentWindowsUser();
+                    using (var user = UserPrincipal.FindByIdentity(context, currentUser))
+                    {
+                        return user != null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] IsAvailable Error: {ex.Message}");
+                #endif
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// æª¢æŸ¥æ˜¯å¦åœ¨ç¶²åŸŸç’°å¢ƒä¸­
+        /// </summary>
+        /// <returns>å¦‚æœåœ¨ç¶²åŸŸç’°å¢ƒå‰‡å›å‚³ trueï¼Œå¦å‰‡å›å‚³ false</returns>
+        public static bool IsInDomain()
+        {
+            try
+            {
+                return !string.IsNullOrEmpty(Environment.UserDomainName) &&
+                       !Environment.UserDomainName.Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// å–å¾—å»ºè­°çš„é©—è­‰æ¨¡å¼ - æ ¹æ“šç’°å¢ƒè‡ªå‹•åˆ¤æ–·
+        /// </summary>
+        /// <returns>å»ºè­°çš„ ContextType</returns>
+        public static ContextType GetRecommendedContextType()
+        {
+            return IsInDomain() ? ContextType.Domain : ContextType.Machine;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// åŸ·è¡Œé©—è­‰çš„æ ¸å¿ƒæ–¹æ³•ï¼ˆèƒŒæ™¯åŸ·è¡Œï¼‰
+        /// </summary>
+        private AuthenticationResult PerformAuthentication(string username, string password, ContextType contextType)
+        {
+            AuthenticationResult result = new AuthenticationResult();
+
+            try
+            {
+                // å»ºç«‹ Principal Context
+                using (PrincipalContext context = new PrincipalContext(contextType))
+                {
+                    // å¿«é€Ÿé©—è­‰å¸³å¯†
+                    System.Diagnostics.Debug.WriteLine($"[INFO] Validating credentials for user: {username}");
+                    
+                    bool isValid = context.ValidateCredentials(username, password);
+
+                    if (isValid)
+                    {
+                        System.Diagnostics.Debug.WriteLine("[INFO] Credentials validated successfully");
+
+                        // é©—è­‰æˆåŠŸï¼Œå–å¾—ä½¿ç”¨è€…è©³ç´°è³‡è¨Š
+                        using (UserPrincipal? userPrincipal = UserPrincipal.FindByIdentity(context, username))
+                        {
+                            if (userPrincipal != null)
+                            {
+                                // å–å¾—ç¶²åŸŸæˆ–æ©Ÿå™¨åç¨±
+                                string domain = contextType == ContextType.Domain
+                                    ? Environment.UserDomainName
+                                    : Environment.MachineName;
+
+                                // è¨­å®šé©—è­‰çµæœ
+                                result.IsSuccess = true;
+                                result.FullUsername = $"{domain}\\{userPrincipal.SamAccountName}";
+                                result.DisplayName = userPrincipal.DisplayName ?? username;
+                                result.Email = userPrincipal.EmailAddress ?? "N/A";
+                                
+                                // å–å¾—ä½¿ç”¨è€…ç¾¤çµ„è³‡è¨Š
+                                result.UserGroups = GetUserGroups(userPrincipal);
+                                
+                                // åˆ¤æ–·æ¬Šé™ç­‰ç´š
+                                result.PermissionLevel = DeterminePermissionLevel(result.UserGroups);
+
+                                System.Diagnostics.Debug.WriteLine($"[INFO] User authenticated: {result.FullUsername}");
+                                System.Diagnostics.Debug.WriteLine($"[INFO] Permission Level: {result.PermissionLevel}");
+                                System.Diagnostics.Debug.WriteLine($"[INFO] Groups: {string.Join(", ", result.UserGroups)}");
+                            }
+                            else
+                            {
+                                // å‚™æ´ï¼šç„¡æ³•å–å¾— UserPrincipal æ™‚ä½¿ç”¨åŸºæœ¬è³‡è¨Š
+                                result.IsSuccess = true;
+                                result.FullUsername = $"{Environment.MachineName}\\{username}";
+                                result.DisplayName = username;
+                                result.Email = "N/A";
+                                result.UserGroups = new List<string> { "Users" };
+                                result.PermissionLevel = "Standard User";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // é©—è­‰å¤±æ•— - å¿«é€Ÿå›å‚³
+                        result.ErrorMessage = "å¸³è™Ÿæˆ–å¯†ç¢¼éŒ¯èª¤";
+                        System.Diagnostics.Debug.WriteLine($"[WARNING] Invalid credentials for user: {username}");
+                    }
+                }
+            }
+            catch (PrincipalServerDownException ex)
+            {
+                result.ErrorMessage = "ç„¡æ³•é€£ç·šé©—è­‰ä¼ºæœå™¨";
+                result.ExceptionMessage = ex.Message;
+                System.Diagnostics.Debug.WriteLine($"[ERROR] Server down: {ex.Message}");
+            }
+            catch (PrincipalOperationException ex)
+            {
+                result.ErrorMessage = "é©—è­‰æ“ä½œéŒ¯èª¤ï¼Œè«‹æª¢æŸ¥å¸³è™Ÿè¨­å®š";
+                result.ExceptionMessage = ex.Message;
+                System.Diagnostics.Debug.WriteLine($"[ERROR] Operation error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                result.ErrorMessage = "ç³»çµ±éŒ¯èª¤";
+                result.ExceptionMessage = ex.Message;
+                System.Diagnostics.Debug.WriteLine($"[ERROR] Unexpected error: {ex.Message}");
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// å–å¾—ä½¿ç”¨è€…æ‰€å±¬çš„ç¾¤çµ„æ¸…å–®
+        /// </summary>
+        /// <param name="userPrincipal">ä½¿ç”¨è€…ä¸»é«”</param>
+        /// <returns>ç¾¤çµ„åç¨±æ¸…å–®</returns>
+        private List<string> GetUserGroups(UserPrincipal userPrincipal)
+        {
+            List<string> groups = new List<string>();
+
+            try
+            {
+                // å–å¾—ä½¿ç”¨è€…æ‰€å±¬çš„ç¾¤çµ„
+                var groupCollection = userPrincipal.GetGroups();
+                
+                foreach (Principal group in groupCollection)
+                {
+                    groups.Add(group.Name);
+                }
+
+                // å¦‚æœæ²’æœ‰å–å¾—ä»»ä½•ç¾¤çµ„ï¼Œè‡³å°‘åŠ å…¥é è¨­ç¾¤çµ„
+                if (groups.Count == 0)
+                {
+                    groups.Add("Users");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[WARNING] Failed to retrieve user groups: {ex.Message}");
+                groups.Add("Users"); // é è¨­ç¾¤çµ„
+            }
+
+            return groups;
+        }
+
+        /// <summary>
+        /// æ ¹æ“šç¾¤çµ„æˆå“¡é—œä¿‚åˆ¤æ–·ä½¿ç”¨è€…çš„æ¬Šé™ç­‰ç´š
+        /// </summary>
+        /// <param name="groups">ä½¿ç”¨è€…æ‰€å±¬ç¾¤çµ„</param>
+        /// <returns>æ¬Šé™ç­‰ç´šæè¿°</returns>
+        private string DeterminePermissionLevel(List<string> groups)
+        {
+            // å°‡ç¾¤çµ„åç¨±è½‰ç‚ºå°å¯«ä»¥ä¾¿å¿½ç•¥å¤§å°å¯«å·®ç•°
+            var groupsLower = groups.Select(g => g.ToLower()).ToList();
+
+            // åˆ¤æ–·æ¬Šé™ç­‰ç´šï¼ˆå¾é«˜åˆ°ä½ï¼‰
+            // L4: App_Admins
+            if (groupsLower.Contains(APP_ADMINS_GROUP.ToLower()))
+            {
+                return "Admin (L4)";
+            }
+            // L3: App_Supervisors
+            else if (groupsLower.Contains(APP_SUPERVISORS_GROUP.ToLower()))
+            {
+                return "Supervisor (L3)";
+            }
+            // L2: App_Instructors
+            else if (groupsLower.Contains(APP_INSTRUCTORS_GROUP.ToLower()))
+            {
+                return "Instructor (L2)";
+            }
+            // L1: App_Operators
+            else if (groupsLower.Contains(APP_OPERATORS_GROUP.ToLower()))
+            {
+                return "Operator (L1)";
+            }
+            // Domain/Local Admins
+            else if (groupsLower.Any(g => g.Contains("domain admins") || g.Contains("enterprise admins")))
+            {
+                return "Domain Administrator";
+            }
+            else if (groupsLower.Any(g => g.Contains("administrators") || g.Contains("admin")))
+            {
+                return "Administrator";
+            }
+            // Standard Users
+            else if (groupsLower.Any(g => g.Contains("users")))
+            {
+                return "Standard User";
+            }
+            else
+            {
+                return "Standard User"; // é è¨­æ¬Šé™
+            }
+        }
+
+        /// <summary>
+        /// å»ºç«‹ PrincipalContext
+        /// </summary>
+        private PrincipalContext CreatePrincipalContext()
+        {
+            try
+            {
+                if (_contextType == ContextType.Domain && !string.IsNullOrWhiteSpace(_domainName))
+                {
+                    return new PrincipalContext(ContextType.Domain, _domainName);
+                }
+                else
+                {
+                    return new PrincipalContext(_contextType);
+                }
+            }
+            catch (Exception ex)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] CreatePrincipalContext Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] Falling back to LocalMachine context");
+                #endif
+                
+                // Fallback åˆ°æœ¬æ©Ÿé©—è­‰
+                return new PrincipalContext(ContextType.Machine);
+            }
+        }
+
+        #endregion
+    }
+
+    #region AuthenticationResult Class
+
+    /// <summary>
+    /// é©—è­‰çµæœé¡åˆ¥ - å›å‚³å®Œæ•´çš„é©—è­‰è³‡è¨Šèˆ‡éŒ¯èª¤è¨Šæ¯
+    /// </summary>
+    public class AuthenticationResult
+    {
+        /// <summary>é©—è­‰æ˜¯å¦æˆåŠŸ</summary>
+        public bool IsSuccess { get; set; }
+        
+        /// <summary>å®Œæ•´ä½¿ç”¨è€…åç¨± (Domain\Username)</summary>
+        public string FullUsername { get; set; } = string.Empty;
+        
+        /// <summary>ä½¿ç”¨è€…é¡¯ç¤ºåç¨±</summary>
+        public string DisplayName { get; set; } = string.Empty;
+        
+        /// <summary>ä½¿ç”¨è€…é›»å­éƒµä»¶</summary>
+        public string Email { get; set; } = string.Empty;
+        
+        /// <summary>ä½¿ç”¨è€…æ‰€å±¬ç¾¤çµ„æ¸…å–®</summary>
+        public List<string> UserGroups { get; set; } = new List<string>();
+        
+        /// <summary>ä½¿ç”¨è€…æ¬Šé™ç­‰ç´šï¼ˆæ ¹æ“šç¾¤çµ„åˆ¤å®šï¼‰</summary>
+        public string PermissionLevel { get; set; } = "Standard User";
+        
+        /// <summary>éŒ¯èª¤è¨Šæ¯ï¼ˆé©—è­‰å¤±æ•—æ™‚ï¼‰</summary>
+        public string ErrorMessage { get; set; } = string.Empty;
+        
+        /// <summary>ä¾‹å¤–è¨Šæ¯ï¼ˆç™¼ç”Ÿä¾‹å¤–æ™‚ï¼‰</summary>
+        public string ExceptionMessage { get; set; } = string.Empty;
+    }
+
+    #endregion
+
+    #region AdUserInfo Class
+
+    /// <summary>
+    /// AD ä½¿ç”¨è€…è³‡è¨Š
+    /// </summary>
+    public class AdUserInfo
+    {
+        /// <summary>ä½¿ç”¨è€…åç¨±ï¼ˆSamAccountNameï¼‰</summary>
+        public string Username { get; set; } = string.Empty;
+
+        /// <summary>é¡¯ç¤ºåç¨±</summary>
+        public string DisplayName { get; set; } = string.Empty;
+
+        /// <summary>Email</summary>
+        public string? Email { get; set; }
+
+        /// <summary>åå­—</summary>
+        public string? GivenName { get; set; }
+
+        /// <summary>å§“æ°</summary>
+        public string? Surname { get; set; }
+
+        /// <summary>æè¿°</summary>
+        public string? Description { get; set; }
+
+        /// <summary>æ˜¯å¦å•Ÿç”¨</summary>
+        public bool IsEnabled { get; set; } = true;
+    }
+
+    #endregion
+}

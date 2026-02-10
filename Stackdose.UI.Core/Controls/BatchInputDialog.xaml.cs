@@ -1,119 +1,119 @@
-using System.Windows;
-using System.Windows.Input;
-
-namespace Stackdose.UI.Core.Controls
-{
-    /// <summary>
-    /// Batch Input Dialog - §å¦¸½s¸¹¿é¤J¹ï¸Ü®Ø
-    /// </summary>
-    /// <remarks>
-    /// ¥Î©ó¦b±Ò°Ê»sµ{«e¿é¤J§å¦¸½s¸¹
-    /// ²Å¦X FDA 21 CFR Part 11 ³W½d­n¨D
-    /// </remarks>
-    public partial class BatchInputDialog : Window
-    {
-        /// <summary>
-        /// ¨ú±o¿é¤Jªº§å¦¸½s¸¹
-        /// </summary>
-        public string BatchNumber { get; private set; } = string.Empty;
-
-        /// <summary>
-        /// «Øºc¨ç¼Æ
-        /// </summary>
-        public BatchInputDialog()
-        {
-            InitializeComponent();
-            
-            // ¦Û°Ê»EµJ¨ì¿é¤J®Ø
-            Loaded += (s, e) =>
-            {
-                BatchNumberTextBox.Focus();
-                BatchNumberTextBox.SelectionStart = BatchNumberTextBox.Text.Length;
-            };
-        }
-
-        /// <summary>
-        /// «Øºc¨ç¼Æ¡]¦Û­q¹w³]§å¦¸½s¸¹¡^
-        /// </summary>
-        /// <param name="defaultBatchNumber">¹w³]§å¦¸½s¸¹</param>
-        public BatchInputDialog(string defaultBatchNumber) : this()
-        {
-            if (!string.IsNullOrWhiteSpace(defaultBatchNumber))
-            {
-                BatchNumberTextBox.Text = defaultBatchNumber;
-            }
-        }
-
-        /// <summary>
-        /// ½T©w«ö¶sÂIÀ»¨Æ¥ó
-        /// </summary>
-        private void ConfirmButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (ValidateInput())
-            {
-                BatchNumber = BatchNumberTextBox.Text.Trim();
-                DialogResult = true;
-                Close();
-            }
-        }
-
-        /// <summary>
-        /// ¨ú®ø«ö¶sÂIÀ»¨Æ¥ó
-        /// </summary>
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = false;
-            Close();
-        }
-
-        /// <summary>
-        /// ¿é¤J®Ø«öÁä¨Æ¥ó¡]¤ä´© Enter ½T»{¡^
-        /// </summary>
-        private void BatchNumberTextBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                ConfirmButton_Click(sender, e);
-            }
-            else if (e.Key == Key.Escape)
-            {
-                CancelButton_Click(sender, e);
-            }
-        }
-
-        /// <summary>
-        /// ÅçÃÒ¿é¤J
-        /// </summary>
-        /// <returns>¬O§_¦³®Ä</returns>
-        private bool ValidateInput()
-        {
-            string input = BatchNumberTextBox.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(input))
-            {
-                MessageBox.Show(
-                    "Batch number cannot be empty!\n§å¦¸½s¸¹¤£¯à¬°ªÅ¡I",
-                    "Validation Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning
-                );
-                BatchNumberTextBox.Focus();
-                return false;
-            }
-
-            if (input.Length < 5)
-            {
-                MessageBox.Show(
-                    "Batch number must be at least 5 characters!\n§å¦¸½s¸¹¦Ü¤Ö»İ­n 5 ­Ó¦r¤¸¡I",
-                    "Validation Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning
-                );
-                BatchNumberTextBox.Focus();
-                return false;
-            }
-
-            return true;
-        }
-    }
-}
+using System.Windows;
+using System.Windows.Input;
+
+namespace Stackdose.UI.Core.Controls
+{
+    /// <summary>
+    /// Batch Input Dialog - æ‰¹æ¬¡ç·¨è™Ÿè¼¸å…¥å°è©±æ¡†
+    /// </summary>
+    /// <remarks>
+    /// ç”¨æ–¼åœ¨å•Ÿå‹•è£½ç¨‹å‰è¼¸å…¥æ‰¹æ¬¡ç·¨è™Ÿ
+    /// ç¬¦åˆ FDA 21 CFR Part 11 è¦ç¯„è¦æ±‚
+    /// </remarks>
+    public partial class BatchInputDialog : Window
+    {
+        /// <summary>
+        /// å–å¾—è¼¸å…¥çš„æ‰¹æ¬¡ç·¨è™Ÿ
+        /// </summary>
+        public string BatchNumber { get; private set; } = string.Empty;
+
+        /// <summary>
+        /// å»ºæ§‹å‡½æ•¸
+        /// </summary>
+        public BatchInputDialog()
+        {
+            InitializeComponent();
+            
+            // è‡ªå‹•èšç„¦åˆ°è¼¸å…¥æ¡†
+            Loaded += (s, e) =>
+            {
+                BatchNumberTextBox.Focus();
+                BatchNumberTextBox.SelectionStart = BatchNumberTextBox.Text.Length;
+            };
+        }
+
+        /// <summary>
+        /// å»ºæ§‹å‡½æ•¸ï¼ˆè‡ªè¨‚é è¨­æ‰¹æ¬¡ç·¨è™Ÿï¼‰
+        /// </summary>
+        /// <param name="defaultBatchNumber">é è¨­æ‰¹æ¬¡ç·¨è™Ÿ</param>
+        public BatchInputDialog(string defaultBatchNumber) : this()
+        {
+            if (!string.IsNullOrWhiteSpace(defaultBatchNumber))
+            {
+                BatchNumberTextBox.Text = defaultBatchNumber;
+            }
+        }
+
+        /// <summary>
+        /// ç¢ºå®šæŒ‰éˆ•é»æ“Šäº‹ä»¶
+        /// </summary>
+        private void ConfirmButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ValidateInput())
+            {
+                BatchNumber = BatchNumberTextBox.Text.Trim();
+                DialogResult = true;
+                Close();
+            }
+        }
+
+        /// <summary>
+        /// å–æ¶ˆæŒ‰éˆ•é»æ“Šäº‹ä»¶
+        /// </summary>
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+            Close();
+        }
+
+        /// <summary>
+        /// è¼¸å…¥æ¡†æŒ‰éµäº‹ä»¶ï¼ˆæ”¯æ´ Enter ç¢ºèªï¼‰
+        /// </summary>
+        private void BatchNumberTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                ConfirmButton_Click(sender, e);
+            }
+            else if (e.Key == Key.Escape)
+            {
+                CancelButton_Click(sender, e);
+            }
+        }
+
+        /// <summary>
+        /// é©—è­‰è¼¸å…¥
+        /// </summary>
+        /// <returns>æ˜¯å¦æœ‰æ•ˆ</returns>
+        private bool ValidateInput()
+        {
+            string input = BatchNumberTextBox.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                MessageBox.Show(
+                    "Batch number cannot be empty!\næ‰¹æ¬¡ç·¨è™Ÿä¸èƒ½ç‚ºç©ºï¼",
+                    "Validation Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                BatchNumberTextBox.Focus();
+                return false;
+            }
+
+            if (input.Length < 5)
+            {
+                MessageBox.Show(
+                    "Batch number must be at least 5 characters!\næ‰¹æ¬¡ç·¨è™Ÿè‡³å°‘éœ€è¦ 5 å€‹å­—å…ƒï¼",
+                    "Validation Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                BatchNumberTextBox.Focus();
+                return false;
+            }
+
+            return true;
+        }
+    }
+}

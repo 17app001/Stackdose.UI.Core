@@ -1,410 +1,410 @@
-using System;
-using System.Windows;
-using System.Windows.Controls;
-using Stackdose.Abstractions.Hardware;
-using Stackdose.UI.Core.Helpers;
-using Stackdose.Abstractions.Logging;
-
-namespace Stackdose.UI.Core.Controls
-{
-    /// <summary>
-    /// PlcText - ¥i½s¿èªº PLC °Ñ¼Æ±±¥ó
-    /// Åã¥Ü Label + TextBox + Apply «ö¶s
-    /// </summary>
-    public partial class PlcText : UserControl
-    {
-        /// <summary>
-        /// ?? °lÂÜ­q¾\ªº PlcStatus ¹ê¨Ò
-        /// </summary>
-        private PlcStatus? _subscribedStatus;
-        
-        /// <summary>
-        /// ?? °O¿ıÂÂ­È¡A¥Î©ó Audit Trail
-        /// </summary>
-        private string _previousValue = "0";
-
-        public PlcText()
-        {
-            InitializeComponent();
-            Loaded += PlcText_Loaded;
-            Unloaded += PlcText_Unloaded;
-        }
-
-        #region Dependency Properties
-
-        /// <summary>
-        /// Label ¤å¦r
-        /// </summary>
-        public static readonly DependencyProperty LabelProperty =
-            DependencyProperty.Register(
-                nameof(Label),
-                typeof(string),
-                typeof(PlcText),
-                new PropertyMetadata("Parameter"));
-
-        public string Label
-        {
-            get => (string)GetValue(LabelProperty);
-            set => SetValue(LabelProperty, value);
-        }
-
-        /// <summary>
-        /// PLC Address (¨Ò¦p: "D100")
-        /// </summary>
-        public static readonly DependencyProperty AddressProperty =
-            DependencyProperty.Register(
-                nameof(Address),
-                typeof(string),
-                typeof(PlcText),
-                new PropertyMetadata(string.Empty, OnAddressChanged));
-
-        public string Address
-        {
-            get => (string)GetValue(AddressProperty);
-            set => SetValue(AddressProperty, value);
-        }
-
-        /// <summary>
-        /// ·í«e­È
-        /// </summary>
-        public static readonly DependencyProperty ValueProperty =
-            DependencyProperty.Register(
-                nameof(Value),
-                typeof(string),
-                typeof(PlcText),
-                new PropertyMetadata("0", null, CoerceValue));
-
-        public string Value
-        {
-            get => (string)GetValue(ValueProperty);
-            set => SetValue(ValueProperty, value);
-        }
-
-        /// <summary>
-        /// PLC Manager ¹ê¨Ò¡]¥i¿ï¡^
-        /// ¦pªG¤£³]©w¡A·|¦Û°Ê±q PlcContext ¨ú±o
-        /// </summary>
-        public static readonly DependencyProperty PlcManagerProperty =
-            DependencyProperty.Register(
-                nameof(PlcManager),
-                typeof(IPlcManager),
-                typeof(PlcText),
-                new PropertyMetadata(null));
-
-        public IPlcManager? PlcManager
-        {
-            get => (IPlcManager?)GetValue(PlcManagerProperty);
-            set => SetValue(PlcManagerProperty, value);
-        }
-
-        /// <summary>
-        /// ?? ¬O§_Åã¥Ü¦¨¥\°T®§¡]¹w³] true¡^
-        /// </summary>
-        public static readonly DependencyProperty ShowSuccessMessageProperty =
-            DependencyProperty.Register(
-                nameof(ShowSuccessMessage),
-                typeof(bool),
-                typeof(PlcText),
-                new PropertyMetadata(true));
-
-        public bool ShowSuccessMessage
-        {
-            get => (bool)GetValue(ShowSuccessMessageProperty);
-            set => SetValue(ShowSuccessMessageProperty, value);
-        }
-
-        /// <summary>
-        /// ?? ¬O§_±Ò¥Î Audit Trail °O¿ı¡]¹w³] true¡^
-        /// </summary>
-        public static readonly DependencyProperty EnableAuditTrailProperty =
-            DependencyProperty.Register(
-                nameof(EnableAuditTrail),
-                typeof(bool),
-                typeof(PlcText),
-                new PropertyMetadata(true));
-
-        public bool EnableAuditTrail
-        {
-            get => (bool)GetValue(EnableAuditTrailProperty);
-            set => SetValue(EnableAuditTrailProperty, value);
-        }
-
-        /// <summary>
-        /// ValueApplied ¨Æ¥ó - ·í¨Ï¥ÎªÌ«ö¤U Apply «ö¶s®ÉÄ²µo
-        /// </summary>
-        public event EventHandler<ValueAppliedEventArgs>? ValueApplied;
-
-        #endregion
-
-        #region Private Methods
-
-        private static object CoerceValue(DependencyObject d, object baseValue)
-        {
-            return baseValue ?? "0";
-        }
-
-        private static void OnAddressChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is PlcText plcText && !string.IsNullOrEmpty(e.NewValue?.ToString()))
-            {
-                plcText.ReadFromPlc();
-            }
-        }
-
-        private void PlcText_Loaded(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine($"[PlcText] Loaded: {Label} ({Address})");
-            
-            SubscribeToGlobalStatus();
-            
-            if (!string.IsNullOrEmpty(Address))
-            {
-                ReadFromPlc();
-            }
-        }
-
-        private void PlcText_Unloaded(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine($"[PlcText] Unloaded: {Label} ({Address})");
-            UnsubscribeFromStatus();
-        }
-
-        private void SubscribeToGlobalStatus()
-        {
-            UnsubscribeFromStatus();
-            
-            var globalStatus = PlcContext.GlobalStatus;
-            if (globalStatus != null)
-            {
-                _subscribedStatus = globalStatus;
-                _subscribedStatus.ConnectionEstablished += OnPlcConnectionEstablished;
-                _subscribedStatus.ScanUpdated += OnScanUpdated;
-                
-                System.Diagnostics.Debug.WriteLine($"[PlcText] Subscribed to PlcStatus: {Label} ({Address}), IsConnected={globalStatus.CurrentManager?.IsConnected}");
-            }
-        }
-
-        private void UnsubscribeFromStatus()
-        {
-            if (_subscribedStatus != null)
-            {
-                _subscribedStatus.ConnectionEstablished -= OnPlcConnectionEstablished;
-                _subscribedStatus.ScanUpdated -= OnScanUpdated;
-                _subscribedStatus = null;
-            }
-        }
-
-        private void OnPlcConnectionEstablished(IPlcManager manager)
-        {
-            try
-            {
-                if (Dispatcher.HasShutdownStarted) return;
-                
-                Dispatcher.Invoke(() =>
-                {
-                    if (!Dispatcher.HasShutdownStarted && !string.IsNullOrEmpty(Address))
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[PlcText] Connection established, reading value: {Label} ({Address})");
-                        ReadFromPlc();
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[PlcText] OnPlcConnectionEstablished error: {ex.Message}");
-            }
-        }
-
-        private void OnScanUpdated(IPlcManager manager)
-        {
-            // PlcText ³q±`¤£»İ­n¨C¦¸±½´y³£§ó·s
-        }
-
-        private void ReadFromPlc()
-        {
-            try
-            {
-                var manager = PlcManager ?? PlcContext.GlobalStatus?.CurrentManager;
-                
-                System.Diagnostics.Debug.WriteLine($"[PlcText] ReadFromPlc: {Label} ({Address}) - Manager={manager != null}, IsConnected={manager?.IsConnected}");
-                
-                if (manager == null || !manager.IsConnected || string.IsNullOrEmpty(Address))
-                {
-                    return;
-                }
-
-                short? readValue = manager.ReadWord(Address);
-                if (readValue.HasValue)
-                {
-                    Value = readValue.Value.ToString();
-                    _previousValue = Value;  // ?? °O¿ıªì©l­È
-                    System.Diagnostics.Debug.WriteLine($"[PlcText] Read success: {Label} ({Address}) = {Value}");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"[PlcText] Read returned null: {Label} ({Address})");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[PlcText] ReadFromPlc Error: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Apply Button Click Handler
-        /// </summary>
-        private async void ApplyButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // ÅçÃÒ¿é¤J
-                if (!int.TryParse(Value, out int intValue))
-                {
-                    CyberMessageBox.Show(
-                        $"Invalid value for {Label}. Please enter a valid number.",
-                        "Invalid Input",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                    return;
-                }
-
-                // ?? °O¿ıÂÂ­È¡]¥Î©ó Audit Trail¡^
-                string oldValue = _previousValue;
-                string newValue = intValue.ToString();
-
-                // ¼g¤J PLC
-                bool writeSuccess = false;
-                var manager = PlcManager ?? PlcContext.GlobalStatus?.CurrentManager;
-                
-                System.Diagnostics.Debug.WriteLine($"[PlcText] ApplyButton_Click: {Label} ({Address}) = {intValue}, Manager={manager != null}, IsConnected={manager?.IsConnected}");
-                
-                if (manager != null && manager.IsConnected && !string.IsNullOrEmpty(Address))
-                {
-                    string writeCommand = $"{Address},{intValue}";
-                    System.Diagnostics.Debug.WriteLine($"[PlcText] Write command: {writeCommand}");
-                    
-                    writeSuccess = await manager.WriteAsync(writeCommand);
-                    
-                    System.Diagnostics.Debug.WriteLine($"[PlcText] Write result: {writeSuccess}");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"[PlcText] Cannot write - PLC not connected");
-                }
-
-                // Ä²µo¨Æ¥ó
-                var args = new ValueAppliedEventArgs(Address, intValue, writeSuccess);
-                ValueApplied?.Invoke(this, args);
-
-                // ?? °O¿ı¤é»x©MÅã¥Ü°T®§
-                if (writeSuccess)
-                {
-                    // ?? §ó·s _previousValue
-                    _previousValue = newValue;
-
-                    // ?? °O¿ı System Log
-                    ComplianceContext.LogSystem(
-                        $"[PlcText] {Label} ({Address}) set to {intValue}",
-                        LogLevel.Success,
-                        showInUi: true);
-
-                    // ?? °O¿ı Audit Trail¡]FDA 21 CFR Part 11 ¦X³W¡^
-                    if (EnableAuditTrail)
-                    {
-                        string userId = SecurityContext.CurrentSession?.CurrentUserName ?? "Unknown";
-                        string batchId = ProcessContext.BatchNumber > 0 ? ProcessContext.BatchNumber.ToString() : "";
-                        
-                        ComplianceContext.LogAuditTrail(
-                            deviceName: Label,
-                            address: Address,
-                            oldValue: oldValue,
-                            newValue: newValue,
-                            reason: "Parameter Change",
-                            parameter: $"User: {userId}",
-                            batchId: batchId,
-                            showInUi: true
-                        );
-                        
-                        // ?? ¥ß§Y¨ê·s¡A½T«O Audit Trail ¼g¤J¸ê®Æ®w
-                        ComplianceContext.FlushLogs();
-                    }
-
-                    // ?? Åã¥Ü¦¨¥\°T®§
-                    if (ShowSuccessMessage)
-                    {
-                        CyberMessageBox.Show(
-                            $"{Label} successfully updated to {intValue}",
-                            "Write Success",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-                    }
-                }
-                else
-                {
-                    // ?? °O¿ı¥¢±Ñ
-                    ComplianceContext.LogSystem(
-                        $"[PlcText] Failed to write {Label} ({Address}) - PLC not connected or write failed",
-                        LogLevel.Warning,
-                        showInUi: true);
-
-                    // ?? °O¿ı Audit Trail¡]¥¢±Ñ¤]­n°O¿ı¡^
-                    if (EnableAuditTrail)
-                    {
-                        string userId = SecurityContext.CurrentSession?.CurrentUserName ?? "Unknown";
-                        string batchId = ProcessContext.BatchNumber > 0 ? ProcessContext.BatchNumber.ToString() : "";
-                        
-                        ComplianceContext.LogAuditTrail(
-                            deviceName: Label,
-                            address: Address,
-                            oldValue: oldValue,
-                            newValue: $"{newValue} (FAILED)",
-                            reason: "Parameter Change Failed",
-                            parameter: $"User: {userId}",
-                            batchId: batchId,
-                            showInUi: true
-                        );
-                        
-                        // ?? ¥ß§Y¨ê·s¡A½T«O Audit Trail ¼g¤J¸ê®Æ®w
-                        ComplianceContext.FlushLogs();
-                    }
-
-                    CyberMessageBox.Show(
-                        $"Failed to write {Label} to PLC.\nPlease check PLC connection.",
-                        "Write Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[PlcText] ApplyButton_Click Error: {ex.Message}");
-                
-                CyberMessageBox.Show(
-                    $"Error applying value:\n{ex.Message}",
-                    "Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
-        }
-
-        #endregion
-    }
-
-    /// <summary>
-    /// ValueApplied Event Args
-    /// </summary>
-    public class ValueAppliedEventArgs : EventArgs
-    {
-        public string Address { get; }
-        public int Value { get; }
-        public bool WriteSuccess { get; }
-
-        public ValueAppliedEventArgs(string address, int value, bool writeSuccess)
-        {
-            Address = address;
-            Value = value;
-            WriteSuccess = writeSuccess;
-        }
-    }
-}
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using Stackdose.Abstractions.Hardware;
+using Stackdose.UI.Core.Helpers;
+using Stackdose.Abstractions.Logging;
+
+namespace Stackdose.UI.Core.Controls
+{
+    /// <summary>
+    /// PlcText - å¯ç·¨è¼¯çš„ PLC åƒæ•¸æ§ä»¶
+    /// é¡¯ç¤º Label + TextBox + Apply æŒ‰éˆ•
+    /// </summary>
+    public partial class PlcText : UserControl
+    {
+        /// <summary>
+        /// ?? è¿½è¹¤è¨‚é–±çš„ PlcStatus å¯¦ä¾‹
+        /// </summary>
+        private PlcStatus? _subscribedStatus;
+        
+        /// <summary>
+        /// ?? è¨˜éŒ„èˆŠå€¼ï¼Œç”¨æ–¼ Audit Trail
+        /// </summary>
+        private string _previousValue = "0";
+
+        public PlcText()
+        {
+            InitializeComponent();
+            Loaded += PlcText_Loaded;
+            Unloaded += PlcText_Unloaded;
+        }
+
+        #region Dependency Properties
+
+        /// <summary>
+        /// Label æ–‡å­—
+        /// </summary>
+        public static readonly DependencyProperty LabelProperty =
+            DependencyProperty.Register(
+                nameof(Label),
+                typeof(string),
+                typeof(PlcText),
+                new PropertyMetadata("Parameter"));
+
+        public string Label
+        {
+            get => (string)GetValue(LabelProperty);
+            set => SetValue(LabelProperty, value);
+        }
+
+        /// <summary>
+        /// PLC Address (ä¾‹å¦‚: "D100")
+        /// </summary>
+        public static readonly DependencyProperty AddressProperty =
+            DependencyProperty.Register(
+                nameof(Address),
+                typeof(string),
+                typeof(PlcText),
+                new PropertyMetadata(string.Empty, OnAddressChanged));
+
+        public string Address
+        {
+            get => (string)GetValue(AddressProperty);
+            set => SetValue(AddressProperty, value);
+        }
+
+        /// <summary>
+        /// ç•¶å‰å€¼
+        /// </summary>
+        public static readonly DependencyProperty ValueProperty =
+            DependencyProperty.Register(
+                nameof(Value),
+                typeof(string),
+                typeof(PlcText),
+                new PropertyMetadata("0", null, CoerceValue));
+
+        public string Value
+        {
+            get => (string)GetValue(ValueProperty);
+            set => SetValue(ValueProperty, value);
+        }
+
+        /// <summary>
+        /// PLC Manager å¯¦ä¾‹ï¼ˆå¯é¸ï¼‰
+        /// å¦‚æœä¸è¨­å®šï¼Œæœƒè‡ªå‹•å¾ PlcContext å–å¾—
+        /// </summary>
+        public static readonly DependencyProperty PlcManagerProperty =
+            DependencyProperty.Register(
+                nameof(PlcManager),
+                typeof(IPlcManager),
+                typeof(PlcText),
+                new PropertyMetadata(null));
+
+        public IPlcManager? PlcManager
+        {
+            get => (IPlcManager?)GetValue(PlcManagerProperty);
+            set => SetValue(PlcManagerProperty, value);
+        }
+
+        /// <summary>
+        /// ?? æ˜¯å¦é¡¯ç¤ºæˆåŠŸè¨Šæ¯ï¼ˆé è¨­ trueï¼‰
+        /// </summary>
+        public static readonly DependencyProperty ShowSuccessMessageProperty =
+            DependencyProperty.Register(
+                nameof(ShowSuccessMessage),
+                typeof(bool),
+                typeof(PlcText),
+                new PropertyMetadata(true));
+
+        public bool ShowSuccessMessage
+        {
+            get => (bool)GetValue(ShowSuccessMessageProperty);
+            set => SetValue(ShowSuccessMessageProperty, value);
+        }
+
+        /// <summary>
+        /// ?? æ˜¯å¦å•Ÿç”¨ Audit Trail è¨˜éŒ„ï¼ˆé è¨­ trueï¼‰
+        /// </summary>
+        public static readonly DependencyProperty EnableAuditTrailProperty =
+            DependencyProperty.Register(
+                nameof(EnableAuditTrail),
+                typeof(bool),
+                typeof(PlcText),
+                new PropertyMetadata(true));
+
+        public bool EnableAuditTrail
+        {
+            get => (bool)GetValue(EnableAuditTrailProperty);
+            set => SetValue(EnableAuditTrailProperty, value);
+        }
+
+        /// <summary>
+        /// ValueApplied äº‹ä»¶ - ç•¶ä½¿ç”¨è€…æŒ‰ä¸‹ Apply æŒ‰éˆ•æ™‚è§¸ç™¼
+        /// </summary>
+        public event EventHandler<ValueAppliedEventArgs>? ValueApplied;
+
+        #endregion
+
+        #region Private Methods
+
+        private static object CoerceValue(DependencyObject d, object baseValue)
+        {
+            return baseValue ?? "0";
+        }
+
+        private static void OnAddressChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is PlcText plcText && !string.IsNullOrEmpty(e.NewValue?.ToString()))
+            {
+                plcText.ReadFromPlc();
+            }
+        }
+
+        private void PlcText_Loaded(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[PlcText] Loaded: {Label} ({Address})");
+            
+            SubscribeToGlobalStatus();
+            
+            if (!string.IsNullOrEmpty(Address))
+            {
+                ReadFromPlc();
+            }
+        }
+
+        private void PlcText_Unloaded(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[PlcText] Unloaded: {Label} ({Address})");
+            UnsubscribeFromStatus();
+        }
+
+        private void SubscribeToGlobalStatus()
+        {
+            UnsubscribeFromStatus();
+            
+            var globalStatus = PlcContext.GlobalStatus;
+            if (globalStatus != null)
+            {
+                _subscribedStatus = globalStatus;
+                _subscribedStatus.ConnectionEstablished += OnPlcConnectionEstablished;
+                _subscribedStatus.ScanUpdated += OnScanUpdated;
+                
+                System.Diagnostics.Debug.WriteLine($"[PlcText] Subscribed to PlcStatus: {Label} ({Address}), IsConnected={globalStatus.CurrentManager?.IsConnected}");
+            }
+        }
+
+        private void UnsubscribeFromStatus()
+        {
+            if (_subscribedStatus != null)
+            {
+                _subscribedStatus.ConnectionEstablished -= OnPlcConnectionEstablished;
+                _subscribedStatus.ScanUpdated -= OnScanUpdated;
+                _subscribedStatus = null;
+            }
+        }
+
+        private void OnPlcConnectionEstablished(IPlcManager manager)
+        {
+            try
+            {
+                if (Dispatcher.HasShutdownStarted) return;
+                
+                Dispatcher.Invoke(() =>
+                {
+                    if (!Dispatcher.HasShutdownStarted && !string.IsNullOrEmpty(Address))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[PlcText] Connection established, reading value: {Label} ({Address})");
+                        ReadFromPlc();
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PlcText] OnPlcConnectionEstablished error: {ex.Message}");
+            }
+        }
+
+        private void OnScanUpdated(IPlcManager manager)
+        {
+            // PlcText é€šå¸¸ä¸éœ€è¦æ¯æ¬¡æƒæéƒ½æ›´æ–°
+        }
+
+        private void ReadFromPlc()
+        {
+            try
+            {
+                var manager = PlcManager ?? PlcContext.GlobalStatus?.CurrentManager;
+                
+                System.Diagnostics.Debug.WriteLine($"[PlcText] ReadFromPlc: {Label} ({Address}) - Manager={manager != null}, IsConnected={manager?.IsConnected}");
+                
+                if (manager == null || !manager.IsConnected || string.IsNullOrEmpty(Address))
+                {
+                    return;
+                }
+
+                short? readValue = manager.ReadWord(Address);
+                if (readValue.HasValue)
+                {
+                    Value = readValue.Value.ToString();
+                    _previousValue = Value;  // ?? è¨˜éŒ„åˆå§‹å€¼
+                    System.Diagnostics.Debug.WriteLine($"[PlcText] Read success: {Label} ({Address}) = {Value}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[PlcText] Read returned null: {Label} ({Address})");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PlcText] ReadFromPlc Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Apply Button Click Handler
+        /// </summary>
+        private async void ApplyButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // é©—è­‰è¼¸å…¥
+                if (!int.TryParse(Value, out int intValue))
+                {
+                    CyberMessageBox.Show(
+                        $"Invalid value for {Label}. Please enter a valid number.",
+                        "Invalid Input",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
+                // ?? è¨˜éŒ„èˆŠå€¼ï¼ˆç”¨æ–¼ Audit Trailï¼‰
+                string oldValue = _previousValue;
+                string newValue = intValue.ToString();
+
+                // å¯«å…¥ PLC
+                bool writeSuccess = false;
+                var manager = PlcManager ?? PlcContext.GlobalStatus?.CurrentManager;
+                
+                System.Diagnostics.Debug.WriteLine($"[PlcText] ApplyButton_Click: {Label} ({Address}) = {intValue}, Manager={manager != null}, IsConnected={manager?.IsConnected}");
+                
+                if (manager != null && manager.IsConnected && !string.IsNullOrEmpty(Address))
+                {
+                    string writeCommand = $"{Address},{intValue}";
+                    System.Diagnostics.Debug.WriteLine($"[PlcText] Write command: {writeCommand}");
+                    
+                    writeSuccess = await manager.WriteAsync(writeCommand);
+                    
+                    System.Diagnostics.Debug.WriteLine($"[PlcText] Write result: {writeSuccess}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[PlcText] Cannot write - PLC not connected");
+                }
+
+                // è§¸ç™¼äº‹ä»¶
+                var args = new ValueAppliedEventArgs(Address, intValue, writeSuccess);
+                ValueApplied?.Invoke(this, args);
+
+                // ?? è¨˜éŒ„æ—¥èªŒå’Œé¡¯ç¤ºè¨Šæ¯
+                if (writeSuccess)
+                {
+                    // ?? æ›´æ–° _previousValue
+                    _previousValue = newValue;
+
+                    // ?? è¨˜éŒ„ System Log
+                    ComplianceContext.LogSystem(
+                        $"[PlcText] {Label} ({Address}) set to {intValue}",
+                        LogLevel.Success,
+                        showInUi: true);
+
+                    // ?? è¨˜éŒ„ Audit Trailï¼ˆFDA 21 CFR Part 11 åˆè¦ï¼‰
+                    if (EnableAuditTrail)
+                    {
+                        string userId = SecurityContext.CurrentSession?.CurrentUserName ?? "Unknown";
+                        string batchId = ProcessContext.BatchNumber > 0 ? ProcessContext.BatchNumber.ToString() : "";
+                        
+                        ComplianceContext.LogAuditTrail(
+                            deviceName: Label,
+                            address: Address,
+                            oldValue: oldValue,
+                            newValue: newValue,
+                            reason: "Parameter Change",
+                            parameter: $"User: {userId}",
+                            batchId: batchId,
+                            showInUi: true
+                        );
+                        
+                        // ?? ç«‹å³åˆ·æ–°ï¼Œç¢ºä¿ Audit Trail å¯«å…¥è³‡æ–™åº«
+                        ComplianceContext.FlushLogs();
+                    }
+
+                    // ?? é¡¯ç¤ºæˆåŠŸè¨Šæ¯
+                    if (ShowSuccessMessage)
+                    {
+                        CyberMessageBox.Show(
+                            $"{Label} successfully updated to {intValue}",
+                            "Write Success",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                }
+                else
+                {
+                    // ?? è¨˜éŒ„å¤±æ•—
+                    ComplianceContext.LogSystem(
+                        $"[PlcText] Failed to write {Label} ({Address}) - PLC not connected or write failed",
+                        LogLevel.Warning,
+                        showInUi: true);
+
+                    // ?? è¨˜éŒ„ Audit Trailï¼ˆå¤±æ•—ä¹Ÿè¦è¨˜éŒ„ï¼‰
+                    if (EnableAuditTrail)
+                    {
+                        string userId = SecurityContext.CurrentSession?.CurrentUserName ?? "Unknown";
+                        string batchId = ProcessContext.BatchNumber > 0 ? ProcessContext.BatchNumber.ToString() : "";
+                        
+                        ComplianceContext.LogAuditTrail(
+                            deviceName: Label,
+                            address: Address,
+                            oldValue: oldValue,
+                            newValue: $"{newValue} (FAILED)",
+                            reason: "Parameter Change Failed",
+                            parameter: $"User: {userId}",
+                            batchId: batchId,
+                            showInUi: true
+                        );
+                        
+                        // ?? ç«‹å³åˆ·æ–°ï¼Œç¢ºä¿ Audit Trail å¯«å…¥è³‡æ–™åº«
+                        ComplianceContext.FlushLogs();
+                    }
+
+                    CyberMessageBox.Show(
+                        $"Failed to write {Label} to PLC.\nPlease check PLC connection.",
+                        "Write Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PlcText] ApplyButton_Click Error: {ex.Message}");
+                
+                CyberMessageBox.Show(
+                    $"Error applying value:\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// ValueApplied Event Args
+    /// </summary>
+    public class ValueAppliedEventArgs : EventArgs
+    {
+        public string Address { get; }
+        public int Value { get; }
+        public bool WriteSuccess { get; }
+
+        public ValueAppliedEventArgs(string address, int value, bool writeSuccess)
+        {
+            Address = address;
+            Value = value;
+            WriteSuccess = writeSuccess;
+        }
+    }
+}

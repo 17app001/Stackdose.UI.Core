@@ -1,120 +1,120 @@
-using Stackdose.UI.Core.Models;
-using System;
-using System.Globalization;
-using System.Windows;
-using System.Windows.Data;
-using System.Windows.Media;
-
-namespace Stackdose.UI.Core.Converters
-{
-    /// <summary>
-    /// PlcLabel ÃC¦â¥DÃD Âà Brush Âà´«¾¹
-    /// </summary>
-    public class PlcLabelColorThemeToBrushConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is PlcLabelColorTheme theme)
-            {
-                // ¯S®í³B²z¡GDarkBlue ·|®Ú¾Ú¥DÃD¦Û°Ê½Õ¾ã
-                if (theme == PlcLabelColorTheme.DarkBlue)
-                {
-                    bool isLightMode = IsLightTheme();
-                    
-                    if (isLightMode)
-                    {
-                        // Light ¼Ò¦¡¡G¨Ï¥Î²L¦Ç¦â
-                        return new SolidColorBrush(Color.FromRgb(0xF5, 0xF5, 0xF5)); // #F5F5F5
-                    }
-                    else
-                    {
-                        // Dark ¼Ò¦¡¡G¨Ï¥Î²`ÂÅ¦â
-                        return new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x2E)); // #1E1E2E
-                    }
-                }
-
-                // NeonBlue ¦b Light ¼Ò¦¡¤U»İ­n§ï¬°¥Õ¦â
-                if (theme == PlcLabelColorTheme.NeonBlue && targetType == typeof(Brush))
-                {
-                    bool isLightMode = IsLightTheme();
-                    if (isLightMode)
-                    {
-                        return new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0xFF)); // #FFFFFF
-                    }
-                }
-                
-                return theme switch
-                {
-                    PlcLabelColorTheme.Default => Application.Current.TryFindResource("Plc.Text.Label") as Brush ?? new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC)),
-                    PlcLabelColorTheme.Primary => Application.Current.TryFindResource("Button.Bg.Primary") as Brush ?? Brushes.Blue,
-                    PlcLabelColorTheme.Success => Application.Current.TryFindResource("Status.Success") as Brush ?? Brushes.Green,
-                    PlcLabelColorTheme.Warning => Application.Current.TryFindResource("Status.Warning") as Brush ?? Brushes.Orange,
-                    PlcLabelColorTheme.Error => Application.Current.TryFindResource("Status.Error") as Brush ?? Brushes.Red,
-                    PlcLabelColorTheme.Info => Application.Current.TryFindResource("Status.Info") as Brush ?? Brushes.Cyan,
-                    // ¼W±jÀO­i¦âªº«G«×©M¹¡©M«×
-                    PlcLabelColorTheme.NeonBlue => Application.Current.TryFindResource("Cyber.NeonBlue") as Brush ?? new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0xFF)),
-                    PlcLabelColorTheme.NeonRed => Application.Current.TryFindResource("Cyber.NeonRed") as Brush ?? new SolidColorBrush(Color.FromRgb(0xFF, 0x33, 0x33)),
-                    PlcLabelColorTheme.NeonGreen => Application.Current.TryFindResource("Cyber.NeonGreen") as Brush ?? new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88)),
-                    PlcLabelColorTheme.White => Application.Current.TryFindResource("Cyber.Text.Bright") as Brush ?? new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0xFF)),
-                    PlcLabelColorTheme.Gray => Application.Current.TryFindResource("Plc.Text.Gray") as Brush ?? new SolidColorBrush(Color.FromRgb(0x99, 0x99, 0x99)),
-                    _ => Application.Current.TryFindResource("Plc.Text.Label") as Brush ?? new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC))
-                };
-            }
-            return new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC));
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// §PÂ_·í«e¬O§_¬° Light ¥DÃD¡]¨Ï¥ÎÃi´kÀË´ú¦^°h¡^
-        /// </summary>
-        private bool IsLightTheme()
-        {
-            try
-            {
-                // ¤èªk1: ÀË¬d Plc.Bg.Main
-                var plcBgBrush = Application.Current.TryFindResource("Plc.Bg.Main") as SolidColorBrush;
-                if (plcBgBrush != null)
-                {
-                    var bgColor = plcBgBrush.Color;
-                    if (bgColor.R > 200 && bgColor.G > 200 && bgColor.B > 200)
-                    {
-                        return true; // ­I´º«Ü«G = Light ¼Ò¦¡
-                    }
-                }
-
-                // ¤èªk2: ÀË¬d Cyber.Bg.Dark
-                var cyberBgBrush = Application.Current.TryFindResource("Cyber.Bg.Dark") as SolidColorBrush;
-                if (cyberBgBrush != null)
-                {
-                    var bgColor = cyberBgBrush.Color;
-                    if (bgColor.R > 200 && bgColor.G > 200 && bgColor.B > 200)
-                    {
-                        return true; // ­I´º«Ü«G = Light ¼Ò¦¡
-                    }
-                }
-
-                // ¤èªk3: ÀË¬d Cyber.Text.Main
-                var textBrush = Application.Current.TryFindResource("Cyber.Text.Main") as SolidColorBrush;
-                if (textBrush != null)
-                {
-                    var textColor = textBrush.Color;
-                    // ¦pªG¤å¦r¬O²`¦â¡]Dark ¼Ò¦¡¤U¤å¦r¬O«G¦â¡^
-                    if (textColor.R < 100 && textColor.G < 100 && textColor.B < 100)
-                    {
-                        return true; // ²`¦â¤å¦r = Light ¼Ò¦¡
-                    }
-                }
-            }
-            catch
-            {
-                // µo¥Í¿ù»~®É¹w³]¬° Dark ¼Ò¦¡
-            }
-
-            return false; // ¹w³] Dark ¼Ò¦¡
-        }
-    }
-}
+using Stackdose.UI.Core.Models;
+using System;
+using System.Globalization;
+using System.Windows;
+using System.Windows.Data;
+using System.Windows.Media;
+
+namespace Stackdose.UI.Core.Converters
+{
+    /// <summary>
+    /// PlcLabel é¡è‰²ä¸»é¡Œ è½‰ Brush è½‰æ›å™¨
+    /// </summary>
+    public class PlcLabelColorThemeToBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is PlcLabelColorTheme theme)
+            {
+                // ç‰¹æ®Šè™•ç†ï¼šDarkBlue æœƒæ ¹æ“šä¸»é¡Œè‡ªå‹•èª¿æ•´
+                if (theme == PlcLabelColorTheme.DarkBlue)
+                {
+                    bool isLightMode = IsLightTheme();
+                    
+                    if (isLightMode)
+                    {
+                        // Light æ¨¡å¼ï¼šä½¿ç”¨æ·ºç°è‰²
+                        return new SolidColorBrush(Color.FromRgb(0xF5, 0xF5, 0xF5)); // #F5F5F5
+                    }
+                    else
+                    {
+                        // Dark æ¨¡å¼ï¼šä½¿ç”¨æ·±è—è‰²
+                        return new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x2E)); // #1E1E2E
+                    }
+                }
+
+                // NeonBlue åœ¨ Light æ¨¡å¼ä¸‹éœ€è¦æ”¹ç‚ºç™½è‰²
+                if (theme == PlcLabelColorTheme.NeonBlue && targetType == typeof(Brush))
+                {
+                    bool isLightMode = IsLightTheme();
+                    if (isLightMode)
+                    {
+                        return new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0xFF)); // #FFFFFF
+                    }
+                }
+                
+                return theme switch
+                {
+                    PlcLabelColorTheme.Default => Application.Current.TryFindResource("Plc.Text.Label") as Brush ?? new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC)),
+                    PlcLabelColorTheme.Primary => Application.Current.TryFindResource("Button.Bg.Primary") as Brush ?? Brushes.Blue,
+                    PlcLabelColorTheme.Success => Application.Current.TryFindResource("Status.Success") as Brush ?? Brushes.Green,
+                    PlcLabelColorTheme.Warning => Application.Current.TryFindResource("Status.Warning") as Brush ?? Brushes.Orange,
+                    PlcLabelColorTheme.Error => Application.Current.TryFindResource("Status.Error") as Brush ?? Brushes.Red,
+                    PlcLabelColorTheme.Info => Application.Current.TryFindResource("Status.Info") as Brush ?? Brushes.Cyan,
+                    // å¢å¼·éœ“è™¹è‰²çš„äº®åº¦å’Œé£½å’Œåº¦
+                    PlcLabelColorTheme.NeonBlue => Application.Current.TryFindResource("Cyber.NeonBlue") as Brush ?? new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0xFF)),
+                    PlcLabelColorTheme.NeonRed => Application.Current.TryFindResource("Cyber.NeonRed") as Brush ?? new SolidColorBrush(Color.FromRgb(0xFF, 0x33, 0x33)),
+                    PlcLabelColorTheme.NeonGreen => Application.Current.TryFindResource("Cyber.NeonGreen") as Brush ?? new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88)),
+                    PlcLabelColorTheme.White => Application.Current.TryFindResource("Cyber.Text.Bright") as Brush ?? new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0xFF)),
+                    PlcLabelColorTheme.Gray => Application.Current.TryFindResource("Plc.Text.Gray") as Brush ?? new SolidColorBrush(Color.FromRgb(0x99, 0x99, 0x99)),
+                    _ => Application.Current.TryFindResource("Plc.Text.Label") as Brush ?? new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC))
+                };
+            }
+            return new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC));
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// åˆ¤æ–·ç•¶å‰æ˜¯å¦ç‚º Light ä¸»é¡Œï¼ˆä½¿ç”¨æ‡¶æƒ°æª¢æ¸¬å›é€€ï¼‰
+        /// </summary>
+        private bool IsLightTheme()
+        {
+            try
+            {
+                // æ–¹æ³•1: æª¢æŸ¥ Plc.Bg.Main
+                var plcBgBrush = Application.Current.TryFindResource("Plc.Bg.Main") as SolidColorBrush;
+                if (plcBgBrush != null)
+                {
+                    var bgColor = plcBgBrush.Color;
+                    if (bgColor.R > 200 && bgColor.G > 200 && bgColor.B > 200)
+                    {
+                        return true; // èƒŒæ™¯å¾ˆäº® = Light æ¨¡å¼
+                    }
+                }
+
+                // æ–¹æ³•2: æª¢æŸ¥ Cyber.Bg.Dark
+                var cyberBgBrush = Application.Current.TryFindResource("Cyber.Bg.Dark") as SolidColorBrush;
+                if (cyberBgBrush != null)
+                {
+                    var bgColor = cyberBgBrush.Color;
+                    if (bgColor.R > 200 && bgColor.G > 200 && bgColor.B > 200)
+                    {
+                        return true; // èƒŒæ™¯å¾ˆäº® = Light æ¨¡å¼
+                    }
+                }
+
+                // æ–¹æ³•3: æª¢æŸ¥ Cyber.Text.Main
+                var textBrush = Application.Current.TryFindResource("Cyber.Text.Main") as SolidColorBrush;
+                if (textBrush != null)
+                {
+                    var textColor = textBrush.Color;
+                    // å¦‚æœæ–‡å­—æ˜¯æ·±è‰²ï¼ˆDark æ¨¡å¼ä¸‹æ–‡å­—æ˜¯äº®è‰²ï¼‰
+                    if (textColor.R < 100 && textColor.G < 100 && textColor.B < 100)
+                    {
+                        return true; // æ·±è‰²æ–‡å­— = Light æ¨¡å¼
+                    }
+                }
+            }
+            catch
+            {
+                // ç™¼ç”ŸéŒ¯èª¤æ™‚é è¨­ç‚º Dark æ¨¡å¼
+            }
+
+            return false; // é è¨­ Dark æ¨¡å¼
+        }
+    }
+}

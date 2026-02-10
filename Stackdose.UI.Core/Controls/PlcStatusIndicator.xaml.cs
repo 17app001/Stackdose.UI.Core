@@ -1,136 +1,136 @@
-using Stackdose.Abstractions.Hardware;
-using Stackdose.UI.Core.Helpers;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Effects;
-
-namespace Stackdose.UI.Core.Controls
-{
-    /// <summary>
-    /// PLC ª¬ºA«ü¥Ü¾¹±±¥ó¡]¥uÅã¥Üª¬ºA¡A¤£­t³d³s½u¡^
-    /// </summary>
-    /// <remarks>
-    /// ¦¹±±¥ó­q¾\ PlcContext.GlobalStatus ªº¨Æ¥ó¨ÓÅã¥Ü PLC ³s½uª¬ºA
-    /// ¤£·|°õ¦æ³s½u/Â_½u¾Ş§@¡A¾A¦X©ñ¦b»İ­nÅã¥Üª¬ºA¦ı¤£±±¨î³s½uªº¦a¤è
-    /// </remarks>
-    public partial class PlcStatusIndicator : UserControl
-    {
-        private PlcStatus? _globalStatus;
-
-        public PlcStatusIndicator()
-        {
-            InitializeComponent();
-            this.Loaded += PlcStatusIndicator_Loaded;
-            this.Unloaded += PlcStatusIndicator_Unloaded;
-        }
-
-        #region Dependency Properties
-
-        /// <summary>
-        /// Åã¥Üªº IP ¦ì§}
-        /// </summary>
-        public static readonly DependencyProperty DisplayAddressProperty =
-            DependencyProperty.Register(
-                nameof(DisplayAddress),
-                typeof(string),
-                typeof(PlcStatusIndicator),
-                new PropertyMetadata("192.168.22.39:3000", OnDisplayAddressChanged));
-
-        public string DisplayAddress
-        {
-            get => (string)GetValue(DisplayAddressProperty);
-            set => SetValue(DisplayAddressProperty, value);
-        }
-
-        private static void OnDisplayAddressChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is PlcStatusIndicator indicator)
-            {
-                indicator.IpDisplay.Text = (string)e.NewValue;
-            }
-        }
-
-        #endregion
-
-        private void PlcStatusIndicator_Loaded(object sender, RoutedEventArgs e)
-        {
-            // ­q¾\¥ş°ì PlcStatus
-            _globalStatus = PlcContext.GlobalStatus;
-
-            if (_globalStatus != null)
-            {
-                // ­q¾\ ScanUpdated ¨Æ¥ó
-                _globalStatus.ScanUpdated += OnPlcScanUpdated;
-
-                // ¥ß§Y§ó·sª¬ºA
-                UpdateStatus(_globalStatus.CurrentManager != null && _globalStatus.CurrentManager.IsConnected);
-            }
-            else
-            {
-                // ¨S¦³¥ş°ì PlcStatus
-                UpdateStatus(false);
-            }
-        }
-
-        private void PlcStatusIndicator_Unloaded(object sender, RoutedEventArgs e)
-        {
-            // ¨ú®ø­q¾\
-            if (_globalStatus != null)
-            {
-                _globalStatus.ScanUpdated -= OnPlcScanUpdated;
-                _globalStatus = null;
-            }
-        }
-
-        private void OnPlcScanUpdated(IPlcManager manager)
-        {
-            try
-            {
-                if (Dispatcher.HasShutdownStarted) return;
-
-                Dispatcher.Invoke(() =>
-                {
-                    if (!Dispatcher.HasShutdownStarted)
-                    {
-                        UpdateStatus(manager != null && manager.IsConnected);
-                    }
-                });
-            }
-            catch
-            {
-                // ©¿²¤ Dispatcher ¿ù»~
-            }
-        }
-
-        private void UpdateStatus(bool isConnected)
-        {
-            if (isConnected)
-            {
-                // ³s½uª¬ºA
-                StatusLight.Fill = new SolidColorBrush(Colors.LimeGreen);
-                StatusLight.Effect = new DropShadowEffect
-                {
-                    Color = Colors.LimeGreen,
-                    BlurRadius = 15,
-                    ShadowDepth = 0
-                };
-                StatusText.Text = "CONNECTED";
-                StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
-            }
-            else
-            {
-                // Â_½uª¬ºA
-                StatusLight.Fill = new SolidColorBrush(Colors.Red);
-                StatusLight.Effect = new DropShadowEffect
-                {
-                    Color = Colors.Red,
-                    BlurRadius = 10,
-                    ShadowDepth = 0
-                };
-                StatusText.Text = "DISCONNECTED";
-                StatusText.Foreground = new SolidColorBrush(Colors.Red);
-            }
-        }
-    }
-}
+using Stackdose.Abstractions.Hardware;
+using Stackdose.UI.Core.Helpers;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Effects;
+
+namespace Stackdose.UI.Core.Controls
+{
+    /// <summary>
+    /// PLC ç‹€æ…‹æŒ‡ç¤ºå™¨æ§ä»¶ï¼ˆåªé¡¯ç¤ºç‹€æ…‹ï¼Œä¸è² è²¬é€£ç·šï¼‰
+    /// </summary>
+    /// <remarks>
+    /// æ­¤æ§ä»¶è¨‚é–± PlcContext.GlobalStatus çš„äº‹ä»¶ä¾†é¡¯ç¤º PLC é€£ç·šç‹€æ…‹
+    /// ä¸æœƒåŸ·è¡Œé€£ç·š/æ–·ç·šæ“ä½œï¼Œé©åˆæ”¾åœ¨éœ€è¦é¡¯ç¤ºç‹€æ…‹ä½†ä¸æ§åˆ¶é€£ç·šçš„åœ°æ–¹
+    /// </remarks>
+    public partial class PlcStatusIndicator : UserControl
+    {
+        private PlcStatus? _globalStatus;
+
+        public PlcStatusIndicator()
+        {
+            InitializeComponent();
+            this.Loaded += PlcStatusIndicator_Loaded;
+            this.Unloaded += PlcStatusIndicator_Unloaded;
+        }
+
+        #region Dependency Properties
+
+        /// <summary>
+        /// é¡¯ç¤ºçš„ IP ä½å€
+        /// </summary>
+        public static readonly DependencyProperty DisplayAddressProperty =
+            DependencyProperty.Register(
+                nameof(DisplayAddress),
+                typeof(string),
+                typeof(PlcStatusIndicator),
+                new PropertyMetadata("192.168.22.39:3000", OnDisplayAddressChanged));
+
+        public string DisplayAddress
+        {
+            get => (string)GetValue(DisplayAddressProperty);
+            set => SetValue(DisplayAddressProperty, value);
+        }
+
+        private static void OnDisplayAddressChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is PlcStatusIndicator indicator)
+            {
+                indicator.IpDisplay.Text = (string)e.NewValue;
+            }
+        }
+
+        #endregion
+
+        private void PlcStatusIndicator_Loaded(object sender, RoutedEventArgs e)
+        {
+            // è¨‚é–±å…¨åŸŸ PlcStatus
+            _globalStatus = PlcContext.GlobalStatus;
+
+            if (_globalStatus != null)
+            {
+                // è¨‚é–± ScanUpdated äº‹ä»¶
+                _globalStatus.ScanUpdated += OnPlcScanUpdated;
+
+                // ç«‹å³æ›´æ–°ç‹€æ…‹
+                UpdateStatus(_globalStatus.CurrentManager != null && _globalStatus.CurrentManager.IsConnected);
+            }
+            else
+            {
+                // æ²’æœ‰å…¨åŸŸ PlcStatus
+                UpdateStatus(false);
+            }
+        }
+
+        private void PlcStatusIndicator_Unloaded(object sender, RoutedEventArgs e)
+        {
+            // å–æ¶ˆè¨‚é–±
+            if (_globalStatus != null)
+            {
+                _globalStatus.ScanUpdated -= OnPlcScanUpdated;
+                _globalStatus = null;
+            }
+        }
+
+        private void OnPlcScanUpdated(IPlcManager manager)
+        {
+            try
+            {
+                if (Dispatcher.HasShutdownStarted) return;
+
+                Dispatcher.Invoke(() =>
+                {
+                    if (!Dispatcher.HasShutdownStarted)
+                    {
+                        UpdateStatus(manager != null && manager.IsConnected);
+                    }
+                });
+            }
+            catch
+            {
+                // å¿½ç•¥ Dispatcher éŒ¯èª¤
+            }
+        }
+
+        private void UpdateStatus(bool isConnected)
+        {
+            if (isConnected)
+            {
+                // é€£ç·šç‹€æ…‹
+                StatusLight.Fill = new SolidColorBrush(Colors.LimeGreen);
+                StatusLight.Effect = new DropShadowEffect
+                {
+                    Color = Colors.LimeGreen,
+                    BlurRadius = 15,
+                    ShadowDepth = 0
+                };
+                StatusText.Text = "CONNECTED";
+                StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
+            }
+            else
+            {
+                // æ–·ç·šç‹€æ…‹
+                StatusLight.Fill = new SolidColorBrush(Colors.Red);
+                StatusLight.Effect = new DropShadowEffect
+                {
+                    Color = Colors.Red,
+                    BlurRadius = 10,
+                    ShadowDepth = 0
+                };
+                StatusText.Text = "DISCONNECTED";
+                StatusText.Foreground = new SolidColorBrush(Colors.Red);
+            }
+        }
+    }
+}

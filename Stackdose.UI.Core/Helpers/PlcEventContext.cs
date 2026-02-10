@@ -1,266 +1,266 @@
-using System;
-using System.Windows;
-using Stackdose.UI.Core.Controls;
-using System.Collections.Generic;
-using System.Linq;
-using Stackdose.Abstractions.Logging;
-
-namespace Stackdose.UI.Core.Helpers
-{
-    /// <summary>
-    /// PlcEventTrigger ¤W¤U¤åºŞ²z (PlcEvent Context Manager)
-    /// ¥Î³~¡G²Î¤@ºŞ²z©Ò¦³ PlcEventTrigger ªºÄ²µo¨Æ¥ó
-    /// Ãş¦ü SensorContext ªº³]­p¡A¥Î©ó³B²z PLC ¨Æ¥óÄ²µo¡]¦p M237, M238¡^
-    /// </summary>
-    public static class PlcEventContext
-    {
-        #region ÀRºAÄİ©Ê
-
-        /// <summary>
-        /// ¤wµù¥Uªº PlcEventTrigger ²M³æ¡]¥Î©ó¦Û°ÊºÊ±±¡^
-        /// </summary>
-        private static readonly HashSet<WeakReference<PlcEventTrigger>> _registeredTriggers = new HashSet<WeakReference<PlcEventTrigger>>();
-        private static readonly object _lock = new object();
-
-        #endregion
-
-        #region ¨Æ¥ó©w¸q
-
-        /// <summary>
-        /// ¨Æ¥óÄ²µo¨Æ¥ó (·í PlcEventTrigger °»´ú¨ì±ø¥óº¡¨¬®ÉÄ²µo)
-        /// </summary>
-        public static event EventHandler<PlcEventTriggeredEventArgs>? EventTriggered;
-
-        #endregion
-
-        #region µù¥UºŞ²z
-
-        /// <summary>
-        /// µù¥U PlcEventTrigger ¨ì¤W¤U¤å¡]¥Ñ PlcEventTrigger ±±¨î¶µ©I¥s¡^
-        /// </summary>
-        public static void Register(PlcEventTrigger trigger)
-        {
-            if (trigger == null || string.IsNullOrWhiteSpace(trigger.Address))
-                return;
-
-            lock (_lock)
-            {
-                // ²M²z¤w¦^¦¬ªº®z¤Ş¥Î
-                _registeredTriggers.RemoveWhere(wr => !wr.TryGetTarget(out _));
-
-                // Á×§K­«½Æµù¥U
-                if (!_registeredTriggers.Any(wr => wr.TryGetTarget(out var t) && ReferenceEquals(t, trigger)))
-                {
-                    _registeredTriggers.Add(new WeakReference<PlcEventTrigger>(trigger));
-                    
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[PlcEventContext] Registered: {trigger.EventName} ({trigger.Address})");
-                    #endif
-                }
-            }
-        }
-
-        /// <summary>
-        /// µù¾P PlcEventTrigger¡]¥Ñ PlcEventTrigger ±±¨î¶µ©I¥s¡^
-        /// </summary>
-        public static void Unregister(PlcEventTrigger trigger)
-        {
-            if (trigger == null)
-                return;
-
-            lock (_lock)
-            {
-                _registeredTriggers.RemoveWhere(wr => 
-                {
-                    if (wr.TryGetTarget(out var t))
-                        return ReferenceEquals(t, trigger);
-                    return true; // ²M²z¤w¦^¦¬ªº¤Ş¥Î
-                });
-
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[PlcEventContext] Unregistered: {trigger.EventName} ({trigger.Address})");
-                #endif
-            }
-        }
-
-        /// <summary>
-        /// ?? ±q¤wµù¥Uªº PlcEventTrigger ¤¤´¼¼z´£¨úºÊ±±¦ì§}
-        /// ¦Û°Ê¦X¨Ö³sÄò¦ì§}¡]¨Ò¦p M237, M238, M239 ¡÷ M237,3¡^
-        /// </summary>
-        /// <returns>ºÊ±±¦ì§}¦r¦ê¡]¨Ò¦p "M237,3,M400,1"¡^</returns>
-        public static string GenerateMonitorAddresses()
-        {
-            lock (_lock)
-            {
-                // ²M²z¤w¦^¦¬ªº®z¤Ş¥Î
-                _registeredTriggers.RemoveWhere(wr => !wr.TryGetTarget(out _));
-
-                var addresses = new List<string>();
-                foreach (var weakRef in _registeredTriggers)
-                {
-                    if (weakRef.TryGetTarget(out var trigger) && !string.IsNullOrWhiteSpace(trigger.Address))
-                    {
-                        addresses.Add(trigger.Address.Trim().ToUpper());
-                    }
-                }
-
-                if (addresses.Count == 0)
-                    return string.Empty;
-
-                return GenerateOptimizedAddresses(addresses);
-            }
-        }
-
-        #endregion
-
-        #region ¤½¶}¤èªk
-
-        /// <summary>
-        /// ³qª¾¨Æ¥ó¤wÄ²µo¡]¥Ñ PlcEventTrigger ±±¨î¶µ¤º³¡©I¥s¡^
-        /// ?? ¨Ï¥Î¦P¨B Invoke¡A½T«O¨Æ¥ó³B²z§¹¦¨«á¤~ªğ¦^
-        /// </summary>
-        /// <param name="trigger">Ä²µoªº PlcEventTrigger</param>
-        /// <param name="value">Ä²µo®Éªº­È</param>
-        public static void NotifyEventTriggered(PlcEventTrigger trigger, object value)
-        {
-            if (trigger == null)
-                return;
-
-            // ?? §ï¥Î¦P¨B Invoke¡]ªı¶ëµ¥«İ¡^¡A½T«O¨Æ¥ó³B²z§¹¦¨
-            Application.Current?.Dispatcher.Invoke(() =>
-            {
-                EventTriggered?.Invoke(null, new PlcEventTriggeredEventArgs(trigger, value));
-            });
-
-            // °O¿ı¤é»x
-            LogEventTrigger(trigger, value);
-        }
-
-        #endregion
-
-        #region ¨p¦³¤èªk
-
-        /// <summary>
-        /// ´¼¼z¦X¨Ö³sÄò¦ì§}¡]Ãş¦ü PlcLabelContext¡^
-        /// </summary>
-        private static string GenerateOptimizedAddresses(List<string> addresses)
-        {
-            var addressGroups = new Dictionary<string, List<int>>();
-
-            // 1. ¸ÑªR¨Ã¤À²Õ¦ì§}
-            foreach (var address in addresses)
-            {
-                if (System.Text.RegularExpressions.Regex.Match(address, @"^([A-Z]+)(\d+)$") is var match && match.Success)
-                {
-                    string deviceType = match.Groups[1].Value; // D, M, X, Y, R
-                    int deviceNumber = int.Parse(match.Groups[2].Value);
-
-                    if (!addressGroups.ContainsKey(deviceType))
-                    {
-                        addressGroups[deviceType] = new List<int>();
-                    }
-
-                    if (!addressGroups[deviceType].Contains(deviceNumber))
-                    {
-                        addressGroups[deviceType].Add(deviceNumber);
-                    }
-                }
-            }
-
-            // 2. ´¼¼z¦X¨Ö³sÄò¦ì§}
-            var monitorParts = new List<string>();
-
-            foreach (var group in addressGroups.OrderBy(g => g.Key))
-            {
-                string deviceType = group.Key;
-                var numbers = group.Value.OrderBy(n => n).ToList();
-
-                int i = 0;
-                while (i < numbers.Count)
-                {
-                    int start = numbers[i];
-                    int end = start;
-
-                    // §ä¥X³sÄò½d³ò
-                    while (i + 1 < numbers.Count && numbers[i + 1] == end + 1)
-                    {
-                        i++;
-                        end = numbers[i];
-                    }
-
-                    int length = end - start + 1;
-
-                    // ³sÄò 2 ­Ó¥H¤W´N§å¦¸¦X¨Ö
-                    if (length >= 2)
-                    {
-                        monitorParts.Add($"{deviceType}{start},{length}");
-                    }
-                    else
-                    {
-                        monitorParts.Add($"{deviceType}{start},1");
-                    }
-
-                    i++;
-                }
-            }
-
-            return string.Join(",", monitorParts);
-        }
-
-        /// <summary>
-        /// °O¿ı¨Æ¥óÄ²µo¤é»x
-        /// </summary>
-        private static void LogEventTrigger(PlcEventTrigger trigger, object value)
-        {
-            ComplianceContext.LogSystem(
-                $"[PlcEvent] {trigger.EventName} ({trigger.Address}) = {value}",
-                LogLevel.Info,
-                showInUi: false
-            );
-        }
-
-        #endregion
-    }
-
-    #region ¨Æ¥ó°Ñ¼Æ
-
-    /// <summary>
-    /// PlcEvent Ä²µo¨Æ¥ó°Ñ¼Æ
-    /// </summary>
-    public class PlcEventTriggeredEventArgs : EventArgs
-    {
-        /// <summary>
-        /// Ä²µo¨Æ¥óªº PlcEventTrigger
-        /// </summary>
-        public PlcEventTrigger Trigger { get; }
-
-        /// <summary>
-        /// Ä²µo®Éªº­È
-        /// </summary>
-        public object Value { get; }
-
-        /// <summary>
-        /// ¨Æ¥óµo¥Í®É¶¡
-        /// </summary>
-        public DateTime Timestamp { get; }
-
-        /// <summary>
-        /// PLC ¦ì§}¡]§Ö³t¦s¨ú¡^
-        /// </summary>
-        public string Address => Trigger.Address;
-
-        /// <summary>
-        /// ¨Æ¥ó¦WºÙ¡]§Ö³t¦s¨ú¡^
-        /// </summary>
-        public string EventName => Trigger.EventName;
-
-        public PlcEventTriggeredEventArgs(PlcEventTrigger trigger, object value)
-        {
-            Trigger = trigger ?? throw new ArgumentNullException(nameof(trigger));
-            Value = value ?? throw new ArgumentNullException(nameof(value));
-            Timestamp = DateTime.Now;
-        }
-    }
-
-    #endregion
-}
+using System;
+using System.Windows;
+using Stackdose.UI.Core.Controls;
+using System.Collections.Generic;
+using System.Linq;
+using Stackdose.Abstractions.Logging;
+
+namespace Stackdose.UI.Core.Helpers
+{
+    /// <summary>
+    /// PlcEventTrigger ä¸Šä¸‹æ–‡ç®¡ç† (PlcEvent Context Manager)
+    /// ç”¨é€”ï¼šçµ±ä¸€ç®¡ç†æ‰€æœ‰ PlcEventTrigger çš„è§¸ç™¼äº‹ä»¶
+    /// é¡ä¼¼ SensorContext çš„è¨­è¨ˆï¼Œç”¨æ–¼è™•ç† PLC äº‹ä»¶è§¸ç™¼ï¼ˆå¦‚ M237, M238ï¼‰
+    /// </summary>
+    public static class PlcEventContext
+    {
+        #region éœæ…‹å±¬æ€§
+
+        /// <summary>
+        /// å·²è¨»å†Šçš„ PlcEventTrigger æ¸…å–®ï¼ˆç”¨æ–¼è‡ªå‹•ç›£æ§ï¼‰
+        /// </summary>
+        private static readonly HashSet<WeakReference<PlcEventTrigger>> _registeredTriggers = new HashSet<WeakReference<PlcEventTrigger>>();
+        private static readonly object _lock = new object();
+
+        #endregion
+
+        #region äº‹ä»¶å®šç¾©
+
+        /// <summary>
+        /// äº‹ä»¶è§¸ç™¼äº‹ä»¶ (ç•¶ PlcEventTrigger åµæ¸¬åˆ°æ¢ä»¶æ»¿è¶³æ™‚è§¸ç™¼)
+        /// </summary>
+        public static event EventHandler<PlcEventTriggeredEventArgs>? EventTriggered;
+
+        #endregion
+
+        #region è¨»å†Šç®¡ç†
+
+        /// <summary>
+        /// è¨»å†Š PlcEventTrigger åˆ°ä¸Šä¸‹æ–‡ï¼ˆç”± PlcEventTrigger æ§åˆ¶é …å‘¼å«ï¼‰
+        /// </summary>
+        public static void Register(PlcEventTrigger trigger)
+        {
+            if (trigger == null || string.IsNullOrWhiteSpace(trigger.Address))
+                return;
+
+            lock (_lock)
+            {
+                // æ¸…ç†å·²å›æ”¶çš„å¼±å¼•ç”¨
+                _registeredTriggers.RemoveWhere(wr => !wr.TryGetTarget(out _));
+
+                // é¿å…é‡è¤‡è¨»å†Š
+                if (!_registeredTriggers.Any(wr => wr.TryGetTarget(out var t) && ReferenceEquals(t, trigger)))
+                {
+                    _registeredTriggers.Add(new WeakReference<PlcEventTrigger>(trigger));
+                    
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[PlcEventContext] Registered: {trigger.EventName} ({trigger.Address})");
+                    #endif
+                }
+            }
+        }
+
+        /// <summary>
+        /// è¨»éŠ· PlcEventTriggerï¼ˆç”± PlcEventTrigger æ§åˆ¶é …å‘¼å«ï¼‰
+        /// </summary>
+        public static void Unregister(PlcEventTrigger trigger)
+        {
+            if (trigger == null)
+                return;
+
+            lock (_lock)
+            {
+                _registeredTriggers.RemoveWhere(wr => 
+                {
+                    if (wr.TryGetTarget(out var t))
+                        return ReferenceEquals(t, trigger);
+                    return true; // æ¸…ç†å·²å›æ”¶çš„å¼•ç”¨
+                });
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[PlcEventContext] Unregistered: {trigger.EventName} ({trigger.Address})");
+                #endif
+            }
+        }
+
+        /// <summary>
+        /// ?? å¾å·²è¨»å†Šçš„ PlcEventTrigger ä¸­æ™ºæ…§æå–ç›£æ§ä½å€
+        /// è‡ªå‹•åˆä½µé€£çºŒä½å€ï¼ˆä¾‹å¦‚ M237, M238, M239 â†’ M237,3ï¼‰
+        /// </summary>
+        /// <returns>ç›£æ§ä½å€å­—ä¸²ï¼ˆä¾‹å¦‚ "M237,3,M400,1"ï¼‰</returns>
+        public static string GenerateMonitorAddresses()
+        {
+            lock (_lock)
+            {
+                // æ¸…ç†å·²å›æ”¶çš„å¼±å¼•ç”¨
+                _registeredTriggers.RemoveWhere(wr => !wr.TryGetTarget(out _));
+
+                var addresses = new List<string>();
+                foreach (var weakRef in _registeredTriggers)
+                {
+                    if (weakRef.TryGetTarget(out var trigger) && !string.IsNullOrWhiteSpace(trigger.Address))
+                    {
+                        addresses.Add(trigger.Address.Trim().ToUpper());
+                    }
+                }
+
+                if (addresses.Count == 0)
+                    return string.Empty;
+
+                return GenerateOptimizedAddresses(addresses);
+            }
+        }
+
+        #endregion
+
+        #region å…¬é–‹æ–¹æ³•
+
+        /// <summary>
+        /// é€šçŸ¥äº‹ä»¶å·²è§¸ç™¼ï¼ˆç”± PlcEventTrigger æ§åˆ¶é …å…§éƒ¨å‘¼å«ï¼‰
+        /// ?? ä½¿ç”¨åŒæ­¥ Invokeï¼Œç¢ºä¿äº‹ä»¶è™•ç†å®Œæˆå¾Œæ‰è¿”å›
+        /// </summary>
+        /// <param name="trigger">è§¸ç™¼çš„ PlcEventTrigger</param>
+        /// <param name="value">è§¸ç™¼æ™‚çš„å€¼</param>
+        public static void NotifyEventTriggered(PlcEventTrigger trigger, object value)
+        {
+            if (trigger == null)
+                return;
+
+            // ?? æ”¹ç”¨åŒæ­¥ Invokeï¼ˆé˜»å¡ç­‰å¾…ï¼‰ï¼Œç¢ºä¿äº‹ä»¶è™•ç†å®Œæˆ
+            Application.Current?.Dispatcher.Invoke(() =>
+            {
+                EventTriggered?.Invoke(null, new PlcEventTriggeredEventArgs(trigger, value));
+            });
+
+            // è¨˜éŒ„æ—¥èªŒ
+            LogEventTrigger(trigger, value);
+        }
+
+        #endregion
+
+        #region ç§æœ‰æ–¹æ³•
+
+        /// <summary>
+        /// æ™ºæ…§åˆä½µé€£çºŒä½å€ï¼ˆé¡ä¼¼ PlcLabelContextï¼‰
+        /// </summary>
+        private static string GenerateOptimizedAddresses(List<string> addresses)
+        {
+            var addressGroups = new Dictionary<string, List<int>>();
+
+            // 1. è§£æä¸¦åˆ†çµ„ä½å€
+            foreach (var address in addresses)
+            {
+                if (System.Text.RegularExpressions.Regex.Match(address, @"^([A-Z]+)(\d+)$") is var match && match.Success)
+                {
+                    string deviceType = match.Groups[1].Value; // D, M, X, Y, R
+                    int deviceNumber = int.Parse(match.Groups[2].Value);
+
+                    if (!addressGroups.ContainsKey(deviceType))
+                    {
+                        addressGroups[deviceType] = new List<int>();
+                    }
+
+                    if (!addressGroups[deviceType].Contains(deviceNumber))
+                    {
+                        addressGroups[deviceType].Add(deviceNumber);
+                    }
+                }
+            }
+
+            // 2. æ™ºæ…§åˆä½µé€£çºŒä½å€
+            var monitorParts = new List<string>();
+
+            foreach (var group in addressGroups.OrderBy(g => g.Key))
+            {
+                string deviceType = group.Key;
+                var numbers = group.Value.OrderBy(n => n).ToList();
+
+                int i = 0;
+                while (i < numbers.Count)
+                {
+                    int start = numbers[i];
+                    int end = start;
+
+                    // æ‰¾å‡ºé€£çºŒç¯„åœ
+                    while (i + 1 < numbers.Count && numbers[i + 1] == end + 1)
+                    {
+                        i++;
+                        end = numbers[i];
+                    }
+
+                    int length = end - start + 1;
+
+                    // é€£çºŒ 2 å€‹ä»¥ä¸Šå°±æ‰¹æ¬¡åˆä½µ
+                    if (length >= 2)
+                    {
+                        monitorParts.Add($"{deviceType}{start},{length}");
+                    }
+                    else
+                    {
+                        monitorParts.Add($"{deviceType}{start},1");
+                    }
+
+                    i++;
+                }
+            }
+
+            return string.Join(",", monitorParts);
+        }
+
+        /// <summary>
+        /// è¨˜éŒ„äº‹ä»¶è§¸ç™¼æ—¥èªŒ
+        /// </summary>
+        private static void LogEventTrigger(PlcEventTrigger trigger, object value)
+        {
+            ComplianceContext.LogSystem(
+                $"[PlcEvent] {trigger.EventName} ({trigger.Address}) = {value}",
+                LogLevel.Info,
+                showInUi: false
+            );
+        }
+
+        #endregion
+    }
+
+    #region äº‹ä»¶åƒæ•¸
+
+    /// <summary>
+    /// PlcEvent è§¸ç™¼äº‹ä»¶åƒæ•¸
+    /// </summary>
+    public class PlcEventTriggeredEventArgs : EventArgs
+    {
+        /// <summary>
+        /// è§¸ç™¼äº‹ä»¶çš„ PlcEventTrigger
+        /// </summary>
+        public PlcEventTrigger Trigger { get; }
+
+        /// <summary>
+        /// è§¸ç™¼æ™‚çš„å€¼
+        /// </summary>
+        public object Value { get; }
+
+        /// <summary>
+        /// äº‹ä»¶ç™¼ç”Ÿæ™‚é–“
+        /// </summary>
+        public DateTime Timestamp { get; }
+
+        /// <summary>
+        /// PLC ä½å€ï¼ˆå¿«é€Ÿå­˜å–ï¼‰
+        /// </summary>
+        public string Address => Trigger.Address;
+
+        /// <summary>
+        /// äº‹ä»¶åç¨±ï¼ˆå¿«é€Ÿå­˜å–ï¼‰
+        /// </summary>
+        public string EventName => Trigger.EventName;
+
+        public PlcEventTriggeredEventArgs(PlcEventTrigger trigger, object value)
+        {
+            Trigger = trigger ?? throw new ArgumentNullException(nameof(trigger));
+            Value = value ?? throw new ArgumentNullException(nameof(value));
+            Timestamp = DateTime.Now;
+        }
+    }
+
+    #endregion
+}

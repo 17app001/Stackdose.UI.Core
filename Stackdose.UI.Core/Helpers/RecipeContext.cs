@@ -1,771 +1,771 @@
-using Stackdose.UI.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Stackdose.Abstractions.Hardware;
-using System.Text.RegularExpressions;
-using Stackdose.Abstractions.Logging;
-
-namespace Stackdose.UI.Core.Helpers
-{
-    /// <summary>
-    /// Recipe ºŞ²z¤ŞÀº (Recipe Management Context)
-    /// ¥Î³~: ¸ü¤J¡BºŞ²z©MºÊ±± Recipe °t¤è,²Å¦X FDA 21 CFR Part 11 ¼f­p°lÂÜ
-    /// </summary>
-    public static class RecipeContext
-    {
-        #region ÀRºAÄİ©Ê
-
-        /// <summary>
-        /// ·í«e¬¡°Êªº Recipe
-        /// </summary>
-        public static Recipe? CurrentRecipe { get; private set; }
-
-        /// <summary>
-        /// ·í«e¿ï¾Üªº Recipe ÀÉ®×¦WºÙ¡]¨Ò¦p¡GRecipe1.json, Recipe2.json, Recipe3.json¡^
-        /// </summary>
-        public static string CurrentRecipeFileName { get; private set; } = "Recipe1.json";
-
-        /// <summary>
-        /// ©Ò¦³¤w¸ü¤Jªº Recipe ¶°¦X
-        /// </summary>
-        public static Dictionary<string, Recipe> LoadedRecipes { get; } = new Dictionary<string, Recipe>();
-
-        /// <summary>
-        /// ¹w³] Recipe ÀÉ®×¸ô®|
-        /// </summary>
-        public static string DefaultRecipeFilePath { get; set; } = "Recipe1.json";
-
-        /// <summary>
-        /// Recipe ¥Ø¿ı¸ô®| (¥Î©ó±½´y¦h­Ó Recipe ÀÉ®×)
-        /// </summary>
-        public static string RecipeDirectory { get; set; } = "Recipes";
-
-        /// <summary>
-        /// ¬O§_¤wªì©l¤Æ
-        /// </summary>
-        public static bool IsInitialized { get; private set; } = false;
-
-        /// <summary>
-        /// ³Ì«á¸ü¤J®É¶¡
-        /// </summary>
-        public static DateTime? LastLoadTime { get; private set; }
-
-        /// <summary>
-        /// ³Ì«á¸ü¤Jµ²ªG°T®§
-        /// </summary>
-        public static string LastLoadMessage { get; private set; } = string.Empty;
-
-        #endregion
-
-        #region ¨Æ¥ó©w¸q
-
-        /// <summary>
-        /// Recipe ¸ü¤J¦¨¥\¨Æ¥ó
-        /// </summary>
-        public static event EventHandler<Recipe>? RecipeLoaded;
-
-        /// <summary>
-        /// Recipe ¸ü¤J¥¢±Ñ¨Æ¥ó
-        /// </summary>
-        public static event EventHandler<string>? RecipeLoadFailed;
-
-        /// <summary>
-        /// Recipe ¤Á´«¨Æ¥ó
-        /// </summary>
-        public static event EventHandler<Recipe>? RecipeChanged;
-
-        /// <summary>
-        /// Recipe ¶µ¥Ø§ó·s¨Æ¥ó
-        /// </summary>
-        public static event EventHandler<(Recipe recipe, RecipeItem item)>? RecipeItemUpdated;
-
-        #endregion
-
-        #region ªì©l¤Æ»P¸ü¤J
-
-        /// <summary>
-        /// Initialize Recipe system (called on application startup)
-        /// </summary>
-        /// <param name="autoLoad">Whether to auto-load default Recipe</param>
-        public static async Task<bool> InitializeAsync(bool autoLoad = true)
-        {
-            try
-            {
-                ComplianceContext.LogSystem(
-                    "[Recipe] Initializing Recipe system...",
-                    LogLevel.Info,
-                    showInUi: true
-                );
-
-                IsInitialized = true;
-
-                if (autoLoad)
-                {
-                    return await LoadRecipeAsync(DefaultRecipeFilePath, isAutoLoad: true);
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                ComplianceContext.LogSystem(
-                    $"[Recipe] Initialization failed: {ex.Message}",
-                    LogLevel.Error,
-                    showInUi: true
-                );
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// ¸ü¤J Recipe ÀÉ®×
-        /// </summary>
-        /// <param name="filePath">Recipe ÀÉ®×¦WºÙ¡]¨Ò¦p¡GRecipe1.json¡A·|¦Û°Ê±q Resources ¥Ø¿ı¸ü¤J¡^</param>
-        /// <param name="isAutoLoad">¬O§_¬°¦Û°Ê¸ü¤J</param>
-        /// <param name="setAsActive">¬O§_³]©w¬°·í«e¬¡°Ê Recipe</param>
-        public static async Task<bool> LoadRecipeAsync(
-            string filePath, 
-            bool isAutoLoad = false, 
-            bool setAsActive = true)
-        {
-            string loadMode = isAutoLoad ? "Auto-Load" : "Manual-Load";
-            string userName = ComplianceContext.CurrentUser ?? "System";
-
-            try
-            {
-                // ?? ¨Ï¥Î ResourcePathHelper ²Î¤@ºŞ²z¸ô®|
-                string fullPath;
-                
-                if (Path.IsPathRooted(filePath) && File.Exists(filePath))
-                {
-                    // ¤ä´©µ´¹ï¸ô®|¡]¦V¤U¬Û®e¡^
-                    fullPath = filePath;
-                }
-                else
-                {
-                    // Àu¥ı¨Ï¥Î ResourcePathHelper
-                    fullPath = ResourcePathHelper.GetResourceFilePath(filePath);
-                }
-
-                // 1. Check if file exists
-                if (!File.Exists(fullPath))
-                {
-                    string errorMsg = $"Recipe file not found: {fullPath}";
-                    LastLoadMessage = errorMsg;
-
-                    ComplianceContext.LogSystem(
-                        $"[Recipe] {errorMsg}",
-                        LogLevel.Warning,
-                        showInUi: true
-                    );
-
-                    // FDA Audit Trail: Record load failure
-                    ComplianceContext.LogAuditTrail(
-                        "Recipe Load",
-                        filePath,
-                        "N/A",
-                        "Failed - File not found",
-                        $"{loadMode} by {userName}",
-                        showInUi: false
-                    );
-
-                    RecipeLoadFailed?.Invoke(null, errorMsg);
-                    return false;
-                }
-
-                // 2. Read and parse JSON file
-                // ?? ¨Ï¥Î UTF-8 ½s½XÅª¨ú¡]¤ä´©¤¤¤å¡^
-                string jsonContent = await File.ReadAllTextAsync(fullPath, System.Text.Encoding.UTF8);
-                
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip,
-                    AllowTrailingCommas = true
-                };
-
-                var recipe = JsonSerializer.Deserialize<Recipe>(jsonContent, options);
-
-                if (recipe == null)
-                {
-                    string errorMsg = "Recipe parsing failed: Invalid JSON format";
-                    LastLoadMessage = errorMsg;
-
-                    ComplianceContext.LogSystem(
-                        $"[Recipe] {errorMsg}",
-                        LogLevel.Error,
-                        showInUi: true
-                    );
-
-                    ComplianceContext.LogAuditTrail(
-                        "Recipe Load",
-                        filePath,
-                        "N/A",
-                        "Failed - JSON parse error",
-                        $"{loadMode} by {userName}",
-                        showInUi: false
-                    );
-
-                    RecipeLoadFailed?.Invoke(null, errorMsg);
-                    return false;
-                }
-
-                // 3. Validate Recipe data
-                var (isValid, errors) = recipe.Validate();
-                if (!isValid)
-                {
-                    string errorMsg = $"Recipe validation failed: {string.Join("; ", errors)}";
-                    LastLoadMessage = errorMsg;
-
-                    ComplianceContext.LogSystem(
-                        $"[Recipe] {errorMsg}",
-                        LogLevel.Warning,
-                        showInUi: true
-                    );
-
-                    ComplianceContext.LogAuditTrail(
-                        "Recipe Load",
-                        filePath,
-                        "N/A",
-                        $"Failed - Validation error: {errors.First()}",
-                        $"{loadMode} by {userName}",
-                        showInUi: false
-                    );
-
-                    RecipeLoadFailed?.Invoke(null, errorMsg);
-                    return false;
-                }
-
-                // 4. Store in collection
-                LoadedRecipes[recipe.RecipeId] = recipe;
-
-                // 5. Set as current active Recipe
-                if (setAsActive)
-                {
-                    CurrentRecipe = recipe;
-                    CurrentRecipeFileName = Path.GetFileName(fullPath); // ? «O¦s·í«eÀÉ®×¦WºÙ
-                    LastLoadTime = DateTime.Now;
-                    RecipeChanged?.Invoke(null, recipe);
-                }
-
-                // 6. Update status
-                LastLoadMessage = $"Successfully loaded Recipe: {recipe.RecipeName} v{recipe.Version} ({recipe.EnabledItemCount} parameters)";
-
-                // 7. Log success message
-                ComplianceContext.LogSystem(
-                    $"[Recipe] {LastLoadMessage}",
-                    LogLevel.Success,
-                    showInUi: true
-                );
-
-                // 8. FDA Audit Trail: Record successful load
-                ComplianceContext.LogAuditTrail(
-                    "Recipe Load",
-                    filePath,
-                    CurrentRecipe?.RecipeId ?? "N/A",
-                    $"{recipe.RecipeId} v{recipe.Version}",
-                    $"{loadMode} by {userName} - {recipe.EnabledItemCount} items",
-                    showInUi: false
-                );
-
-                // 9. Trigger event
-                RecipeLoaded?.Invoke(null, recipe);
-
-                return true;
-            }
-            catch (JsonException jsonEx)
-            {
-                string errorMsg = $"JSON parsing error: {jsonEx.Message}";
-                LastLoadMessage = errorMsg;
-
-                ComplianceContext.LogSystem(
-                    $"[Recipe] {errorMsg}",
-                    LogLevel.Error,
-                    showInUi: true
-                );
-
-                ComplianceContext.LogAuditTrail(
-                    "Recipe Load",
-                    filePath,
-                    "N/A",
-                    $"Failed - {errorMsg}",
-                    $"{loadMode} by {userName}",
-                    showInUi: false
-                );
-
-                RecipeLoadFailed?.Invoke(null, errorMsg);
-                return false;
-            }
-            catch (Exception ex)
-            {
-                string errorMsg = $"Load failed: {ex.Message}";
-                LastLoadMessage = errorMsg;
-
-                ComplianceContext.LogSystem(
-                    $"[Recipe] {errorMsg}",
-                    LogLevel.Error,
-                    showInUi: true
-                );
-
-                ComplianceContext.LogAuditTrail(
-                    "Recipe Load",
-                    filePath,
-                    "N/A",
-                    $"Failed - {errorMsg}",
-                    $"{loadMode} by {userName}",
-                    showInUi: false
-                );
-
-                RecipeLoadFailed?.Invoke(null, errorMsg);
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Reload current Recipe
-        /// </summary>
-        public static async Task<bool> ReloadCurrentRecipeAsync()
-        {
-            if (CurrentRecipe == null)
-            {
-                ComplianceContext.LogSystem(
-                    "[Recipe] Cannot reload: No active Recipe",
-                    LogLevel.Warning,
-                    showInUi: true
-                );
-                return false;
-            }
-
-            return await LoadRecipeAsync(DefaultRecipeFilePath, isAutoLoad: false);
-        }
-
-        #endregion
-
-        #region Recipe Query and Switch
-
-        /// <summary>
-        /// Switch to specified Recipe
-        /// </summary>
-        public static bool SwitchRecipe(string recipeId)
-        {
-            if (LoadedRecipes.TryGetValue(recipeId, out var recipe))
-            {
-                string userName = ComplianceContext.CurrentUser ?? "System";
-                string oldRecipeId = CurrentRecipe?.RecipeId ?? "None";
-
-                CurrentRecipe = recipe;
-
-                ComplianceContext.LogSystem(
-                    $"[Recipe] Switch Recipe: {recipe.RecipeName} v{recipe.Version}",
-                    LogLevel.Info,
-                    showInUi: true
-                );
-
-                ComplianceContext.LogAuditTrail(
-                    "Recipe Switch",
-                    recipeId,
-                    oldRecipeId,
-                    recipe.RecipeId,
-                    $"Switch by {userName}",
-                    showInUi: false
-                );
-
-                RecipeChanged?.Invoke(null, recipe);
-                return true;
-            }
-
-            ComplianceContext.LogSystem(
-                $"[Recipe] Recipe not found: {recipeId}",
-                LogLevel.Warning,
-                showInUi: true
-            );
-            return false;
-        }
-
-        /// <summary>
-        /// Get parameter value by name
-        /// </summary>
-        public static string? GetParameterValue(string parameterName)
-        {
-            return CurrentRecipe?.GetItem(parameterName)?.Value;
-        }
-
-        /// <summary>
-        /// Get parameter value by address
-        /// </summary>
-        public static string? GetParameterValueByAddress(string address)
-        {
-            return CurrentRecipe?.GetItemByAddress(address)?.Value;
-        }
-
-        #endregion
-
-        #region Status Query
-
-        /// <summary>
-        /// Check if there is an active Recipe
-        /// </summary>
-        public static bool HasActiveRecipe => CurrentRecipe != null;
-
-        /// <summary>
-        /// Get current Recipe summary information
-        /// </summary>
-        public static string GetSummary()
-        {
-            if (CurrentRecipe == null)
-            {
-                return "No active Recipe";
-            }
-
-            return $"{CurrentRecipe.RecipeName} v{CurrentRecipe.Version} - {CurrentRecipe.EnabledItemCount} parameters";
-        }
-
-        #endregion
-
-        #region Recipe Monitoring
-
-        /// <summary>
-        /// ¥Í¦¨ Recipe ºÊ±±¦ì§}¦r¦ê (¥Î©ó PlcStatus ¦Û°Êµù¥U)
-        /// ®æ¦¡: "D100:1,D102:2,D104:1,M100:1,R2002:1,..."
-        /// </summary>
-        /// <returns>ºÊ±±¦ì§}°t¸m¦r¦ê</returns>
-        public static string GenerateMonitorAddresses()
-        {
-            if (CurrentRecipe == null || !CurrentRecipe.Items.Any())
-                return string.Empty;
-
-            var addresses = new List<string>();
-            var processedWords = new HashSet<string>(); // °lÂÜ¤w³B²zªº Word ¦a§}¡AÁ×§K­«½Æ
-
-            foreach (var item in CurrentRecipe.Items.Where(x => x.IsEnabled))
-            {
-                // ? ³B²z Word Bit¡]¨Ò¦p¡GR2002.5¡^
-                var wordBitMatch = Regex.Match(item.Address, @"^([DRWM])(\d+)\.(\d+)$");
-                if (wordBitMatch.Success && item.DataType?.Equals("Bit", StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    // ´£¨ú Word ¦a§}¡]¨Ò¦p¡GR2002¡^
-                    string wordAddress = $"{wordBitMatch.Groups[1].Value}{wordBitMatch.Groups[2].Value}";
-                    
-                    // ¦pªG³o­Ó Word ÁÙ¨S³Qµù¥U¡A´Nµù¥U¥¦¡]ªø«×¬° 1¡^
-                    if (!processedWords.Contains(wordAddress))
-                    {
-                        addresses.Add($"{wordAddress}:1");
-                        processedWords.Add(wordAddress);
-                    }
-                    continue;
-                }
-
-                // ? ³B²z¯Â Bit ¸Ë¸m¡]¨Ò¦p¡GM100, X10, Y20¡^
-                var pureBitMatch = Regex.Match(item.Address, @"^([MXY])(\d+)$");
-                if (pureBitMatch.Success && item.DataType?.Equals("Bit", StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    // ¯Â Bit ¸Ë¸m¤]µù¥U¬°ªø«× 1
-                    addresses.Add($"{item.Address}:1");
-                    continue;
-                }
-
-                // ? ³B²z Word/DWord ¸Ë¸m¡]­ì¦³ÅŞ¿è¡^
-                var match = Regex.Match(item.Address, @"^([DR])(\d+)$");
-                if (!match.Success)
-                    continue;
-
-                int length = 1;
-
-                // DWord/Float »İ­n¨â­Ó³sÄò¼È¦s¾¹
-                if (item.DataType?.Equals("DWord", StringComparison.OrdinalIgnoreCase) == true ||
-                    item.DataType?.Equals("Float", StringComparison.OrdinalIgnoreCase) == true ||
-                    item.DataType?.Equals("Int", StringComparison.OrdinalIgnoreCase) == true ||
-                    item.DataType?.Equals("Int32", StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    length = 2;
-                }
-
-                addresses.Add($"{item.Address}:{length}");
-            }
-
-            return string.Join(",", addresses);
-        }
-
-        #endregion
-
-        #region Recipe Download (Write to PLC)
-
-        /// <summary>
-        /// ¤U¸ü Recipe ¨ì PLC (±N Recipe °Ñ¼Æ­È¼g¤J PLC)
-        /// </summary>
-        /// <param name="plcManager">PLC Manager ¹ê¨Ò</param>
-        /// <param name="recipe">­n¤U¸üªº Recipe (null «h¨Ï¥Î CurrentRecipe)</param>
-        /// <returns>¦¨¥\¼g¤Jªº°Ñ¼Æ¼Æ¶q</returns>
-        public static async Task<int> DownloadRecipeToPLCAsync(IPlcManager plcManager, Recipe? recipe = null)
-        {
-            recipe ??= CurrentRecipe;
-
-            if (recipe == null)
-            {
-                ComplianceContext.LogSystem(
-                    "[Recipe] Cannot download: No active Recipe",
-                    LogLevel.Warning,
-                    showInUi: true
-                );
-                return 0;
-            }
-
-            if (plcManager?.PlcClient == null || !plcManager.IsConnected)
-            {
-                ComplianceContext.LogSystem(
-                    "[Recipe] Cannot download: PLC not connected",
-                    LogLevel.Error,
-                    showInUi: true
-                );
-                return 0;
-            }
-
-            string userName = ComplianceContext.CurrentUser ?? "System";
-            int successCount = 0;
-            int failCount = 0;
-            var errors = new List<string>();
-
-            try
-            {
-                ComplianceContext.LogSystem(
-                    $"[Recipe] Downloading Recipe to PLC: {recipe.RecipeName} v{recipe.Version}",
-                    LogLevel.Info,
-                    showInUi: true
-                );
-
-                foreach (var item in recipe.Items.Where(x => x.IsEnabled))
-                {
-                    try
-                    {
-                        bool writeSuccess = false;
-
-                        // ? ÀË¬d¬O§_¬° Bit ¦ì§}¡]¨Ò¦p¡GR2002.5, D100.3, M100¡^
-                        var bitMatch = Regex.Match(item.Address, @"^([DRWM])(\d+)\.(\d+)$");
-                        if (bitMatch.Success && item.DataType?.Equals("Bit", StringComparison.OrdinalIgnoreCase) == true)
-                        {
-                            // Bit ¦ì§}®æ¦¡¡GR2002.5 ªí¥Ü R2002 ªº²Ä 5 ­Ó bit
-                            string device = bitMatch.Groups[1].Value;
-                            int address = int.Parse(bitMatch.Groups[2].Value);
-                            int bitPos = int.Parse(bitMatch.Groups[3].Value);
-
-                            if (bitPos < 0 || bitPos > 15)
-                            {
-                                errors.Add($"{item.Name}: Invalid bit position {bitPos} (must be 0-15)");
-                                failCount++;
-                                continue;
-                            }
-
-                            if (int.TryParse(item.Value, out int bitValue) && (bitValue == 0 || bitValue == 1))
-                            {
-                                await plcManager.PlcClient.WriteBitAsync(device, address, bitPos, bitValue);
-                                writeSuccess = true;
-
-                                ComplianceContext.LogSystem(
-                                    $"[Recipe Download] {item.Name} ({item.Address}) = {bitValue}",
-                                    LogLevel.Info,
-                                    showInUi: false
-                                );
-                            }
-                            else
-                            {
-                                errors.Add($"{item.Name}: Invalid Bit value '{item.Value}' (must be 0 or 1)");
-                                failCount++;
-                                continue;
-                            }
-                        }
-                        // ? ÀË¬d¬O§_¬°¯Â Bit ¸Ë¸m¡]¨Ò¦p¡GM100, X10, Y20¡^
-                        else if (Regex.IsMatch(item.Address, @"^[MXY]\d+$") && 
-                                 item.DataType?.Equals("Bit", StringComparison.OrdinalIgnoreCase) == true)
-                        {
-                            // ¯Â Bit ¸Ë¸m¡]M, X, Y¡^
-                            var pureBitMatch = Regex.Match(item.Address, @"^([MXY])(\d+)$");
-                            if (pureBitMatch.Success)
-                            {
-                                string device = pureBitMatch.Groups[1].Value;
-                                int address = int.Parse(pureBitMatch.Groups[2].Value);
-
-                                if (int.TryParse(item.Value, out int bitValue) && (bitValue == 0 || bitValue == 1))
-                                {
-                                    await plcManager.PlcClient.WriteBitAsync(device, address, bitValue);
-                                    writeSuccess = true;
-
-                                    ComplianceContext.LogSystem(
-                                        $"[Recipe Download] {item.Name} ({item.Address}) = {bitValue}",
-                                        LogLevel.Info,
-                                        showInUi: false
-                                    );
-                                }
-                                else
-                                {
-                                    errors.Add($"{item.Name}: Invalid Bit value '{item.Value}' (must be 0 or 1)");
-                                    failCount++;
-                                    continue;
-                                }
-                            }
-                        }
-                        // ? Word/DWord ¸Ë¸m¡]­ì¦³ÅŞ¿è¡^
-                        else
-                        {
-                            // ¸ÑªR¦a§} (¨Ò¦p: D100, R200)
-                            var match = Regex.Match(item.Address, @"^([DR])(\d+)$");
-                            if (!match.Success)
-                            {
-                                errors.Add($"{item.Name}: Invalid address format {item.Address}");
-                                failCount++;
-                                continue;
-                            }
-
-                            string device = match.Groups[1].Value;
-                            int address = int.Parse(match.Groups[2].Value);
-
-                            // ®Ú¾Ú DataType ¶i¦æ¼g¤J
-                            if (item.DataType?.Equals("Short", StringComparison.OrdinalIgnoreCase) == true ||
-                                item.DataType?.Equals("Word", StringComparison.OrdinalIgnoreCase) == true)
-                            {
-                                // Short/Word: ³æ¤@¼È¦s¾¹
-                                if (short.TryParse(item.Value, out short value))
-                                {
-                                    await plcManager.PlcClient.WriteWordAsync(device, address, value);
-                                    writeSuccess = true;
-                                }
-                                else
-                                {
-                                    errors.Add($"{item.Name}: Invalid Short value '{item.Value}'");
-                                    failCount++;
-                                    continue;
-                                }
-                            }
-                            else if (item.DataType?.Equals("DWord", StringComparison.OrdinalIgnoreCase) == true ||
-                                     item.DataType?.Equals("Int", StringComparison.OrdinalIgnoreCase) == true ||
-                                     item.DataType?.Equals("Int32", StringComparison.OrdinalIgnoreCase) == true)
-                            {
-                                // DWord/Int: ¨â­Ó³sÄò¼È¦s¾¹
-                                if (int.TryParse(item.Value, out int value))
-                                {
-                                    await plcManager.PlcClient.WriteDWordAsync(device, address, value);
-                                    writeSuccess = true;
-                                }
-                                else
-                                {
-                                    errors.Add($"{item.Name}: Invalid Int value '{item.Value}'");
-                                    failCount++;
-                                    continue;
-                                }
-                            }
-                            else if (item.DataType?.Equals("Float", StringComparison.OrdinalIgnoreCase) == true)
-                            {
-                                // Float: ¨â­Ó³sÄò¼È¦s¾¹¡]±N float Âà¬° int ªí¥Ü¡A¨Ò¦p 3.5 -> 35¡A»İ­n°£¥H 10¡^
-                                if (float.TryParse(item.Value, out float floatValue))
-                                {
-                                    int intValue = (int)(floatValue * 10);
-                                    await plcManager.PlcClient.WriteDWordAsync(device, address, intValue);
-                                    writeSuccess = true;
-                                }
-                                else
-                                {
-                                    errors.Add($"{item.Name}: Invalid Float value '{item.Value}'");
-                                    failCount++;
-                                    continue;
-                                }
-                            }
-                            else
-                            {
-                                errors.Add($"{item.Name}: Unsupported DataType '{item.DataType}'");
-                                failCount++;
-                                continue;
-                            }
-
-                            if (writeSuccess)
-                            {
-                                ComplianceContext.LogSystem(
-                                    $"[Recipe Download] {item.Name} ({item.Address}) = {item.Value} {item.Unit}",
-                                    LogLevel.Info,
-                                    showInUi: false
-                                );
-                            }
-                        }
-
-                        if (writeSuccess)
-                        {
-                            successCount++;
-                        }
-                        else
-                        {
-                            errors.Add($"{item.Name}: Write failed");
-                            failCount++;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        errors.Add($"{item.Name}: {ex.Message}");
-                        failCount++;
-                    }
-                }
-
-                // °O¿ıµ²ªG
-                if (failCount == 0)
-                {
-                    ComplianceContext.LogSystem(
-                        $"[Recipe] Download completed successfully: {successCount}/{recipe.EnabledItemCount} parameters written",
-                        LogLevel.Success,
-                        showInUi: true
-                    );
-                }
-                else
-                {
-                    ComplianceContext.LogSystem(
-                        $"[Recipe] Download completed with errors: {successCount} success, {failCount} failed",
-                        LogLevel.Warning,
-                        showInUi: true
-                    );
-
-                    foreach (var error in errors.Take(3))
-                    {
-                        ComplianceContext.LogSystem(
-                            $"[Recipe] Error: {error}",
-                            LogLevel.Warning,
-                            showInUi: false
-                        );
-                    }
-                }
-
-                // FDA Audit Trail: °O¿ı¤U¸ü¾Ş§@
-                ComplianceContext.LogAuditTrail(
-                    "Recipe Download",
-                    recipe.RecipeId,
-                    "N/A",
-                    $"{recipe.RecipeName} v{recipe.Version}",
-                    $"Downloaded by {userName} - {successCount} success, {failCount} failed",
-                    showInUi: false
-                );
-
-                return successCount;
-            }
-            catch (Exception ex)
-            {
-                ComplianceContext.LogSystem(
-                    $"[Recipe] Download failed: {ex.Message}",
-                    LogLevel.Error,
-                    showInUi: true
-                );
-
-                ComplianceContext.LogAuditTrail(
-                    "Recipe Download",
-                    recipe.RecipeId,
-                    "N/A",
-                    "Failed",
-                    $"Download by {userName} - Error: {ex.Message}",
-                    showInUi: false
-                );
-
-                return successCount;
-            }
-        }
-
-        #endregion
-    }
-}
+using Stackdose.UI.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Stackdose.Abstractions.Hardware;
+using System.Text.RegularExpressions;
+using Stackdose.Abstractions.Logging;
+
+namespace Stackdose.UI.Core.Helpers
+{
+    /// <summary>
+    /// Recipe ç®¡ç†å¼•æ“ (Recipe Management Context)
+    /// ç”¨é€”: è¼‰å…¥ã€ç®¡ç†å’Œç›£æ§ Recipe é…æ–¹,ç¬¦åˆ FDA 21 CFR Part 11 å¯©è¨ˆè¿½è¹¤
+    /// </summary>
+    public static class RecipeContext
+    {
+        #region éœæ…‹å±¬æ€§
+
+        /// <summary>
+        /// ç•¶å‰æ´»å‹•çš„ Recipe
+        /// </summary>
+        public static Recipe? CurrentRecipe { get; private set; }
+
+        /// <summary>
+        /// ç•¶å‰é¸æ“‡çš„ Recipe æª”æ¡ˆåç¨±ï¼ˆä¾‹å¦‚ï¼šRecipe1.json, Recipe2.json, Recipe3.jsonï¼‰
+        /// </summary>
+        public static string CurrentRecipeFileName { get; private set; } = "Recipe1.json";
+
+        /// <summary>
+        /// æ‰€æœ‰å·²è¼‰å…¥çš„ Recipe é›†åˆ
+        /// </summary>
+        public static Dictionary<string, Recipe> LoadedRecipes { get; } = new Dictionary<string, Recipe>();
+
+        /// <summary>
+        /// é è¨­ Recipe æª”æ¡ˆè·¯å¾‘
+        /// </summary>
+        public static string DefaultRecipeFilePath { get; set; } = "Recipe1.json";
+
+        /// <summary>
+        /// Recipe ç›®éŒ„è·¯å¾‘ (ç”¨æ–¼æƒæå¤šå€‹ Recipe æª”æ¡ˆ)
+        /// </summary>
+        public static string RecipeDirectory { get; set; } = "Recipes";
+
+        /// <summary>
+        /// æ˜¯å¦å·²åˆå§‹åŒ–
+        /// </summary>
+        public static bool IsInitialized { get; private set; } = false;
+
+        /// <summary>
+        /// æœ€å¾Œè¼‰å…¥æ™‚é–“
+        /// </summary>
+        public static DateTime? LastLoadTime { get; private set; }
+
+        /// <summary>
+        /// æœ€å¾Œè¼‰å…¥çµæœè¨Šæ¯
+        /// </summary>
+        public static string LastLoadMessage { get; private set; } = string.Empty;
+
+        #endregion
+
+        #region äº‹ä»¶å®šç¾©
+
+        /// <summary>
+        /// Recipe è¼‰å…¥æˆåŠŸäº‹ä»¶
+        /// </summary>
+        public static event EventHandler<Recipe>? RecipeLoaded;
+
+        /// <summary>
+        /// Recipe è¼‰å…¥å¤±æ•—äº‹ä»¶
+        /// </summary>
+        public static event EventHandler<string>? RecipeLoadFailed;
+
+        /// <summary>
+        /// Recipe åˆ‡æ›äº‹ä»¶
+        /// </summary>
+        public static event EventHandler<Recipe>? RecipeChanged;
+
+        /// <summary>
+        /// Recipe é …ç›®æ›´æ–°äº‹ä»¶
+        /// </summary>
+        public static event EventHandler<(Recipe recipe, RecipeItem item)>? RecipeItemUpdated;
+
+        #endregion
+
+        #region åˆå§‹åŒ–èˆ‡è¼‰å…¥
+
+        /// <summary>
+        /// Initialize Recipe system (called on application startup)
+        /// </summary>
+        /// <param name="autoLoad">Whether to auto-load default Recipe</param>
+        public static async Task<bool> InitializeAsync(bool autoLoad = true)
+        {
+            try
+            {
+                ComplianceContext.LogSystem(
+                    "[Recipe] Initializing Recipe system...",
+                    LogLevel.Info,
+                    showInUi: true
+                );
+
+                IsInitialized = true;
+
+                if (autoLoad)
+                {
+                    return await LoadRecipeAsync(DefaultRecipeFilePath, isAutoLoad: true);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ComplianceContext.LogSystem(
+                    $"[Recipe] Initialization failed: {ex.Message}",
+                    LogLevel.Error,
+                    showInUi: true
+                );
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// è¼‰å…¥ Recipe æª”æ¡ˆ
+        /// </summary>
+        /// <param name="filePath">Recipe æª”æ¡ˆåç¨±ï¼ˆä¾‹å¦‚ï¼šRecipe1.jsonï¼Œæœƒè‡ªå‹•å¾ Resources ç›®éŒ„è¼‰å…¥ï¼‰</param>
+        /// <param name="isAutoLoad">æ˜¯å¦ç‚ºè‡ªå‹•è¼‰å…¥</param>
+        /// <param name="setAsActive">æ˜¯å¦è¨­å®šç‚ºç•¶å‰æ´»å‹• Recipe</param>
+        public static async Task<bool> LoadRecipeAsync(
+            string filePath, 
+            bool isAutoLoad = false, 
+            bool setAsActive = true)
+        {
+            string loadMode = isAutoLoad ? "Auto-Load" : "Manual-Load";
+            string userName = ComplianceContext.CurrentUser ?? "System";
+
+            try
+            {
+                // ?? ä½¿ç”¨ ResourcePathHelper çµ±ä¸€ç®¡ç†è·¯å¾‘
+                string fullPath;
+                
+                if (Path.IsPathRooted(filePath) && File.Exists(filePath))
+                {
+                    // æ”¯æ´çµ•å°è·¯å¾‘ï¼ˆå‘ä¸‹ç›¸å®¹ï¼‰
+                    fullPath = filePath;
+                }
+                else
+                {
+                    // å„ªå…ˆä½¿ç”¨ ResourcePathHelper
+                    fullPath = ResourcePathHelper.GetResourceFilePath(filePath);
+                }
+
+                // 1. Check if file exists
+                if (!File.Exists(fullPath))
+                {
+                    string errorMsg = $"Recipe file not found: {fullPath}";
+                    LastLoadMessage = errorMsg;
+
+                    ComplianceContext.LogSystem(
+                        $"[Recipe] {errorMsg}",
+                        LogLevel.Warning,
+                        showInUi: true
+                    );
+
+                    // FDA Audit Trail: Record load failure
+                    ComplianceContext.LogAuditTrail(
+                        "Recipe Load",
+                        filePath,
+                        "N/A",
+                        "Failed - File not found",
+                        $"{loadMode} by {userName}",
+                        showInUi: false
+                    );
+
+                    RecipeLoadFailed?.Invoke(null, errorMsg);
+                    return false;
+                }
+
+                // 2. Read and parse JSON file
+                // ?? ä½¿ç”¨ UTF-8 ç·¨ç¢¼è®€å–ï¼ˆæ”¯æ´ä¸­æ–‡ï¼‰
+                string jsonContent = await File.ReadAllTextAsync(fullPath, System.Text.Encoding.UTF8);
+                
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    ReadCommentHandling = JsonCommentHandling.Skip,
+                    AllowTrailingCommas = true
+                };
+
+                var recipe = JsonSerializer.Deserialize<Recipe>(jsonContent, options);
+
+                if (recipe == null)
+                {
+                    string errorMsg = "Recipe parsing failed: Invalid JSON format";
+                    LastLoadMessage = errorMsg;
+
+                    ComplianceContext.LogSystem(
+                        $"[Recipe] {errorMsg}",
+                        LogLevel.Error,
+                        showInUi: true
+                    );
+
+                    ComplianceContext.LogAuditTrail(
+                        "Recipe Load",
+                        filePath,
+                        "N/A",
+                        "Failed - JSON parse error",
+                        $"{loadMode} by {userName}",
+                        showInUi: false
+                    );
+
+                    RecipeLoadFailed?.Invoke(null, errorMsg);
+                    return false;
+                }
+
+                // 3. Validate Recipe data
+                var (isValid, errors) = recipe.Validate();
+                if (!isValid)
+                {
+                    string errorMsg = $"Recipe validation failed: {string.Join("; ", errors)}";
+                    LastLoadMessage = errorMsg;
+
+                    ComplianceContext.LogSystem(
+                        $"[Recipe] {errorMsg}",
+                        LogLevel.Warning,
+                        showInUi: true
+                    );
+
+                    ComplianceContext.LogAuditTrail(
+                        "Recipe Load",
+                        filePath,
+                        "N/A",
+                        $"Failed - Validation error: {errors.First()}",
+                        $"{loadMode} by {userName}",
+                        showInUi: false
+                    );
+
+                    RecipeLoadFailed?.Invoke(null, errorMsg);
+                    return false;
+                }
+
+                // 4. Store in collection
+                LoadedRecipes[recipe.RecipeId] = recipe;
+
+                // 5. Set as current active Recipe
+                if (setAsActive)
+                {
+                    CurrentRecipe = recipe;
+                    CurrentRecipeFileName = Path.GetFileName(fullPath); // ? ä¿å­˜ç•¶å‰æª”æ¡ˆåç¨±
+                    LastLoadTime = DateTime.Now;
+                    RecipeChanged?.Invoke(null, recipe);
+                }
+
+                // 6. Update status
+                LastLoadMessage = $"Successfully loaded Recipe: {recipe.RecipeName} v{recipe.Version} ({recipe.EnabledItemCount} parameters)";
+
+                // 7. Log success message
+                ComplianceContext.LogSystem(
+                    $"[Recipe] {LastLoadMessage}",
+                    LogLevel.Success,
+                    showInUi: true
+                );
+
+                // 8. FDA Audit Trail: Record successful load
+                ComplianceContext.LogAuditTrail(
+                    "Recipe Load",
+                    filePath,
+                    CurrentRecipe?.RecipeId ?? "N/A",
+                    $"{recipe.RecipeId} v{recipe.Version}",
+                    $"{loadMode} by {userName} - {recipe.EnabledItemCount} items",
+                    showInUi: false
+                );
+
+                // 9. Trigger event
+                RecipeLoaded?.Invoke(null, recipe);
+
+                return true;
+            }
+            catch (JsonException jsonEx)
+            {
+                string errorMsg = $"JSON parsing error: {jsonEx.Message}";
+                LastLoadMessage = errorMsg;
+
+                ComplianceContext.LogSystem(
+                    $"[Recipe] {errorMsg}",
+                    LogLevel.Error,
+                    showInUi: true
+                );
+
+                ComplianceContext.LogAuditTrail(
+                    "Recipe Load",
+                    filePath,
+                    "N/A",
+                    $"Failed - {errorMsg}",
+                    $"{loadMode} by {userName}",
+                    showInUi: false
+                );
+
+                RecipeLoadFailed?.Invoke(null, errorMsg);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                string errorMsg = $"Load failed: {ex.Message}";
+                LastLoadMessage = errorMsg;
+
+                ComplianceContext.LogSystem(
+                    $"[Recipe] {errorMsg}",
+                    LogLevel.Error,
+                    showInUi: true
+                );
+
+                ComplianceContext.LogAuditTrail(
+                    "Recipe Load",
+                    filePath,
+                    "N/A",
+                    $"Failed - {errorMsg}",
+                    $"{loadMode} by {userName}",
+                    showInUi: false
+                );
+
+                RecipeLoadFailed?.Invoke(null, errorMsg);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Reload current Recipe
+        /// </summary>
+        public static async Task<bool> ReloadCurrentRecipeAsync()
+        {
+            if (CurrentRecipe == null)
+            {
+                ComplianceContext.LogSystem(
+                    "[Recipe] Cannot reload: No active Recipe",
+                    LogLevel.Warning,
+                    showInUi: true
+                );
+                return false;
+            }
+
+            return await LoadRecipeAsync(DefaultRecipeFilePath, isAutoLoad: false);
+        }
+
+        #endregion
+
+        #region Recipe Query and Switch
+
+        /// <summary>
+        /// Switch to specified Recipe
+        /// </summary>
+        public static bool SwitchRecipe(string recipeId)
+        {
+            if (LoadedRecipes.TryGetValue(recipeId, out var recipe))
+            {
+                string userName = ComplianceContext.CurrentUser ?? "System";
+                string oldRecipeId = CurrentRecipe?.RecipeId ?? "None";
+
+                CurrentRecipe = recipe;
+
+                ComplianceContext.LogSystem(
+                    $"[Recipe] Switch Recipe: {recipe.RecipeName} v{recipe.Version}",
+                    LogLevel.Info,
+                    showInUi: true
+                );
+
+                ComplianceContext.LogAuditTrail(
+                    "Recipe Switch",
+                    recipeId,
+                    oldRecipeId,
+                    recipe.RecipeId,
+                    $"Switch by {userName}",
+                    showInUi: false
+                );
+
+                RecipeChanged?.Invoke(null, recipe);
+                return true;
+            }
+
+            ComplianceContext.LogSystem(
+                $"[Recipe] Recipe not found: {recipeId}",
+                LogLevel.Warning,
+                showInUi: true
+            );
+            return false;
+        }
+
+        /// <summary>
+        /// Get parameter value by name
+        /// </summary>
+        public static string? GetParameterValue(string parameterName)
+        {
+            return CurrentRecipe?.GetItem(parameterName)?.Value;
+        }
+
+        /// <summary>
+        /// Get parameter value by address
+        /// </summary>
+        public static string? GetParameterValueByAddress(string address)
+        {
+            return CurrentRecipe?.GetItemByAddress(address)?.Value;
+        }
+
+        #endregion
+
+        #region Status Query
+
+        /// <summary>
+        /// Check if there is an active Recipe
+        /// </summary>
+        public static bool HasActiveRecipe => CurrentRecipe != null;
+
+        /// <summary>
+        /// Get current Recipe summary information
+        /// </summary>
+        public static string GetSummary()
+        {
+            if (CurrentRecipe == null)
+            {
+                return "No active Recipe";
+            }
+
+            return $"{CurrentRecipe.RecipeName} v{CurrentRecipe.Version} - {CurrentRecipe.EnabledItemCount} parameters";
+        }
+
+        #endregion
+
+        #region Recipe Monitoring
+
+        /// <summary>
+        /// ç”Ÿæˆ Recipe ç›£æ§ä½å€å­—ä¸² (ç”¨æ–¼ PlcStatus è‡ªå‹•è¨»å†Š)
+        /// æ ¼å¼: "D100:1,D102:2,D104:1,M100:1,R2002:1,..."
+        /// </summary>
+        /// <returns>ç›£æ§ä½å€é…ç½®å­—ä¸²</returns>
+        public static string GenerateMonitorAddresses()
+        {
+            if (CurrentRecipe == null || !CurrentRecipe.Items.Any())
+                return string.Empty;
+
+            var addresses = new List<string>();
+            var processedWords = new HashSet<string>(); // è¿½è¹¤å·²è™•ç†çš„ Word åœ°å€ï¼Œé¿å…é‡è¤‡
+
+            foreach (var item in CurrentRecipe.Items.Where(x => x.IsEnabled))
+            {
+                // ? è™•ç† Word Bitï¼ˆä¾‹å¦‚ï¼šR2002.5ï¼‰
+                var wordBitMatch = Regex.Match(item.Address, @"^([DRWM])(\d+)\.(\d+)$");
+                if (wordBitMatch.Success && item.DataType?.Equals("Bit", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    // æå– Word åœ°å€ï¼ˆä¾‹å¦‚ï¼šR2002ï¼‰
+                    string wordAddress = $"{wordBitMatch.Groups[1].Value}{wordBitMatch.Groups[2].Value}";
+                    
+                    // å¦‚æœé€™å€‹ Word é‚„æ²’è¢«è¨»å†Šï¼Œå°±è¨»å†Šå®ƒï¼ˆé•·åº¦ç‚º 1ï¼‰
+                    if (!processedWords.Contains(wordAddress))
+                    {
+                        addresses.Add($"{wordAddress}:1");
+                        processedWords.Add(wordAddress);
+                    }
+                    continue;
+                }
+
+                // ? è™•ç†ç´” Bit è£ç½®ï¼ˆä¾‹å¦‚ï¼šM100, X10, Y20ï¼‰
+                var pureBitMatch = Regex.Match(item.Address, @"^([MXY])(\d+)$");
+                if (pureBitMatch.Success && item.DataType?.Equals("Bit", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    // ç´” Bit è£ç½®ä¹Ÿè¨»å†Šç‚ºé•·åº¦ 1
+                    addresses.Add($"{item.Address}:1");
+                    continue;
+                }
+
+                // ? è™•ç† Word/DWord è£ç½®ï¼ˆåŸæœ‰é‚è¼¯ï¼‰
+                var match = Regex.Match(item.Address, @"^([DR])(\d+)$");
+                if (!match.Success)
+                    continue;
+
+                int length = 1;
+
+                // DWord/Float éœ€è¦å…©å€‹é€£çºŒæš«å­˜å™¨
+                if (item.DataType?.Equals("DWord", StringComparison.OrdinalIgnoreCase) == true ||
+                    item.DataType?.Equals("Float", StringComparison.OrdinalIgnoreCase) == true ||
+                    item.DataType?.Equals("Int", StringComparison.OrdinalIgnoreCase) == true ||
+                    item.DataType?.Equals("Int32", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    length = 2;
+                }
+
+                addresses.Add($"{item.Address}:{length}");
+            }
+
+            return string.Join(",", addresses);
+        }
+
+        #endregion
+
+        #region Recipe Download (Write to PLC)
+
+        /// <summary>
+        /// ä¸‹è¼‰ Recipe åˆ° PLC (å°‡ Recipe åƒæ•¸å€¼å¯«å…¥ PLC)
+        /// </summary>
+        /// <param name="plcManager">PLC Manager å¯¦ä¾‹</param>
+        /// <param name="recipe">è¦ä¸‹è¼‰çš„ Recipe (null å‰‡ä½¿ç”¨ CurrentRecipe)</param>
+        /// <returns>æˆåŠŸå¯«å…¥çš„åƒæ•¸æ•¸é‡</returns>
+        public static async Task<int> DownloadRecipeToPLCAsync(IPlcManager plcManager, Recipe? recipe = null)
+        {
+            recipe ??= CurrentRecipe;
+
+            if (recipe == null)
+            {
+                ComplianceContext.LogSystem(
+                    "[Recipe] Cannot download: No active Recipe",
+                    LogLevel.Warning,
+                    showInUi: true
+                );
+                return 0;
+            }
+
+            if (plcManager?.PlcClient == null || !plcManager.IsConnected)
+            {
+                ComplianceContext.LogSystem(
+                    "[Recipe] Cannot download: PLC not connected",
+                    LogLevel.Error,
+                    showInUi: true
+                );
+                return 0;
+            }
+
+            string userName = ComplianceContext.CurrentUser ?? "System";
+            int successCount = 0;
+            int failCount = 0;
+            var errors = new List<string>();
+
+            try
+            {
+                ComplianceContext.LogSystem(
+                    $"[Recipe] Downloading Recipe to PLC: {recipe.RecipeName} v{recipe.Version}",
+                    LogLevel.Info,
+                    showInUi: true
+                );
+
+                foreach (var item in recipe.Items.Where(x => x.IsEnabled))
+                {
+                    try
+                    {
+                        bool writeSuccess = false;
+
+                        // ? æª¢æŸ¥æ˜¯å¦ç‚º Bit ä½å€ï¼ˆä¾‹å¦‚ï¼šR2002.5, D100.3, M100ï¼‰
+                        var bitMatch = Regex.Match(item.Address, @"^([DRWM])(\d+)\.(\d+)$");
+                        if (bitMatch.Success && item.DataType?.Equals("Bit", StringComparison.OrdinalIgnoreCase) == true)
+                        {
+                            // Bit ä½å€æ ¼å¼ï¼šR2002.5 è¡¨ç¤º R2002 çš„ç¬¬ 5 å€‹ bit
+                            string device = bitMatch.Groups[1].Value;
+                            int address = int.Parse(bitMatch.Groups[2].Value);
+                            int bitPos = int.Parse(bitMatch.Groups[3].Value);
+
+                            if (bitPos < 0 || bitPos > 15)
+                            {
+                                errors.Add($"{item.Name}: Invalid bit position {bitPos} (must be 0-15)");
+                                failCount++;
+                                continue;
+                            }
+
+                            if (int.TryParse(item.Value, out int bitValue) && (bitValue == 0 || bitValue == 1))
+                            {
+                                await plcManager.PlcClient.WriteBitAsync(device, address, bitPos, bitValue);
+                                writeSuccess = true;
+
+                                ComplianceContext.LogSystem(
+                                    $"[Recipe Download] {item.Name} ({item.Address}) = {bitValue}",
+                                    LogLevel.Info,
+                                    showInUi: false
+                                );
+                            }
+                            else
+                            {
+                                errors.Add($"{item.Name}: Invalid Bit value '{item.Value}' (must be 0 or 1)");
+                                failCount++;
+                                continue;
+                            }
+                        }
+                        // ? æª¢æŸ¥æ˜¯å¦ç‚ºç´” Bit è£ç½®ï¼ˆä¾‹å¦‚ï¼šM100, X10, Y20ï¼‰
+                        else if (Regex.IsMatch(item.Address, @"^[MXY]\d+$") && 
+                                 item.DataType?.Equals("Bit", StringComparison.OrdinalIgnoreCase) == true)
+                        {
+                            // ç´” Bit è£ç½®ï¼ˆM, X, Yï¼‰
+                            var pureBitMatch = Regex.Match(item.Address, @"^([MXY])(\d+)$");
+                            if (pureBitMatch.Success)
+                            {
+                                string device = pureBitMatch.Groups[1].Value;
+                                int address = int.Parse(pureBitMatch.Groups[2].Value);
+
+                                if (int.TryParse(item.Value, out int bitValue) && (bitValue == 0 || bitValue == 1))
+                                {
+                                    await plcManager.PlcClient.WriteBitAsync(device, address, bitValue);
+                                    writeSuccess = true;
+
+                                    ComplianceContext.LogSystem(
+                                        $"[Recipe Download] {item.Name} ({item.Address}) = {bitValue}",
+                                        LogLevel.Info,
+                                        showInUi: false
+                                    );
+                                }
+                                else
+                                {
+                                    errors.Add($"{item.Name}: Invalid Bit value '{item.Value}' (must be 0 or 1)");
+                                    failCount++;
+                                    continue;
+                                }
+                            }
+                        }
+                        // ? Word/DWord è£ç½®ï¼ˆåŸæœ‰é‚è¼¯ï¼‰
+                        else
+                        {
+                            // è§£æåœ°å€ (ä¾‹å¦‚: D100, R200)
+                            var match = Regex.Match(item.Address, @"^([DR])(\d+)$");
+                            if (!match.Success)
+                            {
+                                errors.Add($"{item.Name}: Invalid address format {item.Address}");
+                                failCount++;
+                                continue;
+                            }
+
+                            string device = match.Groups[1].Value;
+                            int address = int.Parse(match.Groups[2].Value);
+
+                            // æ ¹æ“š DataType é€²è¡Œå¯«å…¥
+                            if (item.DataType?.Equals("Short", StringComparison.OrdinalIgnoreCase) == true ||
+                                item.DataType?.Equals("Word", StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                // Short/Word: å–®ä¸€æš«å­˜å™¨
+                                if (short.TryParse(item.Value, out short value))
+                                {
+                                    await plcManager.PlcClient.WriteWordAsync(device, address, value);
+                                    writeSuccess = true;
+                                }
+                                else
+                                {
+                                    errors.Add($"{item.Name}: Invalid Short value '{item.Value}'");
+                                    failCount++;
+                                    continue;
+                                }
+                            }
+                            else if (item.DataType?.Equals("DWord", StringComparison.OrdinalIgnoreCase) == true ||
+                                     item.DataType?.Equals("Int", StringComparison.OrdinalIgnoreCase) == true ||
+                                     item.DataType?.Equals("Int32", StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                // DWord/Int: å…©å€‹é€£çºŒæš«å­˜å™¨
+                                if (int.TryParse(item.Value, out int value))
+                                {
+                                    await plcManager.PlcClient.WriteDWordAsync(device, address, value);
+                                    writeSuccess = true;
+                                }
+                                else
+                                {
+                                    errors.Add($"{item.Name}: Invalid Int value '{item.Value}'");
+                                    failCount++;
+                                    continue;
+                                }
+                            }
+                            else if (item.DataType?.Equals("Float", StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                // Float: å…©å€‹é€£çºŒæš«å­˜å™¨ï¼ˆå°‡ float è½‰ç‚º int è¡¨ç¤ºï¼Œä¾‹å¦‚ 3.5 -> 35ï¼Œéœ€è¦é™¤ä»¥ 10ï¼‰
+                                if (float.TryParse(item.Value, out float floatValue))
+                                {
+                                    int intValue = (int)(floatValue * 10);
+                                    await plcManager.PlcClient.WriteDWordAsync(device, address, intValue);
+                                    writeSuccess = true;
+                                }
+                                else
+                                {
+                                    errors.Add($"{item.Name}: Invalid Float value '{item.Value}'");
+                                    failCount++;
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                errors.Add($"{item.Name}: Unsupported DataType '{item.DataType}'");
+                                failCount++;
+                                continue;
+                            }
+
+                            if (writeSuccess)
+                            {
+                                ComplianceContext.LogSystem(
+                                    $"[Recipe Download] {item.Name} ({item.Address}) = {item.Value} {item.Unit}",
+                                    LogLevel.Info,
+                                    showInUi: false
+                                );
+                            }
+                        }
+
+                        if (writeSuccess)
+                        {
+                            successCount++;
+                        }
+                        else
+                        {
+                            errors.Add($"{item.Name}: Write failed");
+                            failCount++;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add($"{item.Name}: {ex.Message}");
+                        failCount++;
+                    }
+                }
+
+                // è¨˜éŒ„çµæœ
+                if (failCount == 0)
+                {
+                    ComplianceContext.LogSystem(
+                        $"[Recipe] Download completed successfully: {successCount}/{recipe.EnabledItemCount} parameters written",
+                        LogLevel.Success,
+                        showInUi: true
+                    );
+                }
+                else
+                {
+                    ComplianceContext.LogSystem(
+                        $"[Recipe] Download completed with errors: {successCount} success, {failCount} failed",
+                        LogLevel.Warning,
+                        showInUi: true
+                    );
+
+                    foreach (var error in errors.Take(3))
+                    {
+                        ComplianceContext.LogSystem(
+                            $"[Recipe] Error: {error}",
+                            LogLevel.Warning,
+                            showInUi: false
+                        );
+                    }
+                }
+
+                // FDA Audit Trail: è¨˜éŒ„ä¸‹è¼‰æ“ä½œ
+                ComplianceContext.LogAuditTrail(
+                    "Recipe Download",
+                    recipe.RecipeId,
+                    "N/A",
+                    $"{recipe.RecipeName} v{recipe.Version}",
+                    $"Downloaded by {userName} - {successCount} success, {failCount} failed",
+                    showInUi: false
+                );
+
+                return successCount;
+            }
+            catch (Exception ex)
+            {
+                ComplianceContext.LogSystem(
+                    $"[Recipe] Download failed: {ex.Message}",
+                    LogLevel.Error,
+                    showInUi: true
+                );
+
+                ComplianceContext.LogAuditTrail(
+                    "Recipe Download",
+                    recipe.RecipeId,
+                    "N/A",
+                    "Failed",
+                    $"Download by {userName} - Error: {ex.Message}",
+                    showInUi: false
+                );
+
+                return successCount;
+            }
+        }
+
+        #endregion
+    }
+}

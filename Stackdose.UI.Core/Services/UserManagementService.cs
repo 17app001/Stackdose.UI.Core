@@ -1,1159 +1,1159 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using Dapper;
-using Microsoft.Data.Sqlite;
-using Stackdose.UI.Core.Models;
-
-namespace Stackdose.UI.Core.Services
-{
-    /// <summary>
-    /// ¨Ï¥ÎªÌºŞ²zªA°È¹ê§@ (²Å¦X FDA 21 CFR Part 11)
-    /// </summary>
-    public class UserManagementService : IUserManagementService
-    {
-        private readonly string _connectionString;
-
-        public UserManagementService(string? dbPath = null)
-        {
-            var path = dbPath ?? System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "StackDoseData.db");
-            _connectionString = $"Data Source={path}";
-            InitializeDatabase();
-            
-            // ?? ½T«O¹w³] Admin ±b¸¹¦s¦b
-            EnsureDefaultAdminExists();
-            
-            #if DEBUG
-            System.Diagnostics.Debug.WriteLine("[UserManagementService] Initialized with default admin");
-            #endif
-        }
-
-        #region Database Initialization
-
-        private void InitializeDatabase()
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            // Users ¸ê®Æªí
-            conn.Execute(@"
-                CREATE TABLE IF NOT EXISTS Users (
-                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    UserId TEXT UNIQUE NOT NULL,
-                    DisplayName TEXT NOT NULL,
-                    PasswordHash TEXT NOT NULL,
-                    Salt TEXT NOT NULL,
-                    AccessLevel INTEGER NOT NULL,
-                    IsActive INTEGER NOT NULL DEFAULT 1,
-                    CreatedAt DATETIME NOT NULL,
-                    CreatedByUserId INTEGER,
-                    CreatedBy TEXT,
-                    LastLoginAt DATETIME,
-                    LastModifiedAt DATETIME,
-                    LastModifiedByUserId INTEGER,
-                    Email TEXT,
-                    Department TEXT,
-                    Remarks TEXT
-                );");
-
-            // UserAuditLogs ¸ê®Æªí
-            conn.Execute(@"
-                CREATE TABLE IF NOT EXISTS UserAuditLogs (
-                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Timestamp DATETIME NOT NULL,
-                    OperatorUserId INTEGER NOT NULL,
-                    OperatorUserName TEXT NOT NULL,
-                    Action INTEGER NOT NULL,
-                    TargetUserId INTEGER,
-                    TargetUserName TEXT,
-                    Details TEXT,
-                    IpAddress TEXT
-                );");
-
-            // «Ø¥ß¯Á¤Ş
-            conn.Execute("CREATE INDEX IF NOT EXISTS idx_users_userid ON Users(UserId);");
-            conn.Execute("CREATE INDEX IF NOT EXISTS idx_users_accesslevel ON Users(AccessLevel);");
-            conn.Execute("CREATE INDEX IF NOT EXISTS idx_auditlogs_timestamp ON UserAuditLogs(Timestamp);");
-            conn.Execute("CREATE INDEX IF NOT EXISTS idx_auditlogs_targetuser ON UserAuditLogs(TargetUserId);");
-        }
-
-        /// <summary>
-        /// ½T«O¹w³] Admin ©M SuperAdmin ±b¸¹¦s¦b
-        /// </summary>
-        private void EnsureDefaultAdminExists()
-        {
-            try
-            {
-                using var conn = new SqliteConnection(_connectionString);
-                conn.Open();
-
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine("[UserManagementService] Checking default accounts...");
-                #endif
-
-                // ?? ­º¥ı¡G±N©Ò¦³ÂÂ®æ¦¡ªº UserId Âà´«¬° UID-XXXXXX ®æ¦¡
-                MigrateUserIdsToUidFormat(conn);
-
-                // ÀË¬d¬O§_¤w¦³ SuperAdmin ±b¸¹ (UID-000001)
-                var superAdminExists = conn.ExecuteScalar<int>(
-                    "SELECT COUNT(*) FROM Users WHERE UserId = @UserId",
-                    new { UserId = "UID-000001" });
-
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[UserManagementService] SuperAdmin (UID-000001) exists: {superAdminExists > 0}");
-                #endif
-
-                if (superAdminExists == 0)
-                {
-                    // «Ø¥ß¹w³] SuperAdmin ±b¸¹
-                    var (superHash, superSalt) = HashPassword("superadmin");
-
-                    conn.Execute(@"
-                        INSERT INTO Users (UserId, DisplayName, PasswordHash, Salt, AccessLevel, IsActive, 
-                                          CreatedAt, CreatedBy, Email, Department, Remarks)
-                        VALUES (@UserId, @DisplayName, @PasswordHash, @Salt, @AccessLevel, @IsActive, 
-                               @CreatedAt, @CreatedBy, @Email, @Department, @Remarks)",
-                        new
-                        {
-                            UserId = "UID-000001",
-                            DisplayName = "SuperAdmin",
-                            PasswordHash = superHash,
-                            Salt = superSalt,
-                            AccessLevel = (int)AccessLevel.SuperAdmin,
-                            IsActive = 1,
-                            CreatedAt = DateTime.Now,
-                            CreatedBy = "System",
-                            Email = "superadmin@stackdose.com",
-                            Department = "IT",
-                            Remarks = "Default super administrator account with full access"
-                        });
-
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine("[UserManagementService] Default SuperAdmin created: UID-000001 / superadmin");
-                    #endif
-                }
-
-                // ¿é¥X©Ò¦³¨Ï¥ÎªÌ¦Cªí¡]´ú¸Õ¥Î¡^
-                #if DEBUG
-                var allUsers = conn.Query<dynamic>("SELECT UserId, DisplayName, AccessLevel, IsActive FROM Users ORDER BY AccessLevel DESC, UserId");
-                System.Diagnostics.Debug.WriteLine("[UserManagementService] Current users in database:");
-                foreach (var user in allUsers)
-                {
-                    System.Diagnostics.Debug.WriteLine($"  - {user.UserId} ({user.DisplayName}) - Level {user.AccessLevel}, Active: {user.IsActive}");
-                }
-                #endif
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[UserManagementService] EnsureDefaultAdminExists Error: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"[UserManagementService] Stack trace: {ex.StackTrace}");
-            }
-        }
-
-        /// <summary>
-        /// ?? ±NÂÂ®æ¦¡ªº UserId Âà´«¬° UID-XXXXXX ®æ¦¡
-        /// «öÅv­­µ¥¯Å±Æ§Ç¡GSuperAdmin -> Admin -> Supervisor -> Instructor -> Operator -> Guest
-        /// </summary>
-        private void MigrateUserIdsToUidFormat(SqliteConnection conn)
-        {
-            try
-            {
-                // ÀË¬d¬O§_¤w¦³ UID ®æ¦¡ªº¥Î¤á¡]¦pªG¦³¡Aªí¥Ü¤w¸gÂà´«¹L¡^
-                var uidCount = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM Users WHERE UserId LIKE 'UID-%'");
-                var totalCount = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM Users");
-                
-                // ¦pªG©Ò¦³¥Î¤á³£¤w¸g¬O UID ®æ¦¡¡A¸õ¹L
-                if (uidCount == totalCount && totalCount > 0)
-                {
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine("[UserManagementService] All users already have UID format, skipping migration");
-                    #endif
-                    return;
-                }
-
-                // ¨ú±o©Ò¦³«D UID ®æ¦¡ªº¥Î¤á¡A«öÅv­­µ¥¯Å±Æ§Ç¡]°ª¨ì§C¡^
-                var usersToMigrate = conn.Query<dynamic>(@"
-                    SELECT Id, UserId, DisplayName, AccessLevel 
-                    FROM Users 
-                    WHERE UserId NOT LIKE 'UID-%'
-                    ORDER BY AccessLevel DESC, Id ASC
-                ").ToList();
-
-                if (usersToMigrate.Count == 0)
-                {
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine("[UserManagementService] No users need migration");
-                    #endif
-                    return;
-                }
-
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[UserManagementService] Migrating {usersToMigrate.Count} users to UID format...");
-                #endif
-
-                // ¨ú±o·í«e³Ì¤jªº UID ½s¸¹
-                int nextUidNumber = 1;
-                var maxUid = conn.ExecuteScalar<string>("SELECT MAX(UserId) FROM Users WHERE UserId LIKE 'UID-%'");
-                if (!string.IsNullOrEmpty(maxUid))
-                {
-                    var numPart = maxUid.Replace("UID-", "");
-                    if (int.TryParse(numPart, out int maxNum))
-                    {
-                        nextUidNumber = maxNum + 1;
-                    }
-                }
-
-                // «Ø¥ßÂÂ UserId ¨ì·s UserId ªº¹ï·Óªí
-                var uidMapping = new Dictionary<string, string>();
-
-                // ¶}©lÂà´«
-                foreach (var user in usersToMigrate)
-                {
-                    string oldUserId = user.UserId;
-                    string newUserId = $"UID-{nextUidNumber:D6}";
-                    
-                    uidMapping[oldUserId] = newUserId;
-
-                    // §ó·s Users ªí
-                    conn.Execute(
-                        "UPDATE Users SET UserId = @NewUserId WHERE Id = @Id",
-                        new { NewUserId = newUserId, Id = (int)user.Id });
-
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"  - {oldUserId} -> {newUserId} ({user.DisplayName}, Level {user.AccessLevel})");
-                    #endif
-
-                    nextUidNumber++;
-                }
-
-                // ?? §ó·s©Ò¦³¬ÛÃö¤é»x°O¿ı¤¤ªº UserId
-                UpdateLogUserIds(conn, uidMapping);
-
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[UserManagementService] Migration completed. {usersToMigrate.Count} users migrated.");
-                #endif
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[UserManagementService] MigrateUserIdsToUidFormat Error: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// ?? §ó·s©Ò¦³¤é»x°O¿ı¤¤ªº UserId
-        /// </summary>
-        private void UpdateLogUserIds(SqliteConnection conn, Dictionary<string, string> uidMapping)
-        {
-            try
-            {
-                foreach (var mapping in uidMapping)
-                {
-                    string oldId = mapping.Key;
-                    string newId = mapping.Value;
-
-                    // §ó·s AuditTrails
-                    int auditUpdated = conn.Execute(
-                        "UPDATE AuditTrails SET User = @NewId WHERE User = @OldId",
-                        new { NewId = newId, OldId = oldId });
-
-                    // §ó·s OperationLogs
-                    int opUpdated = conn.Execute(
-                        "UPDATE OperationLogs SET UserId = @NewId WHERE UserId = @OldId",
-                        new { NewId = newId, OldId = oldId });
-
-                    // §ó·s EventLogs
-                    int eventUpdated = conn.Execute(
-                        "UPDATE EventLogs SET UserId = @NewId WHERE UserId = @OldId",
-                        new { NewId = newId, OldId = oldId });
-
-                    // §ó·s PeriodicDataLogs
-                    int periodicUpdated = conn.Execute(
-                        "UPDATE PeriodicDataLogs SET UserId = @NewId WHERE UserId = @OldId",
-                        new { NewId = newId, OldId = oldId });
-
-                    #if DEBUG
-                    if (auditUpdated > 0 || opUpdated > 0 || eventUpdated > 0 || periodicUpdated > 0)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"  Log updates for {oldId} -> {newId}:");
-                        System.Diagnostics.Debug.WriteLine($"    AuditTrails: {auditUpdated}, OperationLogs: {opUpdated}, EventLogs: {eventUpdated}, PeriodicData: {periodicUpdated}");
-                    }
-                    #endif
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[UserManagementService] UpdateLogUserIds Error: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// ?? ²£¥Í¤U¤@­Ó¥i¥Îªº UID
-        /// </summary>
-        public string GenerateNextUserId()
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            // ¨ú±o·í«e³Ì¤jªº UID ½s¸¹
-            var maxUid = conn.ExecuteScalar<string>("SELECT MAX(UserId) FROM Users WHERE UserId LIKE 'UID-%'");
-            
-            int nextNumber = 1;
-            if (!string.IsNullOrEmpty(maxUid))
-            {
-                var numPart = maxUid.Replace("UID-", "");
-                if (int.TryParse(numPart, out int maxNum))
-                {
-                    nextNumber = maxNum + 1;
-                }
-            }
-
-            return $"UID-{nextNumber:D6}";
-        }
-
-        #endregion
-
-        #region Password Hashing
-
-        private (string Hash, string Salt) HashPassword(string password)
-        {
-            // ¥Í¦¨ Salt
-            byte[] saltBytes = new byte[32];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(saltBytes);
-            }
-            string salt = Convert.ToBase64String(saltBytes);
-
-            // ­pºâ Hash (SHA256 + Salt)
-            using (var sha256 = SHA256.Create())
-            {
-                var passwordWithSalt = Encoding.UTF8.GetBytes(password + salt);
-                var hashBytes = sha256.ComputeHash(passwordWithSalt);
-                string hash = Convert.ToBase64String(hashBytes);
-                return (hash, salt);
-            }
-        }
-
-        private bool VerifyPassword(string password, string hash, string salt)
-        {
-            using (var sha256 = SHA256.Create())
-            {
-                var passwordWithSalt = Encoding.UTF8.GetBytes(password + salt);
-                var hashBytes = sha256.ComputeHash(passwordWithSalt);
-                string computedHash = Convert.ToBase64String(hashBytes);
-                return computedHash == hash;
-            }
-        }
-
-        #endregion
-
-        #region Authentication
-
-        /// <summary>
-        /// ?? ¸ê®Æ®w±K½XÅçÃÒ¡]¥Î©ó¥»¦a³Ğ«Øªº¨Ï¥ÎªÌ¡^
-        /// ¤ä´©¨Ï¥Î UserId ©Î DisplayName µn¤J
-        /// </summary>
-        /// <param name="userId">¨Ï¥ÎªÌ ID ©Î DisplayName</param>
-        /// <param name="password">©ú¤å±K½X</param>
-        /// <returns>ÅçÃÒµ²ªG</returns>
-        public async Task<(bool Success, string Message, UserAccount? User)> AuthenticateAsync(string userId, string password)
-        {
-            try
-            {
-                using var conn = new SqliteConnection(_connectionString);
-                await conn.OpenAsync();
-
-                // ?? ¬d¸ß¨Ï¥ÎªÌ¡G¤ä´© UserId ©Î DisplayName
-                var user = await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                    "SELECT * FROM Users WHERE (UserId = @UserId OR DisplayName = @UserId) AND IsActive = 1",
-                    new { UserId = userId });
-
-                if (user == null)
-                {
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[UserManagementService] AuthenticateAsync: User not found - {userId}");
-                    #endif
-                    return (false, "¨Ï¥ÎªÌ¤£¦s¦b©Î¤w°±¥Î", null);
-                }
-
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[UserManagementService] AuthenticateAsync: Found user - {user.UserId} ({user.DisplayName})");
-                #endif
-
-                // ÅçÃÒ±K½X
-                if (!VerifyPassword(password, user.PasswordHash, user.Salt))
-                {
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[UserManagementService] AuthenticateAsync: Password mismatch for {userId}");
-                    #endif
-                    return (false, "±K½X¿ù»~", null);
-                }
-
-                // §ó·s³Ì«áµn¤J®É¶¡
-                await conn.ExecuteAsync(
-                    "UPDATE Users SET LastLoginAt = @Now WHERE Id = @Id",
-                    new { Now = DateTime.Now, Id = user.Id });
-
-                user.LastLoginAt = DateTime.Now;
-
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[UserManagementService] AuthenticateAsync: Login successful for {user.UserId}");
-                #endif
-
-                return (true, "ÅçÃÒ¦¨¥\", user);
-            }
-            catch (Exception ex)
-            {
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[UserManagementService] AuthenticateAsync Error: {ex.Message}");
-                #endif
-                return (false, $"ÅçÃÒ¥¢±Ñ: {ex.Message}", null);
-            }
-        }
-
-        #endregion
-
-        #region Create User
-
-        public async Task<(bool Success, string Message, UserAccount? User)> CreateUserAsync(
-            string userId,
-            string displayName,
-            string password,
-            AccessLevel accessLevel,
-            int creatorUserId,
-            string? email = null,
-            string? department = null,
-            string? remarks = null)
-        {
-            try
-            {
-                using var conn = new SqliteConnection(_connectionString);
-                await conn.OpenAsync();
-
-                // ?? ¦pªG¶Ç¤Jªº userId ¤£¬O UID ®æ¦¡¡A¦Û°Ê²£¥Í·sªº UID
-                string actualUserId = userId;
-                if (!userId.StartsWith("UID-"))
-                {
-                    actualUserId = GenerateNextUserId();
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[UserManagementService] Auto-generated UserId: {actualUserId} (original: {userId})");
-                    #endif
-                }
-
-                // ÀË¬d UserId ¬O§_¤w¦s¦b
-                var existing = await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                    "SELECT * FROM Users WHERE UserId = @UserId",
-                    new { UserId = actualUserId });
-
-                if (existing != null)
-                {
-                    return (false, $"User ID '{actualUserId}' already exists", null);
-                }
-
-                // ¨ú±o«Ø¥ßªÌ¸ê°T
-                var creator = await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                    "SELECT * FROM Users WHERE Id = @Id",
-                    new { Id = creatorUserId });
-
-                if (creator == null)
-                {
-                    return (false, "Creator not found", null);
-                }
-
-                // ÀË¬dÅv­­
-                if (!CanManageUser(creator.AccessLevel, accessLevel))
-                {
-                    return (false, $"You don't have permission to create {accessLevel} level user", null);
-                }
-
-                // Hash ±K½X
-                var (hash, salt) = HashPassword(password);
-
-                // «Ø¥ß¨Ï¥ÎªÌ
-                var newUser = new UserAccount
-                {
-                    UserId = actualUserId,
-                    DisplayName = displayName,
-                    PasswordHash = hash,
-                    Salt = salt,
-                    AccessLevel = accessLevel,
-                    IsActive = true,
-                    CreatedAt = DateTime.Now,
-                    CreatedByUserId = creatorUserId,
-                    CreatedBy = creator.DisplayName,
-                    Email = email,
-                    Department = department,
-                    Remarks = remarks
-                };
-
-                // ¼g¤J¸ê®Æ®w
-                var sql = @"
-                    INSERT INTO Users (UserId, DisplayName, PasswordHash, Salt, AccessLevel, IsActive, 
-                                      CreatedAt, CreatedByUserId, CreatedBy, Email, Department, Remarks)
-                    VALUES (@UserId, @DisplayName, @PasswordHash, @Salt, @AccessLevel, @IsActive, 
-                           @CreatedAt, @CreatedByUserId, @CreatedBy, @Email, @Department, @Remarks);
-                    SELECT last_insert_rowid();";
-
-                newUser.Id = await conn.ExecuteScalarAsync<int>(sql, newUser);
-
-                // °O¿ı¼f­p¤é»x
-                await LogAuditAsync(conn, new UserAuditLog
-                {
-                    Timestamp = DateTime.Now,
-                    OperatorUserId = creatorUserId,
-                    OperatorUserName = creator.DisplayName,
-                    Action = UserAuditAction.CreateUser,
-                    TargetUserId = newUser.Id,
-                    TargetUserName = actualUserId,
-                    Details = $"Created user: {displayName} ({accessLevel}), UID: {actualUserId}"
-                });
-
-                return (true, $"User created successfully: {actualUserId}", newUser);
-            }
-            catch (Exception ex)
-            {
-                return (false, $"Create failed: {ex.Message}", null);
-            }
-        }
-
-        /// <summary>
-        /// ?? ·s¼W¡G±q Windows AD «Ø¥ß¨Ï¥ÎªÌ
-        /// </summary>
-        /// <param name="adUsername">AD ¨Ï¥ÎªÌ¦WºÙ</param>
-        /// <param name="accessLevel">­nµ¹¤©ªºÅv­­µ¥¯Å</param>
-        /// <param name="creatorUserId">«Ø¥ßªÌªº UserId</param>
-        /// <param name="defaultPassword">¹w³]±K½X¡]¿ï¶ñ¡A¥Î©ó¥»¦aÅçÃÒ fallback¡^</param>
-        /// <returns>¾Ş§@µ²ªG</returns>
-        public async Task<(bool Success, string Message, UserAccount? User)> CreateUserFromAdAsync(
-            string adUsername,
-            AccessLevel accessLevel,
-            int creatorUserId,
-            string? defaultPassword = null)
-        {
-            try
-            {
-                using var conn = new SqliteConnection(_connectionString);
-                await conn.OpenAsync();
-
-                // 1. ÀË¬d AD ¨Ï¥ÎªÌ¬O§_¦s¦b
-                var adService = new AdAuthenticationService();
-                var adUserInfo = adService.GetUserInfo(adUsername);
-
-                if (adUserInfo == null)
-                {
-                    return (false, $"AD ¨Ï¥ÎªÌ '{adUsername}' ¤£¦s¦b©ÎµLªk¦s¨ú", null);
-                }
-
-                if (!adUserInfo.IsEnabled)
-                {
-                    return (false, $"AD ¨Ï¥ÎªÌ '{adUsername}' ¤w°±¥Î", null);
-                }
-
-                // 2. ÀË¬d UserId ¬O§_¤w¦s¦b
-                var existing = await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                    "SELECT * FROM Users WHERE UserId = @UserId",
-                    new { UserId = adUsername });
-
-                if (existing != null)
-                {
-                    return (false, $"¨Ï¥ÎªÌ ID '{adUsername}' ¤w¦s¦b", null);
-                }
-
-                // 3. ¨ú±o«Ø¥ßªÌ¸ê°T
-                var creator = await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                    "SELECT * FROM Users WHERE Id = @Id",
-                    new { Id = creatorUserId });
-
-                if (creator == null)
-                {
-                    return (false, "§ä¤£¨ì«Ø¥ßªÌ¸ê°T", null);
-                }
-
-                // 4. ÀË¬dÅv­­
-                if (!CanManageUser(creator.AccessLevel, accessLevel))
-                {
-                    return (false, $"±z¨S¦³Åv­­«Ø¥ß {accessLevel} µ¥¯Åªº¨Ï¥ÎªÌ", null);
-                }
-
-                // 5. Hash ¹w³]±K½X¡]¦pªG´£¨Ñ¡^
-                string hash, salt;
-                if (!string.IsNullOrWhiteSpace(defaultPassword))
-                {
-                    (hash, salt) = HashPassword(defaultPassword);
-                }
-                else
-                {
-                    // ¨Ï¥ÎÀH¾÷±K½X§@¬° fallback¡]¦ı¹ê»Ú¤£·|¥Î¨ì¡A¦]¬°Àu¥ı¨Ï¥Î AD¡^
-                    var randomPassword = Guid.NewGuid().ToString("N").Substring(0, 16);
-                    (hash, salt) = HashPassword(randomPassword);
-                }
-
-                // 6. «Ø¥ß¨Ï¥ÎªÌ¡]±q AD ¦P¨B¸ê°T¡^
-                var newUser = new UserAccount
-                {
-                    UserId = adUserInfo.Username,
-                    DisplayName = adUserInfo.DisplayName,
-                    PasswordHash = hash,
-                    Salt = salt,
-                    AccessLevel = accessLevel,
-                    IsActive = true,
-                    CreatedAt = DateTime.Now,
-                    CreatedByUserId = creatorUserId,
-                    CreatedBy = creator.DisplayName,
-                    Email = adUserInfo.Email,
-                    Department = adUserInfo.Description, // AD Description ¥i¯à¥]§t³¡ªù¸ê°T
-                    Remarks = $"Created from Windows AD: {adUserInfo.Username}"
-                };
-
-                // 7. ¼g¤J¸ê®Æ®w
-                var sql = @"
-                    INSERT INTO Users (UserId, DisplayName, PasswordHash, Salt, AccessLevel, IsActive, 
-                                      CreatedAt, CreatedByUserId, CreatedBy, Email, Department, Remarks)
-                    VALUES (@UserId, @DisplayName, @PasswordHash, @Salt, @AccessLevel, @IsActive, 
-                           @CreatedAt, @CreatedByUserId, @CreatedBy, @Email, @Department, @Remarks);
-                    SELECT last_insert_rowid();";
-
-                newUser.Id = await conn.ExecuteScalarAsync<int>(sql, newUser);
-
-                // 8. °O¿ı¼f­p­y¸ñ
-                await LogAuditAsync(conn, new UserAuditLog
-                {
-                    Timestamp = DateTime.Now,
-                    OperatorUserId = creatorUserId,
-                    OperatorUserName = creator.DisplayName,
-                    Action = UserAuditAction.CreateUser,
-                    TargetUserId = newUser.Id,
-                    TargetUserName = adUsername,
-                    Details = $"±q AD «Ø¥ß¨Ï¥ÎªÌ: {adUserInfo.DisplayName} ({accessLevel})"
-                });
-
-                return (true, $"¤w±q AD «Ø¥ß¨Ï¥ÎªÌ: {adUserInfo.DisplayName}", newUser);
-            }
-            catch (Exception ex)
-            {
-                return (false, $"«Ø¥ß¥¢±Ñ: {ex.Message}", null);
-            }
-        }
-
-        #endregion
-
-        #region Delete User
-
-        public async Task<(bool Success, string Message)> SoftDeleteUserAsync(int targetUserId, int operatorUserId)
-        {
-            try
-            {
-                using var conn = new SqliteConnection(_connectionString);
-                await conn.OpenAsync();
-
-                var operatorUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                    "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId });
-                var targetUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                    "SELECT * FROM Users WHERE Id = @Id", new { Id = targetUserId });
-
-                if (operatorUser == null || targetUser == null)
-                {
-                    return (false, "§ä¤£¨ì¨Ï¥ÎªÌ¸ê°T");
-                }
-
-                // ÀË¬dÅv­­
-                if (!CanDeleteUser(operatorUserId, targetUserId, operatorUser.AccessLevel))
-                {
-                    return (false, "±z¨S¦³Åv­­§R°£¦¹¨Ï¥ÎªÌ");
-                }
-
-                // ³n§R°£
-                await conn.ExecuteAsync(
-                    "UPDATE Users SET IsActive = 0, LastModifiedAt = @Now, LastModifiedByUserId = @OperatorId WHERE Id = @TargetId",
-                    new { Now = DateTime.Now, OperatorId = operatorUserId, TargetId = targetUserId });
-
-                // °O¿ı½]®Ö¤é»x
-                await LogAuditAsync(conn, new UserAuditLog
-                {
-                    Timestamp = DateTime.Now,
-                    OperatorUserId = operatorUserId,
-                    OperatorUserName = operatorUser.DisplayName,
-                    Action = UserAuditAction.DeleteUser,
-                    TargetUserId = targetUserId,
-                    TargetUserName = targetUser.UserId,
-                    Details = $"°±¥Î¨Ï¥ÎªÌ: {targetUser.DisplayName}"
-                });
-
-                return (true, "¨Ï¥ÎªÌ¤w°±¥Î");
-            }
-            catch (Exception ex)
-            {
-                return (false, $"§R°£¥¢±Ñ: {ex.Message}");
-            }
-        }
-
-        #endregion
-
-        #region Activate User
-
-        public async Task<(bool Success, string Message)> ActivateUserAsync(int targetUserId, int operatorUserId)
-        {
-            try
-            {
-                using var conn = new SqliteConnection(_connectionString);
-                await conn.OpenAsync();
-
-                var operatorUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                    "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId });
-                var targetUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                    "SELECT * FROM Users WHERE Id = @Id", new { Id = targetUserId });
-
-                if (operatorUser == null || targetUser == null)
-                {
-                    return (false, "§ä¤£¨ì¨Ï¥ÎªÌ¸ê°T");
-                }
-
-                // ±Ò¥Î¨Ï¥ÎªÌ
-                await conn.ExecuteAsync(
-                    "UPDATE Users SET IsActive = 1, LastModifiedAt = @Now, LastModifiedByUserId = @OperatorId WHERE Id = @TargetId",
-                    new { Now = DateTime.Now, OperatorId = operatorUserId, TargetId = targetUserId });
-
-                // °O¿ı½]®Ö¤é»x
-                await LogAuditAsync(conn, new UserAuditLog
-                {
-                    Timestamp = DateTime.Now,
-                    OperatorUserId = operatorUserId,
-                    OperatorUserName = operatorUser.DisplayName,
-                    Action = UserAuditAction.ActivateUser,
-                    TargetUserId = targetUserId,
-                    TargetUserName = targetUser.UserId,
-                    Details = $"±Ò¥Î¨Ï¥ÎªÌ: {targetUser.DisplayName}"
-                });
-
-                return (true, "¨Ï¥ÎªÌ¤w±Ò¥Î");
-            }
-            catch (Exception ex)
-            {
-                return (false, $"±Ò¥Î¥¢±Ñ: {ex.Message}");
-            }
-        }
-
-        #endregion
-
-        #region Update User
-
-        public async Task<(bool Success, string Message)> UpdateUserAsync(
-            int targetUserId,
-            int operatorUserId,
-            string? displayName = null,
-            string? email = null,
-            string? department = null,
-            string? remarks = null,
-            AccessLevel? newAccessLevel = null)
-        {
-            try
-            {
-                using var conn = new SqliteConnection(_connectionString);
-                await conn.OpenAsync();
-
-                var operatorUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                    "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId });
-                var targetUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                    "SELECT * FROM Users WHERE Id = @Id", new { Id = targetUserId });
-
-                if (operatorUser == null || targetUser == null)
-                {
-                    return (false, "§ä¤£¨ì¨Ï¥ÎªÌ¸ê°T");
-                }
-
-                // ?? ÀË¬dÅv­­¡G¤£¯à­×§ï¤ñ¦Û¤vÅv­­°ª©Î¬Ûµ¥ªº¨Ï¥ÎªÌ
-                if (operatorUser.AccessLevel <= targetUser.AccessLevel && operatorUser.Id != targetUser.Id)
-                {
-                    return (false, $"±z¨S¦³Åv­­­×§ï {targetUser.AccessLevel} µ¥¯Åªº¨Ï¥ÎªÌ");
-                }
-
-                // ÀË¬dÅv­­
-                if (newAccessLevel.HasValue && !CanManageUser(operatorUser.AccessLevel, newAccessLevel.Value))
-                {
-                    return (false, "±z¨S¦³Åv­­³]©w¦¹Åv­­µ¥¯Å");
-                }
-
-                // ?? ÀË¬d¡G¤£¯à±N¨Ï¥ÎªÌÅv­­³]©w¬°°ª©ó©Îµ¥©ó¦Û¤v
-                if (newAccessLevel.HasValue && newAccessLevel.Value >= operatorUser.AccessLevel)
-                {
-                    return (false, $"±z¤£¯à±N¨Ï¥ÎªÌÅv­­³]©w¬° {newAccessLevel.Value}¡]¥²¶·§C©ó±zªºÅv­­¡^");
-                }
-
-                // §ó·sÄæ¦ì
-                var updates = new List<string>();
-                var parameters = new DynamicParameters();
-                parameters.Add("Id", targetUserId);
-                parameters.Add("Now", DateTime.Now);
-                parameters.Add("OperatorId", operatorUserId);
-
-                if (displayName != null)
-                {
-                    updates.Add("DisplayName = @DisplayName");
-                    parameters.Add("DisplayName", displayName);
-                }
-                if (email != null)
-                {
-                    updates.Add("Email = @Email");
-                    parameters.Add("Email", email);
-                }
-                if (department != null)
-                {
-                    updates.Add("Department = @Department");
-                    parameters.Add("Department", department);
-                }
-                if (remarks != null)
-                {
-                    updates.Add("Remarks = @Remarks");
-                    parameters.Add("Remarks", remarks);
-                }
-                if (newAccessLevel.HasValue)
-                {
-                    updates.Add("AccessLevel = @AccessLevel");
-                    parameters.Add("AccessLevel", (int)newAccessLevel.Value);
-                }
-
-                if (updates.Count == 0)
-                {
-                    return (false, "¨S¦³¥ô¦óÄæ¦ì»İ­n§ó·s");
-                }
-
-                updates.Add("LastModifiedAt = @Now");
-                updates.Add("LastModifiedByUserId = @OperatorId");
-
-                var sql = $"UPDATE Users SET {string.Join(", ", updates)} WHERE Id = @Id";
-                await conn.ExecuteAsync(sql, parameters);
-
-                // °O¿ı½]®Ö¤é»x
-                await LogAuditAsync(conn, new UserAuditLog
-                {
-                    Timestamp = DateTime.Now,
-                    OperatorUserId = operatorUserId,
-                    OperatorUserName = operatorUser.DisplayName,
-                    Action = UserAuditAction.ModifyUser,
-                    TargetUserId = targetUserId,
-                    TargetUserName = targetUser.UserId,
-                    Details = $"§ó·s¨Ï¥ÎªÌ: {string.Join(", ", updates)}"
-                });
-
-                return (true, "¨Ï¥ÎªÌ¸ê®Æ¤w§ó·s");
-            }
-            catch (Exception ex)
-            {
-                return (false, $"§ó·s¥¢±Ñ: {ex.Message}");
-            }
-        }
-
-        #endregion
-
-        #region Reset Password
-
-        public async Task<(bool Success, string Message)> ResetPasswordAsync(
-            int targetUserId,
-            int operatorUserId,
-            string newPassword)
-        {
-            try
-            {
-                using var conn = new SqliteConnection(_connectionString);
-                await conn.OpenAsync();
-
-                var operatorUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                    "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId });
-                var targetUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                    "SELECT * FROM Users WHERE Id = @Id", new { Id = targetUserId });
-
-                if (operatorUser == null || targetUser == null)
-                {
-                    return (false, "§ä¤£¨ì¨Ï¥ÎªÌ¸ê°T");
-                }
-
-                // Hash ·s±K½X
-                var (hash, salt) = HashPassword(newPassword);
-
-                // §ó·s±K½X
-                await conn.ExecuteAsync(
-                    @"UPDATE Users SET PasswordHash = @Hash, Salt = @Salt, 
-                      LastModifiedAt = @Now, LastModifiedByUserId = @OperatorId 
-                      WHERE Id = @TargetId",
-                    new { Hash = hash, Salt = salt, Now = DateTime.Now, OperatorId = operatorUserId, TargetId = targetUserId });
-
-                // °O¿ı½]®Ö¤é»x
-                await LogAuditAsync(conn, new UserAuditLog
-                {
-                    Timestamp = DateTime.Now,
-                    OperatorUserId = operatorUserId,
-                    OperatorUserName = operatorUser.DisplayName,
-                    Action = UserAuditAction.ResetPassword,
-                    TargetUserId = targetUserId,
-                    TargetUserName = targetUser.UserId,
-                    Details = $"­«³]±K½X: {targetUser.DisplayName}"
-                });
-
-                return (true, "±K½X¤w­«³]");
-            }
-            catch (Exception ex)
-            {
-                return (false, $"­«³]¥¢±Ñ: {ex.Message}");
-            }
-        }
-
-        #endregion
-
-        #region Query Methods
-
-        public async Task<List<UserAccount>> GetManagedUsersAsync(int operatorUserId)
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            await conn.OpenAsync();
-
-            var operatorUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId });
-
-            if (operatorUser == null)
-                return new List<UserAccount>();
-
-            // SuperAdmin: ¬d¬İ©Ò¦³¨Ï¥ÎªÌ¡]¥]§t¨ä¥L SuperAdmin¡^
-            if (operatorUser.AccessLevel == AccessLevel.SuperAdmin)
-            {
-                return (await conn.QueryAsync<UserAccount>("SELECT * FROM Users ORDER BY AccessLevel DESC, UserId")).ToList();
-            }
-
-            // Admin: ¬d¬İ©Ò¦³¨Ï¥ÎªÌ¡]°£¤F SuperAdmin¡^
-            if (operatorUser.AccessLevel == AccessLevel.Admin)
-            {
-                return (await conn.QueryAsync<UserAccount>(
-                    @"SELECT * FROM Users 
-                      WHERE AccessLevel < @SuperAdminLevel
-                      ORDER BY AccessLevel DESC, UserId",
-                    new { SuperAdminLevel = (int)AccessLevel.SuperAdmin }
-                )).ToList();
-            }
-
-            // Supervisor: ¬d¬İÅv­­ <= Supervisor ªº©Ò¦³¨Ï¥ÎªÌ¡]¥]§t¦Û¤v»P©Ò¦³§CÅv­­¡^
-            if (operatorUser.AccessLevel == AccessLevel.Supervisor)
-            {
-                return (await conn.QueryAsync<UserAccount>(
-                    @"SELECT * FROM Users 
-                      WHERE AccessLevel <= @SupervisorLevel
-                      ORDER BY AccessLevel DESC, UserId",
-                    new { SupervisorLevel = (int)AccessLevel.Supervisor }
-                )).ToList();
-            }
-
-            // Operator »P¥H¤U¡G¥u¯à¬İ¦Û¤v
-            return new List<UserAccount> { operatorUser };
-        }
-
-        public async Task<List<UserAccount>> GetAllUsersAsync()
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            await conn.OpenAsync();
-            return (await conn.QueryAsync<UserAccount>("SELECT * FROM Users ORDER BY AccessLevel DESC, UserId")).ToList();
-        }
-
-        public async Task<UserAccount?> GetUserByIdAsync(int userId)
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            await conn.OpenAsync();
-            return await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                "SELECT * FROM Users WHERE Id = @Id", new { Id = userId });
-        }
-
-        public async Task<List<UserAuditLog>> GetAuditLogsAsync(int? targetUserId = null, int pageSize = 100)
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            await conn.OpenAsync();
-
-            if (targetUserId.HasValue)
-            {
-                return (await conn.QueryAsync<UserAuditLog>(
-                    "SELECT * FROM UserAuditLogs WHERE TargetUserId = @TargetUserId ORDER BY Timestamp DESC LIMIT @PageSize",
-                    new { TargetUserId = targetUserId.Value, PageSize = pageSize }
-                )).ToList();
-            }
-            else
-            {
-                return (await conn.QueryAsync<UserAuditLog>(
-                    "SELECT * FROM UserAuditLogs ORDER BY Timestamp DESC LIMIT @PageSize",
-                    new { PageSize = pageSize }
-                )).ToList();
-            }
-        }
-
-        #endregion
-
-        #region Permission Checks
-
-        public bool CanDeleteUser(int operatorUserId, int targetUserId, AccessLevel operatorLevel)
-        {
-            // ¤£¯à§R°£¦Û¤v
-            if (operatorUserId == targetUserId)
-                return false;
-
-            // SuperAdmin ¥i§R°£©Ò¦³¤H¡]°£¤F¦Û¤v¡^
-            if (operatorLevel == AccessLevel.SuperAdmin)
-                return true;
-
-            // Admin ¥i§R°£©Ò¦³ < SuperAdmin¡]°£¤F¦Û¤v¡^
-            if (operatorLevel == AccessLevel.Admin)
-                return true;
-
-            // Supervisor ¥i§R°£§C©ó Supervisor¡]¤£¥]§t¦Û¤v¡^
-            // ¥H¤Î¦Û¤v³Ğ«Øªº Level 1-2 ¨Ï¥ÎªÌ
-            if (operatorLevel == AccessLevel.Supervisor)
-                return true;
-
-            return false;
-        }
-
-        public bool CanManageUser(AccessLevel operatorLevel, AccessLevel targetLevel)
-        {
-            // SuperAdmin ¥iºŞ²z©Ò¦³µ¥¯Å
-            if (operatorLevel == AccessLevel.SuperAdmin)
-                return true;
-
-            // Admin ¥iºŞ²z©Ò¦³µ¥¯Å¡]°£¤F SuperAdmin¡^
-            if (operatorLevel == AccessLevel.Admin && targetLevel < AccessLevel.SuperAdmin)
-                return true;
-
-            // Supervisor ¥iºŞ²z Supervisor »P Level 1-2
-            if (operatorLevel == AccessLevel.Supervisor && targetLevel <= AccessLevel.Supervisor)
-                return true;
-
-            return false;
-        }
-
-        #endregion
-
-        #region AD Integration Helpers
-
-        /// <summary>
-        /// ?? ·s¼W¡G¨ú±o¥»¾÷©Ò¦³ AD ¨Ï¥ÎªÌ²M³æ¡]¥Î©ó¤U©Ô¿ï³æ¡^
-        /// </summary>
-        /// <returns>AD ¨Ï¥ÎªÌ²M³æ</returns>
-        public List<string> GetAvailableAdUsers()
-        {
-            var users = new List<string>();
-            
-            try
-            {
-                var adService = new AdAuthenticationService();
-                
-                // ¨ú±o¥»¾÷©Ò¦³¨Ï¥ÎªÌ¡]­­¨î LocalMachine ¼Ò¦¡¡^
-                using (var context = new System.DirectoryServices.AccountManagement.PrincipalContext(
-                    System.DirectoryServices.AccountManagement.ContextType.Machine))
-                {
-                    var searcher = new System.DirectoryServices.AccountManagement.UserPrincipal(context);
-                    using (var search = new System.DirectoryServices.AccountManagement.PrincipalSearcher(searcher))
-                    {
-                        foreach (var result in search.FindAll())
-                        {
-                            if (result is System.DirectoryServices.AccountManagement.UserPrincipal userPrincipal)
-                            {
-                                if (!string.IsNullOrWhiteSpace(userPrincipal.SamAccountName))
-                                {
-                                    users.Add(userPrincipal.SamAccountName);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[UserManagementService] GetAvailableAdUsers Error: {ex.Message}");
-            }
-            
-            return users.OrderBy(u => u).ToList();
-        }
-
-        /// <summary>
-        /// ?? ·s¼W¡GÀË¬d AD ¨Ï¥ÎªÌ¬O§_¤w¦b¥»¦a¸ê®Æ®w¤¤
-        /// </summary>
-        /// <param name="adUsername">AD ¨Ï¥ÎªÌ¦WºÙ</param>
-        /// <returns>¬O§_¤w¦s¦b</returns>
-        public async Task<bool> IsAdUserRegisteredAsync(string adUsername)
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            await conn.OpenAsync();
-            
-            var count = await conn.ExecuteScalarAsync<int>(
-                "SELECT COUNT(*) FROM Users WHERE UserId = @UserId",
-                new { UserId = adUsername });
-            
-            return count > 0;
-        }
-
-        #endregion
-
-        #region Audit Logging
-
-        private async Task LogAuditAsync(SqliteConnection conn, UserAuditLog log)
-        {
-            await conn.ExecuteAsync(
-                @"INSERT INTO UserAuditLogs (Timestamp, OperatorUserId, OperatorUserName, Action, 
-                                            TargetUserId, TargetUserName, Details, IpAddress)
-                  VALUES (@Timestamp, @OperatorUserId, @OperatorUserName, @Action, 
-                         @TargetUserId, @TargetUserName, @Details, @IpAddress)",
-                log);
-        }
-
-        /// <summary>
-        /// ?? ·s¼W¡G®Ú¾Ú AD ¸s²Õ¦Û°Ê§PÂ_¹ïÀ³ªº AccessLevel
-        /// </summary>
-        /// <param name="userGroups">¨Ï¥ÎªÌ©ÒÄİªº AD ¸s²Õ²M³æ</param>
-        /// <returns>¹ïÀ³ªº AccessLevel</returns>
-        public static AccessLevel DetermineAccessLevelFromAdGroups(List<string> userGroups)
-        {
-            // ±N¸s²Õ¦WºÙÂà¬°¤p¼g¥H«K©¿²¤¤j¤p¼g®t²§
-            var groupsLower = userGroups.Select(g => g.ToLower()).ToList();
-
-            // §PÂ_Åv­­µ¥¯Å¡]±q°ª¨ì§C¡^
-            // L5: App_SuperAdmins
-            if (groupsLower.Contains("app_superadmins"))
-            {
-                return AccessLevel.SuperAdmin;
-            }
-            // L4: App_Admins
-            else if (groupsLower.Contains("app_admins"))
-            {
-                return AccessLevel.Admin;
-            }
-            // L3: App_Supervisors
-            else if (groupsLower.Contains("app_supervisors"))
-            {
-                return AccessLevel.Supervisor;
-            }
-            // L2: App_Instructors
-            else if (groupsLower.Contains("app_instructors"))
-            {
-                return AccessLevel.Instructor;
-            }
-            // L1: App_Operators
-            else if (groupsLower.Contains("app_operators"))
-            {
-                return AccessLevel.Operator;
-            }
-            // Domain/Local Admins -> ¹ïÀ³¨ì SuperAdmin
-            else if (groupsLower.Any(g => g.Contains("domain admins") || g.Contains("enterprise admins")))
-            {
-                return AccessLevel.SuperAdmin;
-            }
-            // Local Administrators -> ¹ïÀ³¨ì Admin
-            else if (groupsLower.Contains("administrators"))
-            {
-                return AccessLevel.Admin;
-            }
-            // Guest - ¹w³]³Ì§CÅv­­
-            else
-            {
-                return AccessLevel.Guest;
-            }
-        }
-
-        #endregion
-    }
-}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using Dapper;
+using Microsoft.Data.Sqlite;
+using Stackdose.UI.Core.Models;
+
+namespace Stackdose.UI.Core.Services
+{
+    /// <summary>
+    /// ä½¿ç”¨è€…ç®¡ç†æœå‹™å¯¦ä½œ (ç¬¦åˆ FDA 21 CFR Part 11)
+    /// </summary>
+    public class UserManagementService : IUserManagementService
+    {
+        private readonly string _connectionString;
+
+        public UserManagementService(string? dbPath = null)
+        {
+            var path = dbPath ?? System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "StackDoseData.db");
+            _connectionString = $"Data Source={path}";
+            InitializeDatabase();
+            
+            // ?? ç¢ºä¿é è¨­ Admin å¸³è™Ÿå­˜åœ¨
+            EnsureDefaultAdminExists();
+            
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine("[UserManagementService] Initialized with default admin");
+            #endif
+        }
+
+        #region Database Initialization
+
+        private void InitializeDatabase()
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            // Users è³‡æ–™è¡¨
+            conn.Execute(@"
+                CREATE TABLE IF NOT EXISTS Users (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    UserId TEXT UNIQUE NOT NULL,
+                    DisplayName TEXT NOT NULL,
+                    PasswordHash TEXT NOT NULL,
+                    Salt TEXT NOT NULL,
+                    AccessLevel INTEGER NOT NULL,
+                    IsActive INTEGER NOT NULL DEFAULT 1,
+                    CreatedAt DATETIME NOT NULL,
+                    CreatedByUserId INTEGER,
+                    CreatedBy TEXT,
+                    LastLoginAt DATETIME,
+                    LastModifiedAt DATETIME,
+                    LastModifiedByUserId INTEGER,
+                    Email TEXT,
+                    Department TEXT,
+                    Remarks TEXT
+                );");
+
+            // UserAuditLogs è³‡æ–™è¡¨
+            conn.Execute(@"
+                CREATE TABLE IF NOT EXISTS UserAuditLogs (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Timestamp DATETIME NOT NULL,
+                    OperatorUserId INTEGER NOT NULL,
+                    OperatorUserName TEXT NOT NULL,
+                    Action INTEGER NOT NULL,
+                    TargetUserId INTEGER,
+                    TargetUserName TEXT,
+                    Details TEXT,
+                    IpAddress TEXT
+                );");
+
+            // å»ºç«‹ç´¢å¼•
+            conn.Execute("CREATE INDEX IF NOT EXISTS idx_users_userid ON Users(UserId);");
+            conn.Execute("CREATE INDEX IF NOT EXISTS idx_users_accesslevel ON Users(AccessLevel);");
+            conn.Execute("CREATE INDEX IF NOT EXISTS idx_auditlogs_timestamp ON UserAuditLogs(Timestamp);");
+            conn.Execute("CREATE INDEX IF NOT EXISTS idx_auditlogs_targetuser ON UserAuditLogs(TargetUserId);");
+        }
+
+        /// <summary>
+        /// ç¢ºä¿é è¨­ Admin å’Œ SuperAdmin å¸³è™Ÿå­˜åœ¨
+        /// </summary>
+        private void EnsureDefaultAdminExists()
+        {
+            try
+            {
+                using var conn = new SqliteConnection(_connectionString);
+                conn.Open();
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[UserManagementService] Checking default accounts...");
+                #endif
+
+                // ?? é¦–å…ˆï¼šå°‡æ‰€æœ‰èˆŠæ ¼å¼çš„ UserId è½‰æ›ç‚º UID-XXXXXX æ ¼å¼
+                MigrateUserIdsToUidFormat(conn);
+
+                // æª¢æŸ¥æ˜¯å¦å·²æœ‰ SuperAdmin å¸³è™Ÿ (UID-000001)
+                var superAdminExists = conn.ExecuteScalar<int>(
+                    "SELECT COUNT(*) FROM Users WHERE UserId = @UserId",
+                    new { UserId = "UID-000001" });
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] SuperAdmin (UID-000001) exists: {superAdminExists > 0}");
+                #endif
+
+                if (superAdminExists == 0)
+                {
+                    // å»ºç«‹é è¨­ SuperAdmin å¸³è™Ÿ
+                    var (superHash, superSalt) = HashPassword("superadmin");
+
+                    conn.Execute(@"
+                        INSERT INTO Users (UserId, DisplayName, PasswordHash, Salt, AccessLevel, IsActive, 
+                                          CreatedAt, CreatedBy, Email, Department, Remarks)
+                        VALUES (@UserId, @DisplayName, @PasswordHash, @Salt, @AccessLevel, @IsActive, 
+                               @CreatedAt, @CreatedBy, @Email, @Department, @Remarks)",
+                        new
+                        {
+                            UserId = "UID-000001",
+                            DisplayName = "SuperAdmin",
+                            PasswordHash = superHash,
+                            Salt = superSalt,
+                            AccessLevel = (int)AccessLevel.SuperAdmin,
+                            IsActive = 1,
+                            CreatedAt = DateTime.Now,
+                            CreatedBy = "System",
+                            Email = "superadmin@stackdose.com",
+                            Department = "IT",
+                            Remarks = "Default super administrator account with full access"
+                        });
+
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine("[UserManagementService] Default SuperAdmin created: UID-000001 / superadmin");
+                    #endif
+                }
+
+                // è¼¸å‡ºæ‰€æœ‰ä½¿ç”¨è€…åˆ—è¡¨ï¼ˆæ¸¬è©¦ç”¨ï¼‰
+                #if DEBUG
+                var allUsers = conn.Query<dynamic>("SELECT UserId, DisplayName, AccessLevel, IsActive FROM Users ORDER BY AccessLevel DESC, UserId");
+                System.Diagnostics.Debug.WriteLine("[UserManagementService] Current users in database:");
+                foreach (var user in allUsers)
+                {
+                    System.Diagnostics.Debug.WriteLine($"  - {user.UserId} ({user.DisplayName}) - Level {user.AccessLevel}, Active: {user.IsActive}");
+                }
+                #endif
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] EnsureDefaultAdminExists Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] Stack trace: {ex.StackTrace}");
+            }
+        }
+
+        /// <summary>
+        /// ?? å°‡èˆŠæ ¼å¼çš„ UserId è½‰æ›ç‚º UID-XXXXXX æ ¼å¼
+        /// æŒ‰æ¬Šé™ç­‰ç´šæ’åºï¼šSuperAdmin -> Admin -> Supervisor -> Instructor -> Operator -> Guest
+        /// </summary>
+        private void MigrateUserIdsToUidFormat(SqliteConnection conn)
+        {
+            try
+            {
+                // æª¢æŸ¥æ˜¯å¦å·²æœ‰ UID æ ¼å¼çš„ç”¨æˆ¶ï¼ˆå¦‚æœæœ‰ï¼Œè¡¨ç¤ºå·²ç¶“è½‰æ›éï¼‰
+                var uidCount = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM Users WHERE UserId LIKE 'UID-%'");
+                var totalCount = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM Users");
+                
+                // å¦‚æœæ‰€æœ‰ç”¨æˆ¶éƒ½å·²ç¶“æ˜¯ UID æ ¼å¼ï¼Œè·³é
+                if (uidCount == totalCount && totalCount > 0)
+                {
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine("[UserManagementService] All users already have UID format, skipping migration");
+                    #endif
+                    return;
+                }
+
+                // å–å¾—æ‰€æœ‰é UID æ ¼å¼çš„ç”¨æˆ¶ï¼ŒæŒ‰æ¬Šé™ç­‰ç´šæ’åºï¼ˆé«˜åˆ°ä½ï¼‰
+                var usersToMigrate = conn.Query<dynamic>(@"
+                    SELECT Id, UserId, DisplayName, AccessLevel 
+                    FROM Users 
+                    WHERE UserId NOT LIKE 'UID-%'
+                    ORDER BY AccessLevel DESC, Id ASC
+                ").ToList();
+
+                if (usersToMigrate.Count == 0)
+                {
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine("[UserManagementService] No users need migration");
+                    #endif
+                    return;
+                }
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] Migrating {usersToMigrate.Count} users to UID format...");
+                #endif
+
+                // å–å¾—ç•¶å‰æœ€å¤§çš„ UID ç·¨è™Ÿ
+                int nextUidNumber = 1;
+                var maxUid = conn.ExecuteScalar<string>("SELECT MAX(UserId) FROM Users WHERE UserId LIKE 'UID-%'");
+                if (!string.IsNullOrEmpty(maxUid))
+                {
+                    var numPart = maxUid.Replace("UID-", "");
+                    if (int.TryParse(numPart, out int maxNum))
+                    {
+                        nextUidNumber = maxNum + 1;
+                    }
+                }
+
+                // å»ºç«‹èˆŠ UserId åˆ°æ–° UserId çš„å°ç…§è¡¨
+                var uidMapping = new Dictionary<string, string>();
+
+                // é–‹å§‹è½‰æ›
+                foreach (var user in usersToMigrate)
+                {
+                    string oldUserId = user.UserId;
+                    string newUserId = $"UID-{nextUidNumber:D6}";
+                    
+                    uidMapping[oldUserId] = newUserId;
+
+                    // æ›´æ–° Users è¡¨
+                    conn.Execute(
+                        "UPDATE Users SET UserId = @NewUserId WHERE Id = @Id",
+                        new { NewUserId = newUserId, Id = (int)user.Id });
+
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"  - {oldUserId} -> {newUserId} ({user.DisplayName}, Level {user.AccessLevel})");
+                    #endif
+
+                    nextUidNumber++;
+                }
+
+                // ?? æ›´æ–°æ‰€æœ‰ç›¸é—œæ—¥èªŒè¨˜éŒ„ä¸­çš„ UserId
+                UpdateLogUserIds(conn, uidMapping);
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] Migration completed. {usersToMigrate.Count} users migrated.");
+                #endif
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] MigrateUserIdsToUidFormat Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// ?? æ›´æ–°æ‰€æœ‰æ—¥èªŒè¨˜éŒ„ä¸­çš„ UserId
+        /// </summary>
+        private void UpdateLogUserIds(SqliteConnection conn, Dictionary<string, string> uidMapping)
+        {
+            try
+            {
+                foreach (var mapping in uidMapping)
+                {
+                    string oldId = mapping.Key;
+                    string newId = mapping.Value;
+
+                    // æ›´æ–° AuditTrails
+                    int auditUpdated = conn.Execute(
+                        "UPDATE AuditTrails SET User = @NewId WHERE User = @OldId",
+                        new { NewId = newId, OldId = oldId });
+
+                    // æ›´æ–° OperationLogs
+                    int opUpdated = conn.Execute(
+                        "UPDATE OperationLogs SET UserId = @NewId WHERE UserId = @OldId",
+                        new { NewId = newId, OldId = oldId });
+
+                    // æ›´æ–° EventLogs
+                    int eventUpdated = conn.Execute(
+                        "UPDATE EventLogs SET UserId = @NewId WHERE UserId = @OldId",
+                        new { NewId = newId, OldId = oldId });
+
+                    // æ›´æ–° PeriodicDataLogs
+                    int periodicUpdated = conn.Execute(
+                        "UPDATE PeriodicDataLogs SET UserId = @NewId WHERE UserId = @OldId",
+                        new { NewId = newId, OldId = oldId });
+
+                    #if DEBUG
+                    if (auditUpdated > 0 || opUpdated > 0 || eventUpdated > 0 || periodicUpdated > 0)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"  Log updates for {oldId} -> {newId}:");
+                        System.Diagnostics.Debug.WriteLine($"    AuditTrails: {auditUpdated}, OperationLogs: {opUpdated}, EventLogs: {eventUpdated}, PeriodicData: {periodicUpdated}");
+                    }
+                    #endif
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] UpdateLogUserIds Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// ?? ç”¢ç”Ÿä¸‹ä¸€å€‹å¯ç”¨çš„ UID
+        /// </summary>
+        public string GenerateNextUserId()
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            // å–å¾—ç•¶å‰æœ€å¤§çš„ UID ç·¨è™Ÿ
+            var maxUid = conn.ExecuteScalar<string>("SELECT MAX(UserId) FROM Users WHERE UserId LIKE 'UID-%'");
+            
+            int nextNumber = 1;
+            if (!string.IsNullOrEmpty(maxUid))
+            {
+                var numPart = maxUid.Replace("UID-", "");
+                if (int.TryParse(numPart, out int maxNum))
+                {
+                    nextNumber = maxNum + 1;
+                }
+            }
+
+            return $"UID-{nextNumber:D6}";
+        }
+
+        #endregion
+
+        #region Password Hashing
+
+        private (string Hash, string Salt) HashPassword(string password)
+        {
+            // ç”Ÿæˆ Salt
+            byte[] saltBytes = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(saltBytes);
+            }
+            string salt = Convert.ToBase64String(saltBytes);
+
+            // è¨ˆç®— Hash (SHA256 + Salt)
+            using (var sha256 = SHA256.Create())
+            {
+                var passwordWithSalt = Encoding.UTF8.GetBytes(password + salt);
+                var hashBytes = sha256.ComputeHash(passwordWithSalt);
+                string hash = Convert.ToBase64String(hashBytes);
+                return (hash, salt);
+            }
+        }
+
+        private bool VerifyPassword(string password, string hash, string salt)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var passwordWithSalt = Encoding.UTF8.GetBytes(password + salt);
+                var hashBytes = sha256.ComputeHash(passwordWithSalt);
+                string computedHash = Convert.ToBase64String(hashBytes);
+                return computedHash == hash;
+            }
+        }
+
+        #endregion
+
+        #region Authentication
+
+        /// <summary>
+        /// ?? è³‡æ–™åº«å¯†ç¢¼é©—è­‰ï¼ˆç”¨æ–¼æœ¬åœ°å‰µå»ºçš„ä½¿ç”¨è€…ï¼‰
+        /// æ”¯æ´ä½¿ç”¨ UserId æˆ– DisplayName ç™»å…¥
+        /// </summary>
+        /// <param name="userId">ä½¿ç”¨è€… ID æˆ– DisplayName</param>
+        /// <param name="password">æ˜æ–‡å¯†ç¢¼</param>
+        /// <returns>é©—è­‰çµæœ</returns>
+        public async Task<(bool Success, string Message, UserAccount? User)> AuthenticateAsync(string userId, string password)
+        {
+            try
+            {
+                using var conn = new SqliteConnection(_connectionString);
+                await conn.OpenAsync();
+
+                // ?? æŸ¥è©¢ä½¿ç”¨è€…ï¼šæ”¯æ´ UserId æˆ– DisplayName
+                var user = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                    "SELECT * FROM Users WHERE (UserId = @UserId OR DisplayName = @UserId) AND IsActive = 1",
+                    new { UserId = userId });
+
+                if (user == null)
+                {
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[UserManagementService] AuthenticateAsync: User not found - {userId}");
+                    #endif
+                    return (false, "ä½¿ç”¨è€…ä¸å­˜åœ¨æˆ–å·²åœç”¨", null);
+                }
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] AuthenticateAsync: Found user - {user.UserId} ({user.DisplayName})");
+                #endif
+
+                // é©—è­‰å¯†ç¢¼
+                if (!VerifyPassword(password, user.PasswordHash, user.Salt))
+                {
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[UserManagementService] AuthenticateAsync: Password mismatch for {userId}");
+                    #endif
+                    return (false, "å¯†ç¢¼éŒ¯èª¤", null);
+                }
+
+                // æ›´æ–°æœ€å¾Œç™»å…¥æ™‚é–“
+                await conn.ExecuteAsync(
+                    "UPDATE Users SET LastLoginAt = @Now WHERE Id = @Id",
+                    new { Now = DateTime.Now, Id = user.Id });
+
+                user.LastLoginAt = DateTime.Now;
+
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] AuthenticateAsync: Login successful for {user.UserId}");
+                #endif
+
+                return (true, "é©—è­‰æˆåŠŸ", user);
+            }
+            catch (Exception ex)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] AuthenticateAsync Error: {ex.Message}");
+                #endif
+                return (false, $"é©—è­‰å¤±æ•—: {ex.Message}", null);
+            }
+        }
+
+        #endregion
+
+        #region Create User
+
+        public async Task<(bool Success, string Message, UserAccount? User)> CreateUserAsync(
+            string userId,
+            string displayName,
+            string password,
+            AccessLevel accessLevel,
+            int creatorUserId,
+            string? email = null,
+            string? department = null,
+            string? remarks = null)
+        {
+            try
+            {
+                using var conn = new SqliteConnection(_connectionString);
+                await conn.OpenAsync();
+
+                // ?? å¦‚æœå‚³å…¥çš„ userId ä¸æ˜¯ UID æ ¼å¼ï¼Œè‡ªå‹•ç”¢ç”Ÿæ–°çš„ UID
+                string actualUserId = userId;
+                if (!userId.StartsWith("UID-"))
+                {
+                    actualUserId = GenerateNextUserId();
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[UserManagementService] Auto-generated UserId: {actualUserId} (original: {userId})");
+                    #endif
+                }
+
+                // æª¢æŸ¥ UserId æ˜¯å¦å·²å­˜åœ¨
+                var existing = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                    "SELECT * FROM Users WHERE UserId = @UserId",
+                    new { UserId = actualUserId });
+
+                if (existing != null)
+                {
+                    return (false, $"User ID '{actualUserId}' already exists", null);
+                }
+
+                // å–å¾—å»ºç«‹è€…è³‡è¨Š
+                var creator = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                    "SELECT * FROM Users WHERE Id = @Id",
+                    new { Id = creatorUserId });
+
+                if (creator == null)
+                {
+                    return (false, "Creator not found", null);
+                }
+
+                // æª¢æŸ¥æ¬Šé™
+                if (!CanManageUser(creator.AccessLevel, accessLevel))
+                {
+                    return (false, $"You don't have permission to create {accessLevel} level user", null);
+                }
+
+                // Hash å¯†ç¢¼
+                var (hash, salt) = HashPassword(password);
+
+                // å»ºç«‹ä½¿ç”¨è€…
+                var newUser = new UserAccount
+                {
+                    UserId = actualUserId,
+                    DisplayName = displayName,
+                    PasswordHash = hash,
+                    Salt = salt,
+                    AccessLevel = accessLevel,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    CreatedByUserId = creatorUserId,
+                    CreatedBy = creator.DisplayName,
+                    Email = email,
+                    Department = department,
+                    Remarks = remarks
+                };
+
+                // å¯«å…¥è³‡æ–™åº«
+                var sql = @"
+                    INSERT INTO Users (UserId, DisplayName, PasswordHash, Salt, AccessLevel, IsActive, 
+                                      CreatedAt, CreatedByUserId, CreatedBy, Email, Department, Remarks)
+                    VALUES (@UserId, @DisplayName, @PasswordHash, @Salt, @AccessLevel, @IsActive, 
+                           @CreatedAt, @CreatedByUserId, @CreatedBy, @Email, @Department, @Remarks);
+                    SELECT last_insert_rowid();";
+
+                newUser.Id = await conn.ExecuteScalarAsync<int>(sql, newUser);
+
+                // è¨˜éŒ„å¯©è¨ˆæ—¥èªŒ
+                await LogAuditAsync(conn, new UserAuditLog
+                {
+                    Timestamp = DateTime.Now,
+                    OperatorUserId = creatorUserId,
+                    OperatorUserName = creator.DisplayName,
+                    Action = UserAuditAction.CreateUser,
+                    TargetUserId = newUser.Id,
+                    TargetUserName = actualUserId,
+                    Details = $"Created user: {displayName} ({accessLevel}), UID: {actualUserId}"
+                });
+
+                return (true, $"User created successfully: {actualUserId}", newUser);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Create failed: {ex.Message}", null);
+            }
+        }
+
+        /// <summary>
+        /// ?? æ–°å¢ï¼šå¾ Windows AD å»ºç«‹ä½¿ç”¨è€…
+        /// </summary>
+        /// <param name="adUsername">AD ä½¿ç”¨è€…åç¨±</param>
+        /// <param name="accessLevel">è¦çµ¦äºˆçš„æ¬Šé™ç­‰ç´š</param>
+        /// <param name="creatorUserId">å»ºç«‹è€…çš„ UserId</param>
+        /// <param name="defaultPassword">é è¨­å¯†ç¢¼ï¼ˆé¸å¡«ï¼Œç”¨æ–¼æœ¬åœ°é©—è­‰ fallbackï¼‰</param>
+        /// <returns>æ“ä½œçµæœ</returns>
+        public async Task<(bool Success, string Message, UserAccount? User)> CreateUserFromAdAsync(
+            string adUsername,
+            AccessLevel accessLevel,
+            int creatorUserId,
+            string? defaultPassword = null)
+        {
+            try
+            {
+                using var conn = new SqliteConnection(_connectionString);
+                await conn.OpenAsync();
+
+                // 1. æª¢æŸ¥ AD ä½¿ç”¨è€…æ˜¯å¦å­˜åœ¨
+                var adService = new AdAuthenticationService();
+                var adUserInfo = adService.GetUserInfo(adUsername);
+
+                if (adUserInfo == null)
+                {
+                    return (false, $"AD ä½¿ç”¨è€… '{adUsername}' ä¸å­˜åœ¨æˆ–ç„¡æ³•å­˜å–", null);
+                }
+
+                if (!adUserInfo.IsEnabled)
+                {
+                    return (false, $"AD ä½¿ç”¨è€… '{adUsername}' å·²åœç”¨", null);
+                }
+
+                // 2. æª¢æŸ¥ UserId æ˜¯å¦å·²å­˜åœ¨
+                var existing = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                    "SELECT * FROM Users WHERE UserId = @UserId",
+                    new { UserId = adUsername });
+
+                if (existing != null)
+                {
+                    return (false, $"ä½¿ç”¨è€… ID '{adUsername}' å·²å­˜åœ¨", null);
+                }
+
+                // 3. å–å¾—å»ºç«‹è€…è³‡è¨Š
+                var creator = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                    "SELECT * FROM Users WHERE Id = @Id",
+                    new { Id = creatorUserId });
+
+                if (creator == null)
+                {
+                    return (false, "æ‰¾ä¸åˆ°å»ºç«‹è€…è³‡è¨Š", null);
+                }
+
+                // 4. æª¢æŸ¥æ¬Šé™
+                if (!CanManageUser(creator.AccessLevel, accessLevel))
+                {
+                    return (false, $"æ‚¨æ²’æœ‰æ¬Šé™å»ºç«‹ {accessLevel} ç­‰ç´šçš„ä½¿ç”¨è€…", null);
+                }
+
+                // 5. Hash é è¨­å¯†ç¢¼ï¼ˆå¦‚æœæä¾›ï¼‰
+                string hash, salt;
+                if (!string.IsNullOrWhiteSpace(defaultPassword))
+                {
+                    (hash, salt) = HashPassword(defaultPassword);
+                }
+                else
+                {
+                    // ä½¿ç”¨éš¨æ©Ÿå¯†ç¢¼ä½œç‚º fallbackï¼ˆä½†å¯¦éš›ä¸æœƒç”¨åˆ°ï¼Œå› ç‚ºå„ªå…ˆä½¿ç”¨ ADï¼‰
+                    var randomPassword = Guid.NewGuid().ToString("N").Substring(0, 16);
+                    (hash, salt) = HashPassword(randomPassword);
+                }
+
+                // 6. å»ºç«‹ä½¿ç”¨è€…ï¼ˆå¾ AD åŒæ­¥è³‡è¨Šï¼‰
+                var newUser = new UserAccount
+                {
+                    UserId = adUserInfo.Username,
+                    DisplayName = adUserInfo.DisplayName,
+                    PasswordHash = hash,
+                    Salt = salt,
+                    AccessLevel = accessLevel,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    CreatedByUserId = creatorUserId,
+                    CreatedBy = creator.DisplayName,
+                    Email = adUserInfo.Email,
+                    Department = adUserInfo.Description, // AD Description å¯èƒ½åŒ…å«éƒ¨é–€è³‡è¨Š
+                    Remarks = $"Created from Windows AD: {adUserInfo.Username}"
+                };
+
+                // 7. å¯«å…¥è³‡æ–™åº«
+                var sql = @"
+                    INSERT INTO Users (UserId, DisplayName, PasswordHash, Salt, AccessLevel, IsActive, 
+                                      CreatedAt, CreatedByUserId, CreatedBy, Email, Department, Remarks)
+                    VALUES (@UserId, @DisplayName, @PasswordHash, @Salt, @AccessLevel, @IsActive, 
+                           @CreatedAt, @CreatedByUserId, @CreatedBy, @Email, @Department, @Remarks);
+                    SELECT last_insert_rowid();";
+
+                newUser.Id = await conn.ExecuteScalarAsync<int>(sql, newUser);
+
+                // 8. è¨˜éŒ„å¯©è¨ˆè»Œè·¡
+                await LogAuditAsync(conn, new UserAuditLog
+                {
+                    Timestamp = DateTime.Now,
+                    OperatorUserId = creatorUserId,
+                    OperatorUserName = creator.DisplayName,
+                    Action = UserAuditAction.CreateUser,
+                    TargetUserId = newUser.Id,
+                    TargetUserName = adUsername,
+                    Details = $"å¾ AD å»ºç«‹ä½¿ç”¨è€…: {adUserInfo.DisplayName} ({accessLevel})"
+                });
+
+                return (true, $"å·²å¾ AD å»ºç«‹ä½¿ç”¨è€…: {adUserInfo.DisplayName}", newUser);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"å»ºç«‹å¤±æ•—: {ex.Message}", null);
+            }
+        }
+
+        #endregion
+
+        #region Delete User
+
+        public async Task<(bool Success, string Message)> SoftDeleteUserAsync(int targetUserId, int operatorUserId)
+        {
+            try
+            {
+                using var conn = new SqliteConnection(_connectionString);
+                await conn.OpenAsync();
+
+                var operatorUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId });
+                var targetUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = targetUserId });
+
+                if (operatorUser == null || targetUser == null)
+                {
+                    return (false, "æ‰¾ä¸åˆ°ä½¿ç”¨è€…è³‡è¨Š");
+                }
+
+                // æª¢æŸ¥æ¬Šé™
+                if (!CanDeleteUser(operatorUserId, targetUserId, operatorUser.AccessLevel))
+                {
+                    return (false, "æ‚¨æ²’æœ‰æ¬Šé™åˆªé™¤æ­¤ä½¿ç”¨è€…");
+                }
+
+                // è»Ÿåˆªé™¤
+                await conn.ExecuteAsync(
+                    "UPDATE Users SET IsActive = 0, LastModifiedAt = @Now, LastModifiedByUserId = @OperatorId WHERE Id = @TargetId",
+                    new { Now = DateTime.Now, OperatorId = operatorUserId, TargetId = targetUserId });
+
+                // è¨˜éŒ„ç¨½æ ¸æ—¥èªŒ
+                await LogAuditAsync(conn, new UserAuditLog
+                {
+                    Timestamp = DateTime.Now,
+                    OperatorUserId = operatorUserId,
+                    OperatorUserName = operatorUser.DisplayName,
+                    Action = UserAuditAction.DeleteUser,
+                    TargetUserId = targetUserId,
+                    TargetUserName = targetUser.UserId,
+                    Details = $"åœç”¨ä½¿ç”¨è€…: {targetUser.DisplayName}"
+                });
+
+                return (true, "ä½¿ç”¨è€…å·²åœç”¨");
+            }
+            catch (Exception ex)
+            {
+                return (false, $"åˆªé™¤å¤±æ•—: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region Activate User
+
+        public async Task<(bool Success, string Message)> ActivateUserAsync(int targetUserId, int operatorUserId)
+        {
+            try
+            {
+                using var conn = new SqliteConnection(_connectionString);
+                await conn.OpenAsync();
+
+                var operatorUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId });
+                var targetUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = targetUserId });
+
+                if (operatorUser == null || targetUser == null)
+                {
+                    return (false, "æ‰¾ä¸åˆ°ä½¿ç”¨è€…è³‡è¨Š");
+                }
+
+                // å•Ÿç”¨ä½¿ç”¨è€…
+                await conn.ExecuteAsync(
+                    "UPDATE Users SET IsActive = 1, LastModifiedAt = @Now, LastModifiedByUserId = @OperatorId WHERE Id = @TargetId",
+                    new { Now = DateTime.Now, OperatorId = operatorUserId, TargetId = targetUserId });
+
+                // è¨˜éŒ„ç¨½æ ¸æ—¥èªŒ
+                await LogAuditAsync(conn, new UserAuditLog
+                {
+                    Timestamp = DateTime.Now,
+                    OperatorUserId = operatorUserId,
+                    OperatorUserName = operatorUser.DisplayName,
+                    Action = UserAuditAction.ActivateUser,
+                    TargetUserId = targetUserId,
+                    TargetUserName = targetUser.UserId,
+                    Details = $"å•Ÿç”¨ä½¿ç”¨è€…: {targetUser.DisplayName}"
+                });
+
+                return (true, "ä½¿ç”¨è€…å·²å•Ÿç”¨");
+            }
+            catch (Exception ex)
+            {
+                return (false, $"å•Ÿç”¨å¤±æ•—: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region Update User
+
+        public async Task<(bool Success, string Message)> UpdateUserAsync(
+            int targetUserId,
+            int operatorUserId,
+            string? displayName = null,
+            string? email = null,
+            string? department = null,
+            string? remarks = null,
+            AccessLevel? newAccessLevel = null)
+        {
+            try
+            {
+                using var conn = new SqliteConnection(_connectionString);
+                await conn.OpenAsync();
+
+                var operatorUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId });
+                var targetUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = targetUserId });
+
+                if (operatorUser == null || targetUser == null)
+                {
+                    return (false, "æ‰¾ä¸åˆ°ä½¿ç”¨è€…è³‡è¨Š");
+                }
+
+                // ?? æª¢æŸ¥æ¬Šé™ï¼šä¸èƒ½ä¿®æ”¹æ¯”è‡ªå·±æ¬Šé™é«˜æˆ–ç›¸ç­‰çš„ä½¿ç”¨è€…
+                if (operatorUser.AccessLevel <= targetUser.AccessLevel && operatorUser.Id != targetUser.Id)
+                {
+                    return (false, $"æ‚¨æ²’æœ‰æ¬Šé™ä¿®æ”¹ {targetUser.AccessLevel} ç­‰ç´šçš„ä½¿ç”¨è€…");
+                }
+
+                // æª¢æŸ¥æ¬Šé™
+                if (newAccessLevel.HasValue && !CanManageUser(operatorUser.AccessLevel, newAccessLevel.Value))
+                {
+                    return (false, "æ‚¨æ²’æœ‰æ¬Šé™è¨­å®šæ­¤æ¬Šé™ç­‰ç´š");
+                }
+
+                // ?? æª¢æŸ¥ï¼šä¸èƒ½å°‡ä½¿ç”¨è€…æ¬Šé™è¨­å®šç‚ºé«˜æ–¼æˆ–ç­‰æ–¼è‡ªå·±
+                if (newAccessLevel.HasValue && newAccessLevel.Value >= operatorUser.AccessLevel)
+                {
+                    return (false, $"æ‚¨ä¸èƒ½å°‡ä½¿ç”¨è€…æ¬Šé™è¨­å®šç‚º {newAccessLevel.Value}ï¼ˆå¿…é ˆä½æ–¼æ‚¨çš„æ¬Šé™ï¼‰");
+                }
+
+                // æ›´æ–°æ¬„ä½
+                var updates = new List<string>();
+                var parameters = new DynamicParameters();
+                parameters.Add("Id", targetUserId);
+                parameters.Add("Now", DateTime.Now);
+                parameters.Add("OperatorId", operatorUserId);
+
+                if (displayName != null)
+                {
+                    updates.Add("DisplayName = @DisplayName");
+                    parameters.Add("DisplayName", displayName);
+                }
+                if (email != null)
+                {
+                    updates.Add("Email = @Email");
+                    parameters.Add("Email", email);
+                }
+                if (department != null)
+                {
+                    updates.Add("Department = @Department");
+                    parameters.Add("Department", department);
+                }
+                if (remarks != null)
+                {
+                    updates.Add("Remarks = @Remarks");
+                    parameters.Add("Remarks", remarks);
+                }
+                if (newAccessLevel.HasValue)
+                {
+                    updates.Add("AccessLevel = @AccessLevel");
+                    parameters.Add("AccessLevel", (int)newAccessLevel.Value);
+                }
+
+                if (updates.Count == 0)
+                {
+                    return (false, "æ²’æœ‰ä»»ä½•æ¬„ä½éœ€è¦æ›´æ–°");
+                }
+
+                updates.Add("LastModifiedAt = @Now");
+                updates.Add("LastModifiedByUserId = @OperatorId");
+
+                var sql = $"UPDATE Users SET {string.Join(", ", updates)} WHERE Id = @Id";
+                await conn.ExecuteAsync(sql, parameters);
+
+                // è¨˜éŒ„ç¨½æ ¸æ—¥èªŒ
+                await LogAuditAsync(conn, new UserAuditLog
+                {
+                    Timestamp = DateTime.Now,
+                    OperatorUserId = operatorUserId,
+                    OperatorUserName = operatorUser.DisplayName,
+                    Action = UserAuditAction.ModifyUser,
+                    TargetUserId = targetUserId,
+                    TargetUserName = targetUser.UserId,
+                    Details = $"æ›´æ–°ä½¿ç”¨è€…: {string.Join(", ", updates)}"
+                });
+
+                return (true, "ä½¿ç”¨è€…è³‡æ–™å·²æ›´æ–°");
+            }
+            catch (Exception ex)
+            {
+                return (false, $"æ›´æ–°å¤±æ•—: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region Reset Password
+
+        public async Task<(bool Success, string Message)> ResetPasswordAsync(
+            int targetUserId,
+            int operatorUserId,
+            string newPassword)
+        {
+            try
+            {
+                using var conn = new SqliteConnection(_connectionString);
+                await conn.OpenAsync();
+
+                var operatorUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId });
+                var targetUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = targetUserId });
+
+                if (operatorUser == null || targetUser == null)
+                {
+                    return (false, "æ‰¾ä¸åˆ°ä½¿ç”¨è€…è³‡è¨Š");
+                }
+
+                // Hash æ–°å¯†ç¢¼
+                var (hash, salt) = HashPassword(newPassword);
+
+                // æ›´æ–°å¯†ç¢¼
+                await conn.ExecuteAsync(
+                    @"UPDATE Users SET PasswordHash = @Hash, Salt = @Salt, 
+                      LastModifiedAt = @Now, LastModifiedByUserId = @OperatorId 
+                      WHERE Id = @TargetId",
+                    new { Hash = hash, Salt = salt, Now = DateTime.Now, OperatorId = operatorUserId, TargetId = targetUserId });
+
+                // è¨˜éŒ„ç¨½æ ¸æ—¥èªŒ
+                await LogAuditAsync(conn, new UserAuditLog
+                {
+                    Timestamp = DateTime.Now,
+                    OperatorUserId = operatorUserId,
+                    OperatorUserName = operatorUser.DisplayName,
+                    Action = UserAuditAction.ResetPassword,
+                    TargetUserId = targetUserId,
+                    TargetUserName = targetUser.UserId,
+                    Details = $"é‡è¨­å¯†ç¢¼: {targetUser.DisplayName}"
+                });
+
+                return (true, "å¯†ç¢¼å·²é‡è¨­");
+            }
+            catch (Exception ex)
+            {
+                return (false, $"é‡è¨­å¤±æ•—: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region Query Methods
+
+        public async Task<List<UserAccount>> GetManagedUsersAsync(int operatorUserId)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            await conn.OpenAsync();
+
+            var operatorUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId });
+
+            if (operatorUser == null)
+                return new List<UserAccount>();
+
+            // SuperAdmin: æŸ¥çœ‹æ‰€æœ‰ä½¿ç”¨è€…ï¼ˆåŒ…å«å…¶ä»– SuperAdminï¼‰
+            if (operatorUser.AccessLevel == AccessLevel.SuperAdmin)
+            {
+                return (await conn.QueryAsync<UserAccount>("SELECT * FROM Users ORDER BY AccessLevel DESC, UserId")).ToList();
+            }
+
+            // Admin: æŸ¥çœ‹æ‰€æœ‰ä½¿ç”¨è€…ï¼ˆé™¤äº† SuperAdminï¼‰
+            if (operatorUser.AccessLevel == AccessLevel.Admin)
+            {
+                return (await conn.QueryAsync<UserAccount>(
+                    @"SELECT * FROM Users 
+                      WHERE AccessLevel < @SuperAdminLevel
+                      ORDER BY AccessLevel DESC, UserId",
+                    new { SuperAdminLevel = (int)AccessLevel.SuperAdmin }
+                )).ToList();
+            }
+
+            // Supervisor: æŸ¥çœ‹æ¬Šé™ <= Supervisor çš„æ‰€æœ‰ä½¿ç”¨è€…ï¼ˆåŒ…å«è‡ªå·±èˆ‡æ‰€æœ‰ä½æ¬Šé™ï¼‰
+            if (operatorUser.AccessLevel == AccessLevel.Supervisor)
+            {
+                return (await conn.QueryAsync<UserAccount>(
+                    @"SELECT * FROM Users 
+                      WHERE AccessLevel <= @SupervisorLevel
+                      ORDER BY AccessLevel DESC, UserId",
+                    new { SupervisorLevel = (int)AccessLevel.Supervisor }
+                )).ToList();
+            }
+
+            // Operator èˆ‡ä»¥ä¸‹ï¼šåªèƒ½çœ‹è‡ªå·±
+            return new List<UserAccount> { operatorUser };
+        }
+
+        public async Task<List<UserAccount>> GetAllUsersAsync()
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            await conn.OpenAsync();
+            return (await conn.QueryAsync<UserAccount>("SELECT * FROM Users ORDER BY AccessLevel DESC, UserId")).ToList();
+        }
+
+        public async Task<UserAccount?> GetUserByIdAsync(int userId)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            await conn.OpenAsync();
+            return await conn.QueryFirstOrDefaultAsync<UserAccount>(
+                "SELECT * FROM Users WHERE Id = @Id", new { Id = userId });
+        }
+
+        public async Task<List<UserAuditLog>> GetAuditLogsAsync(int? targetUserId = null, int pageSize = 100)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            await conn.OpenAsync();
+
+            if (targetUserId.HasValue)
+            {
+                return (await conn.QueryAsync<UserAuditLog>(
+                    "SELECT * FROM UserAuditLogs WHERE TargetUserId = @TargetUserId ORDER BY Timestamp DESC LIMIT @PageSize",
+                    new { TargetUserId = targetUserId.Value, PageSize = pageSize }
+                )).ToList();
+            }
+            else
+            {
+                return (await conn.QueryAsync<UserAuditLog>(
+                    "SELECT * FROM UserAuditLogs ORDER BY Timestamp DESC LIMIT @PageSize",
+                    new { PageSize = pageSize }
+                )).ToList();
+            }
+        }
+
+        #endregion
+
+        #region Permission Checks
+
+        public bool CanDeleteUser(int operatorUserId, int targetUserId, AccessLevel operatorLevel)
+        {
+            // ä¸èƒ½åˆªé™¤è‡ªå·±
+            if (operatorUserId == targetUserId)
+                return false;
+
+            // SuperAdmin å¯åˆªé™¤æ‰€æœ‰äººï¼ˆé™¤äº†è‡ªå·±ï¼‰
+            if (operatorLevel == AccessLevel.SuperAdmin)
+                return true;
+
+            // Admin å¯åˆªé™¤æ‰€æœ‰ < SuperAdminï¼ˆé™¤äº†è‡ªå·±ï¼‰
+            if (operatorLevel == AccessLevel.Admin)
+                return true;
+
+            // Supervisor å¯åˆªé™¤ä½æ–¼ Supervisorï¼ˆä¸åŒ…å«è‡ªå·±ï¼‰
+            // ä»¥åŠè‡ªå·±å‰µå»ºçš„ Level 1-2 ä½¿ç”¨è€…
+            if (operatorLevel == AccessLevel.Supervisor)
+                return true;
+
+            return false;
+        }
+
+        public bool CanManageUser(AccessLevel operatorLevel, AccessLevel targetLevel)
+        {
+            // SuperAdmin å¯ç®¡ç†æ‰€æœ‰ç­‰ç´š
+            if (operatorLevel == AccessLevel.SuperAdmin)
+                return true;
+
+            // Admin å¯ç®¡ç†æ‰€æœ‰ç­‰ç´šï¼ˆé™¤äº† SuperAdminï¼‰
+            if (operatorLevel == AccessLevel.Admin && targetLevel < AccessLevel.SuperAdmin)
+                return true;
+
+            // Supervisor å¯ç®¡ç† Supervisor èˆ‡ Level 1-2
+            if (operatorLevel == AccessLevel.Supervisor && targetLevel <= AccessLevel.Supervisor)
+                return true;
+
+            return false;
+        }
+
+        #endregion
+
+        #region AD Integration Helpers
+
+        /// <summary>
+        /// ?? æ–°å¢ï¼šå–å¾—æœ¬æ©Ÿæ‰€æœ‰ AD ä½¿ç”¨è€…æ¸…å–®ï¼ˆç”¨æ–¼ä¸‹æ‹‰é¸å–®ï¼‰
+        /// </summary>
+        /// <returns>AD ä½¿ç”¨è€…æ¸…å–®</returns>
+        public List<string> GetAvailableAdUsers()
+        {
+            var users = new List<string>();
+            
+            try
+            {
+                var adService = new AdAuthenticationService();
+                
+                // å–å¾—æœ¬æ©Ÿæ‰€æœ‰ä½¿ç”¨è€…ï¼ˆé™åˆ¶ LocalMachine æ¨¡å¼ï¼‰
+                using (var context = new System.DirectoryServices.AccountManagement.PrincipalContext(
+                    System.DirectoryServices.AccountManagement.ContextType.Machine))
+                {
+                    var searcher = new System.DirectoryServices.AccountManagement.UserPrincipal(context);
+                    using (var search = new System.DirectoryServices.AccountManagement.PrincipalSearcher(searcher))
+                    {
+                        foreach (var result in search.FindAll())
+                        {
+                            if (result is System.DirectoryServices.AccountManagement.UserPrincipal userPrincipal)
+                            {
+                                if (!string.IsNullOrWhiteSpace(userPrincipal.SamAccountName))
+                                {
+                                    users.Add(userPrincipal.SamAccountName);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[UserManagementService] GetAvailableAdUsers Error: {ex.Message}");
+            }
+            
+            return users.OrderBy(u => u).ToList();
+        }
+
+        /// <summary>
+        /// ?? æ–°å¢ï¼šæª¢æŸ¥ AD ä½¿ç”¨è€…æ˜¯å¦å·²åœ¨æœ¬åœ°è³‡æ–™åº«ä¸­
+        /// </summary>
+        /// <param name="adUsername">AD ä½¿ç”¨è€…åç¨±</param>
+        /// <returns>æ˜¯å¦å·²å­˜åœ¨</returns>
+        public async Task<bool> IsAdUserRegisteredAsync(string adUsername)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            await conn.OpenAsync();
+            
+            var count = await conn.ExecuteScalarAsync<int>(
+                "SELECT COUNT(*) FROM Users WHERE UserId = @UserId",
+                new { UserId = adUsername });
+            
+            return count > 0;
+        }
+
+        #endregion
+
+        #region Audit Logging
+
+        private async Task LogAuditAsync(SqliteConnection conn, UserAuditLog log)
+        {
+            await conn.ExecuteAsync(
+                @"INSERT INTO UserAuditLogs (Timestamp, OperatorUserId, OperatorUserName, Action, 
+                                            TargetUserId, TargetUserName, Details, IpAddress)
+                  VALUES (@Timestamp, @OperatorUserId, @OperatorUserName, @Action, 
+                         @TargetUserId, @TargetUserName, @Details, @IpAddress)",
+                log);
+        }
+
+        /// <summary>
+        /// ?? æ–°å¢ï¼šæ ¹æ“š AD ç¾¤çµ„è‡ªå‹•åˆ¤æ–·å°æ‡‰çš„ AccessLevel
+        /// </summary>
+        /// <param name="userGroups">ä½¿ç”¨è€…æ‰€å±¬çš„ AD ç¾¤çµ„æ¸…å–®</param>
+        /// <returns>å°æ‡‰çš„ AccessLevel</returns>
+        public static AccessLevel DetermineAccessLevelFromAdGroups(List<string> userGroups)
+        {
+            // å°‡ç¾¤çµ„åç¨±è½‰ç‚ºå°å¯«ä»¥ä¾¿å¿½ç•¥å¤§å°å¯«å·®ç•°
+            var groupsLower = userGroups.Select(g => g.ToLower()).ToList();
+
+            // åˆ¤æ–·æ¬Šé™ç­‰ç´šï¼ˆå¾é«˜åˆ°ä½ï¼‰
+            // L5: App_SuperAdmins
+            if (groupsLower.Contains("app_superadmins"))
+            {
+                return AccessLevel.SuperAdmin;
+            }
+            // L4: App_Admins
+            else if (groupsLower.Contains("app_admins"))
+            {
+                return AccessLevel.Admin;
+            }
+            // L3: App_Supervisors
+            else if (groupsLower.Contains("app_supervisors"))
+            {
+                return AccessLevel.Supervisor;
+            }
+            // L2: App_Instructors
+            else if (groupsLower.Contains("app_instructors"))
+            {
+                return AccessLevel.Instructor;
+            }
+            // L1: App_Operators
+            else if (groupsLower.Contains("app_operators"))
+            {
+                return AccessLevel.Operator;
+            }
+            // Domain/Local Admins -> å°æ‡‰åˆ° SuperAdmin
+            else if (groupsLower.Any(g => g.Contains("domain admins") || g.Contains("enterprise admins")))
+            {
+                return AccessLevel.SuperAdmin;
+            }
+            // Local Administrators -> å°æ‡‰åˆ° Admin
+            else if (groupsLower.Contains("administrators"))
+            {
+                return AccessLevel.Admin;
+            }
+            // Guest - é è¨­æœ€ä½æ¬Šé™
+            else
+            {
+                return AccessLevel.Guest;
+            }
+        }
+
+        #endregion
+    }
+}

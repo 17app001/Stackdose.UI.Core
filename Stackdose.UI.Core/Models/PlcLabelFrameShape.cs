@@ -1,11 +1,11 @@
-namespace Stackdose.UI.Core.Models
-{
-    /// <summary>
-    /// PlcLabel ©³®Ø§Îª¬
-    /// </summary>
-    public enum PlcLabelFrameShape
-    {
-        Rectangle,  // ¯x§Î¡]¹w³]¡^
-        Circle      // ¶ê§Î
-    }
-}
+namespace Stackdose.UI.Core.Models
+{
+    /// <summary>
+    /// PlcLabel åº•æ¡†å½¢ç‹€
+    /// </summary>
+    public enum PlcLabelFrameShape
+    {
+        Rectangle,  // çŸ©å½¢ï¼ˆé è¨­ï¼‰
+        Circle      // åœ“å½¢
+    }
+}

@@ -1,646 +1,646 @@
-using Dapper;
-using Microsoft.Data.Sqlite;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-namespace Stackdose.UI.Core.Services
-{
-    /// <summary>
-    /// ¤é»x¬d¸ßªA°È - ±q SQLite Åª¨ú AuditTrails ©M DataLogs
-    /// </summary>
-    public class LogService
-    {
-        private readonly string _connectionString;
-
-        public LogService()
-        {
-            var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "StackDoseData.db");
-            _connectionString = $"Data Source={dbPath}";
-        }
-
-        #region AuditTrails
-
-        /// <summary>
-        /// ¨ú±o©Ò¦³½]®Ö­y¸ñ°O¿ı¡]«ö¤é´Á¤À²Õ¡^
-        /// </summary>
-        public List<AuditTrailRecord> GetAllAuditTrails()
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            var records = conn.Query<AuditTrailRecord>(
-                "SELECT * FROM AuditTrails ORDER BY Timestamp DESC"
-            ).ToList();
-
-            return records;
-        }
-
-        /// <summary>
-        /// ¨ú±o«ü©w¤é´Á½d³òªº½]®Ö­y¸ñ
-        /// </summary>
-        public List<AuditTrailRecord> GetAuditTrailsByDateRange(DateTime from, DateTime to)
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            var records = conn.Query<AuditTrailRecord>(
-                @"SELECT * FROM AuditTrails 
-                  WHERE DATE(Timestamp) BETWEEN DATE(@From) AND DATE(@To)
-                  ORDER BY Timestamp DESC",
-                new { From = from, To = to }
-            ).ToList();
-
-            return records;
-        }
-
-        /// <summary>
-        /// ¨ú±o«ü©w¤é´Áªº½]®Ö­y¸ñ
-        /// </summary>
-        public List<AuditTrailRecord> GetAuditTrailsByDate(DateTime date)
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            var records = conn.Query<AuditTrailRecord>(
-                @"SELECT * FROM AuditTrails 
-                  WHERE DATE(Timestamp) = DATE(@Date)
-                  ORDER BY Timestamp DESC",
-                new { Date = date }
-            ).ToList();
-
-            return records;
-        }
-
-        #endregion
-
-        #region DataLogs
-
-        /// <summary>
-        /// ¨ú±o©Ò¦³¥Í²£¼Æ¾Ú°O¿ı
-        /// </summary>
-        public List<DataLogRecord> GetAllDataLogs()
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            var records = conn.Query<DataLogRecord>(
-                "SELECT * FROM DataLogs ORDER BY Timestamp DESC"
-            ).ToList();
-
-            return records;
-        }
-
-        /// <summary>
-        /// ¨ú±o«ü©w¤é´Á½d³òªº¥Í²£¼Æ¾Ú
-        /// </summary>
-        public List<DataLogRecord> GetDataLogsByDateRange(DateTime from, DateTime to)
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            var records = conn.Query<DataLogRecord>(
-                @"SELECT * FROM DataLogs 
-                  WHERE DATE(Timestamp) BETWEEN DATE(@From) AND DATE(@To)
-                  ORDER BY Timestamp DESC",
-                new { From = from, To = to }
-            ).ToList();
-
-            return records;
-        }
-
-        /// <summary>
-        /// ¨ú±o«ü©w¤é´Áªº¥Í²£¼Æ¾Ú
-        /// </summary>
-        public List<DataLogRecord> GetDataLogsByDate(DateTime date)
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            var records = conn.Query<DataLogRecord>(
-                @"SELECT * FROM DataLogs 
-                  WHERE DATE(Timestamp) = DATE(@Date)
-                  ORDER BY Timestamp DESC",
-                new { Date = date }
-            ).ToList();
-
-            return records;
-        }
-
-        #endregion
-
-        #region OperationLogs
-
-        /// <summary>
-        /// ¨ú±o©Ò¦³¾Ş§@¤é»x
-        /// </summary>
-        public List<OperationLogRecord> GetAllOperationLogs()
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            var records = conn.Query<OperationLogRecord>(
-                "SELECT * FROM OperationLogs ORDER BY Timestamp DESC"
-            ).ToList();
-
-            return records;
-        }
-
-        /// <summary>
-        /// ¨ú±o«ü©w¤é´Á½d³òªº¾Ş§@¤é»x
-        /// </summary>
-        public List<OperationLogRecord> GetOperationLogsByDateRange(DateTime from, DateTime to)
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            var records = conn.Query<OperationLogRecord>(
-                @"SELECT * FROM OperationLogs 
-                  WHERE DATE(Timestamp) BETWEEN DATE(@From) AND DATE(@To)
-                  ORDER BY Timestamp DESC",
-                new { From = from, To = to }
-            ).ToList();
-
-            return records;
-        }
-
-        /// <summary>
-        /// ¨ú±o«ü©w¤é´Áªº¾Ş§@¤é»x
-        /// </summary>
-        public List<OperationLogRecord> GetOperationLogsByDate(DateTime date)
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            var records = conn.Query<OperationLogRecord>(
-                @"SELECT * FROM OperationLogs 
-                  WHERE DATE(Timestamp) = DATE(@Date)
-                  ORDER BY Timestamp DESC",
-                new { Date = date }
-            ).ToList();
-
-            return records;
-        }
-
-        #endregion
-
-        #region EventLogs
-
-        /// <summary>
-        /// ¨ú±o©Ò¦³¨Æ¥ó¤é»x
-        /// </summary>
-        public List<EventLogRecord> GetAllEventLogs()
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            var records = conn.Query<EventLogRecord>(
-                "SELECT * FROM EventLogs ORDER BY Timestamp DESC"
-            ).ToList();
-
-            return records;
-        }
-
-        /// <summary>
-        /// ¨ú±o«ü©w¤é´Á½d³òªº¨Æ¥ó¤é»x
-        /// </summary>
-        public List<EventLogRecord> GetEventLogsByDateRange(DateTime from, DateTime to)
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            var records = conn.Query<EventLogRecord>(
-                @"SELECT * FROM EventLogs 
-                  WHERE DATE(Timestamp) BETWEEN DATE(@From) AND DATE(@To)
-                  ORDER BY Timestamp DESC",
-                new { From = from, To = to }
-            ).ToList();
-
-            return records;
-        }
-
-        /// <summary>
-        /// ¨ú±o«ü©w¤é´Áªº¨Æ¥ó¤é»x
-        /// </summary>
-        public List<EventLogRecord> GetEventLogsByDate(DateTime date)
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            var records = conn.Query<EventLogRecord>(
-                @"SELECT * FROM EventLogs 
-                  WHERE DATE(Timestamp) = DATE(@Date)
-                  ORDER BY Timestamp DESC",
-                new { Date = date }
-            ).ToList();
-
-            return records;
-        }
-
-        #endregion
-
-        #region PeriodicDataLogs
-
-        /// <summary>
-        /// ¨ú±o©Ò¦³¶g´Á©Ê¼Æ¾Ú
-        /// </summary>
-        public List<PeriodicDataLogRecord> GetAllPeriodicDataLogs()
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            var records = conn.Query<PeriodicDataLogRecord>(
-                "SELECT * FROM PeriodicDataLogs ORDER BY Timestamp DESC"
-            ).ToList();
-
-            return records;
-        }
-
-        /// <summary>
-        /// ¨ú±o«ü©w¤é´Á½d³òªº¶g´Á©Ê¼Æ¾Ú
-        /// </summary>
-        public List<PeriodicDataLogRecord> GetPeriodicDataLogsByDateRange(DateTime from, DateTime to)
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            var records = conn.Query<PeriodicDataLogRecord>(
-                @"SELECT * FROM PeriodicDataLogs 
-                  WHERE DATE(Timestamp) BETWEEN DATE(@From) AND DATE(@To)
-                  ORDER BY Timestamp DESC",
-                new { From = from, To = to }
-            ).ToList();
-
-            return records;
-        }
-
-        /// <summary>
-        /// ¨ú±o«ü©w¤é´Áªº¶g´Á©Ê¼Æ¾Ú
-        /// </summary>
-        public List<PeriodicDataLogRecord> GetPeriodicDataLogsByDate(DateTime date)
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            var records = conn.Query<PeriodicDataLogRecord>(
-                @"SELECT * FROM PeriodicDataLogs 
-                  WHERE DATE(Timestamp) = DATE(@Date)
-                  ORDER BY Timestamp DESC",
-                new { Date = date }
-            ).ToList();
-
-            return records;
-        }
-
-        #endregion
-
-        #region Date Grouping
-
-        /// <summary>
-        /// ¨ú±o©Ò¦³¦³°O¿ıªº¤é´Á¦Cªí¡]«ö¤é´Á¤À²Õ²Î­p¡^
-        /// </summary>
-        public List<DateGroup> GetDateGroups()
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            // ±q AuditTrails ©M DataLogs Áp¶°¨ú±o©Ò¦³¤é´Á
-            var auditDates = conn.Query<string>(
-                "SELECT DISTINCT DATE(Timestamp) as DateStr FROM AuditTrails"
-            ).ToList();
-
-            var dataLogDates = conn.Query<string>(
-                "SELECT DISTINCT DATE(Timestamp) as DateStr FROM DataLogs"
-            ).ToList();
-
-            var operationLogDates = conn.Query<string>(
-                "SELECT DISTINCT DATE(Timestamp) as DateStr FROM OperationLogs"
-            ).ToList();
-
-            var eventLogDates = conn.Query<string>(
-                "SELECT DISTINCT DATE(Timestamp) as DateStr FROM EventLogs"
-            ).ToList();
-
-            var periodicDataLogDates = conn.Query<string>(
-                "SELECT DISTINCT DATE(Timestamp) as DateStr FROM PeriodicDataLogs"
-            ).ToList();
-
-            var allDates = auditDates.Union(dataLogDates)
-                .Union(operationLogDates)
-                .Union(eventLogDates)
-                .Union(periodicDataLogDates)
-                .Select(d => DateTime.Parse(d))
-                .OrderByDescending(d => d)
-                .ToList();
-
-            // ²Î­p¨C­Ó¤é´Áªº°O¿ı¼Æ¶q
-            var dateGroups = allDates.Select(date =>
-            {
-                var auditCount = conn.ExecuteScalar<int>(
-                    "SELECT COUNT(*) FROM AuditTrails WHERE DATE(Timestamp) = DATE(@Date)",
-                    new { Date = date }
-                );
-
-                var dataLogCount = conn.ExecuteScalar<int>(
-                    "SELECT COUNT(*) FROM DataLogs WHERE DATE(Timestamp) = DATE(@Date)",
-                    new { Date = date }
-                );
-
-                var operationLogCount = conn.ExecuteScalar<int>(
-                    "SELECT COUNT(*) FROM OperationLogs WHERE DATE(Timestamp) = DATE(@Date)",
-                    new { Date = date }
-                );
-
-                var eventLogCount = conn.ExecuteScalar<int>(
-                    "SELECT COUNT(*) FROM EventLogs WHERE DATE(Timestamp) = DATE(@Date)",
-                    new { Date = date }
-                );
-
-                var periodicDataLogCount = conn.ExecuteScalar<int>(
-                    "SELECT COUNT(*) FROM PeriodicDataLogs WHERE DATE(Timestamp) = DATE(@Date)",
-                    new { Date = date }
-                );
-
-                return new DateGroup
-                {
-                    Date = date,
-                    AuditTrailCount = auditCount,
-                    DataLogCount = dataLogCount,
-                    OperationLogCount = operationLogCount,
-                    EventLogCount = eventLogCount,
-                    PeriodicDataLogCount = periodicDataLogCount,
-                    TotalCount = auditCount + dataLogCount + operationLogCount + eventLogCount + periodicDataLogCount
-                };
-            }).ToList();
-
-            return dateGroups;
-        }
-
-        #endregion
-
-        #region Statistics
-
-        /// <summary>
-        /// ¨ú±o²Î­p¸ê°T
-        /// </summary>
-        public LogStatistics GetStatistics()
-        {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
-
-            return new LogStatistics
-            {
-                TotalAuditTrails = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM AuditTrails"),
-                TotalDataLogs = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM DataLogs"),
-                TotalOperationLogs = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM OperationLogs"),
-                TotalEventLogs = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM EventLogs"),
-                TotalPeriodicDataLogs = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM PeriodicDataLogs"),
-                EarliestAuditDate = conn.ExecuteScalar<DateTime?>("SELECT MIN(Timestamp) FROM AuditTrails"),
-                LatestAuditDate = conn.ExecuteScalar<DateTime?>("SELECT MAX(Timestamp) FROM AuditTrails"),
-                EarliestDataLogDate = conn.ExecuteScalar<DateTime?>("SELECT MIN(Timestamp) FROM DataLogs"),
-                LatestDataLogDate = conn.ExecuteScalar<DateTime?>("SELECT MAX(Timestamp) FROM DataLogs"),
-                EarliestOperationLogDate = conn.ExecuteScalar<DateTime?>("SELECT MIN(Timestamp) FROM OperationLogs"),
-                LatestOperationLogDate = conn.ExecuteScalar<DateTime?>("SELECT MAX(Timestamp) FROM OperationLogs"),
-                EarliestEventLogDate = conn.ExecuteScalar<DateTime?>("SELECT MIN(Timestamp) FROM EventLogs"),
-                LatestEventLogDate = conn.ExecuteScalar<DateTime?>("SELECT MAX(Timestamp) FROM EventLogs"),
-                EarliestPeriodicDataLogDate = conn.ExecuteScalar<DateTime?>("SELECT MIN(Timestamp) FROM PeriodicDataLogs"),
-                LatestPeriodicDataLogDate = conn.ExecuteScalar<DateTime?>("SELECT MAX(Timestamp) FROM PeriodicDataLogs")
-            };
-        }
-
-        #endregion
-
-        #region PDF Export
-
-        /// <summary>
-        /// ¶×¥X½]®Ö­y¸ñ¨ì PDF
-        /// </summary>
-        public void ExportAuditTrailsToPdf(List<AuditTrailRecord> records, string filePath)
-        {
-            using (var writer = new System.IO.StreamWriter(filePath, false, System.Text.Encoding.UTF8))
-            {
-                // ¼g¤J¼ĞÃD
-                writer.WriteLine("=".PadRight(100, '='));
-                writer.WriteLine($"{"½]®Ö­y¸ñ³øªí (Audit Trail Report)",60}");
-                writer.WriteLine($"{"¶×¥X®É¶¡",20}: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                writer.WriteLine($"{"°O¿ı¼Æ¶q",20}: {records.Count} µ§");
-                writer.WriteLine("=".PadRight(100, '='));
-                writer.WriteLine();
-
-                // ¼g¤J°O¿ı
-                foreach (var record in records)
-                {
-                    writer.WriteLine("-".PadRight(100, '-'));
-                    writer.WriteLine($"{"ID",15}: {record.Id}");
-                    writer.WriteLine($"{"®É¶¡ÂW°O",15}: {record.Timestamp:yyyy-MM-dd HH:mm:ss.fff}");
-                    writer.WriteLine($"{"¨Ï¥ÎªÌ",15}: {record.User}");
-                    writer.WriteLine($"{"°Ê§@",15}: {record.Action}");
-                    writer.WriteLine($"{"¥Ø¼Ğ¸Ë¸m",15}: {record.TargetDevice}");
-                    writer.WriteLine($"{"ÂÂ­È",15}: {record.OldValue}");
-                    writer.WriteLine($"{"·s­È",15}: {record.NewValue}");
-                    writer.WriteLine($"{"­ì¦]",15}: {record.Reason}");
-                    writer.WriteLine();
-                }
-
-                writer.WriteLine("=".PadRight(100, '='));
-                writer.WriteLine($"{"³øªíµ²§ô",60}");
-                writer.WriteLine("=".PadRight(100, '='));
-            }
-
-            // ¥Ñ©óµL PDF ®M¥ó¡A¥ı¶×¥X¬°¤å¦rÀÉ¡A¦ıÀÉ¦W¤´¬° .pdf
-            // ¹ê»Ú¥Í²£Àô¹ÒÀ³¨Ï¥Î QuestPDF ©Î iTextSharp
-            System.Diagnostics.Debug.WriteLine($"[LogService] Exported {records.Count} audit trails to {filePath}");
-        }
-
-        /// <summary>
-        /// ¶×¥X¥Í²£¼Æ¾Ú¨ì PDF
-        /// </summary>
-        public void ExportDataLogsToPdf(List<DataLogRecord> records, string filePath)
-        {
-            using (var writer = new System.IO.StreamWriter(filePath, false, System.Text.Encoding.UTF8))
-            {
-                // ¼g¤J¼ĞÃD
-                writer.WriteLine("=".PadRight(100, '='));
-                writer.WriteLine($"{"¥Í²£¼Æ¾Ú³øªí (Data Log Report)",60}");
-                writer.WriteLine($"{"¶×¥X®É¶¡",20}: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                writer.WriteLine($"{"°O¿ı¼Æ¶q",20}: {records.Count} µ§");
-                writer.WriteLine("=".PadRight(100, '='));
-                writer.WriteLine();
-
-                // ¼g¤J°O¿ı
-                foreach (var record in records)
-                {
-                    writer.WriteLine("-".PadRight(100, '-'));
-                    writer.WriteLine($"{"ID",15}: {record.Id}");
-                    writer.WriteLine($"{"®É¶¡ÂW°O",15}: {record.Timestamp:yyyy-MM-dd HH:mm:ss.fff}");
-                    writer.WriteLine($"{"¼ĞÅÒ¦WºÙ",15}: {record.LabelName}");
-                    writer.WriteLine($"{"¦ì§}",15}: {record.Address}");
-                    writer.WriteLine($"{"¼Æ­È",15}: {record.Value}");
-                    writer.WriteLine();
-                }
-
-                writer.WriteLine("=".PadRight(100, '='));
-                writer.WriteLine($"{"³øªíµ²§ô",60}");
-                writer.WriteLine("=".PadRight(100, '='));
-            }
-
-            System.Diagnostics.Debug.WriteLine($"[LogService] Exported {records.Count} data logs to {filePath}");
-        }
-
-        #endregion
-    }
-
-    #region Data Models
-
-    /// <summary>
-    /// ½]®Ö­y¸ñ°O¿ı
-    /// </summary>
-    public class AuditTrailRecord
-    {
-        public int Id { get; set; }
-        public DateTime Timestamp { get; set; }
-        public string User { get; set; } = "";
-        public string Action { get; set; } = "";
-        public string TargetDevice { get; set; } = "";
-        public string OldValue { get; set; } = "";
-        public string NewValue { get; set; } = "";
-        public string Reason { get; set; } = "";
-
-        // UI Åã¥Ü¥Î
-        public string TimeStr => Timestamp.ToString("HH:mm:ss.fff");
-        public string DateStr => Timestamp.ToString("yyyy-MM-dd");
-    }
-
-    /// <summary>
-    /// ¥Í²£¼Æ¾Ú°O¿ı
-    /// </summary>
-    public class DataLogRecord
-    {
-        public int Id { get; set; }
-        public DateTime Timestamp { get; set; }
-        public string LabelName { get; set; } = "";
-        public string Address { get; set; } = "";
-        public string Value { get; set; } = "";
-
-        // UI Åã¥Ü¥Î
-        public string TimeStr => Timestamp.ToString("HH:mm:ss.fff");
-        public string DateStr => Timestamp.ToString("yyyy-MM-dd");
-    }
-
-    /// <summary>
-    /// ¾Ş§@¤é»x°O¿ı
-    /// </summary>
-    public class OperationLogRecord
-    {
-        public int Id { get; set; }
-        public DateTime Timestamp { get; set; }
-        public string BatchId { get; set; } = "";
-        public string UserId { get; set; } = "SuperAdmin"; // ?? FDA 21 CFR Part 11 - ¹w³]¬° SuperAdmin
-        public string CommandName { get; set; } = "";
-        public string Category { get; set; } = "";
-        public string BeforeState { get; set; } = "";
-        public string AfterState { get; set; } = "";
-        public string Message { get; set; } = "";
-
-        // UI Åã¥Ü¥Î
-        public string TimeStr => Timestamp.ToString("HH:mm:ss.fff");
-        public string DateStr => Timestamp.ToString("yyyy-MM-dd");
-    }
-
-    /// <summary>
-    /// ¨Æ¥ó¤é»x°O¿ı
-    /// </summary>
-    public class EventLogRecord
-    {
-        public int Id { get; set; }
-        public DateTime Timestamp { get; set; }
-        public string BatchId { get; set; } = "";
-        public string EventType { get; set; } = "";
-        public string EventCode { get; set; } = "";
-        public string EventDescription { get; set; } = "";
-        public string Severity { get; set; } = "";
-        public string CurrentState { get; set; } = "";
-        public string UserId { get; set; } = "SuperAdmin"; // ?? FDA 21 CFR Part 11 - ¹w³]¬° SuperAdmin
-        public string Message { get; set; } = "";
-
-        // UI Åã¥Ü¥Î
-        public string TimeStr => Timestamp.ToString("HH:mm:ss.fff");
-        public string DateStr => Timestamp.ToString("yyyy-MM-dd");
-    }
-
-    /// <summary>
-    /// ¶g´Á©Ê¼Æ¾Ú°O¿ı
-    /// </summary>
-    public class PeriodicDataLogRecord
-    {
-        public int Id { get; set; }
-        public DateTime Timestamp { get; set; }
-        public string BatchId { get; set; } = "";
-        public string UserId { get; set; } = "SuperAdmin"; // ?? FDA 21 CFR Part 11 - ¹w³]¬° SuperAdmin
-        public double PredryTemp { get; set; }
-        public double DryTemp { get; set; }
-        public double CdaInletPressure { get; set; }
-
-        // UI Åã¥Ü¥Î
-        public string TimeStr => Timestamp.ToString("HH:mm:ss.fff");
-        public string DateStr => Timestamp.ToString("yyyy-MM-dd");
-    }
-
-    /// <summary>
-    /// ¤é´Á¤À²Õ
-    /// </summary>
-    public class DateGroup
-    {
-        public DateTime Date { get; set; }
-        public int AuditTrailCount { get; set; }
-        public int DataLogCount { get; set; }
-        public int OperationLogCount { get; set; }
-        public int EventLogCount { get; set; }
-        public int PeriodicDataLogCount { get; set; }
-        public int TotalCount { get; set; }
-
-        // UI Åã¥Ü¥Î
-        public string DateStr => Date.ToString("yyyy-MM-dd (ddd)", new System.Globalization.CultureInfo("zh-TW"));
-        public string RelativeStr
-        {
-            get
-            {
-                var diff = (DateTime.Today - Date.Date).Days;
-                return diff switch
-                {
-                    0 => "¤µ¤Ñ",
-                    1 => "¬Q¤Ñ",
-                    _ when diff < 7 => $"{diff} ¤Ñ«e",
-                    _ => Date.ToString("yyyy/MM/dd")
-                };
-            }
-        }
-    }
-
-    /// <summary>
-    /// ²Î­p¸ê°T
-    /// </summary>
-    public class LogStatistics
-    {
-        public int TotalAuditTrails { get; set; }
-        public int TotalDataLogs { get; set; }
-        public int TotalOperationLogs { get; set; }
-        public int TotalEventLogs { get; set; }
-        public int TotalPeriodicDataLogs { get; set; }
-        public DateTime? EarliestAuditDate { get; set; }
-        public DateTime? LatestAuditDate { get; set; }
-        public DateTime? EarliestDataLogDate { get; set; }
-        public DateTime? LatestDataLogDate { get; set; }
-        public DateTime? EarliestOperationLogDate { get; set; }
-        public DateTime? LatestOperationLogDate { get; set; }
-        public DateTime? EarliestEventLogDate { get; set; }
-        public DateTime? LatestEventLogDate { get; set; }
-        public DateTime? EarliestPeriodicDataLogDate { get; set; }
-        public DateTime? LatestPeriodicDataLogDate { get; set; }
-
-        public int TotalLogs => TotalAuditTrails + TotalDataLogs + TotalOperationLogs + TotalEventLogs + TotalPeriodicDataLogs;
-    }
-
-    #endregion
-}
+using Dapper;
+using Microsoft.Data.Sqlite;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+namespace Stackdose.UI.Core.Services
+{
+    /// <summary>
+    /// æ—¥èªŒæŸ¥è©¢æœå‹™ - å¾ SQLite è®€å– AuditTrails å’Œ DataLogs
+    /// </summary>
+    public class LogService
+    {
+        private readonly string _connectionString;
+
+        public LogService()
+        {
+            var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "StackDoseData.db");
+            _connectionString = $"Data Source={dbPath}";
+        }
+
+        #region AuditTrails
+
+        /// <summary>
+        /// å–å¾—æ‰€æœ‰ç¨½æ ¸è»Œè·¡è¨˜éŒ„ï¼ˆæŒ‰æ—¥æœŸåˆ†çµ„ï¼‰
+        /// </summary>
+        public List<AuditTrailRecord> GetAllAuditTrails()
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            var records = conn.Query<AuditTrailRecord>(
+                "SELECT * FROM AuditTrails ORDER BY Timestamp DESC"
+            ).ToList();
+
+            return records;
+        }
+
+        /// <summary>
+        /// å–å¾—æŒ‡å®šæ—¥æœŸç¯„åœçš„ç¨½æ ¸è»Œè·¡
+        /// </summary>
+        public List<AuditTrailRecord> GetAuditTrailsByDateRange(DateTime from, DateTime to)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            var records = conn.Query<AuditTrailRecord>(
+                @"SELECT * FROM AuditTrails 
+                  WHERE DATE(Timestamp) BETWEEN DATE(@From) AND DATE(@To)
+                  ORDER BY Timestamp DESC",
+                new { From = from, To = to }
+            ).ToList();
+
+            return records;
+        }
+
+        /// <summary>
+        /// å–å¾—æŒ‡å®šæ—¥æœŸçš„ç¨½æ ¸è»Œè·¡
+        /// </summary>
+        public List<AuditTrailRecord> GetAuditTrailsByDate(DateTime date)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            var records = conn.Query<AuditTrailRecord>(
+                @"SELECT * FROM AuditTrails 
+                  WHERE DATE(Timestamp) = DATE(@Date)
+                  ORDER BY Timestamp DESC",
+                new { Date = date }
+            ).ToList();
+
+            return records;
+        }
+
+        #endregion
+
+        #region DataLogs
+
+        /// <summary>
+        /// å–å¾—æ‰€æœ‰ç”Ÿç”¢æ•¸æ“šè¨˜éŒ„
+        /// </summary>
+        public List<DataLogRecord> GetAllDataLogs()
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            var records = conn.Query<DataLogRecord>(
+                "SELECT * FROM DataLogs ORDER BY Timestamp DESC"
+            ).ToList();
+
+            return records;
+        }
+
+        /// <summary>
+        /// å–å¾—æŒ‡å®šæ—¥æœŸç¯„åœçš„ç”Ÿç”¢æ•¸æ“š
+        /// </summary>
+        public List<DataLogRecord> GetDataLogsByDateRange(DateTime from, DateTime to)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            var records = conn.Query<DataLogRecord>(
+                @"SELECT * FROM DataLogs 
+                  WHERE DATE(Timestamp) BETWEEN DATE(@From) AND DATE(@To)
+                  ORDER BY Timestamp DESC",
+                new { From = from, To = to }
+            ).ToList();
+
+            return records;
+        }
+
+        /// <summary>
+        /// å–å¾—æŒ‡å®šæ—¥æœŸçš„ç”Ÿç”¢æ•¸æ“š
+        /// </summary>
+        public List<DataLogRecord> GetDataLogsByDate(DateTime date)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            var records = conn.Query<DataLogRecord>(
+                @"SELECT * FROM DataLogs 
+                  WHERE DATE(Timestamp) = DATE(@Date)
+                  ORDER BY Timestamp DESC",
+                new { Date = date }
+            ).ToList();
+
+            return records;
+        }
+
+        #endregion
+
+        #region OperationLogs
+
+        /// <summary>
+        /// å–å¾—æ‰€æœ‰æ“ä½œæ—¥èªŒ
+        /// </summary>
+        public List<OperationLogRecord> GetAllOperationLogs()
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            var records = conn.Query<OperationLogRecord>(
+                "SELECT * FROM OperationLogs ORDER BY Timestamp DESC"
+            ).ToList();
+
+            return records;
+        }
+
+        /// <summary>
+        /// å–å¾—æŒ‡å®šæ—¥æœŸç¯„åœçš„æ“ä½œæ—¥èªŒ
+        /// </summary>
+        public List<OperationLogRecord> GetOperationLogsByDateRange(DateTime from, DateTime to)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            var records = conn.Query<OperationLogRecord>(
+                @"SELECT * FROM OperationLogs 
+                  WHERE DATE(Timestamp) BETWEEN DATE(@From) AND DATE(@To)
+                  ORDER BY Timestamp DESC",
+                new { From = from, To = to }
+            ).ToList();
+
+            return records;
+        }
+
+        /// <summary>
+        /// å–å¾—æŒ‡å®šæ—¥æœŸçš„æ“ä½œæ—¥èªŒ
+        /// </summary>
+        public List<OperationLogRecord> GetOperationLogsByDate(DateTime date)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            var records = conn.Query<OperationLogRecord>(
+                @"SELECT * FROM OperationLogs 
+                  WHERE DATE(Timestamp) = DATE(@Date)
+                  ORDER BY Timestamp DESC",
+                new { Date = date }
+            ).ToList();
+
+            return records;
+        }
+
+        #endregion
+
+        #region EventLogs
+
+        /// <summary>
+        /// å–å¾—æ‰€æœ‰äº‹ä»¶æ—¥èªŒ
+        /// </summary>
+        public List<EventLogRecord> GetAllEventLogs()
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            var records = conn.Query<EventLogRecord>(
+                "SELECT * FROM EventLogs ORDER BY Timestamp DESC"
+            ).ToList();
+
+            return records;
+        }
+
+        /// <summary>
+        /// å–å¾—æŒ‡å®šæ—¥æœŸç¯„åœçš„äº‹ä»¶æ—¥èªŒ
+        /// </summary>
+        public List<EventLogRecord> GetEventLogsByDateRange(DateTime from, DateTime to)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            var records = conn.Query<EventLogRecord>(
+                @"SELECT * FROM EventLogs 
+                  WHERE DATE(Timestamp) BETWEEN DATE(@From) AND DATE(@To)
+                  ORDER BY Timestamp DESC",
+                new { From = from, To = to }
+            ).ToList();
+
+            return records;
+        }
+
+        /// <summary>
+        /// å–å¾—æŒ‡å®šæ—¥æœŸçš„äº‹ä»¶æ—¥èªŒ
+        /// </summary>
+        public List<EventLogRecord> GetEventLogsByDate(DateTime date)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            var records = conn.Query<EventLogRecord>(
+                @"SELECT * FROM EventLogs 
+                  WHERE DATE(Timestamp) = DATE(@Date)
+                  ORDER BY Timestamp DESC",
+                new { Date = date }
+            ).ToList();
+
+            return records;
+        }
+
+        #endregion
+
+        #region PeriodicDataLogs
+
+        /// <summary>
+        /// å–å¾—æ‰€æœ‰é€±æœŸæ€§æ•¸æ“š
+        /// </summary>
+        public List<PeriodicDataLogRecord> GetAllPeriodicDataLogs()
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            var records = conn.Query<PeriodicDataLogRecord>(
+                "SELECT * FROM PeriodicDataLogs ORDER BY Timestamp DESC"
+            ).ToList();
+
+            return records;
+        }
+
+        /// <summary>
+        /// å–å¾—æŒ‡å®šæ—¥æœŸç¯„åœçš„é€±æœŸæ€§æ•¸æ“š
+        /// </summary>
+        public List<PeriodicDataLogRecord> GetPeriodicDataLogsByDateRange(DateTime from, DateTime to)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            var records = conn.Query<PeriodicDataLogRecord>(
+                @"SELECT * FROM PeriodicDataLogs 
+                  WHERE DATE(Timestamp) BETWEEN DATE(@From) AND DATE(@To)
+                  ORDER BY Timestamp DESC",
+                new { From = from, To = to }
+            ).ToList();
+
+            return records;
+        }
+
+        /// <summary>
+        /// å–å¾—æŒ‡å®šæ—¥æœŸçš„é€±æœŸæ€§æ•¸æ“š
+        /// </summary>
+        public List<PeriodicDataLogRecord> GetPeriodicDataLogsByDate(DateTime date)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            var records = conn.Query<PeriodicDataLogRecord>(
+                @"SELECT * FROM PeriodicDataLogs 
+                  WHERE DATE(Timestamp) = DATE(@Date)
+                  ORDER BY Timestamp DESC",
+                new { Date = date }
+            ).ToList();
+
+            return records;
+        }
+
+        #endregion
+
+        #region Date Grouping
+
+        /// <summary>
+        /// å–å¾—æ‰€æœ‰æœ‰è¨˜éŒ„çš„æ—¥æœŸåˆ—è¡¨ï¼ˆæŒ‰æ—¥æœŸåˆ†çµ„çµ±è¨ˆï¼‰
+        /// </summary>
+        public List<DateGroup> GetDateGroups()
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            // å¾ AuditTrails å’Œ DataLogs è¯é›†å–å¾—æ‰€æœ‰æ—¥æœŸ
+            var auditDates = conn.Query<string>(
+                "SELECT DISTINCT DATE(Timestamp) as DateStr FROM AuditTrails"
+            ).ToList();
+
+            var dataLogDates = conn.Query<string>(
+                "SELECT DISTINCT DATE(Timestamp) as DateStr FROM DataLogs"
+            ).ToList();
+
+            var operationLogDates = conn.Query<string>(
+                "SELECT DISTINCT DATE(Timestamp) as DateStr FROM OperationLogs"
+            ).ToList();
+
+            var eventLogDates = conn.Query<string>(
+                "SELECT DISTINCT DATE(Timestamp) as DateStr FROM EventLogs"
+            ).ToList();
+
+            var periodicDataLogDates = conn.Query<string>(
+                "SELECT DISTINCT DATE(Timestamp) as DateStr FROM PeriodicDataLogs"
+            ).ToList();
+
+            var allDates = auditDates.Union(dataLogDates)
+                .Union(operationLogDates)
+                .Union(eventLogDates)
+                .Union(periodicDataLogDates)
+                .Select(d => DateTime.Parse(d))
+                .OrderByDescending(d => d)
+                .ToList();
+
+            // çµ±è¨ˆæ¯å€‹æ—¥æœŸçš„è¨˜éŒ„æ•¸é‡
+            var dateGroups = allDates.Select(date =>
+            {
+                var auditCount = conn.ExecuteScalar<int>(
+                    "SELECT COUNT(*) FROM AuditTrails WHERE DATE(Timestamp) = DATE(@Date)",
+                    new { Date = date }
+                );
+
+                var dataLogCount = conn.ExecuteScalar<int>(
+                    "SELECT COUNT(*) FROM DataLogs WHERE DATE(Timestamp) = DATE(@Date)",
+                    new { Date = date }
+                );
+
+                var operationLogCount = conn.ExecuteScalar<int>(
+                    "SELECT COUNT(*) FROM OperationLogs WHERE DATE(Timestamp) = DATE(@Date)",
+                    new { Date = date }
+                );
+
+                var eventLogCount = conn.ExecuteScalar<int>(
+                    "SELECT COUNT(*) FROM EventLogs WHERE DATE(Timestamp) = DATE(@Date)",
+                    new { Date = date }
+                );
+
+                var periodicDataLogCount = conn.ExecuteScalar<int>(
+                    "SELECT COUNT(*) FROM PeriodicDataLogs WHERE DATE(Timestamp) = DATE(@Date)",
+                    new { Date = date }
+                );
+
+                return new DateGroup
+                {
+                    Date = date,
+                    AuditTrailCount = auditCount,
+                    DataLogCount = dataLogCount,
+                    OperationLogCount = operationLogCount,
+                    EventLogCount = eventLogCount,
+                    PeriodicDataLogCount = periodicDataLogCount,
+                    TotalCount = auditCount + dataLogCount + operationLogCount + eventLogCount + periodicDataLogCount
+                };
+            }).ToList();
+
+            return dateGroups;
+        }
+
+        #endregion
+
+        #region Statistics
+
+        /// <summary>
+        /// å–å¾—çµ±è¨ˆè³‡è¨Š
+        /// </summary>
+        public LogStatistics GetStatistics()
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            return new LogStatistics
+            {
+                TotalAuditTrails = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM AuditTrails"),
+                TotalDataLogs = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM DataLogs"),
+                TotalOperationLogs = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM OperationLogs"),
+                TotalEventLogs = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM EventLogs"),
+                TotalPeriodicDataLogs = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM PeriodicDataLogs"),
+                EarliestAuditDate = conn.ExecuteScalar<DateTime?>("SELECT MIN(Timestamp) FROM AuditTrails"),
+                LatestAuditDate = conn.ExecuteScalar<DateTime?>("SELECT MAX(Timestamp) FROM AuditTrails"),
+                EarliestDataLogDate = conn.ExecuteScalar<DateTime?>("SELECT MIN(Timestamp) FROM DataLogs"),
+                LatestDataLogDate = conn.ExecuteScalar<DateTime?>("SELECT MAX(Timestamp) FROM DataLogs"),
+                EarliestOperationLogDate = conn.ExecuteScalar<DateTime?>("SELECT MIN(Timestamp) FROM OperationLogs"),
+                LatestOperationLogDate = conn.ExecuteScalar<DateTime?>("SELECT MAX(Timestamp) FROM OperationLogs"),
+                EarliestEventLogDate = conn.ExecuteScalar<DateTime?>("SELECT MIN(Timestamp) FROM EventLogs"),
+                LatestEventLogDate = conn.ExecuteScalar<DateTime?>("SELECT MAX(Timestamp) FROM EventLogs"),
+                EarliestPeriodicDataLogDate = conn.ExecuteScalar<DateTime?>("SELECT MIN(Timestamp) FROM PeriodicDataLogs"),
+                LatestPeriodicDataLogDate = conn.ExecuteScalar<DateTime?>("SELECT MAX(Timestamp) FROM PeriodicDataLogs")
+            };
+        }
+
+        #endregion
+
+        #region PDF Export
+
+        /// <summary>
+        /// åŒ¯å‡ºç¨½æ ¸è»Œè·¡åˆ° PDF
+        /// </summary>
+        public void ExportAuditTrailsToPdf(List<AuditTrailRecord> records, string filePath)
+        {
+            using (var writer = new System.IO.StreamWriter(filePath, false, System.Text.Encoding.UTF8))
+            {
+                // å¯«å…¥æ¨™é¡Œ
+                writer.WriteLine("=".PadRight(100, '='));
+                writer.WriteLine($"{"ç¨½æ ¸è»Œè·¡å ±è¡¨ (Audit Trail Report)",60}");
+                writer.WriteLine($"{"åŒ¯å‡ºæ™‚é–“",20}: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                writer.WriteLine($"{"è¨˜éŒ„æ•¸é‡",20}: {records.Count} ç­†");
+                writer.WriteLine("=".PadRight(100, '='));
+                writer.WriteLine();
+
+                // å¯«å…¥è¨˜éŒ„
+                foreach (var record in records)
+                {
+                    writer.WriteLine("-".PadRight(100, '-'));
+                    writer.WriteLine($"{"ID",15}: {record.Id}");
+                    writer.WriteLine($"{"æ™‚é–“æˆ³è¨˜",15}: {record.Timestamp:yyyy-MM-dd HH:mm:ss.fff}");
+                    writer.WriteLine($"{"ä½¿ç”¨è€…",15}: {record.User}");
+                    writer.WriteLine($"{"å‹•ä½œ",15}: {record.Action}");
+                    writer.WriteLine($"{"ç›®æ¨™è£ç½®",15}: {record.TargetDevice}");
+                    writer.WriteLine($"{"èˆŠå€¼",15}: {record.OldValue}");
+                    writer.WriteLine($"{"æ–°å€¼",15}: {record.NewValue}");
+                    writer.WriteLine($"{"åŸå› ",15}: {record.Reason}");
+                    writer.WriteLine();
+                }
+
+                writer.WriteLine("=".PadRight(100, '='));
+                writer.WriteLine($"{"å ±è¡¨çµæŸ",60}");
+                writer.WriteLine("=".PadRight(100, '='));
+            }
+
+            // ç”±æ–¼ç„¡ PDF å¥—ä»¶ï¼Œå…ˆåŒ¯å‡ºç‚ºæ–‡å­—æª”ï¼Œä½†æª”åä»ç‚º .pdf
+            // å¯¦éš›ç”Ÿç”¢ç’°å¢ƒæ‡‰ä½¿ç”¨ QuestPDF æˆ– iTextSharp
+            System.Diagnostics.Debug.WriteLine($"[LogService] Exported {records.Count} audit trails to {filePath}");
+        }
+
+        /// <summary>
+        /// åŒ¯å‡ºç”Ÿç”¢æ•¸æ“šåˆ° PDF
+        /// </summary>
+        public void ExportDataLogsToPdf(List<DataLogRecord> records, string filePath)
+        {
+            using (var writer = new System.IO.StreamWriter(filePath, false, System.Text.Encoding.UTF8))
+            {
+                // å¯«å…¥æ¨™é¡Œ
+                writer.WriteLine("=".PadRight(100, '='));
+                writer.WriteLine($"{"ç”Ÿç”¢æ•¸æ“šå ±è¡¨ (Data Log Report)",60}");
+                writer.WriteLine($"{"åŒ¯å‡ºæ™‚é–“",20}: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                writer.WriteLine($"{"è¨˜éŒ„æ•¸é‡",20}: {records.Count} ç­†");
+                writer.WriteLine("=".PadRight(100, '='));
+                writer.WriteLine();
+
+                // å¯«å…¥è¨˜éŒ„
+                foreach (var record in records)
+                {
+                    writer.WriteLine("-".PadRight(100, '-'));
+                    writer.WriteLine($"{"ID",15}: {record.Id}");
+                    writer.WriteLine($"{"æ™‚é–“æˆ³è¨˜",15}: {record.Timestamp:yyyy-MM-dd HH:mm:ss.fff}");
+                    writer.WriteLine($"{"æ¨™ç±¤åç¨±",15}: {record.LabelName}");
+                    writer.WriteLine($"{"ä½å€",15}: {record.Address}");
+                    writer.WriteLine($"{"æ•¸å€¼",15}: {record.Value}");
+                    writer.WriteLine();
+                }
+
+                writer.WriteLine("=".PadRight(100, '='));
+                writer.WriteLine($"{"å ±è¡¨çµæŸ",60}");
+                writer.WriteLine("=".PadRight(100, '='));
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[LogService] Exported {records.Count} data logs to {filePath}");
+        }
+
+        #endregion
+    }
+
+    #region Data Models
+
+    /// <summary>
+    /// ç¨½æ ¸è»Œè·¡è¨˜éŒ„
+    /// </summary>
+    public class AuditTrailRecord
+    {
+        public int Id { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string User { get; set; } = "";
+        public string Action { get; set; } = "";
+        public string TargetDevice { get; set; } = "";
+        public string OldValue { get; set; } = "";
+        public string NewValue { get; set; } = "";
+        public string Reason { get; set; } = "";
+
+        // UI é¡¯ç¤ºç”¨
+        public string TimeStr => Timestamp.ToString("HH:mm:ss.fff");
+        public string DateStr => Timestamp.ToString("yyyy-MM-dd");
+    }
+
+    /// <summary>
+    /// ç”Ÿç”¢æ•¸æ“šè¨˜éŒ„
+    /// </summary>
+    public class DataLogRecord
+    {
+        public int Id { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string LabelName { get; set; } = "";
+        public string Address { get; set; } = "";
+        public string Value { get; set; } = "";
+
+        // UI é¡¯ç¤ºç”¨
+        public string TimeStr => Timestamp.ToString("HH:mm:ss.fff");
+        public string DateStr => Timestamp.ToString("yyyy-MM-dd");
+    }
+
+    /// <summary>
+    /// æ“ä½œæ—¥èªŒè¨˜éŒ„
+    /// </summary>
+    public class OperationLogRecord
+    {
+        public int Id { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string BatchId { get; set; } = "";
+        public string UserId { get; set; } = "SuperAdmin"; // ?? FDA 21 CFR Part 11 - é è¨­ç‚º SuperAdmin
+        public string CommandName { get; set; } = "";
+        public string Category { get; set; } = "";
+        public string BeforeState { get; set; } = "";
+        public string AfterState { get; set; } = "";
+        public string Message { get; set; } = "";
+
+        // UI é¡¯ç¤ºç”¨
+        public string TimeStr => Timestamp.ToString("HH:mm:ss.fff");
+        public string DateStr => Timestamp.ToString("yyyy-MM-dd");
+    }
+
+    /// <summary>
+    /// äº‹ä»¶æ—¥èªŒè¨˜éŒ„
+    /// </summary>
+    public class EventLogRecord
+    {
+        public int Id { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string BatchId { get; set; } = "";
+        public string EventType { get; set; } = "";
+        public string EventCode { get; set; } = "";
+        public string EventDescription { get; set; } = "";
+        public string Severity { get; set; } = "";
+        public string CurrentState { get; set; } = "";
+        public string UserId { get; set; } = "SuperAdmin"; // ?? FDA 21 CFR Part 11 - é è¨­ç‚º SuperAdmin
+        public string Message { get; set; } = "";
+
+        // UI é¡¯ç¤ºç”¨
+        public string TimeStr => Timestamp.ToString("HH:mm:ss.fff");
+        public string DateStr => Timestamp.ToString("yyyy-MM-dd");
+    }
+
+    /// <summary>
+    /// é€±æœŸæ€§æ•¸æ“šè¨˜éŒ„
+    /// </summary>
+    public class PeriodicDataLogRecord
+    {
+        public int Id { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string BatchId { get; set; } = "";
+        public string UserId { get; set; } = "SuperAdmin"; // ?? FDA 21 CFR Part 11 - é è¨­ç‚º SuperAdmin
+        public double PredryTemp { get; set; }
+        public double DryTemp { get; set; }
+        public double CdaInletPressure { get; set; }
+
+        // UI é¡¯ç¤ºç”¨
+        public string TimeStr => Timestamp.ToString("HH:mm:ss.fff");
+        public string DateStr => Timestamp.ToString("yyyy-MM-dd");
+    }
+
+    /// <summary>
+    /// æ—¥æœŸåˆ†çµ„
+    /// </summary>
+    public class DateGroup
+    {
+        public DateTime Date { get; set; }
+        public int AuditTrailCount { get; set; }
+        public int DataLogCount { get; set; }
+        public int OperationLogCount { get; set; }
+        public int EventLogCount { get; set; }
+        public int PeriodicDataLogCount { get; set; }
+        public int TotalCount { get; set; }
+
+        // UI é¡¯ç¤ºç”¨
+        public string DateStr => Date.ToString("yyyy-MM-dd (ddd)", new System.Globalization.CultureInfo("zh-TW"));
+        public string RelativeStr
+        {
+            get
+            {
+                var diff = (DateTime.Today - Date.Date).Days;
+                return diff switch
+                {
+                    0 => "ä»Šå¤©",
+                    1 => "æ˜¨å¤©",
+                    _ when diff < 7 => $"{diff} å¤©å‰",
+                    _ => Date.ToString("yyyy/MM/dd")
+                };
+            }
+        }
+    }
+
+    /// <summary>
+    /// çµ±è¨ˆè³‡è¨Š
+    /// </summary>
+    public class LogStatistics
+    {
+        public int TotalAuditTrails { get; set; }
+        public int TotalDataLogs { get; set; }
+        public int TotalOperationLogs { get; set; }
+        public int TotalEventLogs { get; set; }
+        public int TotalPeriodicDataLogs { get; set; }
+        public DateTime? EarliestAuditDate { get; set; }
+        public DateTime? LatestAuditDate { get; set; }
+        public DateTime? EarliestDataLogDate { get; set; }
+        public DateTime? LatestDataLogDate { get; set; }
+        public DateTime? EarliestOperationLogDate { get; set; }
+        public DateTime? LatestOperationLogDate { get; set; }
+        public DateTime? EarliestEventLogDate { get; set; }
+        public DateTime? LatestEventLogDate { get; set; }
+        public DateTime? EarliestPeriodicDataLogDate { get; set; }
+        public DateTime? LatestPeriodicDataLogDate { get; set; }
+
+        public int TotalLogs => TotalAuditTrails + TotalDataLogs + TotalOperationLogs + TotalEventLogs + TotalPeriodicDataLogs;
+    }
+
+    #endregion
+}

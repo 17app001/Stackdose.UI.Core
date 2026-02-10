@@ -1,689 +1,689 @@
-using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Windows;
-using System.Windows.Controls;
-using Stackdose.UI.Core.Services;
-
-namespace Stackdose.UI.Core.Controls
-{
-    /// <summary>
-    /// LogManagementPanel - ¤é»xºŞ²z­±ªO¡]¥i¿W¥ß¨Ï¥Î¡^
-    /// ¤ä´© 4 ºØ¤é»xÃş«¬¡GAuditTrail, Operation, Event, PeriodicData
-    /// </summary>
-    public partial class LogManagementPanel : UserControl, INotifyPropertyChanged
-    {
-        #region Private Fields
-
-        private readonly LogService _logService;
-        private ObservableCollection<DateGroup> _dateGroups;
-        private ObservableCollection<AuditTrailRecord> _currentAuditTrails;
-        private ObservableCollection<DataLogRecord> _currentDataLogs;
-        private ObservableCollection<OperationLogRecord> _currentOperationLogs;
-        private ObservableCollection<EventLogRecord> _currentEventLogs;
-        private ObservableCollection<EventLogRecord> _allEventLogs; // Store all event logs for filtering
-        private ObservableCollection<PeriodicDataLogRecord> _currentPeriodicDataLogs;
-        private DateGroup? _selectedDateGroup;
-        private LogViewMode _currentViewMode = LogViewMode.AuditTrail;
-        private DateTime _filterFromDate = DateTime.Today.AddDays(-7);
-        private DateTime _filterToDate = DateTime.Today;
-        
-        // ?? ·s¼W¡G¼Ğ°O¬O§_¬°¤é´Á½d³ò¬d¸ß¼Ò¦¡
-        private bool _isDateRangeQueryMode = false;
-
-        // Severity filter flags
-        private bool _isSeverityAll = true;
-        private bool _isSeverityCritical = false;
-        private bool _isSeverityMajor = false;
-        private bool _isSeverityMinor = false;
-        private bool _isSeverityInfo = false;
-
-        // Event type filter flags
-        private bool _isEventTypeAlarm = false;
-        private bool _isEventTypeWarning = false;
-        private bool _isEventTypeSystem = false;
-        private bool _isEventTypeSafety = false;
-
-        #endregion
-
-        #region Properties
-
-        public ObservableCollection<DateGroup> DateGroups
-        {
-            get => _dateGroups;
-            set { _dateGroups = value; OnPropertyChanged(); }
-        }
-
-        public ObservableCollection<AuditTrailRecord> CurrentAuditTrails
-        {
-            get => _currentAuditTrails;
-            set { _currentAuditTrails = value; OnPropertyChanged(); OnPropertyChanged(nameof(CurrentRecordCount)); }
-        }
-
-        public ObservableCollection<OperationLogRecord> CurrentOperationLogs
-        {
-            get => _currentOperationLogs;
-            set { _currentOperationLogs = value; OnPropertyChanged(); OnPropertyChanged(nameof(CurrentRecordCount)); }
-        }
-
-        public ObservableCollection<EventLogRecord> CurrentEventLogs
-        {
-            get => _currentEventLogs;
-            set { _currentEventLogs = value; OnPropertyChanged(); OnPropertyChanged(nameof(CurrentRecordCount)); }
-        }
-
-        public ObservableCollection<PeriodicDataLogRecord> CurrentPeriodicDataLogs
-        {
-            get => _currentPeriodicDataLogs;
-            set { _currentPeriodicDataLogs = value; OnPropertyChanged(); OnPropertyChanged(nameof(CurrentRecordCount)); }
-        }
-
-        public DateGroup? SelectedDateGroup
-        {
-            get => _selectedDateGroup;
-            set 
-            { 
-                _selectedDateGroup = value; 
-                OnPropertyChanged();
-                
-                // ?? ¥u¦³¦b«D¤é´Á½d³ò¬d¸ß¼Ò¦¡®É¤~¸ü¤J³æ¤é¼Æ¾Ú
-                if (!_isDateRangeQueryMode)
-                {
-                    LoadLogsForSelectedDate(); 
-                }
-            }
-        }
-
-        public LogViewMode CurrentViewMode
-        {
-            get => _currentViewMode;
-            set
-            {
-                _currentViewMode = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(IsAuditTrailMode));
-                OnPropertyChanged(nameof(IsOperationMode));
-                OnPropertyChanged(nameof(IsEventMode));
-                OnPropertyChanged(nameof(IsPeriodicDataMode));
-                OnPropertyChanged(nameof(CurrentViewModeText));
-                OnPropertyChanged(nameof(CurrentRecordCount));
-                
-                // ?? ¤Á´«Ãş«¬®É­«¸m¬°³æ¤é¼Ò¦¡
-                _isDateRangeQueryMode = false;
-                
-                // Reset severity filter when switching modes
-                if (value == LogViewMode.Event)
-                {
-                    ResetSeverityFilter();
-                }
-                
-                LoadLogsForSelectedDate();
-            }
-        }
-
-        public bool IsAuditTrailMode
-        {
-            get => _currentViewMode == LogViewMode.AuditTrail;
-            set { if (value) CurrentViewMode = LogViewMode.AuditTrail; }
-        }
-
-        public bool IsOperationMode
-        {
-            get => _currentViewMode == LogViewMode.Operation;
-            set { if (value) CurrentViewMode = LogViewMode.Operation; }
-        }
-
-        public bool IsEventMode
-        {
-            get => _currentViewMode == LogViewMode.Event;
-            set { if (value) CurrentViewMode = LogViewMode.Event; }
-        }
-
-        public bool IsPeriodicDataMode
-        {
-            get => _currentViewMode == LogViewMode.PeriodicData;
-            set { if (value) CurrentViewMode = LogViewMode.PeriodicData; }
-        }
-
-        // Severity filter properties
-        public bool IsSeverityAll
-        {
-            get => _isSeverityAll;
-            set { _isSeverityAll = value; OnPropertyChanged(); }
-        }
-
-        public bool IsSeverityCritical
-        {
-            get => _isSeverityCritical;
-            set { _isSeverityCritical = value; OnPropertyChanged(); }
-        }
-
-        public bool IsSeverityMajor
-        {
-            get => _isSeverityMajor;
-            set { _isSeverityMajor = value; OnPropertyChanged(); }
-        }
-
-        public bool IsSeverityMinor
-        {
-            get => _isSeverityMinor;
-            set { _isSeverityMinor = value; OnPropertyChanged(); }
-        }
-
-        public bool IsSeverityInfo
-        {
-            get => _isSeverityInfo;
-            set { _isSeverityInfo = value; OnPropertyChanged(); }
-        }
-
-        // Event type filter properties
-        public bool IsEventTypeAlarm
-        {
-            get => _isEventTypeAlarm;
-            set { _isEventTypeAlarm = value; OnPropertyChanged(); }
-        }
-
-        public bool IsEventTypeWarning
-        {
-            get => _isEventTypeWarning;
-            set { _isEventTypeWarning = value; OnPropertyChanged(); }
-        }
-
-        public bool IsEventTypeSystem
-        {
-            get => _isEventTypeSystem;
-            set { _isEventTypeSystem = value; OnPropertyChanged(); }
-        }
-
-        public bool IsEventTypeSafety
-        {
-            get => _isEventTypeSafety;
-            set { _isEventTypeSafety = value; OnPropertyChanged(); }
-        }
-
-        public string CurrentViewModeText => _currentViewMode switch
-        {
-            LogViewMode.AuditTrail => "AUDIT TRAIL",
-            LogViewMode.Operation => "OPERATION LOG",
-            LogViewMode.Event => "EVENT LOG",
-            LogViewMode.PeriodicData => "PERIODIC DATA LOG",
-            _ => "UNKNOWN"
-        };
-
-        public int CurrentRecordCount => _currentViewMode switch
-        {
-            LogViewMode.AuditTrail => CurrentAuditTrails.Count,
-            LogViewMode.Operation => CurrentOperationLogs.Count,
-            LogViewMode.Event => CurrentEventLogs.Count,
-            LogViewMode.PeriodicData => CurrentPeriodicDataLogs.Count,
-            _ => 0
-        };
-
-        public DateTime FilterFromDate
-        {
-            get => _filterFromDate;
-            set { _filterFromDate = value; OnPropertyChanged(); }
-        }
-
-        public DateTime FilterToDate
-        {
-            get => _filterToDate;
-            set { _filterToDate = value; OnPropertyChanged(); }
-        }
-
-        #endregion
-
-        #region Constructor
-
-        public LogManagementPanel()
-        {
-            InitializeComponent();
-            DataContext = this;
-
-            // ½T«O¸ê®Æ®w¤wªì©l¤Æ
-            try
-            {
-                var _ = Stackdose.UI.Core.Helpers.ComplianceContext.CurrentUser;
-                System.Diagnostics.Debug.WriteLine("[LogManagementPanel] ComplianceContext initialized");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] ComplianceContext init error: {ex.Message}");
-            }
-
-            _logService = new LogService();
-            _dateGroups = new ObservableCollection<DateGroup>();
-            _currentAuditTrails = new ObservableCollection<AuditTrailRecord>();
-            _currentDataLogs = new ObservableCollection<DataLogRecord>();
-            _currentOperationLogs = new ObservableCollection<OperationLogRecord>();
-            _currentEventLogs = new ObservableCollection<EventLogRecord>();
-            _allEventLogs = new ObservableCollection<EventLogRecord>();
-            _currentPeriodicDataLogs = new ObservableCollection<PeriodicDataLogRecord>();
-
-            Loaded += LogManagementPanel_Loaded;
-        }
-
-        #endregion
-
-        #region Event Handlers
-
-        private void LogManagementPanel_Loaded(object sender, RoutedEventArgs e)
-        {
-            LoadDateGroups();
-        }
-
-        #endregion
-
-        #region Severity Filter Methods
-
-        private void ResetSeverityFilter()
-        {
-            _isSeverityAll = true;
-            _isSeverityCritical = false;
-            _isSeverityMajor = false;
-            _isSeverityMinor = false;
-            _isSeverityInfo = false;
-            _isEventTypeAlarm = false;
-            _isEventTypeWarning = false;
-            _isEventTypeSystem = false;
-            _isEventTypeSafety = false;
-            
-            // Notify all properties
-            OnPropertyChanged(nameof(IsSeverityAll));
-            OnPropertyChanged(nameof(IsSeverityCritical));
-            OnPropertyChanged(nameof(IsSeverityMajor));
-            OnPropertyChanged(nameof(IsSeverityMinor));
-            OnPropertyChanged(nameof(IsSeverityInfo));
-            OnPropertyChanged(nameof(IsEventTypeAlarm));
-            OnPropertyChanged(nameof(IsEventTypeWarning));
-            OnPropertyChanged(nameof(IsEventTypeSystem));
-            OnPropertyChanged(nameof(IsEventTypeSafety));
-        }
-
-        private void ApplyEventLogFilter()
-        {
-            if (_allEventLogs == null || _allEventLogs.Count == 0)
-            {
-                System.Diagnostics.Debug.WriteLine("[LogManagementPanel] ApplyEventLogFilter: No event logs to filter");
-                return;
-            }
-
-            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] ApplyEventLogFilter: Total={_allEventLogs.Count}");
-            System.Diagnostics.Debug.WriteLine($"  SeverityAll={_isSeverityAll}, Critical={_isSeverityCritical}, Major={_isSeverityMajor}, Minor={_isSeverityMinor}, Info={_isSeverityInfo}");
-            System.Diagnostics.Debug.WriteLine($"  Alarm={_isEventTypeAlarm}, Warning={_isEventTypeWarning}, System={_isEventTypeSystem}, Safety={_isEventTypeSafety}");
-
-            var filtered = _allEventLogs.AsEnumerable();
-
-            // Apply severity filter
-            if (!_isSeverityAll)
-            {
-                var severities = new System.Collections.Generic.List<string>();
-                if (_isSeverityCritical) severities.Add("Critical");
-                if (_isSeverityMajor) severities.Add("Major");
-                if (_isSeverityMinor) severities.Add("Minor");
-                if (_isSeverityInfo) severities.Add("Info");
-
-                System.Diagnostics.Debug.WriteLine($"  Filtering by severities: {string.Join(", ", severities)}");
-
-                if (severities.Count > 0)
-                {
-                    filtered = filtered.Where(e => severities.Any(s => 
-                        string.Equals(e.Severity, s, StringComparison.OrdinalIgnoreCase)));
-                }
-            }
-
-            // Apply event type filter
-            bool hasEventTypeFilter = _isEventTypeAlarm || _isEventTypeWarning || _isEventTypeSystem || _isEventTypeSafety;
-            if (hasEventTypeFilter)
-            {
-                var eventTypes = new System.Collections.Generic.List<string>();
-                if (_isEventTypeAlarm) eventTypes.Add("Alarm");
-                if (_isEventTypeWarning) eventTypes.Add("Warning");
-                if (_isEventTypeSystem) eventTypes.Add("System Event");
-                if (_isEventTypeSafety) eventTypes.Add("Safety Event");
-
-                System.Diagnostics.Debug.WriteLine($"  Filtering by event types: {string.Join(", ", eventTypes)}");
-                filtered = filtered.Where(e => eventTypes.Any(t => 
-                    string.Equals(e.EventType, t, StringComparison.OrdinalIgnoreCase)));
-            }
-
-            var result = filtered.ToList();
-            System.Diagnostics.Debug.WriteLine($"  Filter result: {result.Count} records");
-
-            CurrentEventLogs.Clear();
-            foreach (var r in result)
-            {
-                CurrentEventLogs.Add(r);
-            }
-
-            OnPropertyChanged(nameof(CurrentRecordCount));
-        }
-
-        private void SeverityAll_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("[LogManagementPanel] SeverityAll_Click");
-            
-            _isSeverityAll = true;
-            _isSeverityCritical = false;
-            _isSeverityMajor = false;
-            _isSeverityMinor = false;
-            _isSeverityInfo = false;
-            
-            OnPropertyChanged(nameof(IsSeverityAll));
-            OnPropertyChanged(nameof(IsSeverityCritical));
-            OnPropertyChanged(nameof(IsSeverityMajor));
-            OnPropertyChanged(nameof(IsSeverityMinor));
-            OnPropertyChanged(nameof(IsSeverityInfo));
-            
-            ApplyEventLogFilter();
-        }
-
-        private void SeverityCritical_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] SeverityCritical_Click");
-            
-            _isSeverityAll = false;
-            // Don't toggle here - the ToggleButton already toggled it via binding
-            // Just apply filter with current state
-            
-            OnPropertyChanged(nameof(IsSeverityAll));
-            
-            // Use dispatcher to wait for binding update
-            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
-        }
-
-        private void SeverityMajor_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] SeverityMajor_Click");
-            
-            _isSeverityAll = false;
-            OnPropertyChanged(nameof(IsSeverityAll));
-            
-            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
-        }
-
-        private void SeverityMinor_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] SeverityMinor_Click");
-            
-            _isSeverityAll = false;
-            OnPropertyChanged(nameof(IsSeverityAll));
-            
-            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
-        }
-
-        private void SeverityInfo_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] SeverityInfo_Click");
-            
-            _isSeverityAll = false;
-            OnPropertyChanged(nameof(IsSeverityAll));
-            
-            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
-        }
-
-        private void EventTypeAlarm_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] EventTypeAlarm_Click");
-            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
-        }
-
-        private void EventTypeWarning_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] EventTypeWarning_Click");
-            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
-        }
-
-        private void EventTypeSystem_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] EventTypeSystem_Click");
-            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
-        }
-
-        private void EventTypeSafety_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] EventTypeSafety_Click");
-            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
-        }
-
-        #endregion
-
-        #region Data Loading
-
-        private void LoadDateGroups()
-        {
-            try
-            {
-                var dateGroups = _logService.GetDateGroups();
-                DateGroups.Clear();
-                foreach (var group in dateGroups)
-                    DateGroups.Add(group);
-
-                if (DateGroups.Count > 0)
-                    SelectedDateGroup = DateGroups.First();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"¸ü¤J¤é´Á¦Cªí¥¢±Ñ¡G{ex.Message}", "¿ù»~", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void LoadLogsForSelectedDate()
-        {
-            if (SelectedDateGroup == null) return;
-
-            try
-            {
-                switch (CurrentViewMode)
-                {
-                    case LogViewMode.AuditTrail:
-                        var auditRecords = _logService.GetAuditTrailsByDate(SelectedDateGroup.Date);
-                        CurrentAuditTrails.Clear();
-                        foreach (var r in auditRecords) CurrentAuditTrails.Add(r);
-                        break;
-
-                    case LogViewMode.Operation:
-                        var opRecords = _logService.GetOperationLogsByDate(SelectedDateGroup.Date);
-                        CurrentOperationLogs.Clear();
-                        foreach (var r in opRecords) CurrentOperationLogs.Add(r);
-                        break;
-
-                    case LogViewMode.Event:
-                        var eventRecords = _logService.GetEventLogsByDate(SelectedDateGroup.Date);
-                        _allEventLogs.Clear();
-                        foreach (var r in eventRecords) _allEventLogs.Add(r);
-                        ApplyEventLogFilter();
-                        break;
-
-                    case LogViewMode.PeriodicData:
-                        var periodicRecords = _logService.GetPeriodicDataLogsByDate(SelectedDateGroup.Date);
-                        CurrentPeriodicDataLogs.Clear();
-                        foreach (var r in periodicRecords) CurrentPeriodicDataLogs.Add(r);
-                        break;
-                }
-                
-                // ?? §ó·s CurrentRecordCount
-                OnPropertyChanged(nameof(CurrentRecordCount));
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"¸ü¤J¤é»x¥¢±Ñ¡G{ex.Message}", "¿ù»~", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        #endregion
-
-        #region Button Handlers
-
-        private void DateItem_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (sender is FrameworkElement element && element.Tag is DateGroup dateGroup)
-            {
-                // ?? ­«¸m¬°³æ¤é¼Ò¦¡
-                _isDateRangeQueryMode = false;
-                SelectedDateGroup = dateGroup;
-            }
-        }
-
-        private void AuditTrailButton_Click(object sender, RoutedEventArgs e)
-        {
-            CurrentViewMode = LogViewMode.AuditTrail;
-        }
-
-        private void OperationButton_Click(object sender, RoutedEventArgs e)
-        {
-            CurrentViewMode = LogViewMode.Operation;
-        }
-
-        private void EventButton_Click(object sender, RoutedEventArgs e)
-        {
-            CurrentViewMode = LogViewMode.Event;
-        }
-
-        private void PeriodicDataButton_Click(object sender, RoutedEventArgs e)
-        {
-            CurrentViewMode = LogViewMode.PeriodicData;
-        }
-
-        private void QueryButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (FilterFromDate > FilterToDate)
-                {
-                    MessageBox.Show("°_©l¤é´Á¤£¥i¤j©óµ²§ô¤é´Á", "¤é´Á¿ù»~", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                // ?? ³]¬°¤é´Á½d³ò¬d¸ß¼Ò¦¡
-                _isDateRangeQueryMode = true;
-
-                switch (CurrentViewMode)
-                {
-                    case LogViewMode.AuditTrail:
-                        var auditRecords = _logService.GetAuditTrailsByDateRange(FilterFromDate, FilterToDate);
-                        CurrentAuditTrails.Clear();
-                        foreach (var r in auditRecords) CurrentAuditTrails.Add(r);
-                        MessageBox.Show($"¬d¸ß§¹¦¨¡I¦@ {CurrentAuditTrails.Count} µ§¼f­p­y¸ñ°O¿ı", "¬d¸ßµ²ªG", MessageBoxButton.OK, MessageBoxImage.Information);
-                        break;
-
-                    case LogViewMode.Operation:
-                        var opRecords = _logService.GetOperationLogsByDateRange(FilterFromDate, FilterToDate);
-                        CurrentOperationLogs.Clear();
-                        foreach (var r in opRecords) CurrentOperationLogs.Add(r);
-                        MessageBox.Show($"¬d¸ß§¹¦¨¡I¦@ {CurrentOperationLogs.Count} µ§¾Ş§@¤é»x°O¿ı", "¬d¸ßµ²ªG", MessageBoxButton.OK, MessageBoxImage.Information);
-                        break;
-
-                    case LogViewMode.Event:
-                        var eventRecords = _logService.GetEventLogsByDateRange(FilterFromDate, FilterToDate);
-                        _allEventLogs.Clear();
-                        foreach (var r in eventRecords) _allEventLogs.Add(r);
-                        ApplyEventLogFilter();
-                        MessageBox.Show($"¬d¸ß§¹¦¨¡I¦@ {CurrentEventLogs.Count} µ§¨Æ¥ó¤é»x°O¿ı", "¬d¸ßµ²ªG", MessageBoxButton.OK, MessageBoxImage.Information);
-                        break;
-
-                    case LogViewMode.PeriodicData:
-                        var periodicRecords = _logService.GetPeriodicDataLogsByDateRange(FilterFromDate, FilterToDate);
-                        CurrentPeriodicDataLogs.Clear();
-                        foreach (var r in periodicRecords) CurrentPeriodicDataLogs.Add(r);
-                        MessageBox.Show($"¬d¸ß§¹¦¨¡I¦@ {CurrentPeriodicDataLogs.Count} µ§¶g´Á¼Æ¾Ú°O¿ı", "¬d¸ßµ²ªG", MessageBoxButton.OK, MessageBoxImage.Information);
-                        break;
-                }
-
-                // ?? §ó·s CurrentRecordCount
-                OnPropertyChanged(nameof(CurrentRecordCount));
-                
-                // ?? ¤£¦A©I¥s LoadDateGroups()¡AÁ×§K­«¸m¼Æ¾Ú
-                // LoadDateGroups();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"¬d¸ß¥¢±Ñ¡G{ex.Message}", "¿ù»~", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void ExportPdfButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                int recordCount = CurrentRecordCount;
-                if (recordCount == 0)
-                {
-                    MessageBox.Show("¥Ø«e¨S¦³¥i¶×¥Xªº°O¿ı", "µL¸ê®Æ", MessageBoxButton.OK, MessageBoxImage.Information);
-                    return;
-                }
-
-                var saveDialog = new Microsoft.Win32.SaveFileDialog
-                {
-                    Filter = "PDF ÀÉ®× (*.pdf)|*.pdf",
-                    FileName = $"Log_{CurrentViewModeText}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf",
-                    DefaultExt = ".pdf"
-                };
-
-                if (saveDialog.ShowDialog() == true)
-                {
-                    switch (CurrentViewMode)
-                    {
-                        case LogViewMode.AuditTrail:
-                            _logService.ExportAuditTrailsToPdf(CurrentAuditTrails.ToList(), saveDialog.FileName);
-                            break;
-
-                        case LogViewMode.Operation:
-                            // TODO: ¹ê§@ Operation ¶×¥X
-                            break;
-
-                        case LogViewMode.Event:
-                            // TODO: ¹ê§@ Event ¶×¥X
-                            break;
-
-                        case LogViewMode.PeriodicData:
-                            // TODO: ¹ê§@ PeriodicData ¶×¥X
-                            break;
-                    }
-
-                    MessageBox.Show($"¦¨¥\¶×¥X {recordCount} µ§°O¿ı¦Ü¡G\n{saveDialog.FileName}", "¶×¥X¦¨¥\", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    var result = MessageBox.Show("¬O§_­n¶}±Ò¶×¥Xªº PDF ÀÉ®×¡H", "¶}±ÒÀÉ®×", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                        {
-                            FileName = saveDialog.FileName,
-                            UseShellExecute = true
-                        });
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"¶×¥X¥¢±Ñ¡G{ex.Message}", "¿ù»~", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        #endregion
-
-        #region INotifyPropertyChanged
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        #endregion
-    }
-
-    /// <summary>
-    /// ¤é»xÀËµø¼Ò¦¡¡]4 ºØÃş«¬¡^
-    /// </summary>
-    public enum LogViewMode
-    {
-        AuditTrail,   // ¼f­p­y¸ñ
-        Operation,    // ¾Ş§@¤é»x
-        Event,        // ¨Æ¥ó¤é»x
-        PeriodicData  // ¶g´Á©Ê¼Æ¾Ú
-    }
-}
+using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Windows;
+using System.Windows.Controls;
+using Stackdose.UI.Core.Services;
+
+namespace Stackdose.UI.Core.Controls
+{
+    /// <summary>
+    /// LogManagementPanel - æ—¥èªŒç®¡ç†é¢æ¿ï¼ˆå¯ç¨ç«‹ä½¿ç”¨ï¼‰
+    /// æ”¯æ´ 4 ç¨®æ—¥èªŒé¡å‹ï¼šAuditTrail, Operation, Event, PeriodicData
+    /// </summary>
+    public partial class LogManagementPanel : UserControl, INotifyPropertyChanged
+    {
+        #region Private Fields
+
+        private readonly LogService _logService;
+        private ObservableCollection<DateGroup> _dateGroups;
+        private ObservableCollection<AuditTrailRecord> _currentAuditTrails;
+        private ObservableCollection<DataLogRecord> _currentDataLogs;
+        private ObservableCollection<OperationLogRecord> _currentOperationLogs;
+        private ObservableCollection<EventLogRecord> _currentEventLogs;
+        private ObservableCollection<EventLogRecord> _allEventLogs; // Store all event logs for filtering
+        private ObservableCollection<PeriodicDataLogRecord> _currentPeriodicDataLogs;
+        private DateGroup? _selectedDateGroup;
+        private LogViewMode _currentViewMode = LogViewMode.AuditTrail;
+        private DateTime _filterFromDate = DateTime.Today.AddDays(-7);
+        private DateTime _filterToDate = DateTime.Today;
+        
+        // ?? æ–°å¢ï¼šæ¨™è¨˜æ˜¯å¦ç‚ºæ—¥æœŸç¯„åœæŸ¥è©¢æ¨¡å¼
+        private bool _isDateRangeQueryMode = false;
+
+        // Severity filter flags
+        private bool _isSeverityAll = true;
+        private bool _isSeverityCritical = false;
+        private bool _isSeverityMajor = false;
+        private bool _isSeverityMinor = false;
+        private bool _isSeverityInfo = false;
+
+        // Event type filter flags
+        private bool _isEventTypeAlarm = false;
+        private bool _isEventTypeWarning = false;
+        private bool _isEventTypeSystem = false;
+        private bool _isEventTypeSafety = false;
+
+        #endregion
+
+        #region Properties
+
+        public ObservableCollection<DateGroup> DateGroups
+        {
+            get => _dateGroups;
+            set { _dateGroups = value; OnPropertyChanged(); }
+        }
+
+        public ObservableCollection<AuditTrailRecord> CurrentAuditTrails
+        {
+            get => _currentAuditTrails;
+            set { _currentAuditTrails = value; OnPropertyChanged(); OnPropertyChanged(nameof(CurrentRecordCount)); }
+        }
+
+        public ObservableCollection<OperationLogRecord> CurrentOperationLogs
+        {
+            get => _currentOperationLogs;
+            set { _currentOperationLogs = value; OnPropertyChanged(); OnPropertyChanged(nameof(CurrentRecordCount)); }
+        }
+
+        public ObservableCollection<EventLogRecord> CurrentEventLogs
+        {
+            get => _currentEventLogs;
+            set { _currentEventLogs = value; OnPropertyChanged(); OnPropertyChanged(nameof(CurrentRecordCount)); }
+        }
+
+        public ObservableCollection<PeriodicDataLogRecord> CurrentPeriodicDataLogs
+        {
+            get => _currentPeriodicDataLogs;
+            set { _currentPeriodicDataLogs = value; OnPropertyChanged(); OnPropertyChanged(nameof(CurrentRecordCount)); }
+        }
+
+        public DateGroup? SelectedDateGroup
+        {
+            get => _selectedDateGroup;
+            set 
+            { 
+                _selectedDateGroup = value; 
+                OnPropertyChanged();
+                
+                // ?? åªæœ‰åœ¨éæ—¥æœŸç¯„åœæŸ¥è©¢æ¨¡å¼æ™‚æ‰è¼‰å…¥å–®æ—¥æ•¸æ“š
+                if (!_isDateRangeQueryMode)
+                {
+                    LoadLogsForSelectedDate(); 
+                }
+            }
+        }
+
+        public LogViewMode CurrentViewMode
+        {
+            get => _currentViewMode;
+            set
+            {
+                _currentViewMode = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsAuditTrailMode));
+                OnPropertyChanged(nameof(IsOperationMode));
+                OnPropertyChanged(nameof(IsEventMode));
+                OnPropertyChanged(nameof(IsPeriodicDataMode));
+                OnPropertyChanged(nameof(CurrentViewModeText));
+                OnPropertyChanged(nameof(CurrentRecordCount));
+                
+                // ?? åˆ‡æ›é¡å‹æ™‚é‡ç½®ç‚ºå–®æ—¥æ¨¡å¼
+                _isDateRangeQueryMode = false;
+                
+                // Reset severity filter when switching modes
+                if (value == LogViewMode.Event)
+                {
+                    ResetSeverityFilter();
+                }
+                
+                LoadLogsForSelectedDate();
+            }
+        }
+
+        public bool IsAuditTrailMode
+        {
+            get => _currentViewMode == LogViewMode.AuditTrail;
+            set { if (value) CurrentViewMode = LogViewMode.AuditTrail; }
+        }
+
+        public bool IsOperationMode
+        {
+            get => _currentViewMode == LogViewMode.Operation;
+            set { if (value) CurrentViewMode = LogViewMode.Operation; }
+        }
+
+        public bool IsEventMode
+        {
+            get => _currentViewMode == LogViewMode.Event;
+            set { if (value) CurrentViewMode = LogViewMode.Event; }
+        }
+
+        public bool IsPeriodicDataMode
+        {
+            get => _currentViewMode == LogViewMode.PeriodicData;
+            set { if (value) CurrentViewMode = LogViewMode.PeriodicData; }
+        }
+
+        // Severity filter properties
+        public bool IsSeverityAll
+        {
+            get => _isSeverityAll;
+            set { _isSeverityAll = value; OnPropertyChanged(); }
+        }
+
+        public bool IsSeverityCritical
+        {
+            get => _isSeverityCritical;
+            set { _isSeverityCritical = value; OnPropertyChanged(); }
+        }
+
+        public bool IsSeverityMajor
+        {
+            get => _isSeverityMajor;
+            set { _isSeverityMajor = value; OnPropertyChanged(); }
+        }
+
+        public bool IsSeverityMinor
+        {
+            get => _isSeverityMinor;
+            set { _isSeverityMinor = value; OnPropertyChanged(); }
+        }
+
+        public bool IsSeverityInfo
+        {
+            get => _isSeverityInfo;
+            set { _isSeverityInfo = value; OnPropertyChanged(); }
+        }
+
+        // Event type filter properties
+        public bool IsEventTypeAlarm
+        {
+            get => _isEventTypeAlarm;
+            set { _isEventTypeAlarm = value; OnPropertyChanged(); }
+        }
+
+        public bool IsEventTypeWarning
+        {
+            get => _isEventTypeWarning;
+            set { _isEventTypeWarning = value; OnPropertyChanged(); }
+        }
+
+        public bool IsEventTypeSystem
+        {
+            get => _isEventTypeSystem;
+            set { _isEventTypeSystem = value; OnPropertyChanged(); }
+        }
+
+        public bool IsEventTypeSafety
+        {
+            get => _isEventTypeSafety;
+            set { _isEventTypeSafety = value; OnPropertyChanged(); }
+        }
+
+        public string CurrentViewModeText => _currentViewMode switch
+        {
+            LogViewMode.AuditTrail => "AUDIT TRAIL",
+            LogViewMode.Operation => "OPERATION LOG",
+            LogViewMode.Event => "EVENT LOG",
+            LogViewMode.PeriodicData => "PERIODIC DATA LOG",
+            _ => "UNKNOWN"
+        };
+
+        public int CurrentRecordCount => _currentViewMode switch
+        {
+            LogViewMode.AuditTrail => CurrentAuditTrails.Count,
+            LogViewMode.Operation => CurrentOperationLogs.Count,
+            LogViewMode.Event => CurrentEventLogs.Count,
+            LogViewMode.PeriodicData => CurrentPeriodicDataLogs.Count,
+            _ => 0
+        };
+
+        public DateTime FilterFromDate
+        {
+            get => _filterFromDate;
+            set { _filterFromDate = value; OnPropertyChanged(); }
+        }
+
+        public DateTime FilterToDate
+        {
+            get => _filterToDate;
+            set { _filterToDate = value; OnPropertyChanged(); }
+        }
+
+        #endregion
+
+        #region Constructor
+
+        public LogManagementPanel()
+        {
+            InitializeComponent();
+            DataContext = this;
+
+            // ç¢ºä¿è³‡æ–™åº«å·²åˆå§‹åŒ–
+            try
+            {
+                var _ = Stackdose.UI.Core.Helpers.ComplianceContext.CurrentUser;
+                System.Diagnostics.Debug.WriteLine("[LogManagementPanel] ComplianceContext initialized");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] ComplianceContext init error: {ex.Message}");
+            }
+
+            _logService = new LogService();
+            _dateGroups = new ObservableCollection<DateGroup>();
+            _currentAuditTrails = new ObservableCollection<AuditTrailRecord>();
+            _currentDataLogs = new ObservableCollection<DataLogRecord>();
+            _currentOperationLogs = new ObservableCollection<OperationLogRecord>();
+            _currentEventLogs = new ObservableCollection<EventLogRecord>();
+            _allEventLogs = new ObservableCollection<EventLogRecord>();
+            _currentPeriodicDataLogs = new ObservableCollection<PeriodicDataLogRecord>();
+
+            Loaded += LogManagementPanel_Loaded;
+        }
+
+        #endregion
+
+        #region Event Handlers
+
+        private void LogManagementPanel_Loaded(object sender, RoutedEventArgs e)
+        {
+            LoadDateGroups();
+        }
+
+        #endregion
+
+        #region Severity Filter Methods
+
+        private void ResetSeverityFilter()
+        {
+            _isSeverityAll = true;
+            _isSeverityCritical = false;
+            _isSeverityMajor = false;
+            _isSeverityMinor = false;
+            _isSeverityInfo = false;
+            _isEventTypeAlarm = false;
+            _isEventTypeWarning = false;
+            _isEventTypeSystem = false;
+            _isEventTypeSafety = false;
+            
+            // Notify all properties
+            OnPropertyChanged(nameof(IsSeverityAll));
+            OnPropertyChanged(nameof(IsSeverityCritical));
+            OnPropertyChanged(nameof(IsSeverityMajor));
+            OnPropertyChanged(nameof(IsSeverityMinor));
+            OnPropertyChanged(nameof(IsSeverityInfo));
+            OnPropertyChanged(nameof(IsEventTypeAlarm));
+            OnPropertyChanged(nameof(IsEventTypeWarning));
+            OnPropertyChanged(nameof(IsEventTypeSystem));
+            OnPropertyChanged(nameof(IsEventTypeSafety));
+        }
+
+        private void ApplyEventLogFilter()
+        {
+            if (_allEventLogs == null || _allEventLogs.Count == 0)
+            {
+                System.Diagnostics.Debug.WriteLine("[LogManagementPanel] ApplyEventLogFilter: No event logs to filter");
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] ApplyEventLogFilter: Total={_allEventLogs.Count}");
+            System.Diagnostics.Debug.WriteLine($"  SeverityAll={_isSeverityAll}, Critical={_isSeverityCritical}, Major={_isSeverityMajor}, Minor={_isSeverityMinor}, Info={_isSeverityInfo}");
+            System.Diagnostics.Debug.WriteLine($"  Alarm={_isEventTypeAlarm}, Warning={_isEventTypeWarning}, System={_isEventTypeSystem}, Safety={_isEventTypeSafety}");
+
+            var filtered = _allEventLogs.AsEnumerable();
+
+            // Apply severity filter
+            if (!_isSeverityAll)
+            {
+                var severities = new System.Collections.Generic.List<string>();
+                if (_isSeverityCritical) severities.Add("Critical");
+                if (_isSeverityMajor) severities.Add("Major");
+                if (_isSeverityMinor) severities.Add("Minor");
+                if (_isSeverityInfo) severities.Add("Info");
+
+                System.Diagnostics.Debug.WriteLine($"  Filtering by severities: {string.Join(", ", severities)}");
+
+                if (severities.Count > 0)
+                {
+                    filtered = filtered.Where(e => severities.Any(s => 
+                        string.Equals(e.Severity, s, StringComparison.OrdinalIgnoreCase)));
+                }
+            }
+
+            // Apply event type filter
+            bool hasEventTypeFilter = _isEventTypeAlarm || _isEventTypeWarning || _isEventTypeSystem || _isEventTypeSafety;
+            if (hasEventTypeFilter)
+            {
+                var eventTypes = new System.Collections.Generic.List<string>();
+                if (_isEventTypeAlarm) eventTypes.Add("Alarm");
+                if (_isEventTypeWarning) eventTypes.Add("Warning");
+                if (_isEventTypeSystem) eventTypes.Add("System Event");
+                if (_isEventTypeSafety) eventTypes.Add("Safety Event");
+
+                System.Diagnostics.Debug.WriteLine($"  Filtering by event types: {string.Join(", ", eventTypes)}");
+                filtered = filtered.Where(e => eventTypes.Any(t => 
+                    string.Equals(e.EventType, t, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            var result = filtered.ToList();
+            System.Diagnostics.Debug.WriteLine($"  Filter result: {result.Count} records");
+
+            CurrentEventLogs.Clear();
+            foreach (var r in result)
+            {
+                CurrentEventLogs.Add(r);
+            }
+
+            OnPropertyChanged(nameof(CurrentRecordCount));
+        }
+
+        private void SeverityAll_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("[LogManagementPanel] SeverityAll_Click");
+            
+            _isSeverityAll = true;
+            _isSeverityCritical = false;
+            _isSeverityMajor = false;
+            _isSeverityMinor = false;
+            _isSeverityInfo = false;
+            
+            OnPropertyChanged(nameof(IsSeverityAll));
+            OnPropertyChanged(nameof(IsSeverityCritical));
+            OnPropertyChanged(nameof(IsSeverityMajor));
+            OnPropertyChanged(nameof(IsSeverityMinor));
+            OnPropertyChanged(nameof(IsSeverityInfo));
+            
+            ApplyEventLogFilter();
+        }
+
+        private void SeverityCritical_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] SeverityCritical_Click");
+            
+            _isSeverityAll = false;
+            // Don't toggle here - the ToggleButton already toggled it via binding
+            // Just apply filter with current state
+            
+            OnPropertyChanged(nameof(IsSeverityAll));
+            
+            // Use dispatcher to wait for binding update
+            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void SeverityMajor_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] SeverityMajor_Click");
+            
+            _isSeverityAll = false;
+            OnPropertyChanged(nameof(IsSeverityAll));
+            
+            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void SeverityMinor_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] SeverityMinor_Click");
+            
+            _isSeverityAll = false;
+            OnPropertyChanged(nameof(IsSeverityAll));
+            
+            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void SeverityInfo_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] SeverityInfo_Click");
+            
+            _isSeverityAll = false;
+            OnPropertyChanged(nameof(IsSeverityAll));
+            
+            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void EventTypeAlarm_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] EventTypeAlarm_Click");
+            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void EventTypeWarning_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] EventTypeWarning_Click");
+            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void EventTypeSystem_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] EventTypeSystem_Click");
+            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void EventTypeSafety_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LogManagementPanel] EventTypeSafety_Click");
+            Dispatcher.InvokeAsync(() => ApplyEventLogFilter(), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        #endregion
+
+        #region Data Loading
+
+        private void LoadDateGroups()
+        {
+            try
+            {
+                var dateGroups = _logService.GetDateGroups();
+                DateGroups.Clear();
+                foreach (var group in dateGroups)
+                    DateGroups.Add(group);
+
+                if (DateGroups.Count > 0)
+                    SelectedDateGroup = DateGroups.First();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"è¼‰å…¥æ—¥æœŸåˆ—è¡¨å¤±æ•—ï¼š{ex.Message}", "éŒ¯èª¤", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void LoadLogsForSelectedDate()
+        {
+            if (SelectedDateGroup == null) return;
+
+            try
+            {
+                switch (CurrentViewMode)
+                {
+                    case LogViewMode.AuditTrail:
+                        var auditRecords = _logService.GetAuditTrailsByDate(SelectedDateGroup.Date);
+                        CurrentAuditTrails.Clear();
+                        foreach (var r in auditRecords) CurrentAuditTrails.Add(r);
+                        break;
+
+                    case LogViewMode.Operation:
+                        var opRecords = _logService.GetOperationLogsByDate(SelectedDateGroup.Date);
+                        CurrentOperationLogs.Clear();
+                        foreach (var r in opRecords) CurrentOperationLogs.Add(r);
+                        break;
+
+                    case LogViewMode.Event:
+                        var eventRecords = _logService.GetEventLogsByDate(SelectedDateGroup.Date);
+                        _allEventLogs.Clear();
+                        foreach (var r in eventRecords) _allEventLogs.Add(r);
+                        ApplyEventLogFilter();
+                        break;
+
+                    case LogViewMode.PeriodicData:
+                        var periodicRecords = _logService.GetPeriodicDataLogsByDate(SelectedDateGroup.Date);
+                        CurrentPeriodicDataLogs.Clear();
+                        foreach (var r in periodicRecords) CurrentPeriodicDataLogs.Add(r);
+                        break;
+                }
+                
+                // ?? æ›´æ–° CurrentRecordCount
+                OnPropertyChanged(nameof(CurrentRecordCount));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"è¼‰å…¥æ—¥èªŒå¤±æ•—ï¼š{ex.Message}", "éŒ¯èª¤", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        #endregion
+
+        #region Button Handlers
+
+        private void DateItem_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.Tag is DateGroup dateGroup)
+            {
+                // ?? é‡ç½®ç‚ºå–®æ—¥æ¨¡å¼
+                _isDateRangeQueryMode = false;
+                SelectedDateGroup = dateGroup;
+            }
+        }
+
+        private void AuditTrailButton_Click(object sender, RoutedEventArgs e)
+        {
+            CurrentViewMode = LogViewMode.AuditTrail;
+        }
+
+        private void OperationButton_Click(object sender, RoutedEventArgs e)
+        {
+            CurrentViewMode = LogViewMode.Operation;
+        }
+
+        private void EventButton_Click(object sender, RoutedEventArgs e)
+        {
+            CurrentViewMode = LogViewMode.Event;
+        }
+
+        private void PeriodicDataButton_Click(object sender, RoutedEventArgs e)
+        {
+            CurrentViewMode = LogViewMode.PeriodicData;
+        }
+
+        private void QueryButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (FilterFromDate > FilterToDate)
+                {
+                    MessageBox.Show("èµ·å§‹æ—¥æœŸä¸å¯å¤§æ–¼çµæŸæ—¥æœŸ", "æ—¥æœŸéŒ¯èª¤", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // ?? è¨­ç‚ºæ—¥æœŸç¯„åœæŸ¥è©¢æ¨¡å¼
+                _isDateRangeQueryMode = true;
+
+                switch (CurrentViewMode)
+                {
+                    case LogViewMode.AuditTrail:
+                        var auditRecords = _logService.GetAuditTrailsByDateRange(FilterFromDate, FilterToDate);
+                        CurrentAuditTrails.Clear();
+                        foreach (var r in auditRecords) CurrentAuditTrails.Add(r);
+                        MessageBox.Show($"æŸ¥è©¢å®Œæˆï¼å…± {CurrentAuditTrails.Count} ç­†å¯©è¨ˆè»Œè·¡è¨˜éŒ„", "æŸ¥è©¢çµæœ", MessageBoxButton.OK, MessageBoxImage.Information);
+                        break;
+
+                    case LogViewMode.Operation:
+                        var opRecords = _logService.GetOperationLogsByDateRange(FilterFromDate, FilterToDate);
+                        CurrentOperationLogs.Clear();
+                        foreach (var r in opRecords) CurrentOperationLogs.Add(r);
+                        MessageBox.Show($"æŸ¥è©¢å®Œæˆï¼å…± {CurrentOperationLogs.Count} ç­†æ“ä½œæ—¥èªŒè¨˜éŒ„", "æŸ¥è©¢çµæœ", MessageBoxButton.OK, MessageBoxImage.Information);
+                        break;
+
+                    case LogViewMode.Event:
+                        var eventRecords = _logService.GetEventLogsByDateRange(FilterFromDate, FilterToDate);
+                        _allEventLogs.Clear();
+                        foreach (var r in eventRecords) _allEventLogs.Add(r);
+                        ApplyEventLogFilter();
+                        MessageBox.Show($"æŸ¥è©¢å®Œæˆï¼å…± {CurrentEventLogs.Count} ç­†äº‹ä»¶æ—¥èªŒè¨˜éŒ„", "æŸ¥è©¢çµæœ", MessageBoxButton.OK, MessageBoxImage.Information);
+                        break;
+
+                    case LogViewMode.PeriodicData:
+                        var periodicRecords = _logService.GetPeriodicDataLogsByDateRange(FilterFromDate, FilterToDate);
+                        CurrentPeriodicDataLogs.Clear();
+                        foreach (var r in periodicRecords) CurrentPeriodicDataLogs.Add(r);
+                        MessageBox.Show($"æŸ¥è©¢å®Œæˆï¼å…± {CurrentPeriodicDataLogs.Count} ç­†é€±æœŸæ•¸æ“šè¨˜éŒ„", "æŸ¥è©¢çµæœ", MessageBoxButton.OK, MessageBoxImage.Information);
+                        break;
+                }
+
+                // ?? æ›´æ–° CurrentRecordCount
+                OnPropertyChanged(nameof(CurrentRecordCount));
+                
+                // ?? ä¸å†å‘¼å« LoadDateGroups()ï¼Œé¿å…é‡ç½®æ•¸æ“š
+                // LoadDateGroups();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"æŸ¥è©¢å¤±æ•—ï¼š{ex.Message}", "éŒ¯èª¤", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ExportPdfButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                int recordCount = CurrentRecordCount;
+                if (recordCount == 0)
+                {
+                    MessageBox.Show("ç›®å‰æ²’æœ‰å¯åŒ¯å‡ºçš„è¨˜éŒ„", "ç„¡è³‡æ–™", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                var saveDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "PDF æª”æ¡ˆ (*.pdf)|*.pdf",
+                    FileName = $"Log_{CurrentViewModeText}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf",
+                    DefaultExt = ".pdf"
+                };
+
+                if (saveDialog.ShowDialog() == true)
+                {
+                    switch (CurrentViewMode)
+                    {
+                        case LogViewMode.AuditTrail:
+                            _logService.ExportAuditTrailsToPdf(CurrentAuditTrails.ToList(), saveDialog.FileName);
+                            break;
+
+                        case LogViewMode.Operation:
+                            // TODO: å¯¦ä½œ Operation åŒ¯å‡º
+                            break;
+
+                        case LogViewMode.Event:
+                            // TODO: å¯¦ä½œ Event åŒ¯å‡º
+                            break;
+
+                        case LogViewMode.PeriodicData:
+                            // TODO: å¯¦ä½œ PeriodicData åŒ¯å‡º
+                            break;
+                    }
+
+                    MessageBox.Show($"æˆåŠŸåŒ¯å‡º {recordCount} ç­†è¨˜éŒ„è‡³ï¼š\n{saveDialog.FileName}", "åŒ¯å‡ºæˆåŠŸ", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    var result = MessageBox.Show("æ˜¯å¦è¦é–‹å•ŸåŒ¯å‡ºçš„ PDF æª”æ¡ˆï¼Ÿ", "é–‹å•Ÿæª”æ¡ˆ", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = saveDialog.FileName,
+                            UseShellExecute = true
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"åŒ¯å‡ºå¤±æ•—ï¼š{ex.Message}", "éŒ¯èª¤", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        #endregion
+
+        #region INotifyPropertyChanged
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// æ—¥èªŒæª¢è¦–æ¨¡å¼ï¼ˆ4 ç¨®é¡å‹ï¼‰
+    /// </summary>
+    public enum LogViewMode
+    {
+        AuditTrail,   // å¯©è¨ˆè»Œè·¡
+        Operation,    // æ“ä½œæ—¥èªŒ
+        Event,        // äº‹ä»¶æ—¥èªŒ
+        PeriodicData  // é€±æœŸæ€§æ•¸æ“š
+    }
+}

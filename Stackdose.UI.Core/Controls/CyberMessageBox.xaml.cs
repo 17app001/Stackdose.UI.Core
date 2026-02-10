@@ -1,324 +1,324 @@
-using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-
-namespace Stackdose.UI.Core.Controls
-{
-    /// <summary>
-    /// Cyber ­·®æªº¦Û­q MessageBox
-    /// </summary>
-    public partial class CyberMessageBox : Window
-    {
-        #region ¤½¶}Äİ©Ê
-
-        /// <summary>
-        /// ¨Ï¥ÎªÌ¿ï¾Üªºµ²ªG
-        /// </summary>
-        public MessageBoxResult Result { get; private set; } = MessageBoxResult.None;
-
-        #endregion
-
-        #region «Øºc¤l
-
-        private CyberMessageBox(string message, string title, MessageBoxButton buttons, MessageBoxImage icon)
-        {
-            InitializeComponent();
-
-            // ³]©w¼ĞÃD
-            TitleText.Text = title;
-            Title = title;
-
-            // ³]©w°T®§
-            MessageText.Text = message;
-
-            // ³]©w¹Ï¥Ü
-            SetIcon(icon);
-
-            // ³]©w«ö¶s
-            SetButtons(buttons);
-
-            // ¸ü¤J°Êµe
-            Loaded += (s, e) => PlayShowAnimation();
-        }
-
-        #endregion
-
-        #region ÀRºA¤èªk (Ãş¦ü¼Ğ·Ç MessageBox)
-
-        /// <summary>
-        /// Åã¥Ü°T®§¡]¶È OK «ö¶s¡^
-        /// </summary>
-        public static MessageBoxResult Show(string message)
-        {
-            return Show(message, "°T®§", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        /// <summary>
-        /// Åã¥Ü°T®§¡]«ü©w¼ĞÃD¡^
-        /// </summary>
-        public static MessageBoxResult Show(string message, string title)
-        {
-            return Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        /// <summary>
-        /// Åã¥Ü°T®§¡]«ü©w«ö¶s¡^
-        /// </summary>
-        public static MessageBoxResult Show(string message, string title, MessageBoxButton buttons)
-        {
-            return Show(message, title, buttons, MessageBoxImage.Information);
-        }
-
-        /// <summary>
-        /// Åã¥Ü°T®§¡]§¹¾ã°Ñ¼Æ¡^
-        /// </summary>
-        public static MessageBoxResult Show(string message, string title, MessageBoxButton buttons, MessageBoxImage icon)
-        {
-            // ?? ­×¥¿¡G½T«O¦b UI °õ¦æºü¤W°õ¦æ
-            if (!Application.Current.Dispatcher.CheckAccess())
-            {
-                return Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var messageBox = new CyberMessageBox(message, title, buttons, icon);
-                    messageBox.ShowDialog();
-                    return messageBox.Result;
-                });
-            }
-            else
-            {
-                var messageBox = new CyberMessageBox(message, title, buttons, icon);
-                messageBox.ShowDialog();
-                return messageBox.Result;
-            }
-        }
-
-        #endregion
-
-        #region ¨p¦³¤èªk
-
-        /// <summary>
-        /// ³]©w¹Ï¥Ü
-        /// </summary>
-        private void SetIcon(MessageBoxImage icon)
-        {
-            string iconText = "INFO";
-            string color = "#00E5FF"; // ¹w³]ÂÅ¦â
-
-            switch (icon)
-            {
-                case MessageBoxImage.Information:
-                    iconText = "INFO";
-                    color = "#00E5FF";
-                    break;
-                case MessageBoxImage.Warning:
-                    iconText = "WARN";
-                    color = "#FFA726";
-                    break;
-                case MessageBoxImage.Error:
-                    iconText = "ERR";
-                    color = "#FF5252";
-                    break;
-                case MessageBoxImage.Question:
-                    iconText = "ASK";
-                    color = "#AB47BC";
-                    break;
-                default:
-                    iconText = "OK";
-                    color = "#4CAF50";
-                    break;
-            }
-
-            TitleIcon.Text = iconText;
-            MessageIcon.Text = iconText.Substring(0, 1); // Use first letter for large icon
-
-            // §ó·sÃä®ØÃC¦â
-            var border = (Border)Content;
-            border.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
-
-            // §ó·s¼ĞÃD¤å¦rÃC¦â
-            TitleText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
-        }
-
-        /// <summary>
-        /// ³]©w«ö¶s
-        /// </summary>
-        private void SetButtons(MessageBoxButton buttons)
-        {
-            ButtonPanel.Children.Clear();
-
-            switch (buttons)
-            {
-                case MessageBoxButton.OK:
-                    AddButton("½T©w", MessageBoxResult.OK, true);
-                    break;
-
-                case MessageBoxButton.OKCancel:
-                    AddButton("½T©w", MessageBoxResult.OK, true);
-                    AddButton("¨ú®ø", MessageBoxResult.Cancel, false, true);
-                    break;
-
-                case MessageBoxButton.YesNo:
-                    AddButton("¬O", MessageBoxResult.Yes, true);
-                    AddButton("§_", MessageBoxResult.No, false, true);
-                    break;
-
-                case MessageBoxButton.YesNoCancel:
-                    AddButton("¬O", MessageBoxResult.Yes, true);
-                    AddButton("§_", MessageBoxResult.No, false);
-                    AddButton("¨ú®ø", MessageBoxResult.Cancel, false, true);
-                    break;
-            }
-        }
-
-
-        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-
-        /// <summary>
-        /// ·s¼W«ö¶s
-        /// </summary>
-        private void AddButton(string text, MessageBoxResult result, bool isDefault, bool isCancel = false)
-        {
-            var button = new Button
-            {
-                Content = text,
-                Margin = new Thickness(5, 0, 5, 0),
-                Style = isCancel
-                    ? (Style)FindResource("CancelButtonStyle")
-                    : (Style)FindResource("CyberButtonStyle")
-            };
-
-            button.Click += (s, e) =>
-            {
-                Result = result;
-                Close();
-            };
-
-            if (isDefault)
-            {
-                button.IsDefault = true;
-            }
-
-            if (isCancel)
-            {
-                button.IsCancel = true;
-            }
-
-            ButtonPanel.Children.Add(button);
-        }
-
-        /// <summary>
-        /// Ãö³¬«ö¶sÂIÀ»
-        /// </summary>
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
-        {
-            Result = MessageBoxResult.Cancel;
-            Close();
-        }
-
-        /// <summary>
-        /// ¼½©ñÅã¥Ü°Êµe
-        /// </summary>
-        private void PlayShowAnimation()
-        {
-            // ?? ­×¥¿¡G¹ï¤º®e®e¾¹¡]Border¡^®M¥Î°Êµe¡A¦Ó«D Window ¥»¨­
-            var border = (Border)Content;
-
-            // ²H¤J°Êµe¡]®M¥Î¨ì Window¡^
-            var fadeIn = new System.Windows.Media.Animation.DoubleAnimation
-            {
-                From = 0,
-                To = 1,
-                Duration = TimeSpan.FromMilliseconds(200)
-            };
-
-            // ÁY©ñ°Êµe¡]®M¥Î¨ì Border¡^
-            var scaleX = new System.Windows.Media.Animation.DoubleAnimation
-            {
-                From = 0.9,
-                To = 1,
-                Duration = TimeSpan.FromMilliseconds(200),
-                EasingFunction = new System.Windows.Media.Animation.BackEase
-                {
-                    Amplitude = 0.3,
-                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
-                }
-            };
-
-            var scaleY = new System.Windows.Media.Animation.DoubleAnimation
-            {
-                From = 0.9,
-                To = 1,
-                Duration = TimeSpan.FromMilliseconds(200),
-                EasingFunction = new System.Windows.Media.Animation.BackEase
-                {
-                    Amplitude = 0.3,
-                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
-                }
-            };
-
-            // ?? ­×¥¿¡G±N ScaleTransform ®M¥Î¨ì Border¡A¦Ó«D Window
-            var scaleTransform = new ScaleTransform(0.9, 0.9);
-            border.RenderTransformOrigin = new Point(0.5, 0.5);
-            border.RenderTransform = scaleTransform;
-
-            // Window ®M¥Î²H¤J°Êµe
-            BeginAnimation(OpacityProperty, fadeIn);
-
-            // Border ®M¥ÎÁY©ñ°Êµe
-            scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleX);
-            scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleY);
-        }
-
-        #endregion
-    }
-
-    #region ÂX¥R¤èªk (¿ï¥Î)
-
-    /// <summary>
-    /// CyberMessageBox ÂX¥R¤èªk
-    /// </summary>
-    public static class CyberMessageBoxExtensions
-    {
-        /// <summary>
-        /// Åã¥Ü¦¨¥\°T®§
-        /// </summary>
-        public static void ShowSuccess(string message, string title = "¦¨¥\")
-        {
-            CyberMessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.None);
-        }
-
-        /// <summary>
-        /// Åã¥ÜÄµ§i°T®§
-        /// </summary>
-        public static void ShowWarning(string message, string title = "Äµ§i")
-        {
-            CyberMessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
-
-        /// <summary>
-        /// Åã¥Ü¿ù»~°T®§
-        /// </summary>
-        public static void ShowError(string message, string title = "¿ù»~")
-        {
-            CyberMessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-
-        /// <summary>
-        /// Åã¥Ü½T»{¹ï¸Ü®Ø
-        /// </summary>
-        public static bool Confirm(string message, string title = "½T»{")
-        {
-            var result = CyberMessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question);
-            return result == MessageBoxResult.Yes;
-        }
-    }
-
-    #endregion
-}
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+
+namespace Stackdose.UI.Core.Controls
+{
+    /// <summary>
+    /// Cyber é¢¨æ ¼çš„è‡ªè¨‚ MessageBox
+    /// </summary>
+    public partial class CyberMessageBox : Window
+    {
+        #region å…¬é–‹å±¬æ€§
+
+        /// <summary>
+        /// ä½¿ç”¨è€…é¸æ“‡çš„çµæœ
+        /// </summary>
+        public MessageBoxResult Result { get; private set; } = MessageBoxResult.None;
+
+        #endregion
+
+        #region å»ºæ§‹å­
+
+        private CyberMessageBox(string message, string title, MessageBoxButton buttons, MessageBoxImage icon)
+        {
+            InitializeComponent();
+
+            // è¨­å®šæ¨™é¡Œ
+            TitleText.Text = title;
+            Title = title;
+
+            // è¨­å®šè¨Šæ¯
+            MessageText.Text = message;
+
+            // è¨­å®šåœ–ç¤º
+            SetIcon(icon);
+
+            // è¨­å®šæŒ‰éˆ•
+            SetButtons(buttons);
+
+            // è¼‰å…¥å‹•ç•«
+            Loaded += (s, e) => PlayShowAnimation();
+        }
+
+        #endregion
+
+        #region éœæ…‹æ–¹æ³• (é¡ä¼¼æ¨™æº– MessageBox)
+
+        /// <summary>
+        /// é¡¯ç¤ºè¨Šæ¯ï¼ˆåƒ… OK æŒ‰éˆ•ï¼‰
+        /// </summary>
+        public static MessageBoxResult Show(string message)
+        {
+            return Show(message, "è¨Šæ¯", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        /// <summary>
+        /// é¡¯ç¤ºè¨Šæ¯ï¼ˆæŒ‡å®šæ¨™é¡Œï¼‰
+        /// </summary>
+        public static MessageBoxResult Show(string message, string title)
+        {
+            return Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        /// <summary>
+        /// é¡¯ç¤ºè¨Šæ¯ï¼ˆæŒ‡å®šæŒ‰éˆ•ï¼‰
+        /// </summary>
+        public static MessageBoxResult Show(string message, string title, MessageBoxButton buttons)
+        {
+            return Show(message, title, buttons, MessageBoxImage.Information);
+        }
+
+        /// <summary>
+        /// é¡¯ç¤ºè¨Šæ¯ï¼ˆå®Œæ•´åƒæ•¸ï¼‰
+        /// </summary>
+        public static MessageBoxResult Show(string message, string title, MessageBoxButton buttons, MessageBoxImage icon)
+        {
+            // ?? ä¿®æ­£ï¼šç¢ºä¿åœ¨ UI åŸ·è¡Œç·’ä¸ŠåŸ·è¡Œ
+            if (!Application.Current.Dispatcher.CheckAccess())
+            {
+                return Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var messageBox = new CyberMessageBox(message, title, buttons, icon);
+                    messageBox.ShowDialog();
+                    return messageBox.Result;
+                });
+            }
+            else
+            {
+                var messageBox = new CyberMessageBox(message, title, buttons, icon);
+                messageBox.ShowDialog();
+                return messageBox.Result;
+            }
+        }
+
+        #endregion
+
+        #region ç§æœ‰æ–¹æ³•
+
+        /// <summary>
+        /// è¨­å®šåœ–ç¤º
+        /// </summary>
+        private void SetIcon(MessageBoxImage icon)
+        {
+            string iconText = "INFO";
+            string color = "#00E5FF"; // é è¨­è—è‰²
+
+            switch (icon)
+            {
+                case MessageBoxImage.Information:
+                    iconText = "INFO";
+                    color = "#00E5FF";
+                    break;
+                case MessageBoxImage.Warning:
+                    iconText = "WARN";
+                    color = "#FFA726";
+                    break;
+                case MessageBoxImage.Error:
+                    iconText = "ERR";
+                    color = "#FF5252";
+                    break;
+                case MessageBoxImage.Question:
+                    iconText = "ASK";
+                    color = "#AB47BC";
+                    break;
+                default:
+                    iconText = "OK";
+                    color = "#4CAF50";
+                    break;
+            }
+
+            TitleIcon.Text = iconText;
+            MessageIcon.Text = iconText.Substring(0, 1); // Use first letter for large icon
+
+            // æ›´æ–°é‚Šæ¡†é¡è‰²
+            var border = (Border)Content;
+            border.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
+
+            // æ›´æ–°æ¨™é¡Œæ–‡å­—é¡è‰²
+            TitleText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
+        }
+
+        /// <summary>
+        /// è¨­å®šæŒ‰éˆ•
+        /// </summary>
+        private void SetButtons(MessageBoxButton buttons)
+        {
+            ButtonPanel.Children.Clear();
+
+            switch (buttons)
+            {
+                case MessageBoxButton.OK:
+                    AddButton("ç¢ºå®š", MessageBoxResult.OK, true);
+                    break;
+
+                case MessageBoxButton.OKCancel:
+                    AddButton("ç¢ºå®š", MessageBoxResult.OK, true);
+                    AddButton("å–æ¶ˆ", MessageBoxResult.Cancel, false, true);
+                    break;
+
+                case MessageBoxButton.YesNo:
+                    AddButton("æ˜¯", MessageBoxResult.Yes, true);
+                    AddButton("å¦", MessageBoxResult.No, false, true);
+                    break;
+
+                case MessageBoxButton.YesNoCancel:
+                    AddButton("æ˜¯", MessageBoxResult.Yes, true);
+                    AddButton("å¦", MessageBoxResult.No, false);
+                    AddButton("å–æ¶ˆ", MessageBoxResult.Cancel, false, true);
+                    break;
+            }
+        }
+
+
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
+        }
+
+
+        /// <summary>
+        /// æ–°å¢æŒ‰éˆ•
+        /// </summary>
+        private void AddButton(string text, MessageBoxResult result, bool isDefault, bool isCancel = false)
+        {
+            var button = new Button
+            {
+                Content = text,
+                Margin = new Thickness(5, 0, 5, 0),
+                Style = isCancel
+                    ? (Style)FindResource("CancelButtonStyle")
+                    : (Style)FindResource("CyberButtonStyle")
+            };
+
+            button.Click += (s, e) =>
+            {
+                Result = result;
+                Close();
+            };
+
+            if (isDefault)
+            {
+                button.IsDefault = true;
+            }
+
+            if (isCancel)
+            {
+                button.IsCancel = true;
+            }
+
+            ButtonPanel.Children.Add(button);
+        }
+
+        /// <summary>
+        /// é—œé–‰æŒ‰éˆ•é»æ“Š
+        /// </summary>
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            Result = MessageBoxResult.Cancel;
+            Close();
+        }
+
+        /// <summary>
+        /// æ’­æ”¾é¡¯ç¤ºå‹•ç•«
+        /// </summary>
+        private void PlayShowAnimation()
+        {
+            // ?? ä¿®æ­£ï¼šå°å…§å®¹å®¹å™¨ï¼ˆBorderï¼‰å¥—ç”¨å‹•ç•«ï¼Œè€Œé Window æœ¬èº«
+            var border = (Border)Content;
+
+            // æ·¡å…¥å‹•ç•«ï¼ˆå¥—ç”¨åˆ° Windowï¼‰
+            var fadeIn = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 0,
+                To = 1,
+                Duration = TimeSpan.FromMilliseconds(200)
+            };
+
+            // ç¸®æ”¾å‹•ç•«ï¼ˆå¥—ç”¨åˆ° Borderï¼‰
+            var scaleX = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 0.9,
+                To = 1,
+                Duration = TimeSpan.FromMilliseconds(200),
+                EasingFunction = new System.Windows.Media.Animation.BackEase
+                {
+                    Amplitude = 0.3,
+                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
+                }
+            };
+
+            var scaleY = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 0.9,
+                To = 1,
+                Duration = TimeSpan.FromMilliseconds(200),
+                EasingFunction = new System.Windows.Media.Animation.BackEase
+                {
+                    Amplitude = 0.3,
+                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
+                }
+            };
+
+            // ?? ä¿®æ­£ï¼šå°‡ ScaleTransform å¥—ç”¨åˆ° Borderï¼Œè€Œé Window
+            var scaleTransform = new ScaleTransform(0.9, 0.9);
+            border.RenderTransformOrigin = new Point(0.5, 0.5);
+            border.RenderTransform = scaleTransform;
+
+            // Window å¥—ç”¨æ·¡å…¥å‹•ç•«
+            BeginAnimation(OpacityProperty, fadeIn);
+
+            // Border å¥—ç”¨ç¸®æ”¾å‹•ç•«
+            scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleX);
+            scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleY);
+        }
+
+        #endregion
+    }
+
+    #region æ“´å……æ–¹æ³• (é¸ç”¨)
+
+    /// <summary>
+    /// CyberMessageBox æ“´å……æ–¹æ³•
+    /// </summary>
+    public static class CyberMessageBoxExtensions
+    {
+        /// <summary>
+        /// é¡¯ç¤ºæˆåŠŸè¨Šæ¯
+        /// </summary>
+        public static void ShowSuccess(string message, string title = "æˆåŠŸ")
+        {
+            CyberMessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.None);
+        }
+
+        /// <summary>
+        /// é¡¯ç¤ºè­¦å‘Šè¨Šæ¯
+        /// </summary>
+        public static void ShowWarning(string message, string title = "è­¦å‘Š")
+        {
+            CyberMessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+
+        /// <summary>
+        /// é¡¯ç¤ºéŒ¯èª¤è¨Šæ¯
+        /// </summary>
+        public static void ShowError(string message, string title = "éŒ¯èª¤")
+        {
+            CyberMessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        /// <summary>
+        /// é¡¯ç¤ºç¢ºèªå°è©±æ¡†
+        /// </summary>
+        public static bool Confirm(string message, string title = "ç¢ºèª")
+        {
+            var result = CyberMessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question);
+            return result == MessageBoxResult.Yes;
+        }
+    }
+
+    #endregion
+}

@@ -1,133 +1,133 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Stackdose.UI.Core.Models
-{
-    /// <summary>
-    /// Recipe ¸ê®Æ¼Ò«¬
-    /// ¥Nªí§¹¾ãªº»sµ{°t¤è
-    /// </summary>
-    public class Recipe
-    {
-        /// <summary>
-        /// Recipe °ß¤@ÃÑ§O½X
-        /// </summary>
-        public string RecipeId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Recipe ¦WºÙ
-        /// </summary>
-        public string RecipeName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Recipe ª©¥»¸¹
-        /// </summary>
-        public string Version { get; set; } = "1.0.0";
-
-        /// <summary>
-        /// «Ø¥ß¤é´Á
-        /// </summary>
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
-
-        /// <summary>
-        /// ³Ì«á­×§ï¤é´Á
-        /// </summary>
-        public DateTime? LastModifiedDate { get; set; }
-
-        /// <summary>
-        /// «Ø¥ßªÌ
-        /// </summary>
-        public string CreatedBy { get; set; } = string.Empty;
-
-        /// <summary>
-        /// ³Ì«á­×§ïªÌ
-        /// </summary>
-        public string? LastModifiedBy { get; set; }
-
-        /// <summary>
-        /// Recipe ´y­z
-        /// </summary>
-        public string? Description { get; set; }
-
-        /// <summary>
-        /// ²£«~«¬¸¹©Î§å¦¸
-        /// </summary>
-        public string? ProductCode { get; set; }
-
-        /// <summary>
-        /// Recipe ¶µ¥Ø¶°¦X
-        /// </summary>
-        public List<RecipeItem> Items { get; set; } = new List<RecipeItem>();
-
-        /// <summary>
-        /// ¬O§_¬°¹w³] Recipe
-        /// </summary>
-        public bool IsDefault { get; set; } = false;
-
-        /// <summary>
-        /// Recipe ª¬ºA (Active, Draft, Archived)
-        /// </summary>
-        public string Status { get; set; } = "Active";
-
-        /// <summary>
-        /// ¨ú±o«ü©w¦WºÙªº°Ñ¼Æ
-        /// </summary>
-        public RecipeItem? GetItem(string name)
-        {
-            return Items.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-        }
-
-        /// <summary>
-        /// ¨ú±o«ü©w¦ì§}ªº°Ñ¼Æ
-        /// </summary>
-        public RecipeItem? GetItemByAddress(string address)
-        {
-            return Items.FirstOrDefault(x => x.Address.Equals(address, StringComparison.OrdinalIgnoreCase));
-        }
-
-        /// <summary>
-        /// ÅçÃÒ©Ò¦³°Ñ¼Æ­È¬O§_¦b¦³®Ä½d³ò¤º
-        /// </summary>
-        public (bool isValid, List<string> errors) Validate()
-        {
-            var errors = new List<string>();
-
-            foreach (var item in Items.Where(x => x.IsEnabled))
-            {
-                if (string.IsNullOrEmpty(item.Name))
-                {
-                    errors.Add($"¶µ¥Ø¯Ê¤Ö¦WºÙ: {item.Address}");
-                    continue;
-                }
-
-                if (string.IsNullOrEmpty(item.Address))
-                {
-                    errors.Add($"¶µ¥Ø '{item.Name}' ¯Ê¤Ö PLC ¦ì§}");
-                    continue;
-                }
-
-                // ÅçÃÒ¼Æ­È½d³ò
-                if (double.TryParse(item.Value, out double value))
-                {
-                    if (!item.IsValueInRange(value))
-                    {
-                        errors.Add($"¶µ¥Ø '{item.Name}' ­È {value} ¶W¥X½d³ò [{item.MinValue}~{item.MaxValue}]");
-                    }
-                }
-            }
-
-            return (errors.Count == 0, errors);
-        }
-
-        /// <summary>
-        /// ¨ú±o©Ò¦³±Ò¥Îªº¶µ¥Ø¼Æ¶q
-        /// </summary>
-        public int EnabledItemCount => Items.Count(x => x.IsEnabled);
-
-        public override string ToString()
-        {
-            return $"Recipe: {RecipeName} v{Version} ({EnabledItemCount} items)";
-        }
-    }
-}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Stackdose.UI.Core.Models
+{
+    /// <summary>
+    /// Recipe è³‡æ–™æ¨¡å‹
+    /// ä»£è¡¨å®Œæ•´çš„è£½ç¨‹é…æ–¹
+    /// </summary>
+    public class Recipe
+    {
+        /// <summary>
+        /// Recipe å”¯ä¸€è­˜åˆ¥ç¢¼
+        /// </summary>
+        public string RecipeId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Recipe åç¨±
+        /// </summary>
+        public string RecipeName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Recipe ç‰ˆæœ¬è™Ÿ
+        /// </summary>
+        public string Version { get; set; } = "1.0.0";
+
+        /// <summary>
+        /// å»ºç«‹æ—¥æœŸ
+        /// </summary>
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
+
+        /// <summary>
+        /// æœ€å¾Œä¿®æ”¹æ—¥æœŸ
+        /// </summary>
+        public DateTime? LastModifiedDate { get; set; }
+
+        /// <summary>
+        /// å»ºç«‹è€…
+        /// </summary>
+        public string CreatedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// æœ€å¾Œä¿®æ”¹è€…
+        /// </summary>
+        public string? LastModifiedBy { get; set; }
+
+        /// <summary>
+        /// Recipe æè¿°
+        /// </summary>
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// ç”¢å“å‹è™Ÿæˆ–æ‰¹æ¬¡
+        /// </summary>
+        public string? ProductCode { get; set; }
+
+        /// <summary>
+        /// Recipe é …ç›®é›†åˆ
+        /// </summary>
+        public List<RecipeItem> Items { get; set; } = new List<RecipeItem>();
+
+        /// <summary>
+        /// æ˜¯å¦ç‚ºé è¨­ Recipe
+        /// </summary>
+        public bool IsDefault { get; set; } = false;
+
+        /// <summary>
+        /// Recipe ç‹€æ…‹ (Active, Draft, Archived)
+        /// </summary>
+        public string Status { get; set; } = "Active";
+
+        /// <summary>
+        /// å–å¾—æŒ‡å®šåç¨±çš„åƒæ•¸
+        /// </summary>
+        public RecipeItem? GetItem(string name)
+        {
+            return Items.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// å–å¾—æŒ‡å®šä½å€çš„åƒæ•¸
+        /// </summary>
+        public RecipeItem? GetItemByAddress(string address)
+        {
+            return Items.FirstOrDefault(x => x.Address.Equals(address, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// é©—è­‰æ‰€æœ‰åƒæ•¸å€¼æ˜¯å¦åœ¨æœ‰æ•ˆç¯„åœå…§
+        /// </summary>
+        public (bool isValid, List<string> errors) Validate()
+        {
+            var errors = new List<string>();
+
+            foreach (var item in Items.Where(x => x.IsEnabled))
+            {
+                if (string.IsNullOrEmpty(item.Name))
+                {
+                    errors.Add($"é …ç›®ç¼ºå°‘åç¨±: {item.Address}");
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(item.Address))
+                {
+                    errors.Add($"é …ç›® '{item.Name}' ç¼ºå°‘ PLC ä½å€");
+                    continue;
+                }
+
+                // é©—è­‰æ•¸å€¼ç¯„åœ
+                if (double.TryParse(item.Value, out double value))
+                {
+                    if (!item.IsValueInRange(value))
+                    {
+                        errors.Add($"é …ç›® '{item.Name}' å€¼ {value} è¶…å‡ºç¯„åœ [{item.MinValue}~{item.MaxValue}]");
+                    }
+                }
+            }
+
+            return (errors.Count == 0, errors);
+        }
+
+        /// <summary>
+        /// å–å¾—æ‰€æœ‰å•Ÿç”¨çš„é …ç›®æ•¸é‡
+        /// </summary>
+        public int EnabledItemCount => Items.Count(x => x.IsEnabled);
+
+        public override string ToString()
+        {
+            return $"Recipe: {RecipeName} v{Version} ({EnabledItemCount} items)";
+        }
+    }
+}

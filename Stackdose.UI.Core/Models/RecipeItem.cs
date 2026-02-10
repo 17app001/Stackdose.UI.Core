@@ -1,69 +1,69 @@
-namespace Stackdose.UI.Core.Models
-{
-    /// <summary>
-    /// Recipe ¶µ¥Ø¸ê®Æ¼Ò«¬
-    /// ¥Nªí³æ¤@ Recipe °Ñ¼Æ¶µ¥Ø
-    /// </summary>
-    public class RecipeItem
-    {
-        /// <summary>
-        /// °Ñ¼Æ¦WºÙ (¨Ò¦p: "Temperature", "Pressure")
-        /// </summary>
-        public string Name { get; set; } = string.Empty;
-
-        /// <summary>
-        /// PLC ¦ì§} (¨Ò¦p: "D100", "M200")
-        /// </summary>
-        public string Address { get; set; } = string.Empty;
-
-        /// <summary>
-        /// °Ñ¼Æ­È (¦r¦ê®æ¦¡,¥iÂà´«¬°¼Æ­È©Î¥¬ªL)
-        /// </summary>
-        public string Value { get; set; } = string.Empty;
-
-        /// <summary>
-        /// ¸ê®ÆÃş«¬ (¨Ò¦p: "Int16", "Int32", "Float", "Bool", "String")
-        /// </summary>
-        public string DataType { get; set; } = "Int16";
-
-        /// <summary>
-        /// ³æ¦ì (¨Ò¦p: "¢XC", "bar", "%")
-        /// </summary>
-        public string? Unit { get; set; }
-
-        /// <summary>
-        /// ´y­z»¡©ú
-        /// </summary>
-        public string? Description { get; set; }
-
-        /// <summary>
-        /// ³Ì¤p­È (¥Î©óÅçÃÒ)
-        /// </summary>
-        public double? MinValue { get; set; }
-
-        /// <summary>
-        /// ³Ì¤j­È (¥Î©óÅçÃÒ)
-        /// </summary>
-        public double? MaxValue { get; set; }
-
-        /// <summary>
-        /// ¬O§_±Ò¥Î (¥i¥Î©ó¼È®É°±¥Î¬Y¨Ç°Ñ¼Æ)
-        /// </summary>
-        public bool IsEnabled { get; set; } = true;
-
-        /// <summary>
-        /// ÅçÃÒ­È¬O§_¦b¦³®Ä½d³ò¤º
-        /// </summary>
-        public bool IsValueInRange(double value)
-        {
-            if (MinValue.HasValue && value < MinValue.Value) return false;
-            if (MaxValue.HasValue && value > MaxValue.Value) return false;
-            return true;
-        }
-
-        public override string ToString()
-        {
-            return $"{Name} ({Address}) = {Value} {Unit}";
-        }
-    }
-}
+namespace Stackdose.UI.Core.Models
+{
+    /// <summary>
+    /// Recipe é …ç›®è³‡æ–™æ¨¡å‹
+    /// ä»£è¡¨å–®ä¸€ Recipe åƒæ•¸é …ç›®
+    /// </summary>
+    public class RecipeItem
+    {
+        /// <summary>
+        /// åƒæ•¸åç¨± (ä¾‹å¦‚: "Temperature", "Pressure")
+        /// </summary>
+        public string Name { get; set; } = string.Empty;
+
+        /// <summary>
+        /// PLC ä½å€ (ä¾‹å¦‚: "D100", "M200")
+        /// </summary>
+        public string Address { get; set; } = string.Empty;
+
+        /// <summary>
+        /// åƒæ•¸å€¼ (å­—ä¸²æ ¼å¼,å¯è½‰æ›ç‚ºæ•¸å€¼æˆ–å¸ƒæ—)
+        /// </summary>
+        public string Value { get; set; } = string.Empty;
+
+        /// <summary>
+        /// è³‡æ–™é¡å‹ (ä¾‹å¦‚: "Int16", "Int32", "Float", "Bool", "String")
+        /// </summary>
+        public string DataType { get; set; } = "Int16";
+
+        /// <summary>
+        /// å–®ä½ (ä¾‹å¦‚: "Â°C", "bar", "%")
+        /// </summary>
+        public string? Unit { get; set; }
+
+        /// <summary>
+        /// æè¿°èªªæ˜
+        /// </summary>
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// æœ€å°å€¼ (ç”¨æ–¼é©—è­‰)
+        /// </summary>
+        public double? MinValue { get; set; }
+
+        /// <summary>
+        /// æœ€å¤§å€¼ (ç”¨æ–¼é©—è­‰)
+        /// </summary>
+        public double? MaxValue { get; set; }
+
+        /// <summary>
+        /// æ˜¯å¦å•Ÿç”¨ (å¯ç”¨æ–¼æš«æ™‚åœç”¨æŸäº›åƒæ•¸)
+        /// </summary>
+        public bool IsEnabled { get; set; } = true;
+
+        /// <summary>
+        /// é©—è­‰å€¼æ˜¯å¦åœ¨æœ‰æ•ˆç¯„åœå…§
+        /// </summary>
+        public bool IsValueInRange(double value)
+        {
+            if (MinValue.HasValue && value < MinValue.Value) return false;
+            if (MaxValue.HasValue && value > MaxValue.Value) return false;
+            return true;
+        }
+
+        public override string ToString()
+        {
+            return $"{Name} ({Address}) = {Value} {Unit}";
+        }
+    }
+}

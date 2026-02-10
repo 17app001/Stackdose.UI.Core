@@ -1,7 +1,8 @@
 using System.ComponentModel;
 using System.Windows;
+using Stackdose.UI.Core.Controls;
 
-namespace Stackdose.UI.Core.Controls
+namespace Stackdose.UI.Core.Helpers.UI
 {
     internal static class ControlRuntime
     {

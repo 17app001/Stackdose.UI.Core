@@ -1,6 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives; // ?? ¥[¤J³o­Ó¤Þ¥Î
+using System.Windows.Controls.Primitives; // ?? ï¿½[ï¿½Jï¿½oï¿½Ó¤Þ¥ï¿½
 using System.Windows.Media;
 using System.Windows.Data;
 using System.Globalization;
@@ -145,7 +145,7 @@ namespace Stackdose.UI.Core.Controls
             // Margin
             style.Setters.Add(new Setter(TabItem.MarginProperty, new Thickness(0, 0, 2, 0)));
             
-            // Font - ¤wÁY¤p¦Ü 12.0 ¨Ã§ï¬° Light ¦r­«
+            // Font - ï¿½wï¿½Yï¿½pï¿½ï¿½ 12.0 ï¿½Ã§ï¬° Light ï¿½rï¿½ï¿½
             style.Setters.Add(new Setter(TabItem.FontSizeProperty, 10.0));
             style.Setters.Add(new Setter(TabItem.FontWeightProperty, FontWeights.Light));
             
@@ -155,7 +155,7 @@ namespace Stackdose.UI.Core.Controls
             // Selected: Neon Green
             var neonGreen = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x7F));
             selectedTrigger.Setters.Add(new Setter(TabItem.ForegroundProperty, neonGreen));
-            selectedTrigger.Setters.Add(new Setter(TabItem.FontWeightProperty, FontWeights.Medium)); // ¿ï¤¤®Éµy·L¥[­«¤@ÂI¡A¦ý¤£¨Ï¥Î Bold
+            selectedTrigger.Setters.Add(new Setter(TabItem.FontWeightProperty, FontWeights.Medium)); // ï¿½ï¤¤ï¿½Éµyï¿½Lï¿½[ï¿½ï¿½ï¿½@ï¿½Iï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Ï¥ï¿½ Bold
             
             style.Triggers.Add(selectedTrigger);
             

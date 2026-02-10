@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Stackdose.Abstractions.Logging;
 using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Helpers.UI;
 using Stackdose.UI.Core.Models;
 using Stackdose.UI.Core.Services;
 

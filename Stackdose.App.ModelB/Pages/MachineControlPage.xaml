@@ -1,0 +1,210 @@
+<UserControl x:Class="Stackdose.App.ModelB.Pages.MachineControlPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:Custom="http://schemas.stackdose.com/wpf"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="900" d:DesignWidth="1600">
+    
+    <Grid Background="{DynamicResource Surface.Bg.Page}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title Area -->
+        <Border Grid.Row="0" 
+                Background="{DynamicResource Surface.Bg.Panel}"
+                BorderBrush="{DynamicResource Surface.Border.Default}"
+                BorderThickness="0,0,0,1"
+                Padding="30,20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Back Button -->
+                <Button Grid.Column="0"
+                        Content="Back to Home"
+                        Click="BackButton_Click"
+                        Style="{DynamicResource CyberButtonStyle}"
+                        Margin="0,0,20,0"/>
+                
+                <!-- Title -->
+                <StackPanel Grid.Column="1">
+                    <TextBlock x:Name="TitleText"
+                               Text="Model-B-01"
+                               FontSize="28"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource Text.Primary}"/>
+                    <TextBlock x:Name="SubtitleText"
+                               Text="Machine Detail Control"
+                               FontSize="14"
+                               Foreground="{DynamicResource Text.Secondary}"
+                               Margin="0,5,0,0"/>
+                </StackPanel>
+                
+                <!-- Batch Info -->
+                <StackPanel Grid.Column="2" 
+                           HorizontalAlignment="Right">
+                    <TextBlock Text="Current Batch"
+                              FontSize="12"
+                              Foreground="{DynamicResource Text.Secondary}"/>
+                    <TextBlock x:Name="BatchText"
+                              Text="--"
+                              FontSize="16"
+                              FontWeight="SemiBold"
+                              Foreground="{DynamicResource Text.Primary}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Control Area -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid Margin="30">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- PrintHead Control -->
+                <TextBlock Grid.Row="0"
+                          Text="PrintHead Control"
+                          FontSize="20"
+                          FontWeight="SemiBold"
+                          Foreground="{DynamicResource Text.Primary}"
+                          Margin="0,0,0,20"/>
+                
+                <Grid Grid.Row="1" Margin="0,0,0,40">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- PrintHead 1 -->
+                    <Border Grid.Column="0"
+                            Background="{DynamicResource Surface.Bg.Panel}"
+                            BorderBrush="{DynamicResource Surface.Border.Default}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="PrintHead 1"
+                                      FontSize="16"
+                                      FontWeight="SemiBold"
+                                      Foreground="{DynamicResource Text.Primary}"
+                                      Margin="0,0,0,15"/>
+                            
+                            <Custom:PrintHeadController 
+                                x:Name="PrintHead1Controller"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- PrintHead 2 -->
+                    <Border Grid.Column="2"
+                            Background="{DynamicResource Surface.Bg.Panel}"
+                            BorderBrush="{DynamicResource Surface.Border.Default}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="PrintHead 2"
+                                      FontSize="16"
+                                      FontWeight="SemiBold"
+                                      Foreground="{DynamicResource Text.Primary}"
+                                      Margin="0,0,0,15"/>
+                            
+                            <Custom:PrintHeadController 
+                                x:Name="PrintHead2Controller"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Process Parameters -->
+                <TextBlock Grid.Row="2"
+                          Text="Process Parameters"
+                          FontSize="20"
+                          FontWeight="SemiBold"
+                          Foreground="{DynamicResource Text.Primary}"
+                          Margin="0,0,0,20"/>
+                
+                <Border Grid.Row="3"
+                        Background="{DynamicResource Surface.Bg.Panel}"
+                        BorderBrush="{DynamicResource Surface.Border.Default}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="20"
+                        Margin="0,0,0,40">
+                    <UniformGrid Columns="3" 
+                                HorizontalAlignment="Left">
+                        
+                        <!-- Temperature -->
+                        <Custom:PlcLabel 
+                            Label="Temperature"
+                            Address="D100"
+                            DataType="Word"
+                            Divisor="10"
+                            StringFormat="F1"
+                            ShowFrame="True"
+                            Margin="0,0,20,20"/>
+                        
+                        <!-- Pressure -->
+                        <Custom:PlcLabel 
+                            Label="Pressure"
+                            Address="D200"
+                            DataType="Word"
+                            Divisor="10"
+                            StringFormat="F1"
+                            ShowFrame="True"
+                            Margin="0,0,20,20"/>
+                        
+                        <!-- Speed -->
+                        <Custom:PlcLabel 
+                            Label="Speed"
+                            Address="D300"
+                            DataType="Word"
+                            ShowFrame="True"
+                            Margin="0,0,20,20"/>
+                        
+                        <!-- Progress -->
+                        <Custom:PlcLabel 
+                            Label="Progress"
+                            Address="D400"
+                            DataType="Word"
+                            ShowFrame="True"
+                            Margin="0,0,20,20"/>
+                        
+                        <!-- Counter -->
+                        <Custom:PlcLabel 
+                            Label="Completed Count"
+                            Address="D500"
+                            DataType="Word"
+                            ShowFrame="True"
+                            Margin="0,0,20,20"/>
+                    </UniformGrid>
+                </Border>
+
+                <!-- Log Area -->
+                <StackPanel Grid.Row="4">
+                    <TextBlock Text="Operation Log"
+                              FontSize="20"
+                              FontWeight="SemiBold"
+                              Foreground="{DynamicResource Text.Primary}"
+                              Margin="0,0,0,20"/>
+                    
+                    <Custom:LiveLogViewer 
+                        x:Name="MachineLogViewer"
+                        Height="200"/>
+                </StackPanel>
+                
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

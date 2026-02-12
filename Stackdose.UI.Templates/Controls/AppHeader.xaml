@@ -10,7 +10,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Stackdose.UI.Templates;component/Resources/CommonColors.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Templates;component/Resources/CommonColors.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <converters:FirstCharConverter x:Key="FirstCharConverter"/>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>

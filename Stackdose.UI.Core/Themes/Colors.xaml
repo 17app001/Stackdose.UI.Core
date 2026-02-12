@@ -90,6 +90,7 @@
     <SolidColorBrush x:Key="Action.Warning" Color="{Binding Source={StaticResource Button.Bg.Warning}, Path=Color}"/>
     <SolidColorBrush x:Key="Action.Error" Color="{Binding Source={StaticResource Button.Bg.Error}, Path=Color}"/>
     <SolidColorBrush x:Key="Action.Info" Color="{Binding Source={StaticResource Button.Bg.Info}, Path=Color}"/>
+    <StaticResource x:Key="Action Info" ResourceKey="Action.Info" /> <!-- Alias for "Action Info" -->
 
     <!-- ================================================================ -->
     <!-- BACKWARD COMPATIBILITY ALIASES (v2 - Complete Mapping)          -->
@@ -111,16 +112,16 @@
 
     <!-- Legacy Plc.* mapped to new Surface.*/Text.* -->
     <StaticResource x:Key="Plc.Bg.Main.Legacy" ResourceKey="Surface.Bg.Control" />
-    <StaticResource x:Key="Plc.Border.Legacy" ResourceKey="Surface.Border.Weak" />
+    <StaticResource x:Key="Plc.Border.Legacy" ResourceKey="Surface.Border.Default" />
     <StaticResource x:Key="Plc.Text.Label.Legacy" ResourceKey="Text.Tertiary" />
     <StaticResource x:Key="Plc.Text.Value.Legacy" ResourceKey="Accent.Primary" />
 
     <!-- Legacy Button.* mapped to new Action.* -->
-    <StaticResource x:Key="Button.Bg.Primary.Legacy" ResourceKey="Action.Primary.Bg" />
-    <StaticResource x:Key="Button.Bg.Success.Legacy" ResourceKey="Action.Success.Bg" />
-    <StaticResource x:Key="Button.Bg.Warning.Legacy" ResourceKey="Action.Warning.Bg" />
-    <StaticResource x:Key="Button.Bg.Error.Legacy" ResourceKey="Action.Error.Bg" />
-    <StaticResource x:Key="Button.Bg.Info.Legacy" ResourceKey="Action.Info.Bg" />
-    <StaticResource x:Key="Button.Text.Legacy" ResourceKey="Action.Primary.Fg" />
+    <StaticResource x:Key="Button.Bg.Primary.Legacy" ResourceKey="Action.Primary" />
+    <StaticResource x:Key="Button.Bg.Success.Legacy" ResourceKey="Action.Success" />
+    <StaticResource x:Key="Button.Bg.Warning.Legacy" ResourceKey="Action.Warning" />
+    <StaticResource x:Key="Button.Bg.Error.Legacy" ResourceKey="Action.Error" />
+    <StaticResource x:Key="Button.Bg.Info.Legacy" ResourceKey="Action.Info" />
+    <StaticResource x:Key="Button.Text.Legacy" ResourceKey="Text.Primary" />
 
 </ResourceDictionary>

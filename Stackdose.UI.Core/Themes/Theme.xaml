@@ -2,12 +2,37 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <ResourceDictionary.MergedDictionaries>
-        <!-- Default to Dark Theme (Colors.xaml) -->
-        <!-- LightColors.xaml will be loaded dynamically when switching themes -->
+        <!-- 
+            ========== Theme Loading Strategy (v2) =========
+            
+            1. 先载入 Semantic Tokens (定义架构)
+            2. 再载入具体主题 (Dark/Light)
+            3. 最后载入组件样式
+            
+            优点：
+            - 清晰的分层架构
+            - 易于主题切换（只需替换步骤2）
+            - 向后兼容（Colors.xaml 提供 Alias）
+        -->
+        
+        <!-- Step 1: Load Semantic Token Definitions (架构层) -->
+        <!-- 此步骤可选，因为 DarkTheme/LightTheme 已包含完整定义 -->
+        <!-- <ResourceDictionary Source="Tokens/SemanticTokens.xaml"/> -->
+        
+        <!-- Step 2: Load Theme Implementation (默认 Dark) -->
+        <!-- 运行时通过 ThemeManager 动态切换 -->
         <ResourceDictionary Source="Colors.xaml"/>
-
+        
+        <!-- Step 3: Load Component Styles (组件层) -->
         <ResourceDictionary Source="Components/Controls.Default.xaml"/>
         <ResourceDictionary Source="Components/Controls.Base.xaml"/>
     </ResourceDictionary.MergedDictionaries>
+
+    <!-- 
+        ========== Design-Time Safety =========
+        
+        为了确保 XAML Designer 不会崩溃，所有主题资源必须在此文件或
+        其 MergedDictionaries 中定义。运行时切换通过 ThemeManager 实现。
+    -->
 
 </ResourceDictionary>

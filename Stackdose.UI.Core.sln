@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Hardware", "..\St
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Abstractions", "..\Stackdose.Platform\Stackdose.Abstractions\Stackdose.Abstractions.csproj", "{42A359B4-B96E-6F41-729B-E8E9655118B7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FeiyangWrapper", "..\Sdk\FeiyangWrapper\FeiyangWrapper\FeiyangWrapper.vcxproj", "{0EA55D76-D882-4C31-0F9D-32712C8F24C7}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.PrintHead", "..\Stackdose.Platform\Stackdose.PrintHead\Stackdose.PrintHead.csproj", "{6D1AF2F1-BF31-7231-72EF-18823B146A70}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Plc", "..\Stackdose.Platform\Stackdose.Plc\Stackdose.Plc.csproj", "{AD27C021-4D83-4715-BF2F-02F4B8C2A771}"
@@ -77,18 +75,6 @@ Global
 		{42A359B4-B96E-6F41-729B-E8E9655118B7}.Release|x64.Build.0 = Release|Any CPU
 		{42A359B4-B96E-6F41-729B-E8E9655118B7}.Release|x86.ActiveCfg = Release|Any CPU
 		{42A359B4-B96E-6F41-729B-E8E9655118B7}.Release|x86.Build.0 = Release|Any CPU
-		{0EA55D76-D882-4C31-0F9D-32712C8F24C7}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{0EA55D76-D882-4C31-0F9D-32712C8F24C7}.Debug|Any CPU.Build.0 = Debug|x64
-		{0EA55D76-D882-4C31-0F9D-32712C8F24C7}.Debug|x64.ActiveCfg = Debug|x64
-		{0EA55D76-D882-4C31-0F9D-32712C8F24C7}.Debug|x64.Build.0 = Debug|x64
-		{0EA55D76-D882-4C31-0F9D-32712C8F24C7}.Debug|x86.ActiveCfg = Debug|Win32
-		{0EA55D76-D882-4C31-0F9D-32712C8F24C7}.Debug|x86.Build.0 = Debug|Win32
-		{0EA55D76-D882-4C31-0F9D-32712C8F24C7}.Release|Any CPU.ActiveCfg = Release|x64
-		{0EA55D76-D882-4C31-0F9D-32712C8F24C7}.Release|Any CPU.Build.0 = Release|x64
-		{0EA55D76-D882-4C31-0F9D-32712C8F24C7}.Release|x64.ActiveCfg = Release|x64
-		{0EA55D76-D882-4C31-0F9D-32712C8F24C7}.Release|x64.Build.0 = Release|x64
-		{0EA55D76-D882-4C31-0F9D-32712C8F24C7}.Release|x86.ActiveCfg = Release|Win32
-		{0EA55D76-D882-4C31-0F9D-32712C8F24C7}.Release|x86.Build.0 = Release|Win32
 		{6D1AF2F1-BF31-7231-72EF-18823B146A70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6D1AF2F1-BF31-7231-72EF-18823B146A70}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D1AF2F1-BF31-7231-72EF-18823B146A70}.Debug|x64.ActiveCfg = Debug|Any CPU

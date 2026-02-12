@@ -1,0 +1,73 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- ================================================================ -->
+    <!-- Light Theme Implementation                                        -->
+    <!-- ================================================================ -->
+    <!-- This file provides Light theme values for Semantic Tokens -->
+
+    <!-- ========== Surface ========== -->
+    <SolidColorBrush x:Key="Surface.Bg.Page" Color="#F5F5F5" />
+    <SolidColorBrush x:Key="Surface.Bg.Panel" Color="#E8E8E8" />
+    <SolidColorBrush x:Key="Surface.Bg.Card" Color="#FAFAFA" />
+    <SolidColorBrush x:Key="Surface.Bg.Control" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Surface.Bg.Elevated" Color="#FFFFFF" />
+
+    <!-- ========== Border ========== -->
+    <SolidColorBrush x:Key="Surface.Border.Default" Color="#BDBDBD" />
+    <SolidColorBrush x:Key="Surface.Border.Strong" Color="#757575" />
+    <SolidColorBrush x:Key="Surface.Border.Weak" Color="#E0E0E0" />
+    <SolidColorBrush x:Key="Surface.Border.Accent" Color="#0091EA" />
+
+    <!-- ========== Text ========== -->
+    <SolidColorBrush x:Key="Text.Primary" Color="#212121" />
+    <SolidColorBrush x:Key="Text.Secondary" Color="#616161" />
+    <SolidColorBrush x:Key="Text.Tertiary" Color="#9E9E9E" />
+    <SolidColorBrush x:Key="Text.Disabled" Color="#BDBDBD" />
+    <SolidColorBrush x:Key="Text.Inverse" Color="#FFFFFF" />
+
+    <!-- ========== Accent ========== -->
+    <SolidColorBrush x:Key="Accent.Primary" Color="#0091EA" />
+    <SolidColorBrush x:Key="Accent.Secondary" Color="#00ACC1" />
+    <SolidColorBrush x:Key="Accent.Tertiary" Color="#1976D2" />
+
+    <!-- ========== Action Buttons ========== -->
+    <SolidColorBrush x:Key="Action.Primary.Bg" Color="#2196F3" />
+    <SolidColorBrush x:Key="Action.Primary.Fg" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Action.Success.Bg" Color="#4CAF50" />
+    <SolidColorBrush x:Key="Action.Success.Fg" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Action.Warning.Bg" Color="#FF9800" />
+    <SolidColorBrush x:Key="Action.Warning.Fg" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Action.Error.Bg" Color="#F44336" />
+    <SolidColorBrush x:Key="Action.Error.Fg" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Action.Info.Bg" Color="#00BCD4" />
+    <SolidColorBrush x:Key="Action.Info.Fg" Color="#FFFFFF" />
+
+    <!-- ========== Status ========== -->
+    <SolidColorBrush x:Key="Status.Success" Color="#4CAF50" />
+    <SolidColorBrush x:Key="Status.Warning" Color="#FF9800" />
+    <SolidColorBrush x:Key="Status.Error" Color="#F44336" />
+    <SolidColorBrush x:Key="Status.Info" Color="#2196F3" />
+    <SolidColorBrush x:Key="Status.Offline" Color="#9E9E9E" />
+    <SolidColorBrush x:Key="Status.Running" Color="#4CAF50" />
+    <SolidColorBrush x:Key="Status.Standby" Color="#FF9800" />
+
+    <!-- ========== Overlay ========== -->
+    <SolidColorBrush x:Key="Overlay.Bg.Scrim" Color="#80000000" />
+    <SolidColorBrush x:Key="Overlay.Bg.Panel" Color="#14000000" />
+    <SolidColorBrush x:Key="Overlay.Bg.Medium" Color="#12000000" />
+    <SolidColorBrush x:Key="Overlay.Bg.Light" Color="#0A000000" />
+    <SolidColorBrush x:Key="Overlay.Highlight.Info" Color="#140091EA" />
+
+    <!-- ========== Component-Specific ========== -->
+    <SolidColorBrush x:Key="Component.PrintHead.Voltage" Color="#C49000" />
+    <SolidColorBrush x:Key="Component.PrintHead.Encoder" Color="#2E7D32" />
+    <SolidColorBrush x:Key="Component.PrintHead.PrintIndex" Color="#AD1457" />
+
+    <SolidColorBrush x:Key="Component.PlcLabel.Default" Color="#616161" />
+    <SolidColorBrush x:Key="Component.PlcLabel.NeonBlue" Color="#0091EA" />
+    <SolidColorBrush x:Key="Component.PlcLabel.Warning" Color="#FF9800" />
+    <SolidColorBrush x:Key="Component.PlcLabel.Success" Color="#4CAF50" />
+    <SolidColorBrush x:Key="Component.PlcLabel.Error" Color="#F44336" />
+
+</ResourceDictionary>

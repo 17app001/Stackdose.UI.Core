@@ -149,12 +149,12 @@ namespace Stackdose.UI.Core.Helpers
                     {
                         control.OnThemeChanged(CurrentTheme);
                     }
-                    catch (Exception ex)
-                    {
-                        #if DEBUG
-                        System.Diagnostics.Debug.WriteLine($"[ThemeManager] 註冊時通知主題失敗: {ex.Message}");
-                        #endif
-                    }
+                    catch (Exception)
+                    {
+                        #if DEBUG
+                        System.Diagnostics.Debug.WriteLine("[ThemeManager] 註冊時通知主題失敗");
+                        #endif
+                    }
                 }
 
                 // 定期清理失效的 WeakReference
@@ -274,13 +274,13 @@ namespace Stackdose.UI.Core.Helpers
                                 control.OnThemeChanged(newTheme);
                                 notifiedCount++;
                             }
-                            catch (Exception ex)
-                            {
-                                failedCount++;
-                                #if DEBUG
-                                System.Diagnostics.Debug.WriteLine($"[ThemeManager] 通知失敗 ({control.GetType().Name}): {ex.Message}");
-                                #endif
-                            }
+                            catch (Exception)
+                            {
+                                failedCount++;
+                                #if DEBUG
+                                System.Diagnostics.Debug.WriteLine($"[ThemeManager] 通知失敗 ({control.GetType().Name})");
+                                #endif
+                            }
                         }
                     }
 
@@ -297,13 +297,13 @@ namespace Stackdose.UI.Core.Helpers
 
                     return true;
                 }
-                catch (Exception ex)
-                {
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[ThemeManager] 切換主題失敗: {ex.Message}");
-                    #endif
-                    return false;
-                }
+                catch (Exception)
+                {
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine("[ThemeManager] 切換主題失敗");
+                    #endif
+                    return false;
+                }
             }
         }
 
@@ -353,12 +353,12 @@ namespace Stackdose.UI.Core.Helpers
                     );
                 }
             }
-            catch (Exception ex)
-            {
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[ThemeManager] 主題偵測失敗: {ex.Message}");
-                #endif
-            }
+            catch (Exception)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[ThemeManager] 主題偵測失敗");
+                #endif
+            }
 
             // 預設為 Dark 主題
             return new ThemeChangedEventArgs(false, "Dark");

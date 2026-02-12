@@ -570,7 +570,7 @@ namespace Stackdose.UI.Core.Controls
                     if (dwordVal.HasValue) result = BitConverter.ToSingle(BitConverter.GetBytes(dwordVal.Value), 0);
                     break;
             }
-            UpdateValue(result);
+            UpdateValue(result!);
         }
 
         /// <summary>
@@ -594,7 +594,11 @@ namespace Stackdose.UI.Core.Controls
                 {
                     bool bVal = false;
                     if (rawValue is bool b) bVal = b;
-                    else bVal = rawValue.ToString() == "1" || rawValue.ToString().ToLower() == "true";
+                    else
+                    {
+                        var rawText = rawValue.ToString();
+                        bVal = rawText == "1" || string.Equals(rawText, "true", StringComparison.OrdinalIgnoreCase);
+                    }
 
                     newValueStr = bVal ? "ON" : "OFF";
                     actualValue = bVal;

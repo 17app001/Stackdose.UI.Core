@@ -61,6 +61,8 @@ namespace Stackdose.UI.Core.Controls
         {
             InitializeComponent();
 
+            _userService = new UserManagementService();
+
             // Skip runtime initialization in design mode.
             if (ControlRuntime.IsDesignMode(this))
             {
@@ -68,8 +70,6 @@ namespace Stackdose.UI.Core.Controls
             }
 
             DataContext = this;
-
-            _userService = new UserManagementService();
             IsVisibleChanged += UserManagementPanel_IsVisibleChanged;
         }
 

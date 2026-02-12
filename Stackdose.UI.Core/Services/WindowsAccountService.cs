@@ -146,7 +146,7 @@ namespace Stackdose.UI.Core.Services
                                 };
 
                                 // 取得使用者所屬群組
-                                userInfo.Groups = GetUserGroups(userPrincipal.SamAccountName);
+                                userInfo.Groups = GetUserGroups(userPrincipal.SamAccountName ?? string.Empty);
 
                                 users.Add(userInfo);
                             }
@@ -169,12 +169,17 @@ namespace Stackdose.UI.Core.Services
         /// </summary>
         /// <param name="username">使用者名稱</param>
         /// <returns>群組清單</returns>
-        public List<string> GetUserGroups(string username)
-        {
-            var groups = new List<string>();
-
-            try
-            {
+        public List<string> GetUserGroups(string username)
+        {
+            var groups = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return groups;
+            }
+
+            try
+            {
                 // 移除 Domain\ 前綴（如果有）
                 if (username.Contains("\\"))
                 {

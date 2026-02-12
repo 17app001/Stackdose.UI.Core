@@ -15,7 +15,7 @@ namespace Stackdose.UI.Core.Helpers
         /// <summary>
         /// Resources 目錄的完整路徑
         /// </summary>
-        public static string ResourcesDirectory { get; private set; }
+        public static string ResourcesDirectory { get; private set; } = string.Empty;
 
         /// <summary>
         /// 是否已初始化

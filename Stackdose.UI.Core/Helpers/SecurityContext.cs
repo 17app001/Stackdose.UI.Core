@@ -310,6 +310,11 @@ namespace Stackdose.UI.Core.Helpers
         [Obsolete("此方法不安全，僅用於舊系統相容。請使用 VerifyPassword 進行驗證。")]
         public static string HashPassword(string password)
         {
+            return ComputeLegacyHash(password);
+        }
+
+        private static string ComputeLegacyHash(string password)
+        {
             using (var sha256 = SHA256.Create())
             {
                 byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
@@ -381,7 +386,7 @@ namespace Stackdose.UI.Core.Helpers
                         Id = 1,
                         UserId = "admin01",
                         DisplayName = "系統管理員 (Fallback)",
-                        PasswordHash = HashPassword("admin01admin01"),
+                        PasswordHash = ComputeLegacyHash("admin01admin01"),
                         AccessLevel = AccessLevel.Admin,
                         IsActive = true,
                         CreatedBy = "System (Fallback)"
@@ -453,7 +458,7 @@ namespace Stackdose.UI.Core.Helpers
                             Id = 1,
                             UserId = "admin01",
                             DisplayName = "系統管理員 (Admin)",
-                            PasswordHash = HashPassword("admin01admin01"),
+                            PasswordHash = ComputeLegacyHash("admin01admin01"),
                             AccessLevel = AccessLevel.Admin,
                             IsActive = true,
                             CreatedBy = "System",

@@ -1050,15 +1050,18 @@ namespace Stackdose.UI.Core.Controls
                 System.Diagnostics.Debug.WriteLine("[CyberFrame] ThemeManager.SwitchTheme 已呼叫");
 
                 // 強制刷新 UI
-                Application.Current.Dispatcher.Invoke(() =>
+                if (Application.Current != null)
                 {
-                    // 觸發視覺樹重繪
-                    foreach (Window window in Application.Current.Windows)
+                    Application.Current.Dispatcher.Invoke(() =>
                     {
-                        window.InvalidateVisual();
-                        window.UpdateLayout();
-                    }
-                }, System.Windows.Threading.DispatcherPriority.Render);
+                        // 觸發視覺樹重繪
+                        foreach (Window window in Application.Current.Windows)
+                        {
+                            window.InvalidateVisual();
+                            window.UpdateLayout();
+                        }
+                    }, System.Windows.Threading.DispatcherPriority.Render);
+                }
 
                 // 記錄日誌
                 ComplianceContext.LogSystem(

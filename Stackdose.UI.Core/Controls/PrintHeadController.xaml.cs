@@ -2,7 +2,7 @@
 using Stackdose.Abstractions.Logging;
 using Stackdose.Abstractions.Models;
 using Stackdose.Abstractions.Print;
-using Stackdose.PrintHead.Feiyang;  // ⭐ 加入這行以使用 FeiyangPrintHead
+using Stackdose.PrintHead.Feiyang;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
 using System.IO;

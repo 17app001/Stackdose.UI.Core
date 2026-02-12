@@ -1,11 +1,14 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Stackdose.UI.Templates.Controls
 {
     public partial class MachineCard : UserControl
     {
+        public event EventHandler<string>? MachineSelected;
+
         public MachineCard()
         {
             InitializeComponent();
@@ -14,6 +17,18 @@ namespace Stackdose.UI.Templates.Controls
             StatusBrush = TryFindResource("TextTertiaryBrush") as Brush ?? Brushes.Gray;
             BatchLabel = "Batch No.";
         }
+
+        public string MachineId { get => (string)GetValue(MachineIdProperty); set => SetValue(MachineIdProperty, value); }
+        public static readonly DependencyProperty MachineIdProperty =
+            DependencyProperty.Register(nameof(MachineId), typeof(string), typeof(MachineCard), new PropertyMetadata(string.Empty));
+
+        public ICommand? SelectCommand { get => (ICommand?)GetValue(SelectCommandProperty); set => SetValue(SelectCommandProperty, value); }
+        public static readonly DependencyProperty SelectCommandProperty =
+            DependencyProperty.Register(nameof(SelectCommand), typeof(ICommand), typeof(MachineCard), new PropertyMetadata(null));
+
+        public object? SelectCommandParameter { get => GetValue(SelectCommandParameterProperty); set => SetValue(SelectCommandParameterProperty, value); }
+        public static readonly DependencyProperty SelectCommandParameterProperty =
+            DependencyProperty.Register(nameof(SelectCommandParameter), typeof(object), typeof(MachineCard), new PropertyMetadata(null));
 
         public string Title { get => (string)GetValue(TitleProperty); set => SetValue(TitleProperty, value); }
         public static readonly DependencyProperty TitleProperty =
@@ -74,5 +89,17 @@ namespace Stackdose.UI.Templates.Controls
         public string RightBottomValue { get => (string)GetValue(RightBottomValueProperty); set => SetValue(RightBottomValueProperty, value); }
         public static readonly DependencyProperty RightBottomValueProperty =
             DependencyProperty.Register(nameof(RightBottomValue), typeof(string), typeof(MachineCard), new PropertyMetadata(""));
+
+        private void CardBorder_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var parameter = SelectCommandParameter ?? MachineId;
+
+            if (SelectCommand?.CanExecute(parameter) == true)
+            {
+                SelectCommand.Execute(parameter);
+            }
+
+            MachineSelected?.Invoke(this, MachineId);
+        }
     }
 }

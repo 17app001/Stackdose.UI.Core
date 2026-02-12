@@ -2,8 +2,10 @@ using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -56,9 +58,19 @@ namespace Stackdose.UI.Templates.Controls
 
     public partial class LeftNavigation : UserControl
     {
+        public static readonly DependencyProperty IsMultiMachineModeProperty =
+            DependencyProperty.Register(nameof(IsMultiMachineMode), typeof(bool),
+                typeof(LeftNavigation), new PropertyMetadata(false, OnIsMultiMachineModeChanged));
+
         public static readonly DependencyProperty NavigationItemsProperty =
             DependencyProperty.Register(nameof(NavigationItems), typeof(ObservableCollection<NavigationItem>),
                 typeof(LeftNavigation), new PropertyMetadata(null));
+
+        public bool IsMultiMachineMode
+        {
+            get => (bool)GetValue(IsMultiMachineModeProperty);
+            set => SetValue(IsMultiMachineModeProperty, value);
+        }
 
         public ObservableCollection<NavigationItem> NavigationItems
         {
@@ -72,17 +84,19 @@ namespace Stackdose.UI.Templates.Controls
         {
             InitializeComponent();
 
-            NavigationItems = new ObservableCollection<NavigationItem>
-            {
-                new NavigationItem { Title = "System Overview", NavigationTarget = "MainPage", RequiredLevel = AccessLevel.Operator },
-                new NavigationItem { Title = "Device Control", NavigationTarget = "DeviceControlPage", RequiredLevel = AccessLevel.Operator },
-                new NavigationItem { Title = "Log Viewer", NavigationTarget = "LogViewerPage", RequiredLevel = AccessLevel.Instructor },
-                new NavigationItem { Title = "User Management", NavigationTarget = "UserManagementPage", RequiredLevel = AccessLevel.Admin },
-                new NavigationItem { Title = "Settings", NavigationTarget = "SettingsPage", RequiredLevel = AccessLevel.SuperAdmin }
-            };
+            NavigationItems = new ObservableCollection<NavigationItem>();
+            RebuildNavigationItems();
 
             Loaded += LeftNavigation_Loaded;
             Unloaded += LeftNavigation_Unloaded;
+        }
+
+        private static void OnIsMultiMachineModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is LeftNavigation navigation)
+            {
+                navigation.RebuildNavigationItems();
+            }
         }
 
         private void LeftNavigation_Loaded(object sender, RoutedEventArgs e)
@@ -119,6 +133,44 @@ namespace Stackdose.UI.Templates.Controls
             {
                 item.UpdateEnabledState();
             }
+        }
+
+        private void RebuildNavigationItems()
+        {
+            var selectedTarget = NavigationItems?.FirstOrDefault(item => item.IsSelected)?.NavigationTarget;
+
+            var newItems = new List<NavigationItem>();
+
+            if (IsMultiMachineMode)
+            {
+                newItems.Add(new NavigationItem
+                {
+                    Title = "Machine Overview",
+                    NavigationTarget = "MachineOverviewPage",
+                    RequiredLevel = AccessLevel.Operator
+                });
+            }
+
+            newItems.AddRange(
+            [
+                new NavigationItem { Title = "Device Control", NavigationTarget = "DeviceControlPage", RequiredLevel = AccessLevel.Operator },
+                new NavigationItem { Title = "Log Viewer", NavigationTarget = "LogViewerPage", RequiredLevel = AccessLevel.Instructor },
+                new NavigationItem { Title = "User Management", NavigationTarget = "UserManagementPage", RequiredLevel = AccessLevel.Admin },
+                new NavigationItem { Title = "Settings", NavigationTarget = "SettingsPage", RequiredLevel = AccessLevel.SuperAdmin }
+            ]);
+
+            NavigationItems = new ObservableCollection<NavigationItem>(newItems);
+
+            if (!string.IsNullOrWhiteSpace(selectedTarget))
+            {
+                var selectedItem = NavigationItems.FirstOrDefault(item => item.NavigationTarget == selectedTarget);
+                if (selectedItem is not null)
+                {
+                    selectedItem.IsSelected = true;
+                }
+            }
+
+            UpdateNavigationItemsState();
         }
 
         private void NavigationItem_Click(object sender, RoutedEventArgs e)

@@ -1,5 +1,4 @@
 ﻿using Stackdose.Abstractions.Logging;
-using Stackdose.Abstractions.Models;
 using Stackdose.Abstractions.Print;
 using Stackdose.PrintHead.Feiyang;
 using Stackdose.UI.Core.Helpers;

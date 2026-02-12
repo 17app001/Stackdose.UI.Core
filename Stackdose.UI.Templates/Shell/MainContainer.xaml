@@ -35,7 +35,8 @@
             </Grid.ColumnDefinitions>
 
             <!-- Left Navigation -->
-            <controls:LeftNavigation Grid.Column="0"
+            <controls:LeftNavigation x:Name="LeftNavigationControl"
+                                    Grid.Column="0"
                                     NavigationRequested="OnNavigate"/>
 
             <!-- Dynamic Content Area -->

@@ -32,6 +32,22 @@ namespace Stackdose.UI.Templates.Shell
             AppHeaderControl.PageTitle = title;
         }
 
+        public void SetShellMode(bool isMultiMachineMode)
+        {
+            LeftNavigationControl.IsMultiMachineMode = isMultiMachineMode;
+            AppHeaderControl.ShowMachineBadge = isMultiMachineMode;
+
+            if (!isMultiMachineMode)
+            {
+                AppHeaderControl.MachineDisplayName = string.Empty;
+            }
+        }
+
+        public void SetCurrentMachineDisplayName(string machineName)
+        {
+            AppHeaderControl.MachineDisplayName = machineName;
+        }
+
         private void OnLogout(object sender, RoutedEventArgs e)
         {
             LogoutRequested?.Invoke(this, EventArgs.Empty);

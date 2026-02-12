@@ -15,12 +15,14 @@
             BorderBrush="{Binding ElementName=Root, Path=AccentBrush}"
             BorderThickness="2"
             CornerRadius="8"
-            Padding="14">
+            Padding="10"
+            Cursor="Hand"
+            MouseLeftButtonUp="CardBorder_MouseLeftButtonUp">
 
         <StackPanel>
             <!-- Title -->
             <TextBlock Text="{Binding ElementName=Root, Path=Title}"
-                       FontSize="18"
+                       FontSize="16"
                        FontWeight="Bold"
                        Foreground="{Binding ElementName=Root, Path=AccentBrush}"/>
 
@@ -29,20 +31,20 @@
                     BorderBrush="{DynamicResource Plc.Border}"
                     BorderThickness="1"
                     CornerRadius="6"
-                    Padding="10"
-                    Margin="0,10,0,12">
+                    Padding="8"
+                    Margin="0,8,0,8">
                 <StackPanel>
                     <TextBlock Text="{Binding ElementName=Root, Path=BatchLabel}"
-                               FontSize="12"
+                               FontSize="11"
                                Foreground="{DynamicResource Plc.Text.Label}"/>
 
                     <TextBlock Text="{Binding ElementName=Root, Path=BatchValue}"
-                               FontSize="16"
+                               FontSize="14"
                                FontWeight="Bold"
                                Foreground="{DynamicResource Plc.Text.Value}"/>
 
                     <TextBlock Text="{Binding ElementName=Root, Path=RecipeText}"
-                               FontSize="12"
+                               FontSize="11"
                                Foreground="{DynamicResource Plc.Text.Default}"/>
                 </StackPanel>
             </Border>
@@ -50,18 +52,18 @@
             <!-- Status pill -->
             <Border Background="{Binding ElementName=Root, Path=StatusBrush}"
                     CornerRadius="12"
-                    Padding="6,4"
+                    Padding="6,2"
                     Margin="0,0,10,0"
                     HorizontalAlignment="Left">
                 <TextBlock Text="{Binding ElementName=Root, Path=StatusText}"
                            Foreground="White"
-                           FontSize="12"
+                           FontSize="11"
                            FontFamily="Consolas"
                            FontWeight="Bold"/>
             </Border>
 
             <!-- Metrics -->
-            <Grid Margin="0,10,0,0">
+            <Grid Margin="0,8,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -73,22 +75,22 @@
                                FontSize="11"
                                FontFamily="Consolas"/>
                     <TextBlock Text="{Binding ElementName=Root, Path=LeftTopValue}"
-                               FontSize="16"
+                               FontSize="14"
                                FontWeight="Bold"
                                Foreground="{DynamicResource Cyber.Text.Main}"
                                FontFamily="Consolas"
-                               Margin="0,6,0,12"/>
+                               Margin="0,5,0,8"/>
 
                     <TextBlock Text="{Binding ElementName=Root, Path=LeftBottomLabel}"
                                Foreground="{DynamicResource Plc.Text.Label}"
                                FontSize="11"
                                FontFamily="Consolas"/>
                     <TextBlock Text="{Binding ElementName=Root, Path=LeftBottomValue}"
-                               FontSize="16"
+                               FontSize="14"
                                FontWeight="Bold"
                                Foreground="{DynamicResource Cyber.Text.Main}"
                                FontFamily="Consolas"
-                               Margin="0,6,0,0"/>
+                               Margin="0,5,0,0"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1">
@@ -97,22 +99,22 @@
                                FontSize="11"
                                FontFamily="Consolas"/>
                     <TextBlock Text="{Binding ElementName=Root, Path=RightTopValue}"
-                               FontSize="16"
+                               FontSize="14"
                                FontWeight="Bold"
                                Foreground="{DynamicResource Cyber.Text.Main}"
                                FontFamily="Consolas"
-                               Margin="0,6,0,12"/>
+                               Margin="0,5,0,8"/>
 
                     <TextBlock Text="{Binding ElementName=Root, Path=RightBottomLabel}"
                                Foreground="{DynamicResource Plc.Text.Label}"
                                FontSize="11"
                                FontFamily="Consolas"/>
                     <TextBlock Text="{Binding ElementName=Root, Path=RightBottomValue}"
-                               FontSize="16"
+                               FontSize="14"
                                FontWeight="Bold"
                                Foreground="{DynamicResource Cyber.Text.Main}"
                                FontFamily="Consolas"
-                               Margin="0,6,0,0"/>
+                               Margin="0,5,0,0"/>
                 </StackPanel>
             </Grid>
         </StackPanel>

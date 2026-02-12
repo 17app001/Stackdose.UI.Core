@@ -26,6 +26,26 @@ namespace Stackdose.UI.Templates.Controls
             set => SetValue(PageTitleProperty, value);
         }
 
+        public static readonly DependencyProperty ShowMachineBadgeProperty =
+            DependencyProperty.Register(nameof(ShowMachineBadge), typeof(bool), typeof(AppHeader),
+                new PropertyMetadata(false));
+
+        public bool ShowMachineBadge
+        {
+            get => (bool)GetValue(ShowMachineBadgeProperty);
+            set => SetValue(ShowMachineBadgeProperty, value);
+        }
+
+        public static readonly DependencyProperty MachineDisplayNameProperty =
+            DependencyProperty.Register(nameof(MachineDisplayName), typeof(string), typeof(AppHeader),
+                new PropertyMetadata(string.Empty));
+
+        public string MachineDisplayName
+        {
+            get => (string)GetValue(MachineDisplayNameProperty);
+            set => SetValue(MachineDisplayNameProperty, value);
+        }
+
         private string _userName = "Guest";
         public string UserName
         {

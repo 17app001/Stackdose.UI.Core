@@ -13,6 +13,7 @@
                 <ResourceDictionary Source="/Stackdose.UI.Templates;component/Resources/CommonColors.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <converters:FirstCharConverter x:Key="FirstCharConverter"/>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -73,6 +74,18 @@
                            FontWeight="Bold"
                            Foreground="{StaticResource TextPrimaryBrush}"
                            HorizontalAlignment="Center"/>
+
+                <Border Margin="0,4,0,0"
+                        Padding="8,2"
+                        CornerRadius="10"
+                        Background="{StaticResource HoverBackgroundBrush}"
+                        Visibility="{Binding ShowMachineBadge, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Text="{Binding MachineDisplayName, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource PrimaryBrush}"
+                               HorizontalAlignment="Center"/>
+                </Border>
             </StackPanel>
 
             <!-- User Info -->

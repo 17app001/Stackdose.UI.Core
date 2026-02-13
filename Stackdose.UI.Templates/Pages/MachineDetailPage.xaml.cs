@@ -5,6 +5,10 @@ namespace Stackdose.UI.Templates.Pages;
 
 public partial class MachineDetailPage : UserControl
 {
+    public event EventHandler? StartRequested;
+    public event EventHandler? StopRequested;
+    public event EventHandler? ResetRequested;
+
     public static readonly DependencyProperty MachineTitleProperty =
         DependencyProperty.Register(nameof(MachineTitle), typeof(string), typeof(MachineDetailPage), new PropertyMetadata("Machine Detail"));
 
@@ -53,5 +57,20 @@ public partial class MachineDetailPage : UserControl
     public MachineDetailPage()
     {
         InitializeComponent();
+    }
+
+    private void StartButton_Click(object sender, RoutedEventArgs e)
+    {
+        StartRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void StopButton_Click(object sender, RoutedEventArgs e)
+    {
+        StopRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void ResetButton_Click(object sender, RoutedEventArgs e)
+    {
+        ResetRequested?.Invoke(this, EventArgs.Empty);
     }
 }

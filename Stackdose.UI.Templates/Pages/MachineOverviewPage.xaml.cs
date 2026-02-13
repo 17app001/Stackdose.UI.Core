@@ -1,4 +1,6 @@
+using Stackdose.Abstractions.Hardware;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -7,6 +9,44 @@ namespace Stackdose.UI.Templates.Pages;
 
 public partial class MachineOverviewPage : UserControl
 {
+    public event Action<IPlcManager>? PlcScanUpdated;
+    public event Action<string>? MachineSelected;
+
+    public static readonly DependencyProperty PlcIpAddressProperty =
+        DependencyProperty.Register(
+            nameof(PlcIpAddress),
+            typeof(string),
+            typeof(MachineOverviewPage),
+            new PropertyMetadata("127.0.0.1"));
+
+    public static readonly DependencyProperty PlcPortProperty =
+        DependencyProperty.Register(
+            nameof(PlcPort),
+            typeof(int),
+            typeof(MachineOverviewPage),
+            new PropertyMetadata(5000));
+
+    public static readonly DependencyProperty PlcScanIntervalProperty =
+        DependencyProperty.Register(
+            nameof(PlcScanInterval),
+            typeof(int),
+            typeof(MachineOverviewPage),
+            new PropertyMetadata(300));
+
+    public static readonly DependencyProperty PlcAutoConnectProperty =
+        DependencyProperty.Register(
+            nameof(PlcAutoConnect),
+            typeof(bool),
+            typeof(MachineOverviewPage),
+            new PropertyMetadata(true));
+
+    public static readonly DependencyProperty PlcMonitorAddressesProperty =
+        DependencyProperty.Register(
+            nameof(PlcMonitorAddresses),
+            typeof(string),
+            typeof(MachineOverviewPage),
+            new PropertyMetadata(string.Empty));
+
     public static readonly DependencyProperty MachineCardsProperty =
         DependencyProperty.Register(
             nameof(MachineCards),
@@ -14,15 +54,57 @@ public partial class MachineOverviewPage : UserControl
             typeof(MachineOverviewPage),
             new PropertyMetadata(null));
 
+    public string PlcIpAddress
+    {
+        get => (string)GetValue(PlcIpAddressProperty);
+        set => SetValue(PlcIpAddressProperty, value);
+    }
+
+    public int PlcPort
+    {
+        get => (int)GetValue(PlcPortProperty);
+        set => SetValue(PlcPortProperty, value);
+    }
+
+    public int PlcScanInterval
+    {
+        get => (int)GetValue(PlcScanIntervalProperty);
+        set => SetValue(PlcScanIntervalProperty, value);
+    }
+
+    public bool PlcAutoConnect
+    {
+        get => (bool)GetValue(PlcAutoConnectProperty);
+        set => SetValue(PlcAutoConnectProperty, value);
+    }
+
+    public string PlcMonitorAddresses
+    {
+        get => (string)GetValue(PlcMonitorAddressesProperty);
+        set => SetValue(PlcMonitorAddressesProperty, value);
+    }
+
     public ObservableCollection<MachineOverviewCard> MachineCards
     {
         get => (ObservableCollection<MachineOverviewCard>)GetValue(MachineCardsProperty);
         set => SetValue(MachineCardsProperty, value);
     }
 
+    public ICommand SelectMachineCommand { get; }
+
     public MachineOverviewPage()
     {
         InitializeComponent();
+
+        SelectMachineCommand = new DelegateCommand(param =>
+        {
+            if (param is string machineId && !string.IsNullOrWhiteSpace(machineId))
+            {
+                MachineSelected?.Invoke(machineId);
+            }
+        });
+
+        PlcConnectionStatus.ScanUpdated += OnPlcScanUpdated;
 
         MachineCards =
         [
@@ -61,6 +143,32 @@ public partial class MachineOverviewPage : UserControl
                 RightBottomValue = "--"
             }
         ];
+    }
+
+    private void OnPlcScanUpdated(IPlcManager manager)
+    {
+        PlcScanUpdated?.Invoke(manager);
+    }
+}
+
+public sealed class DelegateCommand : ICommand
+{
+    private readonly Action<object?> _execute;
+    private readonly Predicate<object?>? _canExecute;
+
+    public DelegateCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
+    {
+        _execute = execute;
+        _canExecute = canExecute;
+    }
+
+    public bool CanExecute(object? parameter) => _canExecute?.Invoke(parameter) ?? true;
+    public void Execute(object? parameter) => _execute(parameter);
+
+    public event EventHandler? CanExecuteChanged
+    {
+        add => CommandManager.RequerySuggested += value;
+        remove => CommandManager.RequerySuggested -= value;
     }
 }
 

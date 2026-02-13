@@ -75,9 +75,9 @@
             <Border Grid.Column="2" Style="{StaticResource Template.PanelCard}">
                 <StackPanel>
                     <TextBlock Text="Command Panel" Style="{StaticResource Template.SectionTitleText}" Margin="0,0,0,12"/>
-                    <Button Content="Start" Style="{StaticResource Template.HeaderActionButton}" Background="{StaticResource SuccessBrush}" Margin="0,0,0,8"/>
-                    <Button Content="Stop" Style="{StaticResource Template.HeaderActionButton}" Background="{StaticResource WarningBrush}" Margin="0,0,0,8"/>
-                    <Button Content="Reset" Style="{StaticResource Template.HeaderActionButton}" Background="{StaticResource ErrorBrush}"/>
+                    <Button Content="Start" Style="{StaticResource Template.HeaderActionButton}" Background="{StaticResource SuccessBrush}" Margin="0,0,0,8" Click="StartButton_Click"/>
+                    <Button Content="Stop" Style="{StaticResource Template.HeaderActionButton}" Background="{StaticResource WarningBrush}" Margin="0,0,0,8" Click="StopButton_Click"/>
+                    <Button Content="Reset" Style="{StaticResource Template.HeaderActionButton}" Background="{StaticResource ErrorBrush}" Click="ResetButton_Click"/>
                 </StackPanel>
             </Border>
         </Grid>

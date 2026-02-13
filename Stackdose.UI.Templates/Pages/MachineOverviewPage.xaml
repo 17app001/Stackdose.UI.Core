@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:core="http://schemas.stackdose.com/wpf"
              xmlns:controls="clr-namespace:Stackdose.UI.Templates.Controls"
              mc:Ignorable="d"
              d:DesignWidth="1400"
@@ -25,13 +26,37 @@
         <Border Grid.Row="0"
                 Style="{StaticResource Template.PanelCard}"
                 Margin="{StaticResource Template.CardMargin}">
-            <StackPanel>
-                <TextBlock Text="Machine Overview"
-                           Style="{StaticResource Template.PageTitleText}"/>
-                <TextBlock Text="Use this page as the default multi-machine dashboard template."
-                           Style="{StaticResource Template.CaptionText}"
-                           Margin="0,6,0,0"/>
-            </StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Machine Overview"
+                               Style="{StaticResource Template.PageTitleText}"/>
+                    <TextBlock Text="Use this page as the default multi-machine dashboard template."
+                               Style="{StaticResource Template.CaptionText}"
+                               Margin="0,6,0,10"/>
+                    <core:PlcStatus Width="280"
+                                    x:Name="PlcConnectionStatus"
+                                    Height="58"
+                                    AutoConnect="{Binding PlcAutoConnect, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    IsGlobal="True"
+                                    ShowBorder="True"
+                                    IpAddress="{Binding PlcIpAddress, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    Port="{Binding PlcPort, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    ScanInterval="{Binding PlcScanInterval, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    MonitorAddress="{Binding PlcMonitorAddresses, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                </StackPanel>
+
+                <controls:SystemClock Grid.Column="1"
+                                      Width="260"
+                                      Height="84"
+                                      TimeFontSize="30"
+                                      DateFontSize="12"
+                                      VerticalAlignment="Top"/>
+            </Grid>
         </Border>
 
         <ScrollViewer Grid.Row="1"
@@ -47,6 +72,8 @@
                     <DataTemplate>
                         <controls:MachineCard Margin="8"
                                               MachineId="{Binding MachineId}"
+                                              SelectCommand="{Binding SelectMachineCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                              SelectCommandParameter="{Binding MachineId}"
                                               Title="{Binding Title}"
                                               BatchValue="{Binding BatchValue}"
                                               RecipeText="{Binding RecipeText}"

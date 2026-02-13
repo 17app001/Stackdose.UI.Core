@@ -53,7 +53,7 @@
                         <TextBlock Text="  |  " 
                                    FontSize="15" 
                                    Foreground="{StaticResource TextSecondaryBrush}"/>
-                        <TextBlock Text="MODEL-B" 
+                        <TextBlock Text="{Binding DeviceName, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                    FontSize="18" 
                                    FontWeight="Bold"
                                    Foreground="{StaticResource WarningBrush}"/>

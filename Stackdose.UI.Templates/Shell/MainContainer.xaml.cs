@@ -8,10 +8,55 @@ namespace Stackdose.UI.Templates.Shell
 {
     public partial class MainContainer : UserControl
     {
+        public static readonly DependencyProperty PageTitleProperty =
+            DependencyProperty.Register(nameof(PageTitle), typeof(string), typeof(MainContainer), new PropertyMetadata("Home Overview"));
+
+        public static readonly DependencyProperty IsShellModeProperty =
+            DependencyProperty.Register(nameof(IsShellMode), typeof(bool), typeof(MainContainer), new PropertyMetadata(false));
+
+        public static readonly DependencyProperty CurrentMachineDisplayNameProperty =
+            DependencyProperty.Register(nameof(CurrentMachineDisplayName), typeof(string), typeof(MainContainer), new PropertyMetadata(string.Empty));
+
+        public static readonly DependencyProperty HeaderDeviceNameProperty =
+            DependencyProperty.Register(nameof(HeaderDeviceName), typeof(string), typeof(MainContainer), new PropertyMetadata("MODEL-B"));
+
+        public static readonly DependencyProperty ShellContentProperty =
+            DependencyProperty.Register(nameof(ShellContent), typeof(object), typeof(MainContainer), new PropertyMetadata(null));
+
         public event EventHandler<string>? NavigationRequested;
         public event EventHandler? LogoutRequested;
         public event EventHandler? CloseRequested;
         public event EventHandler? MinimizeRequested;
+
+        public string PageTitle
+        {
+            get => (string)GetValue(PageTitleProperty);
+            set => SetValue(PageTitleProperty, value);
+        }
+
+        public bool IsShellMode
+        {
+            get => (bool)GetValue(IsShellModeProperty);
+            set => SetValue(IsShellModeProperty, value);
+        }
+
+        public string CurrentMachineDisplayName
+        {
+            get => (string)GetValue(CurrentMachineDisplayNameProperty);
+            set => SetValue(CurrentMachineDisplayNameProperty, value);
+        }
+
+        public string HeaderDeviceName
+        {
+            get => (string)GetValue(HeaderDeviceNameProperty);
+            set => SetValue(HeaderDeviceNameProperty, value);
+        }
+
+        public object? ShellContent
+        {
+            get => GetValue(ShellContentProperty);
+            set => SetValue(ShellContentProperty, value);
+        }
 
         public MainContainer()
         {
@@ -28,24 +73,23 @@ namespace Stackdose.UI.Templates.Shell
 
         public void SetContent(object content, string title)
         {
-            ContentArea.Content = content;
-            AppHeaderControl.PageTitle = title;
+            ShellContent = content;
+            PageTitle = title;
         }
 
         public void SetShellMode(bool isMultiMachineMode)
         {
-            LeftNavigationControl.IsMultiMachineMode = isMultiMachineMode;
-            AppHeaderControl.ShowMachineBadge = isMultiMachineMode;
+            IsShellMode = isMultiMachineMode;
 
             if (!isMultiMachineMode)
             {
-                AppHeaderControl.MachineDisplayName = string.Empty;
+                CurrentMachineDisplayName = string.Empty;
             }
         }
 
         public void SetCurrentMachineDisplayName(string machineName)
         {
-            AppHeaderControl.MachineDisplayName = machineName;
+            CurrentMachineDisplayName = machineName;
         }
 
         private void OnLogout(object sender, RoutedEventArgs e)

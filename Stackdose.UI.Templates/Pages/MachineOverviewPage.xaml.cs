@@ -54,6 +54,13 @@ public partial class MachineOverviewPage : UserControl
             typeof(MachineOverviewPage),
             new PropertyMetadata(null));
 
+    public static readonly DependencyProperty ShowMachineCardsProperty =
+        DependencyProperty.Register(
+            nameof(ShowMachineCards),
+            typeof(bool),
+            typeof(MachineOverviewPage),
+            new PropertyMetadata(true));
+
     public string PlcIpAddress
     {
         get => (string)GetValue(PlcIpAddressProperty);
@@ -90,6 +97,12 @@ public partial class MachineOverviewPage : UserControl
         set => SetValue(MachineCardsProperty, value);
     }
 
+    public bool ShowMachineCards
+    {
+        get => (bool)GetValue(ShowMachineCardsProperty);
+        set => SetValue(ShowMachineCardsProperty, value);
+    }
+
     public ICommand SelectMachineCommand { get; }
 
     public MachineOverviewPage()
@@ -106,43 +119,7 @@ public partial class MachineOverviewPage : UserControl
 
         PlcConnectionStatus.ScanUpdated += OnPlcScanUpdated;
 
-        MachineCards =
-        [
-            new MachineOverviewCard
-            {
-                MachineId = "M1",
-                Title = "Machine 01",
-                BatchValue = "B-20260213-01",
-                RecipeText = "Recipe-A01",
-                StatusText = "Running",
-                StatusBrush = Brushes.SeaGreen,
-                LeftTopLabel = "Layer",
-                LeftTopValue = "126",
-                LeftBottomLabel = "Nozzle",
-                LeftBottomValue = "72.4 C",
-                RightTopLabel = "Speed",
-                RightTopValue = "38 mm/s",
-                RightBottomLabel = "ETA",
-                RightBottomValue = "00:14:20"
-            },
-            new MachineOverviewCard
-            {
-                MachineId = "M2",
-                Title = "Machine 02",
-                BatchValue = "B-20260213-02",
-                RecipeText = "Recipe-B07",
-                StatusText = "Idle",
-                StatusBrush = Brushes.SlateGray,
-                LeftTopLabel = "Layer",
-                LeftTopValue = "0",
-                LeftBottomLabel = "Nozzle",
-                LeftBottomValue = "25.1 C",
-                RightTopLabel = "Speed",
-                RightTopValue = "0 mm/s",
-                RightBottomLabel = "ETA",
-                RightBottomValue = "--"
-            }
-        ];
+        MachineCards = [];
     }
 
     private void OnPlcScanUpdated(IPlcManager manager)

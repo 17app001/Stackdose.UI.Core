@@ -14,6 +14,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Templates;component/Resources/CommonColors.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -41,6 +42,7 @@
                     <core:PlcStatus Width="280"
                                     x:Name="PlcConnectionStatus"
                                     Height="58"
+                                    HorizontalAlignment="Left"
                                     AutoConnect="{Binding PlcAutoConnect, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     IsGlobal="True"
                                     ShowBorder="True"
@@ -52,7 +54,7 @@
 
                 <controls:SystemClock Grid.Column="1"
                                       Width="260"
-                                      Height="84"
+                                      Height="106"
                                       TimeFontSize="30"
                                       DateFontSize="12"
                                       VerticalAlignment="Top"/>
@@ -61,6 +63,7 @@
 
         <ScrollViewer Grid.Row="1"
                       Margin="20,0,20,20"
+                      Visibility="{Binding ShowMachineCards, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}"
                       VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding MachineCards, RelativeSource={RelativeSource AncestorType=UserControl}}">
                 <ItemsControl.ItemsPanel>

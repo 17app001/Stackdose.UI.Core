@@ -4,9 +4,17 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              x:Name="Root"
-             mc:Ignorable="d"
-             d:DesignWidth="360"
-             d:DesignHeight="240">
+              mc:Ignorable="d"
+              d:DesignWidth="360"
+              d:DesignHeight="240">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Templates;component/Resources/CommonColors.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
 
     <Border Style="{StaticResource Template.PanelCard}"
             Padding="{Binding GroupPadding, ElementName=Root}">

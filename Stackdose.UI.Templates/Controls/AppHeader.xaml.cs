@@ -36,6 +36,16 @@ namespace Stackdose.UI.Templates.Controls
             set => SetValue(ShowMachineBadgeProperty, value);
         }
 
+        public static readonly DependencyProperty DeviceNameProperty =
+            DependencyProperty.Register(nameof(DeviceName), typeof(string), typeof(AppHeader),
+                new PropertyMetadata("MODEL-B"));
+
+        public string DeviceName
+        {
+            get => (string)GetValue(DeviceNameProperty);
+            set => SetValue(DeviceNameProperty, value);
+        }
+
         public static readonly DependencyProperty MachineDisplayNameProperty =
             DependencyProperty.Register(nameof(MachineDisplayName), typeof(string), typeof(AppHeader),
                 new PropertyMetadata(string.Empty));

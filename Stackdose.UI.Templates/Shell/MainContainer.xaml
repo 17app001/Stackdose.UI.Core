@@ -1,11 +1,12 @@
 <UserControl x:Class="Stackdose.UI.Templates.Shell.MainContainer"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:controls="clr-namespace:Stackdose.UI.Templates.Controls"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d"
-              d:DesignHeight="900" d:DesignWidth="1600">
+              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:controls="clr-namespace:Stackdose.UI.Templates.Controls"
+              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+              x:Name="Root"
+              mc:Ignorable="d"
+               d:DesignHeight="900" d:DesignWidth="1600">
 
     <UserControl.Resources>
         <ResourceDictionary>
@@ -28,7 +29,10 @@
             <!-- Header -->
             <controls:AppHeader x:Name="AppHeaderControl"
                             Grid.Row="0"
-                            PageTitle="Home Overview"
+                            PageTitle="{Binding ElementName=Root, Path=PageTitle}"
+                            DeviceName="{Binding ElementName=Root, Path=HeaderDeviceName}"
+                            ShowMachineBadge="{Binding ElementName=Root, Path=IsShellMode}"
+                            MachineDisplayName="{Binding ElementName=Root, Path=CurrentMachineDisplayName}"
                             LogoutClicked="OnLogout"
                             MinimizeClicked="OnMinimize"
                             CloseClicked="OnClose"/>
@@ -44,8 +48,9 @@
 
             <!-- Left Navigation -->
             <controls:LeftNavigation x:Name="LeftNavigationControl"
-                                    Grid.Column="0"
-                                    NavigationRequested="OnNavigate"/>
+                                     Grid.Column="0"
+                                     IsMultiMachineMode="{Binding ElementName=Root, Path=IsShellMode}"
+                                     NavigationRequested="OnNavigate"/>
 
             <!-- Dynamic Content Area -->
                 <Border Grid.Column="1"
@@ -53,7 +58,8 @@
                     BorderBrush="{DynamicResource Surface.Border.Default}"
                     BorderThickness="1,0,0,0">
                 <ContentControl x:Name="ContentArea"
-                               Margin="{StaticResource Template.PagePadding}"/>
+                               Margin="{StaticResource Template.PagePadding}"
+                               Content="{Binding ElementName=Root, Path=ShellContent}"/>
             </Border>
         </Grid>
 

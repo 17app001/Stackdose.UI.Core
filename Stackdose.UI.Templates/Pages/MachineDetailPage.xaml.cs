@@ -24,6 +24,9 @@ public partial class MachineDetailPage : UserControl
     public static readonly DependencyProperty AlarmStateProperty =
         DependencyProperty.Register(nameof(AlarmState), typeof(string), typeof(MachineDetailPage), new PropertyMetadata("Normal"));
 
+    public static readonly DependencyProperty NozzleTempTextProperty =
+        DependencyProperty.Register(nameof(NozzleTempText), typeof(string), typeof(MachineDetailPage), new PropertyMetadata("--"));
+
     public string MachineTitle
     {
         get => (string)GetValue(MachineTitleProperty);
@@ -52,6 +55,12 @@ public partial class MachineDetailPage : UserControl
     {
         get => (string)GetValue(AlarmStateProperty);
         set => SetValue(AlarmStateProperty, value);
+    }
+
+    public string NozzleTempText
+    {
+        get => (string)GetValue(NozzleTempTextProperty);
+        set => SetValue(NozzleTempTextProperty, value);
     }
 
     public MachineDetailPage()

@@ -64,11 +64,18 @@
                         </Border>
                         <Border Style="{StaticResource Template.PanelCard}" Margin="8,8,0,0">
                             <StackPanel>
-                                <TextBlock Text="Alarm" Style="{StaticResource Template.CaptionText}"/>
-                                <TextBlock Text="{Binding AlarmState, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource Template.SectionTitleText}" Foreground="{StaticResource WarningBrush}"/>
+                                <TextBlock Text="Nozzle Temp" Style="{StaticResource Template.CaptionText}"/>
+                                <TextBlock Text="{Binding NozzleTempText, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource Template.SectionTitleText}"/>
                             </StackPanel>
                         </Border>
                     </UniformGrid>
+
+                    <Border Style="{StaticResource Template.PanelCard}" Margin="0,12,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Alarm" Style="{StaticResource Template.CaptionText}"/>
+                            <TextBlock Text="{Binding AlarmState, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource Template.SectionTitleText}" Foreground="{StaticResource WarningBrush}"/>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Border>
 

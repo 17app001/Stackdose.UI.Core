@@ -157,6 +157,10 @@ public partial class MainWindow : Window
 
     private static MachineOverviewCard BuildMachineCard(PlcMachineConfig config, PlcMachineRuntime runtime)
     {
+        var nozzleUnit = config.Tags.Process.TryGetValue("nozzleTemp", out var nozzleTag) && !string.IsNullOrWhiteSpace(nozzleTag.Unit)
+            ? nozzleTag.Unit
+            : "C";
+
         var statusBrush = runtime.IsAlarm
             ? Brushes.IndianRed
             : runtime.IsRunning
@@ -176,7 +180,7 @@ public partial class MainWindow : Window
             LeftBottomLabel = "Alarm",
             LeftBottomValue = runtime.AlarmState,
             RightTopLabel = "Nozzle",
-            RightTopValue = $"{runtime.NozzleTempC:F1} C",
+            RightTopValue = $"{runtime.NozzleTempC:F1} {nozzleUnit}",
             RightBottomLabel = "Mode",
             RightBottomValue = runtime.IsRunning ? "Auto" : "Manual"
         };
@@ -459,6 +463,10 @@ public partial class MainWindow : Window
         _detailPage.RecipeName = runtime.RecipeName;
         _detailPage.MachineState = runtime.MachineState;
         _detailPage.AlarmState = runtime.AlarmState;
+        var nozzleUnit = config.Tags.Process.TryGetValue("nozzleTemp", out var nozzleTag) && !string.IsNullOrWhiteSpace(nozzleTag.Unit)
+            ? nozzleTag.Unit
+            : "C";
+        _detailPage.NozzleTempText = $"{runtime.NozzleTempC:F1} {nozzleUnit}";
     }
 
     private void OnNavigate(object sender, string target)

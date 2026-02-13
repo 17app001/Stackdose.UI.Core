@@ -1,0 +1,27 @@
+{
+  "machine": {
+    "id": "M1",
+    "name": "Demo Machine 01",
+    "enable": true
+  },
+  "plc": {
+    "ip": "192.168.22.39",
+    "port": 3000,
+    "pollIntervalMs": 150,
+    "autoConnect": true
+  },
+  "tags": {
+    "status": {
+      "isConnected": { "address": "M200", "type": "bool", "access": "read" },
+      "isRunning": { "address": "M201", "type": "bool", "access": "read" },
+      "isAlarm": { "address": "M202", "type": "bool", "access": "read" },
+      "heartbeat": { "address": "D300", "type": "int16", "access": "read" },
+      "mode": { "address": "D301", "type": "int16", "access": "read" }
+    },
+    "process": {
+      "batchNo": { "address": "D400", "type": "string", "access": "read", "length": 8 },
+      "recipeNo": { "address": "D410", "type": "string", "access": "read", "length": 8 },
+      "nozzleTemp": { "address": "D420", "type": "int16", "access": "read" }
+    }
+  }
+}

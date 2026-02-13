@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.UI.Templates", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.App.ModelB", "Stackdose.App.ModelB\Stackdose.App.ModelB.csproj", "{4DC5D136-DDF8-4E25-89BB-B1ED2DE705A0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.UI.Templates.Tests", "Stackdose.UI.Templates.Tests\Stackdose.UI.Templates.Tests.csproj", "{6C71C6F5-8D7E-4AAB-9CB2-71D11E3E5F76}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -125,6 +127,18 @@ Global
 		{4DC5D136-DDF8-4E25-89BB-B1ED2DE705A0}.Release|x64.Build.0 = Release|Any CPU
 		{4DC5D136-DDF8-4E25-89BB-B1ED2DE705A0}.Release|x86.ActiveCfg = Release|Any CPU
 		{4DC5D136-DDF8-4E25-89BB-B1ED2DE705A0}.Release|x86.Build.0 = Release|Any CPU
+		{6C71C6F5-8D7E-4AAB-9CB2-71D11E3E5F76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C71C6F5-8D7E-4AAB-9CB2-71D11E3E5F76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C71C6F5-8D7E-4AAB-9CB2-71D11E3E5F76}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6C71C6F5-8D7E-4AAB-9CB2-71D11E3E5F76}.Debug|x64.Build.0 = Debug|Any CPU
+		{6C71C6F5-8D7E-4AAB-9CB2-71D11E3E5F76}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6C71C6F5-8D7E-4AAB-9CB2-71D11E3E5F76}.Debug|x86.Build.0 = Debug|Any CPU
+		{6C71C6F5-8D7E-4AAB-9CB2-71D11E3E5F76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C71C6F5-8D7E-4AAB-9CB2-71D11E3E5F76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C71C6F5-8D7E-4AAB-9CB2-71D11E3E5F76}.Release|x64.ActiveCfg = Release|Any CPU
+		{6C71C6F5-8D7E-4AAB-9CB2-71D11E3E5F76}.Release|x64.Build.0 = Release|Any CPU
+		{6C71C6F5-8D7E-4AAB-9CB2-71D11E3E5F76}.Release|x86.ActiveCfg = Release|Any CPU
+		{6C71C6F5-8D7E-4AAB-9CB2-71D11E3E5F76}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

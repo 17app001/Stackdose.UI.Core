@@ -11,6 +11,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Core;component/Themes/Theme.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Templates;component/Resources/CommonColors.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -46,7 +47,7 @@
                     Background="{DynamicResource Surface.Bg.Panel}"
                     BorderBrush="{DynamicResource Surface.Border.Default}"
                     BorderThickness="1,0,0,0">
-                <ContentPresenter Margin="20,16,20,20"
+                <ContentPresenter Margin="{StaticResource Template.PagePadding}"
                                   Content="{Binding ContentArea, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
             </Border>
         </Grid>

@@ -31,4 +31,68 @@
     <SolidColorBrush x:Key="DisabledTextBrush" Color="#A8A8A8"/>
     <SolidColorBrush x:Key="DangerAccentBrush" Color="#FF5F5F"/>
 
+    <!-- Layout tokens -->
+    <Thickness x:Key="Template.PagePadding">20,16,20,20</Thickness>
+    <Thickness x:Key="Template.CardMargin">16,0,16,16</Thickness>
+    <Thickness x:Key="Template.CardPadding">16</Thickness>
+    <Thickness x:Key="Template.SectionGap">0,0,0,16</Thickness>
+    <CornerRadius x:Key="Template.Corner.Small">6</CornerRadius>
+    <CornerRadius x:Key="Template.Corner.Medium">8</CornerRadius>
+
+    <!-- Typography tokens -->
+    <Style x:Key="Template.PageTitleText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="22"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+    </Style>
+    <Style x:Key="Template.SectionTitleText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+    </Style>
+    <Style x:Key="Template.CaptionText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+    </Style>
+
+    <!-- Shared card style -->
+    <Style x:Key="Template.PanelCard" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="{StaticResource Template.Corner.Small}"/>
+        <Setter Property="Padding" Value="{StaticResource Template.CardPadding}"/>
+    </Style>
+
+    <!-- Header button styles -->
+    <Style x:Key="Template.HeaderActionButton" TargetType="Button">
+        <Setter Property="Height" Value="30"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}"
+                            CornerRadius="{StaticResource Template.Corner.Small}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Opacity" Value="0.88"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="Template.HeaderWindowButton" TargetType="Button" BasedOn="{StaticResource Template.HeaderActionButton}">
+        <Setter Property="Width" Value="30"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+    </Style>
+
 </ResourceDictionary>

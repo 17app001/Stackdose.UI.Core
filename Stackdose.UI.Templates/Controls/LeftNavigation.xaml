@@ -47,8 +47,7 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="0,20,0,0">
                 <TextBlock Text="Function Menu" 
-                           FontSize="14" 
-                           FontWeight="Bold"
+                           Style="{StaticResource Template.SectionTitleText}"
                            Foreground="{StaticResource PrimaryBrush}"
                            Margin="16,0,0,20"/>
 

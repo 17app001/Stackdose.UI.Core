@@ -1,0 +1,68 @@
+<UserControl x:Class="Stackdose.UI.Templates.Pages.MachineOverviewPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:Stackdose.UI.Templates.Controls"
+             mc:Ignorable="d"
+             d:DesignWidth="1400"
+             d:DesignHeight="900">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Templates;component/Resources/CommonColors.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Background="{DynamicResource Surface.Bg.Page}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Style="{StaticResource Template.PanelCard}"
+                Margin="{StaticResource Template.CardMargin}">
+            <StackPanel>
+                <TextBlock Text="Machine Overview"
+                           Style="{StaticResource Template.PageTitleText}"/>
+                <TextBlock Text="Use this page as the default multi-machine dashboard template."
+                           Style="{StaticResource Template.CaptionText}"
+                           Margin="0,6,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Row="1"
+                      Margin="16,0,16,16"
+                      VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding MachineCards, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel ItemWidth="320" ItemHeight="260"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <controls:MachineCard Margin="8"
+                                              MachineId="{Binding MachineId}"
+                                              Title="{Binding Title}"
+                                              BatchValue="{Binding BatchValue}"
+                                              RecipeText="{Binding RecipeText}"
+                                              StatusText="{Binding StatusText}"
+                                              StatusBrush="{Binding StatusBrush}"
+                                              LeftTopLabel="{Binding LeftTopLabel}"
+                                              LeftTopValue="{Binding LeftTopValue}"
+                                              LeftBottomLabel="{Binding LeftBottomLabel}"
+                                              LeftBottomValue="{Binding LeftBottomValue}"
+                                              RightTopLabel="{Binding RightTopLabel}"
+                                              RightTopValue="{Binding RightTopValue}"
+                                              RightBottomLabel="{Binding RightBottomLabel}"
+                                              RightBottomValue="{Binding RightBottomValue}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -1,0 +1,85 @@
+<UserControl x:Class="Stackdose.UI.Templates.Pages.MachineDetailPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="1400"
+             d:DesignHeight="900">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Templates;component/Resources/CommonColors.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Background="{DynamicResource Surface.Bg.Page}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Style="{StaticResource Template.PanelCard}"
+                Margin="{StaticResource Template.CardMargin}">
+            <StackPanel>
+                <TextBlock Text="{Binding MachineTitle, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                           Style="{StaticResource Template.PageTitleText}"/>
+                <TextBlock Text="Template for single-machine monitor + command panel layout."
+                           Style="{StaticResource Template.CaptionText}"
+                           Margin="0,6,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="16,0,16,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{StaticResource Template.PanelCard}">
+                <StackPanel>
+                    <TextBlock Text="Live Status" Style="{StaticResource Template.SectionTitleText}" Margin="0,0,0,12"/>
+                    <UniformGrid Columns="2" Rows="2">
+                        <Border Style="{StaticResource Template.PanelCard}" Margin="0,0,8,8">
+                            <StackPanel>
+                                <TextBlock Text="Batch" Style="{StaticResource Template.CaptionText}"/>
+                                <TextBlock Text="{Binding BatchNumber, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource Template.SectionTitleText}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Template.PanelCard}" Margin="8,0,0,8">
+                            <StackPanel>
+                                <TextBlock Text="Recipe" Style="{StaticResource Template.CaptionText}"/>
+                                <TextBlock Text="{Binding RecipeName, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource Template.SectionTitleText}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Template.PanelCard}" Margin="0,8,8,0">
+                            <StackPanel>
+                                <TextBlock Text="Machine State" Style="{StaticResource Template.CaptionText}"/>
+                                <TextBlock Text="{Binding MachineState, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource Template.SectionTitleText}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Template.PanelCard}" Margin="8,8,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Alarm" Style="{StaticResource Template.CaptionText}"/>
+                                <TextBlock Text="{Binding AlarmState, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource Template.SectionTitleText}" Foreground="{StaticResource WarningBrush}"/>
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="2" Style="{StaticResource Template.PanelCard}">
+                <StackPanel>
+                    <TextBlock Text="Command Panel" Style="{StaticResource Template.SectionTitleText}" Margin="0,0,0,12"/>
+                    <Button Content="Start" Style="{StaticResource Template.HeaderActionButton}" Background="{StaticResource SuccessBrush}" Margin="0,0,0,8"/>
+                    <Button Content="Stop" Style="{StaticResource Template.HeaderActionButton}" Background="{StaticResource WarningBrush}" Margin="0,0,0,8"/>
+                    <Button Content="Reset" Style="{StaticResource Template.HeaderActionButton}" Background="{StaticResource ErrorBrush}"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

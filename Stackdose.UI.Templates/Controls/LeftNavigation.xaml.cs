@@ -153,7 +153,7 @@ namespace Stackdose.UI.Templates.Controls
 
             newItems.AddRange(
             [
-                new NavigationItem { Title = "Device Control", NavigationTarget = "DeviceControlPage", RequiredLevel = AccessLevel.Operator },
+                new NavigationItem { Title = "Machine Detail", NavigationTarget = "MachineDetailPage", RequiredLevel = AccessLevel.Operator },
                 new NavigationItem { Title = "Log Viewer", NavigationTarget = "LogViewerPage", RequiredLevel = AccessLevel.Instructor },
                 new NavigationItem { Title = "User Management", NavigationTarget = "UserManagementPage", RequiredLevel = AccessLevel.Admin },
                 new NavigationItem { Title = "Settings", NavigationTarget = "SettingsPage", RequiredLevel = AccessLevel.SuperAdmin }

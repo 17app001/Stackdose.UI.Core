@@ -134,149 +134,49 @@
                     <Button x:Name="LogoutButton"
                             Content="Logout" 
                             Width="70" 
-                            Height="30"
+                            Style="{StaticResource Template.HeaderActionButton}"
                             Background="{StaticResource ErrorBrush}"
-                            Foreground="{StaticResource TextPrimaryBrush}"
-                            BorderThickness="0"
-                            FontSize="11"
-                            Cursor="Hand"
                             Margin="0,0,4,0"
-                            Click="LogoutButton_Click">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    CornerRadius="5"
-                                                    BorderThickness="0">
-                                                <ContentPresenter HorizontalAlignment="Center"
-                                                                  VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="0.88"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                            Click="LogoutButton_Click"/>
 
                     <!-- Switch User Button -->
                     <Button x:Name="SwitchUserButton"
                             Width="70" 
-                            Height="30"
+                            Style="{StaticResource Template.HeaderActionButton}"
                             Background="{StaticResource InfoBrush}"
-                            Foreground="{StaticResource TextPrimaryBrush}"
-                            BorderThickness="0"
-                            FontSize="11"
-                            Cursor="Hand"
                             Margin="0,0,8,0"
                             Click="SwitchUserButton_Click">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    CornerRadius="5"
-                                                    BorderThickness="0">
-                                                <StackPanel Orientation="Horizontal" 
-                                                            HorizontalAlignment="Center"
-                                                            VerticalAlignment="Center">
-                                                    <TextBlock Text="&#x21BB;" 
-                                                               FontSize="13"
-                                                               Margin="0,0,3,0"
-                                                               VerticalAlignment="Center"
-                                                               FontFamily="Segoe UI Symbol"/>
-                                                    <TextBlock Text="Switch" 
-                                                               FontSize="11"
-                                                               VerticalAlignment="Center"/>
-                                                </StackPanel>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="0.88"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
+                        <StackPanel Orientation="Horizontal" 
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="&#x21BB;" 
+                                       FontSize="13"
+                                       Margin="0,0,3,0"
+                                       VerticalAlignment="Center"
+                                       FontFamily="Segoe UI Symbol"/>
+                            <TextBlock Text="Switch" 
+                                       FontSize="11"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
                     </Button>
 
                     <!-- Minimize Button -->
                     <Button x:Name="MinimizeButton"
                             Content="-" 
                             Width="30" 
-                            Height="30"
+                            Style="{StaticResource Template.HeaderWindowButton}"
                             Background="{StaticResource WarningBrush}"
-                            Foreground="{StaticResource TextPrimaryBrush}"
-                            BorderThickness="0"
-                            FontSize="14"
-                            FontWeight="Bold"
-                            Cursor="Hand"
                             Margin="0,0,2,0"
-                            Click="MinimizeButton_Click">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    CornerRadius="3"
-                                                    BorderThickness="0">
-                                                <ContentPresenter HorizontalAlignment="Center"
-                                                                  VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="0.88"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                            Click="MinimizeButton_Click"/>
 
                     <!-- Fullscreen Button -->
                     <Button x:Name="FullscreenButton"
                             Width="30" 
-                            Height="30"
+                            Style="{StaticResource Template.HeaderWindowButton}"
                             Background="{StaticResource SuccessBrush}"
-                            Foreground="{StaticResource TextPrimaryBrush}"
-                            BorderThickness="0"
-                            Cursor="Hand"
                             Margin="0,0,2,0"
                             Click="FullscreenButton_Click"
                             ToolTip="Exit Fullscreen">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    CornerRadius="3"
-                                                    BorderThickness="0">
-                                                <ContentPresenter HorizontalAlignment="Center"
-                                                                  VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="0.88"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
                         <!-- Default: currently fullscreen, show "exit fullscreen" icon -->
                         <Path Data="F0 M2,5 H11 V14 H2 Z M4,7 V12 H9 V7 Z M7,2 H16 V11 H7 Z M9,4 V9 H14 V4 Z"
                               Fill="{StaticResource TextPrimaryBrush}"
@@ -289,36 +189,9 @@
                     <Button x:Name="CloseButton"
                             Content="X" 
                             Width="30" 
-                            Height="30"
+                            Style="{StaticResource Template.HeaderWindowButton}"
                             Background="{StaticResource ErrorBrush}"
-                            Foreground="{StaticResource TextPrimaryBrush}"
-                            BorderThickness="0"
-                            FontSize="12"
-                            FontWeight="Bold"
-                            Cursor="Hand"
-                            Click="CloseButton_Click">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    CornerRadius="3"
-                                                    BorderThickness="0">
-                                                <ContentPresenter HorizontalAlignment="Center"
-                                                                  VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="0.88"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                            Click="CloseButton_Click"/>
                 </StackPanel>
             </StackPanel>
         </Grid>

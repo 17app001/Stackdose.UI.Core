@@ -15,14 +15,14 @@
             BorderBrush="{Binding ElementName=Root, Path=AccentBrush}"
             BorderThickness="2"
             CornerRadius="8"
-            Padding="10"
+            Padding="14"
             Cursor="Hand"
             MouseLeftButtonUp="CardBorder_MouseLeftButtonUp">
 
         <StackPanel>
             <!-- Title -->
             <TextBlock Text="{Binding ElementName=Root, Path=Title}"
-                       FontSize="16"
+                       FontSize="20"
                        FontWeight="Bold"
                        Foreground="{Binding ElementName=Root, Path=AccentBrush}"/>
 
@@ -35,16 +35,16 @@
                     Margin="0,8,0,8">
                 <StackPanel>
                     <TextBlock Text="{Binding ElementName=Root, Path=BatchLabel}"
-                               FontSize="11"
+                               FontSize="12"
                                Foreground="{DynamicResource Plc.Text.Label}"/>
 
                     <TextBlock Text="{Binding ElementName=Root, Path=BatchValue}"
-                               FontSize="14"
+                               FontSize="16"
                                FontWeight="Bold"
                                Foreground="{DynamicResource Plc.Text.Value}"/>
 
                     <TextBlock Text="{Binding ElementName=Root, Path=RecipeText}"
-                               FontSize="11"
+                               FontSize="12"
                                Foreground="{DynamicResource Plc.Text.Default}"/>
                 </StackPanel>
             </Border>
@@ -57,7 +57,7 @@
                     HorizontalAlignment="Left">
                 <TextBlock Text="{Binding ElementName=Root, Path=StatusText}"
                            Foreground="White"
-                           FontSize="11"
+                           FontSize="12"
                            FontFamily="Consolas"
                            FontWeight="Bold"/>
             </Border>
@@ -72,10 +72,10 @@
                 <StackPanel Grid.Column="0">
                     <TextBlock Text="{Binding ElementName=Root, Path=LeftTopLabel}"
                                Foreground="{DynamicResource Plc.Text.Label}"
-                               FontSize="11"
+                               FontSize="12"
                                FontFamily="Consolas"/>
                     <TextBlock Text="{Binding ElementName=Root, Path=LeftTopValue}"
-                               FontSize="14"
+                               FontSize="18"
                                FontWeight="Bold"
                                Foreground="{DynamicResource Cyber.Text.Main}"
                                FontFamily="Consolas"
@@ -83,10 +83,10 @@
 
                     <TextBlock Text="{Binding ElementName=Root, Path=LeftBottomLabel}"
                                Foreground="{DynamicResource Plc.Text.Label}"
-                               FontSize="11"
+                               FontSize="12"
                                FontFamily="Consolas"/>
                     <TextBlock Text="{Binding ElementName=Root, Path=LeftBottomValue}"
-                               FontSize="14"
+                               FontSize="18"
                                FontWeight="Bold"
                                Foreground="{DynamicResource Cyber.Text.Main}"
                                FontFamily="Consolas"
@@ -96,10 +96,10 @@
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="{Binding ElementName=Root, Path=RightTopLabel}"
                                Foreground="{DynamicResource Plc.Text.Label}"
-                               FontSize="11"
+                               FontSize="12"
                                FontFamily="Consolas"/>
                     <TextBlock Text="{Binding ElementName=Root, Path=RightTopValue}"
-                               FontSize="14"
+                               FontSize="18"
                                FontWeight="Bold"
                                Foreground="{DynamicResource Cyber.Text.Main}"
                                FontFamily="Consolas"
@@ -107,10 +107,10 @@
 
                     <TextBlock Text="{Binding ElementName=Root, Path=RightBottomLabel}"
                                Foreground="{DynamicResource Plc.Text.Label}"
-                               FontSize="11"
+                               FontSize="12"
                                FontFamily="Consolas"/>
                     <TextBlock Text="{Binding ElementName=Root, Path=RightBottomValue}"
-                               FontSize="14"
+                               FontSize="18"
                                FontWeight="Bold"
                                Foreground="{DynamicResource Cyber.Text.Main}"
                                FontFamily="Consolas"

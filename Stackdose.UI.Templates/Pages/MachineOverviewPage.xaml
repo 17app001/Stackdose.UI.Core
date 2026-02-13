@@ -60,12 +60,12 @@
         </Border>
 
         <ScrollViewer Grid.Row="1"
-                      Margin="16,0,16,16"
+                      Margin="20,0,20,20"
                       VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding MachineCards, RelativeSource={RelativeSource AncestorType=UserControl}}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <WrapPanel ItemWidth="320" ItemHeight="260"/>
+                        <WrapPanel ItemWidth="420" ItemHeight="300"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>

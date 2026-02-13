@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0",
+  "machine": {
+    "id": "MODELB-M01",
+    "name": "Model B Machine 01",
+    "line": "Line-A",
+    "enable": true
+  },
+  "plc": {
+    "vendor": "Mitsubishi",
+    "protocol": "MC",
+    "ip": "192.168.22.39",
+    "port": 3000,
+    "pollIntervalMs": 150,
+    "timeoutMs": 1000,
+    "retry": 2
+  },
+  "tags": {
+    "status": {
+      "isConnected": { "address": "M200", "type": "bool", "access": "read" },
+      "isRunning": { "address": "M201", "type": "bool", "access": "read" },
+      "isAlarm": { "address": "M202", "type": "bool", "access": "read" },
+      "heartbeat": { "address": "D300", "type": "int16", "access": "read" },
+      "mode": { "address": "D301", "type": "int16", "access": "read" }
+    },
+    "command": {
+      "start": { "address": "M100", "type": "bool", "access": "writePulse", "pulseMs": 200 },
+      "stop": { "address": "M101", "type": "bool", "access": "writePulse", "pulseMs": 200 },
+      "reset": { "address": "M102", "type": "bool", "access": "writePulse", "pulseMs": 200 }
+    },
+    "process": {
+      "batchNo": { "address": "D400", "type": "string", "access": "read", "length": 8 },
+      "recipeNo": { "address": "D410", "type": "string", "access": "read", "length": 8 },
+      "nozzleTemp": { "address": "D420", "type": "int16", "access": "read", "scale": 0.1, "unit": "C" }
+    }
+  },
+  "security": {
+    "start": "Operator",
+    "stop": "Operator",
+    "reset": "Supervisor"
+  }
+}

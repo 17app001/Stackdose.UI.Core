@@ -230,13 +230,13 @@ namespace Stackdose.UI.Core.Services
                     return userInfo;
                 }
             }
-            catch (Exception ex)
-            {
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] GetUserInfo Error: {ex.Message}");
-                #endif
-                return null;
-            }
+            catch (Exception)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[AdAuthenticationService] GetUserInfo Error");
+                #endif
+                return null;
+            }
         }
 
         /// <summary>
@@ -297,13 +297,13 @@ namespace Stackdose.UI.Core.Services
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] IsAvailable Error: {ex.Message}");
-                #endif
-                return false;
-            }
+            catch (Exception)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[AdAuthenticationService] IsAvailable Error");
+                #endif
+                return false;
+            }
         }
 
         /// <summary>
@@ -526,13 +526,13 @@ namespace Stackdose.UI.Core.Services
                     return new PrincipalContext(_contextType);
                 }
             }
-            catch (Exception ex)
-            {
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] CreatePrincipalContext Error: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] Falling back to LocalMachine context");
-                #endif
-                
+            catch (Exception)
+            {
+                #if DEBUG
+                System.Diagnostics.Debug.WriteLine("[AdAuthenticationService] CreatePrincipalContext Error");
+                System.Diagnostics.Debug.WriteLine($"[AdAuthenticationService] Falling back to LocalMachine context");
+                #endif
+                
                 // Fallback 到本機驗證
                 return new PrincipalContext(ContextType.Machine);
             }

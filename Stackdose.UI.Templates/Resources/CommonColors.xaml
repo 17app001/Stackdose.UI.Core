@@ -6,28 +6,29 @@
     </ResourceDictionary.MergedDictionaries>
 
     <!-- Legacy-compatible brush keys mapped from UI.Core semantic/domain tokens -->
-    <SolidColorBrush x:Key="PrimaryBrush" Color="{Binding Source={StaticResource Accent.Primary}, Path=Color}"/>
-    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{Binding Source={StaticResource Action.Primary}, Path=Color}"/>
-    <SolidColorBrush x:Key="BackgroundBrush" Color="{Binding Source={StaticResource Surface.Bg.Page}, Path=Color}"/>
-    <SolidColorBrush x:Key="CardBackgroundBrush" Color="{Binding Source={StaticResource Surface.Bg.Card}, Path=Color}"/>
-    <SolidColorBrush x:Key="DarkBackgroundBrush" Color="{Binding Source={StaticResource Surface.Bg.Panel}, Path=Color}"/>
-    <SolidColorBrush x:Key="HoverBackgroundBrush" Color="{Binding Source={StaticResource Overlay.Bg.Light}, Path=Color}"/>
+    <!-- ?? FIX: Use direct color values instead of Binding to avoid design-time issues -->
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#00E5FF"/>
+    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#0088D4"/>
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#0D0D16"/>
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#262640"/>
+    <SolidColorBrush x:Key="DarkBackgroundBrush" Color="#1C1C2E"/>
+    <SolidColorBrush x:Key="HoverBackgroundBrush" Color="#22000000"/>
 
-    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{Binding Source={StaticResource Text.Primary}, Path=Color}"/>
-    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{Binding Source={StaticResource Text.Secondary}, Path=Color}"/>
-    <SolidColorBrush x:Key="TextTertiaryBrush" Color="{Binding Source={StaticResource Text.Tertiary}, Path=Color}"/>
-    <SolidColorBrush x:Key="TextMutedBrush" Color="{Binding Source={StaticResource Text.Secondary}, Path=Color}"/>
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#B8C5D0"/>
+    <SolidColorBrush x:Key="TextTertiaryBrush" Color="#A8A8A8"/>
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#B8C5D0"/>
 
-    <SolidColorBrush x:Key="SuccessBrush" Color="{Binding Source={StaticResource Action.Success}, Path=Color}"/>
-    <SolidColorBrush x:Key="WarningBrush" Color="{Binding Source={StaticResource Action.Warning}, Path=Color}"/>
-    <SolidColorBrush x:Key="ErrorBrush" Color="{Binding Source={StaticResource Action.Error}, Path=Color}"/>
-    <SolidColorBrush x:Key="InfoBrush" Color="{Binding Source={StaticResource Action.Info}, Path=Color}"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="#00B876"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="#FFB03A"/>
+    <SolidColorBrush x:Key="ErrorBrush" Color="#FF5F5F"/>
+    <SolidColorBrush x:Key="InfoBrush" Color="#00CED1"/>
 
-    <SolidColorBrush x:Key="BorderBrush" Color="{Binding Source={StaticResource Surface.Border.Default}, Path=Color}"/>
-    <SolidColorBrush x:Key="BorderSecondaryBrush" Color="{Binding Source={StaticResource Surface.Border.Strong}, Path=Color}"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="#4A6078"/>
+    <SolidColorBrush x:Key="BorderSecondaryBrush" Color="#5A8AB0"/>
 
-    <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="{Binding Source={StaticResource Overlay.Bg.Panel}, Path=Color}"/>
-    <SolidColorBrush x:Key="DisabledTextBrush" Color="{Binding Source={StaticResource Text.Tertiary}, Path=Color}"/>
-    <SolidColorBrush x:Key="DangerAccentBrush" Color="{Binding Source={StaticResource Status.Error}, Path=Color}"/>
+    <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="#2B000000"/>
+    <SolidColorBrush x:Key="DisabledTextBrush" Color="#A8A8A8"/>
+    <SolidColorBrush x:Key="DangerAccentBrush" Color="#FF5F5F"/>
 
 </ResourceDictionary>

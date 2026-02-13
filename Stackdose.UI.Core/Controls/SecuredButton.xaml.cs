@@ -249,10 +249,10 @@ namespace Stackdose.UI.Core.Controls
                 SetValue(BackgroundBrushProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString(background)));
                 SetValue(HoverBrushProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString(hover)));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[SecuredButton] UpdateThemeColors error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine("[SecuredButton] UpdateThemeColors error");
 #endif
             }
         }

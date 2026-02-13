@@ -200,10 +200,10 @@ namespace Stackdose.UI.Core.Controls
                 System.Diagnostics.Debug.WriteLine($"[PlcLabel] 主題檢測 (ThemeManager): {(isLight ? "Light" : "Dark")}");
                 #endif
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[PlcLabel] 主題檢測失敗: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine("[PlcLabel] 主題檢測失敗");
                 #endif
             }
 

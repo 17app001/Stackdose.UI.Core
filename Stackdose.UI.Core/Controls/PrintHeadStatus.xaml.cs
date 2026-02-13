@@ -63,11 +63,6 @@ namespace Stackdose.UI.Core.Controls
         private bool _isConnected = false;
         private bool _isExpanded = false;
         
-        /// <summary>
-        /// 🔥 追蹤是否已初始化（避免 Tab 切換重複初始化）
-        /// </summary>
-        private bool _isInitialized = false;
-
         #endregion
 
         #region Events
@@ -99,9 +94,6 @@ namespace Stackdose.UI.Core.Controls
         private async void OnControlLoaded(object sender, RoutedEventArgs e)
         {
                      
-            // 設定為已初始化
-            _isInitialized = true;
-            
             // 載入配置檔
             if (!LoadConfiguration())
             {

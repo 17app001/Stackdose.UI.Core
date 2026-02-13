@@ -78,11 +78,6 @@ namespace Stackdose.UI.Core.Helpers
         /// </summary>
         public static event EventHandler<Recipe>? RecipeChanged;
 
-        /// <summary>
-        /// Recipe 項目更新事件
-        /// </summary>
-        public static event EventHandler<(Recipe recipe, RecipeItem item)>? RecipeItemUpdated;
-
         #endregion
 
         #region 初始化與載入

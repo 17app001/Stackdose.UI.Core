@@ -90,7 +90,7 @@
     <SolidColorBrush x:Key="Action.Warning" Color="{Binding Source={StaticResource Button.Bg.Warning}, Path=Color}"/>
     <SolidColorBrush x:Key="Action.Error" Color="{Binding Source={StaticResource Button.Bg.Error}, Path=Color}"/>
     <SolidColorBrush x:Key="Action.Info" Color="{Binding Source={StaticResource Button.Bg.Info}, Path=Color}"/>
-    <StaticResource x:Key="Action Info" ResourceKey="Action.Info" /> <!-- Alias for "Action Info" -->
+    <SolidColorBrush x:Key="Action Info" Color="#00CED1"/> <!-- Direct definition for "Action Info" -->
 
     <!-- ================================================================ -->
     <!-- BACKWARD COMPATIBILITY ALIASES (v2 - Complete Mapping)          -->

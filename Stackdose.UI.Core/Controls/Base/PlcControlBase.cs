@@ -6,33 +6,30 @@ using Stackdose.UI.Core.Helpers;
 namespace Stackdose.UI.Core.Controls.Base
 {
     /// <summary>
-    /// PLC ¬ÛÃö±±¥ó°òÃþ - ´£¨Ñ²Î¤@ªº PLC ³s±µºÞ²z
+    /// PLC ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ - ï¿½ï¿½ï¿½Ñ²Î¤@ï¿½ï¿½ PLC ï¿½sï¿½ï¿½ï¿½Þ²z
     /// </summary>
     /// <remarks>
-    /// <para>´£¨Ñªº¥\¯à¡G</para>
+    /// <para>ï¿½ï¿½ï¿½Ñªï¿½ï¿½\ï¿½ï¿½G</para>
     /// <list type="bullet">
-    /// <item>¦Û°Ê¸j©w¨ì¥þ°ì©Î«ü©wªº PlcStatus</item>
-    /// <item>¦Û°Ê­q¾\/¨ú®ø­q¾\ PLC ¨Æ¥ó</item>
-    /// <item>²Î¤@ªº³s½uª¬ºA³B²z</item>
-    /// <item>°õ¦æºü¦w¥þªº PLC ¾Þ§@</item>
+    /// <item>ï¿½Û°Ê¸jï¿½wï¿½ï¿½ï¿½ï¿½ï¿½Î«ï¿½ï¿½wï¿½ï¿½ PlcStatus</item>
+    /// <item>ï¿½Û°Ê­qï¿½\/ï¿½ï¿½ï¿½ï¿½ï¿½qï¿½\ PLC ï¿½Æ¥ï¿½</item>
+    /// <item>ï¿½Î¤@ï¿½ï¿½ï¿½sï¿½uï¿½ï¿½ï¿½Aï¿½Bï¿½z</item>
+    /// <item>ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½ï¿½ï¿½ï¿½ PLC ï¿½Þ§@</item>
     /// </list>
     /// </remarks>
     public abstract class PlcControlBase : CyberControlBase
     {
         #region Private Fields
 
-        /// <summary>¤w­q¾\ªº PlcStatus ¹ê¨Ò</summary>
+        /// <summary>ï¿½wï¿½qï¿½\ï¿½ï¿½ PlcStatus ï¿½ï¿½ï¿½</summary>
         private PlcStatus? _subscribedStatus;
-
-        /// <summary>¬O§_¤wµù¥U¨ì PLC Context</summary>
-        private bool _isRegisteredToContext = false;
 
         #endregion
 
         #region Dependency Properties
 
         /// <summary>
-        /// PLC Manager ¹ê¨Ò¡]¥i¿ï¡^
+        /// PLC Manager ï¿½ï¿½Ò¡]ï¿½iï¿½ï¿½^
         /// </summary>
         public static readonly DependencyProperty PlcManagerProperty =
             DependencyProperty.Register(
@@ -48,7 +45,7 @@ namespace Stackdose.UI.Core.Controls.Base
         }
 
         /// <summary>
-        /// ¸j©w¥Ø¼Ð PLC
+        /// ï¿½jï¿½wï¿½Ø¼ï¿½ PLC
         /// </summary>
         public static readonly DependencyProperty TargetStatusProperty =
             DependencyProperty.Register(
@@ -71,38 +68,38 @@ namespace Stackdose.UI.Core.Controls.Base
         {
             base.OnControlLoaded();
 
-            // ¹Á¸Õ¸j©w¨ì PLC
+            // ï¿½ï¿½ï¿½Õ¸jï¿½wï¿½ï¿½ PLC
             TryBindToPlc();
 
-            // ©I¥s¤lÃþªì©l¤Æ
+            // ï¿½Iï¿½sï¿½lï¿½ï¿½ï¿½ï¿½lï¿½ï¿½
             OnPlcControlLoaded();
         }
 
         protected override void OnControlUnloaded()
         {
-            // ¨ú®ø PLC ­q¾\
+            // ï¿½ï¿½ï¿½ï¿½ PLC ï¿½qï¿½\
             UnsubscribeFromPlc();
 
-            // ©I¥s¤lÃþ²M²z
+            // ï¿½Iï¿½sï¿½lï¿½ï¿½ï¿½Mï¿½z
             OnPlcControlUnloaded();
 
             base.OnControlUnloaded();
         }
 
         /// <summary>
-        /// ¤lÃþ¹ê§@¡GPLC ±±¥ó¸ü¤J®Éªºªì©l¤ÆÅÞ¿è
+        /// ï¿½lï¿½ï¿½ï¿½ï¿½@ï¿½GPLC ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Jï¿½Éªï¿½ï¿½ï¿½lï¿½ï¿½ï¿½Þ¿ï¿½
         /// </summary>
         protected virtual void OnPlcControlLoaded()
         {
-            // ¤lÃþÂÐ¼g¦¹¤èªk¹ê§@¦Û­qªì©l¤ÆÅÞ¿è
+            // ï¿½lï¿½ï¿½ï¿½Ð¼gï¿½ï¿½ï¿½ï¿½kï¿½ï¿½@ï¿½Û­qï¿½ï¿½lï¿½ï¿½ï¿½Þ¿ï¿½
         }
 
         /// <summary>
-        /// ¤lÃþ¹ê§@¡GPLC ±±¥ó¨ø¸ü®Éªº²M²zÅÞ¿è
+        /// ï¿½lï¿½ï¿½ï¿½ï¿½@ï¿½GPLC ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éªï¿½ï¿½Mï¿½zï¿½Þ¿ï¿½
         /// </summary>
         protected virtual void OnPlcControlUnloaded()
         {
-            // ¤lÃþÂÐ¼g¦¹¤èªk¹ê§@¦Û­q²M²zÅÞ¿è
+            // ï¿½lï¿½ï¿½ï¿½Ð¼gï¿½ï¿½ï¿½ï¿½kï¿½ï¿½@ï¿½Û­qï¿½Mï¿½zï¿½Þ¿ï¿½
         }
 
         #endregion
@@ -110,20 +107,20 @@ namespace Stackdose.UI.Core.Controls.Base
         #region PLC Connection Management
 
         /// <summary>
-        /// ¹Á¸Õ¸j©w¨ì PLC
+        /// ï¿½ï¿½ï¿½Õ¸jï¿½wï¿½ï¿½ PLC
         /// </summary>
         private void TryBindToPlc()
         {
             try
             {
-                // 1. ÀË¬d¬O§_¦³ª½±µ«ü©wªº TargetStatus
+                // 1. ï¿½Ë¬dï¿½Oï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½ï¿½ TargetStatus
                 if (TargetStatus != null)
                 {
                     BindToPlcStatus(TargetStatus);
                     return;
                 }
 
-                // 2. ¹Á¸Õ±q PlcContext ¨ú±o
+                // 2. ï¿½ï¿½ï¿½Õ±q PlcContext ï¿½ï¿½ï¿½o
                 var contextStatus = PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
                 if (contextStatus != null)
                 {
@@ -140,16 +137,16 @@ namespace Stackdose.UI.Core.Controls.Base
                     #endif
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[{GetType().Name}] TryBindToPlc error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[{GetType().Name}] TryBindToPlc error");
                 #endif
             }
         }
 
         /// <summary>
-        /// ¸j©w¨ì«ü©wªº PlcStatus
+        /// ï¿½jï¿½wï¿½ï¿½ï¿½ï¿½wï¿½ï¿½ PlcStatus
         /// </summary>
         private void BindToPlcStatus(PlcStatus? status)
         {
@@ -158,12 +155,12 @@ namespace Stackdose.UI.Core.Controls.Base
                 return;
             }
 
-            // ¥ý¨ú®øÂÂªº­q¾\
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Âªï¿½ï¿½qï¿½\
             UnsubscribeFromPlc();
 
             _subscribedStatus = status;
 
-            // ­q¾\¨Æ¥ó
+            // ï¿½qï¿½\ï¿½Æ¥ï¿½
             _subscribedStatus.ConnectionEstablished += OnPlcConnectionEstablished;
             _subscribedStatus.ScanUpdated += OnPlcScanUpdated;
 
@@ -171,7 +168,7 @@ namespace Stackdose.UI.Core.Controls.Base
             System.Diagnostics.Debug.WriteLine($"[{GetType().Name}] Subscribed to PlcStatus, IsConnected={status.CurrentManager?.IsConnected}");
             #endif
 
-            // ¦pªG¤w³s½u¡A¥ß§Y³qª¾¤lÃþ
+            // ï¿½pï¿½Gï¿½wï¿½sï¿½uï¿½Aï¿½ß§Yï¿½qï¿½ï¿½ï¿½lï¿½ï¿½
             if (_subscribedStatus.CurrentManager != null && _subscribedStatus.CurrentManager.IsConnected)
             {
                 OnPlcConnectionEstablished(_subscribedStatus.CurrentManager);
@@ -179,7 +176,7 @@ namespace Stackdose.UI.Core.Controls.Base
         }
 
         /// <summary>
-        /// ¨ú®ø PLC ­q¾\
+        /// ï¿½ï¿½ï¿½ï¿½ PLC ï¿½qï¿½\
         /// </summary>
         private void UnsubscribeFromPlc()
         {
@@ -196,7 +193,7 @@ namespace Stackdose.UI.Core.Controls.Base
         }
 
         /// <summary>
-        /// PLC ³s½u«Ø¥ß®Éªº³B²z
+        /// PLC ï¿½sï¿½uï¿½Ø¥ß®Éªï¿½ï¿½Bï¿½z
         /// </summary>
         private void OnPlcConnectionEstablished(IPlcManager manager)
         {
@@ -206,17 +203,17 @@ namespace Stackdose.UI.Core.Controls.Base
                 {
                     OnPlcConnected(manager);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[{GetType().Name}] OnPlcConnected error: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"[{GetType().Name}] OnPlcConnected error");
                     #endif
                 }
             });
         }
 
         /// <summary>
-        /// PLC ±½´y§ó·s®Éªº³B²z
+        /// PLC ï¿½ï¿½ï¿½yï¿½ï¿½sï¿½Éªï¿½ï¿½Bï¿½z
         /// </summary>
         private void OnPlcScanUpdated(IPlcManager manager)
         {
@@ -226,17 +223,17 @@ namespace Stackdose.UI.Core.Controls.Base
                 {
                     OnPlcDataUpdated(manager);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[{GetType().Name}] OnPlcDataUpdated error: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"[{GetType().Name}] OnPlcDataUpdated error");
                     #endif
                 }
             });
         }
 
         /// <summary>
-        /// TargetStatus ÅÜ§ó®Éªº¦^©I
+        /// TargetStatus ï¿½Ü§ï¿½Éªï¿½ï¿½^ï¿½I
         /// </summary>
         private static void OnTargetStatusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -248,27 +245,27 @@ namespace Stackdose.UI.Core.Controls.Base
 
         #endregion
 
-        #region Virtual Methods for¤lÃþOverride
+        #region Virtual Methods forï¿½lï¿½ï¿½Override
 
         /// <summary>
-        /// ¤lÃþ¹ê§@¡GPLC ³s½u«Ø¥ß®Éªº³B²zÅÞ¿è
+        /// ï¿½lï¿½ï¿½ï¿½ï¿½@ï¿½GPLC ï¿½sï¿½uï¿½Ø¥ß®Éªï¿½ï¿½Bï¿½zï¿½Þ¿ï¿½
         /// </summary>
-        /// <param name="manager">PlcManager ¹ê¨Ò</param>
+        /// <param name="manager">PlcManager ï¿½ï¿½ï¿½</param>
         protected virtual void OnPlcConnected(IPlcManager manager)
         {
-            // ¤lÃþÂÐ¼g¦¹¤èªk¹ê§@³s½u¦¨¥\«áªºÅÞ¿è
+            // ï¿½lï¿½ï¿½ï¿½Ð¼gï¿½ï¿½ï¿½ï¿½kï¿½ï¿½@ï¿½sï¿½uï¿½ï¿½ï¿½\ï¿½áªºï¿½Þ¿ï¿½
             #if DEBUG
             System.Diagnostics.Debug.WriteLine($"[{GetType().Name}] PLC connected");
             #endif
         }
 
         /// <summary>
-        /// ¤lÃþ¹ê§@¡GPLC ¼Æ¾Ú§ó·s®Éªº³B²zÅÞ¿è
+        /// ï¿½lï¿½ï¿½ï¿½ï¿½@ï¿½GPLC ï¿½Æ¾Ú§ï¿½sï¿½Éªï¿½ï¿½Bï¿½zï¿½Þ¿ï¿½
         /// </summary>
-        /// <param name="manager">PlcManager ¹ê¨Ò</param>
+        /// <param name="manager">PlcManager ï¿½ï¿½ï¿½</param>
         protected virtual void OnPlcDataUpdated(IPlcManager manager)
         {
-            // ¤lÃþÂÐ¼g¦¹¤èªk¹ê§@¼Æ¾Ú§ó·sÅÞ¿è
+            // ï¿½lï¿½ï¿½ï¿½Ð¼gï¿½ï¿½ï¿½ï¿½kï¿½ï¿½@ï¿½Æ¾Ú§ï¿½sï¿½Þ¿ï¿½
         }
 
         #endregion
@@ -276,7 +273,7 @@ namespace Stackdose.UI.Core.Controls.Base
         #region Helper Methods
 
         /// <summary>
-        /// ¨ú±o·í«eªº PlcManager
+        /// ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½eï¿½ï¿½ PlcManager
         /// </summary>
         protected IPlcManager? GetPlcManager()
         {
@@ -284,7 +281,7 @@ namespace Stackdose.UI.Core.Controls.Base
         }
 
         /// <summary>
-        /// ÀË¬d PLC ¬O§_¤w³s½u
+        /// ï¿½Ë¬d PLC ï¿½Oï¿½_ï¿½wï¿½sï¿½u
         /// </summary>
         protected bool IsPlcConnected()
         {
@@ -297,7 +294,7 @@ namespace Stackdose.UI.Core.Controls.Base
         #region Properties
 
         /// <summary>
-        /// ¨ú±o¤w­q¾\ªº PlcStatus
+        /// ï¿½ï¿½ï¿½oï¿½wï¿½qï¿½\ï¿½ï¿½ PlcStatus
         /// </summary>
         protected PlcStatus? SubscribedStatus => _subscribedStatus;
 

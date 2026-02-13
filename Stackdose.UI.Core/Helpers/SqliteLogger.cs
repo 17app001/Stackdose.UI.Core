@@ -778,10 +778,10 @@ namespace Stackdose.UI.Core.Helpers
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FormatUserId fallback: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine("[SqliteLogger] FormatUserId fallback");
                 #endif
             }
             

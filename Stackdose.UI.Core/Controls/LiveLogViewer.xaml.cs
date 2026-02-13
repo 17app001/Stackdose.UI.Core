@@ -159,10 +159,10 @@ namespace Stackdose.UI.Core.Controls
                 // 捲動到最後一項
                 ScrollToBottom();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[LiveLogViewer] 刷新失敗: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine("[LiveLogViewer] 刷新失敗");
                 #endif
             }
         }

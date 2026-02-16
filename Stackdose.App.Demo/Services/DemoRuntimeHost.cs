@@ -14,17 +14,22 @@ public static class DemoRuntimeHost
         }
 
         var configDir = Path.Combine(AppContext.BaseDirectory, "Config");
+        var meta = DemoAppMetaLoader.Load(Path.Combine(configDir, "app-meta.json"));
+        DemoOverviewBinder.ApplyMeta(overviewPage, meta);
+
         var configs = DemoConfigLoader.LoadMachines(configDir);
         DemoOverviewBinder.Bind(overviewPage, configs);
 
         if (configs.Count == 0)
         {
             shell.CurrentMachineDisplayName = string.Empty;
-            shell.PageTitle = "System Overview";
+            shell.PageTitle = meta.DefaultPageTitle;
+            shell.HeaderDeviceName = meta.HeaderDeviceName;
             return;
         }
 
+        shell.HeaderDeviceName = meta.HeaderDeviceName;
         shell.CurrentMachineDisplayName = configs[0].Machine.Name;
-        shell.PageTitle = "Machine Overview";
+        shell.PageTitle = meta.DefaultPageTitle;
     }
 }

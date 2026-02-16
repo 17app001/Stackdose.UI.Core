@@ -1,23 +1,37 @@
 using Stackdose.App.Demo.Models;
 using Stackdose.UI.Templates.Pages;
+using System.Windows;
 using System.Windows.Media;
 
 namespace Stackdose.App.Demo.Services;
 
 public static class DemoOverviewBinder
 {
+    public static void ApplyMeta(MachineOverviewPage page, DemoAppMeta meta)
+    {
+        page.ShowMachineCards = meta.ShowMachineCards;
+        page.ShowSoftwareInfo = meta.ShowSoftwareInfo;
+        page.ShowLiveLog = meta.ShowLiveLog;
+        page.BottomPanelHeight = new GridLength(meta.BottomPanelHeight);
+        page.BottomLeftTitle = meta.BottomLeftTitle;
+        page.BottomRightTitle = meta.BottomRightTitle;
+
+        page.SoftwareInfoItems =
+        [
+            .. meta.SoftwareInfoItems.Select(item => new OverviewInfoItem(item.Label, item.Value))
+        ];
+    }
+
     public static void Bind(MachineOverviewPage page, IReadOnlyList<DemoMachineConfig> configs)
     {
         if (configs.Count == 0)
         {
-            page.ShowMachineCards = false;
             page.MachineCards = [];
             page.PlcMonitorAddresses = string.Empty;
             return;
         }
 
         var first = configs[0];
-        page.ShowMachineCards = true;
         page.PlcIpAddress = first.Plc.Ip;
         page.PlcPort = first.Plc.Port;
         page.PlcScanInterval = first.Plc.PollIntervalMs;

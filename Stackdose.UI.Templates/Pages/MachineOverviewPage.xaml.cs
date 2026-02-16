@@ -61,6 +61,48 @@ public partial class MachineOverviewPage : UserControl
             typeof(MachineOverviewPage),
             new PropertyMetadata(true));
 
+    public static readonly DependencyProperty BottomPanelHeightProperty =
+        DependencyProperty.Register(
+            nameof(BottomPanelHeight),
+            typeof(GridLength),
+            typeof(MachineOverviewPage),
+            new PropertyMetadata(new GridLength(320)));
+
+    public static readonly DependencyProperty ShowSoftwareInfoProperty =
+        DependencyProperty.Register(
+            nameof(ShowSoftwareInfo),
+            typeof(bool),
+            typeof(MachineOverviewPage),
+            new PropertyMetadata(true));
+
+    public static readonly DependencyProperty ShowLiveLogProperty =
+        DependencyProperty.Register(
+            nameof(ShowLiveLog),
+            typeof(bool),
+            typeof(MachineOverviewPage),
+            new PropertyMetadata(true));
+
+    public static readonly DependencyProperty BottomLeftTitleProperty =
+        DependencyProperty.Register(
+            nameof(BottomLeftTitle),
+            typeof(string),
+            typeof(MachineOverviewPage),
+            new PropertyMetadata("Software Information"));
+
+    public static readonly DependencyProperty BottomRightTitleProperty =
+        DependencyProperty.Register(
+            nameof(BottomRightTitle),
+            typeof(string),
+            typeof(MachineOverviewPage),
+            new PropertyMetadata("Live Log"));
+
+    public static readonly DependencyProperty SoftwareInfoItemsProperty =
+        DependencyProperty.Register(
+            nameof(SoftwareInfoItems),
+            typeof(ObservableCollection<OverviewInfoItem>),
+            typeof(MachineOverviewPage),
+            new PropertyMetadata(null));
+
     public string PlcIpAddress
     {
         get => (string)GetValue(PlcIpAddressProperty);
@@ -103,6 +145,42 @@ public partial class MachineOverviewPage : UserControl
         set => SetValue(ShowMachineCardsProperty, value);
     }
 
+    public GridLength BottomPanelHeight
+    {
+        get => (GridLength)GetValue(BottomPanelHeightProperty);
+        set => SetValue(BottomPanelHeightProperty, value);
+    }
+
+    public bool ShowSoftwareInfo
+    {
+        get => (bool)GetValue(ShowSoftwareInfoProperty);
+        set => SetValue(ShowSoftwareInfoProperty, value);
+    }
+
+    public bool ShowLiveLog
+    {
+        get => (bool)GetValue(ShowLiveLogProperty);
+        set => SetValue(ShowLiveLogProperty, value);
+    }
+
+    public string BottomLeftTitle
+    {
+        get => (string)GetValue(BottomLeftTitleProperty);
+        set => SetValue(BottomLeftTitleProperty, value);
+    }
+
+    public string BottomRightTitle
+    {
+        get => (string)GetValue(BottomRightTitleProperty);
+        set => SetValue(BottomRightTitleProperty, value);
+    }
+
+    public ObservableCollection<OverviewInfoItem> SoftwareInfoItems
+    {
+        get => (ObservableCollection<OverviewInfoItem>)GetValue(SoftwareInfoItemsProperty);
+        set => SetValue(SoftwareInfoItemsProperty, value);
+    }
+
     public ICommand SelectMachineCommand { get; }
 
     public MachineOverviewPage()
@@ -120,6 +198,14 @@ public partial class MachineOverviewPage : UserControl
         PlcConnectionStatus.ScanUpdated += OnPlcScanUpdated;
 
         MachineCards = [];
+        SoftwareInfoItems =
+        [
+            new OverviewInfoItem("Application", "Stackdose.App.Demo"),
+            new OverviewInfoItem("Version", "v0.9.0-demo"),
+            new OverviewInfoItem("Build", "2026.02.16.1"),
+            new OverviewInfoItem("Runtime", ".NET Windows"),
+            new OverviewInfoItem("PLC Driver", "Mitsubishi MC Protocol")
+        ];
     }
 
     private void OnPlcScanUpdated(IPlcManager manager)
@@ -165,4 +251,16 @@ public sealed class MachineOverviewCard
     public string RightTopValue { get; set; } = string.Empty;
     public string RightBottomLabel { get; set; } = string.Empty;
     public string RightBottomValue { get; set; } = string.Empty;
+}
+
+public sealed class OverviewInfoItem
+{
+    public OverviewInfoItem(string label, string value)
+    {
+        Label = label;
+        Value = value;
+    }
+
+    public string Label { get; }
+    public string Value { get; }
 }

@@ -22,6 +22,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="{Binding BottomPanelHeight, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0"
@@ -94,5 +95,53 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+
+        <Grid Grid.Row="2" Margin="20,0,20,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Style="{StaticResource Template.PanelCard}"
+                    Visibility="{Binding ShowSoftwareInfo, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel>
+                    <TextBlock Text="{Binding BottomLeftTitle, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                               Style="{StaticResource Template.SectionTitleText}"
+                               Margin="0,0,0,12"/>
+
+                    <ItemsControl ItemsSource="{Binding SoftwareInfoItems, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="160"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding Label}"
+                                               Style="{StaticResource Template.CaptionText}"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Value}"
+                                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="2"
+                    Style="{StaticResource Template.PanelCard}"
+                    Visibility="{Binding ShowLiveLog, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel>
+                    <TextBlock Text="{Binding BottomRightTitle, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                               Style="{StaticResource Template.SectionTitleText}"
+                               Margin="0,0,0,12"/>
+                <core:LiveLogViewer />
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

@@ -1,0 +1,42 @@
+[
+  {
+    "group": "Status",
+    "device": "M200",
+    "bit": "0",
+    "value": "1",
+    "mode": "AND",
+    "operationDescription": "Machine connected"
+  },
+  {
+    "group": "Status",
+    "device": "M201",
+    "bit": "0",
+    "value": "1",
+    "mode": "AND",
+    "operationDescription": "Machine running"
+  },
+  {
+    "group": "Status",
+    "device": "M202",
+    "bit": "0",
+    "value": "1",
+    "mode": "AND",
+    "operationDescription": "Alarm active"
+  },
+  {
+    "group": "Process",
+    "device": "D300",
+    "bit": "",
+    "value": ">=100",
+    "mode": "COMPARE",
+    "operationDescription": "Heartbeat valid"
+  },
+  {
+    "group": "Process",
+    "device": "D420",
+    "bit": "",
+    "value": ">220",
+    "mode": "COMPARE",
+    "operationDescription": "Nozzle temperature high"
+  }
+]

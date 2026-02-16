@@ -27,6 +27,12 @@ public partial class MachineDetailPage : UserControl
     public static readonly DependencyProperty NozzleTempTextProperty =
         DependencyProperty.Register(nameof(NozzleTempText), typeof(string), typeof(MachineDetailPage), new PropertyMetadata("--"));
 
+    public static readonly DependencyProperty AlarmConfigFileProperty =
+        DependencyProperty.Register(nameof(AlarmConfigFile), typeof(string), typeof(MachineDetailPage), new PropertyMetadata(string.Empty));
+
+    public static readonly DependencyProperty SensorConfigFileProperty =
+        DependencyProperty.Register(nameof(SensorConfigFile), typeof(string), typeof(MachineDetailPage), new PropertyMetadata(string.Empty));
+
     public string MachineTitle
     {
         get => (string)GetValue(MachineTitleProperty);
@@ -61,6 +67,18 @@ public partial class MachineDetailPage : UserControl
     {
         get => (string)GetValue(NozzleTempTextProperty);
         set => SetValue(NozzleTempTextProperty, value);
+    }
+
+    public string AlarmConfigFile
+    {
+        get => (string)GetValue(AlarmConfigFileProperty);
+        set => SetValue(AlarmConfigFileProperty, value);
+    }
+
+    public string SensorConfigFile
+    {
+        get => (string)GetValue(SensorConfigFileProperty);
+        set => SetValue(SensorConfigFileProperty, value);
     }
 
     public MachineDetailPage()

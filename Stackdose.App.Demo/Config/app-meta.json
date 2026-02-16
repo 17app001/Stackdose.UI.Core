@@ -4,7 +4,7 @@
   "showMachineCards": true,
   "showSoftwareInfo": true,
   "showLiveLog": true,
-  "bottomPanelHeight": 340,
+  "bottomPanelHeight": 440,
   "bottomLeftTitle": "Software Information",
   "bottomRightTitle": "Live Log",
   "softwareInfoItems": [

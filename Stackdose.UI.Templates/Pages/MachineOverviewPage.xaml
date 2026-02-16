@@ -139,7 +139,7 @@
                     <TextBlock Text="{Binding BottomRightTitle, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                Style="{StaticResource Template.SectionTitleText}"
                                Margin="0,0,0,12"/>
-                <core:LiveLogViewer />
+                <core:LiveLogViewer Height="296" />
                 </StackPanel>
             </Border>
         </Grid>

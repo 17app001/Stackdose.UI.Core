@@ -1,0 +1,6 @@
+[
+  { "Group": "Temperature", "Device": "D190", "Bit": "", "Value": ">78", "Mode": "COMPARE", "OperationDescription": "Heater temperature high" },
+  { "Group": "Pressure", "Device": "D200", "Bit": "", "Value": "<30", "Mode": "COMPARE", "OperationDescription": "Vacuum pressure low" },
+  { "Group": "Safety", "Device": "M120", "Bit": "0", "Value": "1", "Mode": "AND", "OperationDescription": "Door safety open" },
+  { "Group": "Process", "Device": "M123", "Bit": "2", "Value": "1", "Mode": "AND", "OperationDescription": "Process warning active" }
+]

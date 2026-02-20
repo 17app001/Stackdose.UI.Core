@@ -1,0 +1,8 @@
+{
+  "Alarms": [
+    { "Group": "Safety", "Device": "M120", "Bit": 0, "OperationDescription": "Emergency stop triggered" },
+    { "Group": "Mechanism", "Device": "M121", "Bit": 2, "OperationDescription": "Axis limit reached" },
+    { "Group": "Head", "Device": "M122", "Bit": 0, "OperationDescription": "Head communication error" },
+    { "Group": "Process", "Device": "M123", "Bit": 3, "OperationDescription": "Process timeout" }
+  ]
+}

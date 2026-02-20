@@ -1,0 +1,152 @@
+<UserControl x:Class="Stackdose.App.UbiDemo.Pages.UbiDevicePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:core="http://schemas.stackdose.com/wpf"
+             xmlns:controls="clr-namespace:Stackdose.App.UbiDemo.Controls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="1400"
+             d:DesignHeight="900">
+    <Grid Background="{DynamicResource Surface.Bg.Page}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="270" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Margin="0,0,0,10"
+                Padding="10,8"
+                CornerRadius="8"
+                Background="{DynamicResource Surface.Bg.Panel}"
+                BorderBrush="{DynamicResource Surface.Border.Default}"
+                BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding MachineName, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource Text.Primary}" />
+                </StackPanel>
+
+                <WrapPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+                    <core:SecuredButton Content="Connect PLC" Theme="Info" RequiredLevel="Operator" OperationName="Connect PLC" Margin="0,0,6,0" />
+                    <core:SecuredButton Content="Connect Head" Theme="Info" RequiredLevel="Operator" OperationName="Connect PrintHead" Margin="0,0,6,0" />
+                    <core:SecuredButton Content="Start" Theme="Success" RequiredLevel="Operator" OperationName="Start Process" Margin="0,0,6,0" />
+                    <core:SecuredButton Content="Pause/Resume" Theme="Warning" RequiredLevel="Operator" OperationName="Pause Resume" Margin="0,0,6,0" />
+                    <core:SecuredButton Content="Stop" Theme="Error" RequiredLevel="Operator" OperationName="Stop Process" Margin="0,0,6,0" />
+                    <core:SecuredButton Content="Test" Theme="Primary" RequiredLevel="Operator" OperationName="Start Test Action" Margin="0,0,6,0" />
+                    <core:SecuredButton Content="Grating Reset" Theme="Primary" RequiredLevel="Operator" OperationName="Grating Reset" Margin="0,0,6,0" />
+                    <TextBlock Text="Elapsed:" VerticalAlignment="Center" Margin="10,0,4,0" />
+                    <TextBlock Text="00:00:00" VerticalAlignment="Center" FontWeight="SemiBold" />
+                </WrapPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="380" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="420" />
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0" Margin="0,0,10,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <GroupBox Grid.Row="0" Header="Command Operation" Margin="0,0,0,10">
+                    <StackPanel Margin="8">
+                        <TextBlock Text="Command" FontWeight="SemiBold" />
+                        <ComboBox ItemsSource="{Binding CommandKeys}" SelectedItem="{Binding SelectedCommandKey}" Margin="0,8,0,8" />
+                        <controls:PlcBindableField Label="Parameter" Value="{Binding CommandParameter}" />
+                        <Button Content="Execute Command" Margin="0,8,0,0" />
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Grid.Row="1" Header="列印資訊 / Print Information">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <UniformGrid Columns="2" Margin="8">
+                            <core:PlcLabel Label="總盤數" Address="D3400" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="目前列印盤數" Address="D33" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="總層數" Address="D3401" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="目前列印層數" Address="D32" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="切換圖形(層)" Address="D510" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="切換區域(層)" Address="D512" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="MessageID" Address="D85" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="電池" Address="D120" Divisor="10" StringFormat="F1" ShowFrame="True" DefaultValue="0.0" />
+                            <core:PlcLabel Label="Batch" Address="{Binding BatchAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="--"/>
+                            <core:PlcLabel Label="Recipe" Address="{Binding RecipeAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="--"/>
+                            <core:PlcLabel Label="Nozzle" Address="{Binding NozzleAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="--"/>
+                            <core:PlcLabel Label="Alarm" Address="{Binding AlarmAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" DataType="Bit" ShowFrame="True" DefaultValue="OFF"/>
+                        </UniformGrid>
+                    </ScrollViewer>
+                </GroupBox>
+            </Grid>
+
+            <Grid Grid.Column="1" Margin="0,0,10,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <GroupBox Grid.Row="0" Header="PrintHead Quick Operation" Margin="0,0,0,10">
+                    <Grid Margin="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <core:PrintHeadStatus HeadName="PrintHead 1"
+                                              ConfigFilePath="feiyang_head1.json"
+                                              AutoConnect="False"
+                                              Margin="0" />
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
+                            <TextBlock Text="Spit" VerticalAlignment="Center" Margin="0,0,6,0" />
+                            <TextBox Width="120" Text="0.1,1,1,1" Margin="0,0,6,0" />
+                            <core:SecuredButton Content="Execute" Theme="Warning" RequiredLevel="Operator" OperationName="Spit" />
+                        </StackPanel>
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Grid.Row="1" Header="PrintHead Control">
+                    <core:PrintHeadController Margin="8" />
+                </GroupBox>
+            </Grid>
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <GroupBox Header="Alarm Viewer" Margin="0,0,0,10">
+                    <core:AlarmViewer Title="Machine Alarm Viewer"
+                                      ConfigFile="{Binding AlarmConfigFile, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                </GroupBox>
+
+                <GroupBox Grid.Row="1" Header="Sensor Viewer">
+                    <core:SensorViewer Title="Machine Sensor Viewer"
+                                       ConfigFile="{Binding SensorConfigFile, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                       EnableGrouping="True"
+                                       AutoStart="True"
+                                       RefreshInterval="500" />
+                </GroupBox>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Row="2" Margin="0,10,0,0">
+            <GroupBox Header="System Log">
+                <core:LiveLogViewer Margin="8" />
+            </GroupBox>
+        </Grid>
+    </Grid>
+</UserControl>

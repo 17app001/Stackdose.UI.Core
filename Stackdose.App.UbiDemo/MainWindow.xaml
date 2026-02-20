@@ -1,0 +1,24 @@
+<Window x:Class="Stackdose.App.UbiDemo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:Custom="http://schemas.stackdose.com/templates"
+        xmlns:TemplatePages="clr-namespace:Stackdose.UI.Templates.Pages;assembly=Stackdose.UI.Templates"
+        mc:Ignorable="d"
+        Title="Stackdose Ubi Demo"
+        Height="900"
+        Width="1600"
+        WindowState="Maximized"
+        WindowStyle="None"
+        ResizeMode="CanResize">
+    <Custom:MainContainer x:Name="MainShell"
+                          IsShellMode="True"
+                          HeaderDeviceName="UBI"
+                          CurrentMachineDisplayName=""
+                          PageTitle="Machine Overview">
+        <Custom:MainContainer.ShellContent>
+            <TemplatePages:MachineOverviewPage />
+        </Custom:MainContainer.ShellContent>
+    </Custom:MainContainer>
+</Window>

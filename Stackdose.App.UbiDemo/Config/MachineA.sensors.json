@@ -1,0 +1,6 @@
+[
+  { "Group": "Temperature", "Device": "D90", "Bit": "", "Value": ">75", "Mode": "COMPARE", "OperationDescription": "Heater temperature high" },
+  { "Group": "Temperature", "Device": "D91", "Bit": "", "Value": "<20", "Mode": "COMPARE", "OperationDescription": "Cooling temperature low" },
+  { "Group": "Safety", "Device": "M100", "Bit": "0", "Value": "1", "Mode": "AND", "OperationDescription": "Emergency stop active" },
+  { "Group": "Motion", "Device": "M101", "Bit": "2,3", "Value": "1,1", "Mode": "OR", "OperationDescription": "Axis interlock active" }
+]

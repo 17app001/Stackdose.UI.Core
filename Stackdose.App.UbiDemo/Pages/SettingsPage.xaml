@@ -1,0 +1,44 @@
+<UserControl x:Class="Stackdose.App.UbiDemo.Pages.SettingsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Stackdose.App.UbiDemo.Controls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="860"
+             d:DesignWidth="1300">
+    <Grid Background="{DynamicResource Surface.Bg.Page}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Padding="12" CornerRadius="8" Margin="0,0,0,12"
+                Background="{DynamicResource Surface.Bg.Panel}" BorderBrush="{DynamicResource Surface.Border.Default}" BorderThickness="1">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Load Config" Margin="0,0,8,0" />
+                <Button Content="Save Config" Margin="0,0,8,0" />
+                <Button Content="Open Resource Folder" />
+            </StackPanel>
+        </Border>
+
+        <WrapPanel Grid.Row="1" Margin="0,0,0,12">
+            <controls:PlcBindableField Label="Machine Config" Value="{Binding MachineConfigPath}" />
+            <controls:PlcBindableField Label="Recipe Path" Value="{Binding RecipePath}" />
+            <controls:PlcBindableField Label="Image Path" Value="{Binding ImagePath}" />
+            <controls:PlcBindableField Label="Wave Path" Value="{Binding WavePath}" />
+        </WrapPanel>
+
+        <GroupBox Grid.Row="2" Header="Configuration Preview">
+            <TextBox Margin="8"
+                     TextWrapping="NoWrap"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Auto"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     IsReadOnly="True"
+                     Text="MachineName: Ubi Demo&#x0a;PlcIp: 192.168.0.25&#x0a;PlcPort: 3000&#x0a;RecipeFolder: Resources/recipes&#x0a;ImagesFolder: Resources/images" />
+        </GroupBox>
+    </Grid>
+</UserControl>

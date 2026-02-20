@@ -1,0 +1,69 @@
+namespace Stackdose.App.UbiDemo.Models;
+
+public sealed class UbiMachineConfig
+{
+    public UbiMachineInfo Machine { get; set; } = new();
+    public UbiPlcInfo Plc { get; set; } = new();
+    public UbiTagSections Tags { get; set; } = new();
+}
+
+public sealed class UbiMachineInfo
+{
+    public string Id { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public bool Enable { get; set; } = true;
+}
+
+public sealed class UbiPlcInfo
+{
+    public string Ip { get; set; } = "127.0.0.1";
+    public int Port { get; set; } = 5000;
+    public int PollIntervalMs { get; set; } = 300;
+    public bool AutoConnect { get; set; } = true;
+}
+
+public sealed class UbiTagSections
+{
+    public Dictionary<string, UbiTagConfig> Status { get; set; } = new();
+    public Dictionary<string, UbiTagConfig> Process { get; set; } = new();
+}
+
+public sealed class UbiTagConfig
+{
+    public string Address { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public string Access { get; set; } = string.Empty;
+    public int Length { get; set; } = 1;
+}
+
+public sealed class UbiAppMeta
+{
+    public string HeaderDeviceName { get; set; } = "UBI";
+    public string DefaultPageTitle { get; set; } = "Machine Overview";
+    public bool ShowMachineCards { get; set; } = true;
+    public bool ShowSoftwareInfo { get; set; } = true;
+    public bool ShowLiveLog { get; set; } = true;
+    public double BottomPanelHeight { get; set; } = 440;
+    public string BottomLeftTitle { get; set; } = "Software Information";
+    public string BottomRightTitle { get; set; } = "Live Log";
+    public List<UbiMetaInfoItem> SoftwareInfoItems { get; set; } = [];
+}
+
+public sealed class UbiMetaInfoItem
+{
+    public string Label { get; set; } = string.Empty;
+    public string Value { get; set; } = string.Empty;
+}
+
+public sealed class DeviceContext
+{
+    public string MachineId { get; set; } = string.Empty;
+    public string MachineName { get; set; } = string.Empty;
+    public string BatchAddress { get; set; } = "--";
+    public string RecipeAddress { get; set; } = "--";
+    public string NozzleAddress { get; set; } = "--";
+    public string RunningAddress { get; set; } = "--";
+    public string AlarmAddress { get; set; } = "--";
+    public string AlarmConfigFile { get; set; } = string.Empty;
+    public string SensorConfigFile { get; set; } = string.Empty;
+}

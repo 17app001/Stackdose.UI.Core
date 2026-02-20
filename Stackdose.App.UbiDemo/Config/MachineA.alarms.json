@@ -1,0 +1,8 @@
+{
+  "Alarms": [
+    { "Group": "Safety", "Device": "M100", "Bit": 0, "OperationDescription": "Emergency stop triggered" },
+    { "Group": "Safety", "Device": "M100", "Bit": 1, "OperationDescription": "Door interlock open" },
+    { "Group": "Pressure", "Device": "M101", "Bit": 0, "OperationDescription": "CDA pressure low" },
+    { "Group": "Head", "Device": "M102", "Bit": 1, "OperationDescription": "Nozzle clog warning" }
+  ]
+}

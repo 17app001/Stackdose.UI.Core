@@ -1,0 +1,17 @@
+{
+  "headerDeviceName": "UBI",
+  "defaultPageTitle": "Machine Overview",
+  "showMachineCards": true,
+  "showSoftwareInfo": true,
+  "showLiveLog": true,
+  "bottomPanelHeight": 440,
+  "bottomLeftTitle": "Software Information",
+  "bottomRightTitle": "Live Log",
+  "softwareInfoItems": [
+    { "label": "Application", "value": "Stackdose.App.UbiDemo" },
+    { "label": "Version", "value": "v0.1.0-ui" },
+    { "label": "Build", "value": "2026.02.20.1" },
+    { "label": "Runtime", "value": ".NET 8.0 Windows" },
+    { "label": "Mode", "value": "Phase 1 UI Migration" }
+  ]
+}

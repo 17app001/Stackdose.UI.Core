@@ -1,6 +1,8 @@
 using Stackdose.App.UbiDemo.Models;
 using Stackdose.UI.Templates.Pages;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -64,22 +66,30 @@ public static class UbiRuntimeMapper
 
     public static string GetAlarmConfigFile(string machineId)
     {
-        return machineId.ToUpperInvariant() switch
+        var relativePath = machineId.ToUpperInvariant() switch
         {
             "M1" => "Config/MachineA.alarms.json",
             "M2" => "Config/MachineB.alarms.json",
             _ => string.Empty
         };
+
+        return string.IsNullOrWhiteSpace(relativePath)
+            ? string.Empty
+            : Path.Combine(AppContext.BaseDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
     }
 
     public static string GetSensorConfigFile(string machineId)
     {
-        return machineId.ToUpperInvariant() switch
+        var relativePath = machineId.ToUpperInvariant() switch
         {
             "M1" => "Config/MachineA.sensors.json",
             "M2" => "Config/MachineB.sensors.json",
             _ => string.Empty
         };
+
+        return string.IsNullOrWhiteSpace(relativePath)
+            ? string.Empty
+            : Path.Combine(AppContext.BaseDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
     }
 
     private static MachineOverviewCard CreateCard(UbiMachineConfig config)

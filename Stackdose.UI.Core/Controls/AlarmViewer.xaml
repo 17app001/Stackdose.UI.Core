@@ -13,13 +13,14 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Core;component/Themes/Theme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             
             <DataTemplate x:Key="AlarmItemTemplate">
                 <Border BorderBrush="{DynamicResource Log.Border}" 
                         BorderThickness="1" 
                         CornerRadius="8" 
-                        Margin="6,4" 
-                        Padding="12,10">
+                        Margin="4,3" 
+                        Padding="8,6">
                     <Border.Style>
                         <Style TargetType="Border">
                             <Setter Property="Background" Value="{DynamicResource Log.Bg.Main}"/>
@@ -43,9 +44,9 @@
 
                         <!-- Alarm Indicator -->
                         <Border Grid.Column="0" 
-                                Width="40" Height="40"
-                                CornerRadius="20"
-                                Margin="0,0,12,0" 
+                                Width="32" Height="32"
+                                CornerRadius="16"
+                                Margin="0,0,8,0" 
                                 VerticalAlignment="Center">
                             <Border.Style>
                                 <Style TargetType="Border">
@@ -70,7 +71,7 @@
                             <TextBlock HorizontalAlignment="Center" 
                                        VerticalAlignment="Center"
                                        Foreground="White"
-                                       FontSize="18"
+                                       FontSize="15"
                                        FontWeight="Bold">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
@@ -88,7 +89,7 @@
                         <!-- Alarm Description -->
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <TextBlock Text="{Binding OperationDescription}" 
-                                       FontSize="14" 
+                                       FontSize="{Binding ItemFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                        FontWeight="SemiBold"
                                        FontFamily="Microsoft JhengHei"
                                        TextTrimming="CharacterEllipsis">
@@ -119,6 +120,9 @@
                                 Padding="8,4"
                                 Margin="12,0,0,0"
                                 VerticalAlignment="Center">
+                            <Border.Visibility>
+                                <Binding Path="ShowDeviceAddress" RelativeSource="{RelativeSource AncestorType=UserControl}" Converter="{StaticResource BoolToVisibilityConverter}"/>
+                            </Border.Visibility>
                             <TextBlock Foreground="{DynamicResource Plc.Text.Label}" 
                                        FontSize="11" 
                                        FontFamily="Consolas"
@@ -144,10 +148,10 @@
 
             <Style x:Key="GroupHeaderStyle" TargetType="TextBlock">
                 <Setter Property="Foreground" Value="{DynamicResource Sensor.Text.Title}"/>
-                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontSize" Value="12"/>
                 <Setter Property="FontWeight" Value="Bold"/>
                 <Setter Property="FontFamily" Value="Microsoft JhengHei"/>
-                <Setter Property="Margin" Value="8,12,8,6"/>
+                <Setter Property="Margin" Value="6,8,6,4"/>
                 <Setter Property="Effect">
                     <Setter.Value>
                         <DropShadowEffect Color="#FF5252" BlurRadius="5" ShadowDepth="0" Opacity="0.3"/>
@@ -168,7 +172,7 @@
                 Background="{DynamicResource Sensor.Bg.Header}" 
                 BorderBrush="{DynamicResource Sensor.Border}"
                 BorderThickness="0,0,0,1"
-                Padding="12,10">
+                Padding="10,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>

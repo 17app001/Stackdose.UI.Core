@@ -43,7 +43,47 @@ namespace Stackdose.UI.Core.Controls
             set => SetValue(TitleProperty, value);
         }
 
-        public static readonly DependencyProperty ConfigFileProperty =
+        public static readonly DependencyProperty ItemFontSizeProperty =
+
+            DependencyProperty.Register(nameof(ItemFontSize), typeof(double), typeof(AlarmViewer),
+
+                new PropertyMetadata(14.0));
+
+
+
+        public double ItemFontSize
+
+        {
+
+            get => (double)GetValue(ItemFontSizeProperty);
+
+            set => SetValue(ItemFontSizeProperty, value);
+
+        }
+
+
+
+        public static readonly DependencyProperty ShowDeviceAddressProperty =
+
+            DependencyProperty.Register(nameof(ShowDeviceAddress), typeof(bool), typeof(AlarmViewer),
+
+                new PropertyMetadata(true));
+
+
+
+        public bool ShowDeviceAddress
+
+        {
+
+            get => (bool)GetValue(ShowDeviceAddressProperty);
+
+            set => SetValue(ShowDeviceAddressProperty, value);
+
+        }
+
+
+
+        public static readonly DependencyProperty ConfigFileProperty =
             DependencyProperty.Register(nameof(ConfigFile), typeof(string), typeof(AlarmViewer),
                 new PropertyMetadata(null, OnConfigFileChanged));
 

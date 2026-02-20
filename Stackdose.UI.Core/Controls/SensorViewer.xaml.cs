@@ -47,6 +47,30 @@ namespace Stackdose.UI.Core.Controls
         }
 
         /// <summary>
+        /// 列表項目文字大小
+        /// </summary>
+        public static readonly DependencyProperty ItemFontSizeProperty =
+            DependencyProperty.Register("ItemFontSize", typeof(double), typeof(SensorViewer),
+                new PropertyMetadata(14.0));
+        public double ItemFontSize
+        {
+            get { return (double)GetValue(ItemFontSizeProperty); }
+            set { SetValue(ItemFontSizeProperty, value); }
+        }
+
+        /// <summary>
+        /// 是否顯示 Device/Bit 位址
+        /// </summary>
+        public static readonly DependencyProperty ShowDeviceAddressProperty =
+            DependencyProperty.Register("ShowDeviceAddress", typeof(bool), typeof(SensorViewer),
+                new PropertyMetadata(true));
+        public bool ShowDeviceAddress
+        {
+            get { return (bool)GetValue(ShowDeviceAddressProperty); }
+            set { SetValue(ShowDeviceAddressProperty, value); }
+        }
+
+        /// <summary>
         /// JSON 配置檔案路徑 (例如：Sensors.json，會自動從 Resources 目錄載入)
         /// </summary>
         public static readonly DependencyProperty ConfigFileProperty =

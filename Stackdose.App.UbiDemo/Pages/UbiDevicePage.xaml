@@ -9,31 +9,10 @@
              d:DesignHeight="900">
     <Grid Background="{DynamicResource Surface.Bg.Page}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0"
-                Margin="0,0,0,10"
-                Padding="10,8"
-                CornerRadius="8"
-                Background="{DynamicResource Surface.Bg.Panel}"
-                BorderBrush="{DynamicResource Surface.Border.Default}"
-                BorderThickness="1">
-            <Grid>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{Binding MachineName, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                               FontSize="18"
-                               FontWeight="Bold"
-                               Foreground="{DynamicResource Text.Primary}" />
-                    <TextBlock Text="Print Station"
-                               FontSize="12"
-                               Foreground="{DynamicResource Text.Secondary}" />
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="360" />
@@ -41,7 +20,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="380" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="420" />
+                <ColumnDefinition Width="460" />
             </Grid.ColumnDefinitions>
 
             <Grid Grid.Row="0" Grid.Column="0" Margin="0,0,10,0">
@@ -108,7 +87,6 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
                             <core:PrintHeadStatus HeadName="PrintHead 1"
@@ -120,20 +98,22 @@
                                                   HeadName="PrintHead 2"
                                                   ConfigFilePath="feiyang_head2.json"
                                                   AutoConnect="False"
-                                                  Margin="8,0,8,0" />
-
-                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0">
-                                <core:SecuredButton Content="Connect PH1" Theme="Info" RequiredLevel="Operator" OperationName="Connect PrintHead 1" Margin="0,0,6,0" />
-                                <core:SecuredButton Content="Connect PH2" Theme="Info" RequiredLevel="Operator" OperationName="Connect PrintHead 2" Margin="0,0,6,0" />
-                                <core:SecuredButton Content="Grating Reset" Theme="Primary" RequiredLevel="Operator" OperationName="Grating Reset" />
-                            </StackPanel>
+                                                  Margin="8,0,0,0" />
                         </Grid>
 
-                        <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,8,0,0">
+                        <Grid Grid.Row="1" Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="140" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
                             <TextBlock Text="Spit" VerticalAlignment="Center" Margin="0,0,6,0" />
-                            <TextBox Width="120" Text="0.1,1,1,1" Margin="0,0,6,0" />
-                            <core:SecuredButton Content="Execute" Theme="Warning" RequiredLevel="Operator" OperationName="Spit" />
-                        </StackPanel>
+                            <TextBox Grid.Column="1" Text="0.1,1,1,1" Margin="0,0,8,0" />
+                            <core:SecuredButton Grid.Column="2" Content="Execute" Theme="Warning" RequiredLevel="Operator" OperationName="Spit" Margin="0,0,8,0" />
+                            <core:SecuredButton Grid.Column="3" Content="Grating Reset" Theme="Primary" RequiredLevel="Operator" OperationName="Grating Reset" />
+                        </Grid>
                     </Grid>
                 </GroupBox>
 
@@ -149,13 +129,17 @@
                 </Grid.RowDefinitions>
 
                 <GroupBox Header="Alarm Viewer" Margin="0,0,0,10">
-                    <core:AlarmViewer Title="Machine Alarm Viewer"
-                                      ConfigFile="{Binding AlarmConfigFile, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                    <core:AlarmViewer Title="ALM"
+                                      ConfigFile="{Binding AlarmConfigFile, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                      ItemFontSize="12"
+                                      ShowDeviceAddress="False" />
                 </GroupBox>
 
                 <GroupBox Grid.Row="1" Header="Sensor Viewer">
-                    <core:SensorViewer Title="Machine Sensor Viewer"
+                    <core:SensorViewer Title="SNR"
                                        ConfigFile="{Binding SensorConfigFile, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                       ItemFontSize="12"
+                                       ShowDeviceAddress="False"
                                        EnableGrouping="True"
                                        AutoStart="True"
                                        RefreshInterval="500" />

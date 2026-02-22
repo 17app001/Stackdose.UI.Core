@@ -463,10 +463,8 @@ namespace Stackdose.UI.Core.Controls
             // 🔥 如果 PLC 已連線，主動註冊監控位址並讀取數據
             if (_boundStatus?.CurrentManager != null && _boundStatus.CurrentManager.IsConnected)
             {
-                // 🔥 呼叫 PlcStatus 的 RefreshMonitors 來註冊新的監控位址
-                PlcContext.GlobalStatus?.RefreshMonitors();
-                
-                // 🔥 立即讀取一次數據
+                // 🔥 只做立即刷新，不在頁面切換時動態追加 Monitor
+                // Monitor 註冊應在啟動時集中完成，避免切頁後輪詢區塊持續膨脹。
                 RefreshFrom(_boundStatus.CurrentManager);
             }
         }
@@ -517,14 +515,18 @@ namespace Stackdose.UI.Core.Controls
 
         private void PlcLabel_Unloaded(object sender, RoutedEventArgs e)
         {
-            // 🔥 不要在 Unloaded 時註銷 PlcLabelContext（保持註冊狀態，避免 Tab 切換重複註冊）
-            // PlcLabelContext.Unregister(this);
+            PlcLabelContext.Unregister(this);
             
             // 🔥 註銷 ThemeManager（WeakReference 會自動處理，但手動註銷更安全）
             ThemeManager.Unregister(this);
             
-            // 🔥 不要解除 PLC 綁定（保持連接，避免 Tab 切換重複綁定）
-            // if (_boundStatus != null) { _boundStatus.ScanUpdated -= OnScanUpdated; _boundStatus = null; }
+            if (_boundStatus != null)
+            {
+                _boundStatus.ScanUpdated -= OnScanUpdated;
+                _boundStatus = null;
+            }
+
+            _isRegistered = false;
             
             #if DEBUG
             System.Diagnostics.Debug.WriteLine($"[PlcLabel] Unloaded (keeping PLC binding): {Label} ({Address})");

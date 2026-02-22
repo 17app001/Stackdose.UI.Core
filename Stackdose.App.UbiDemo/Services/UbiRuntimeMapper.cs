@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
 
@@ -144,6 +145,8 @@ public static class UbiRuntimeMapper
             .SelectMany(config => config.Tags.Status.Values.Concat(config.Tags.Process.Values))
             .Where(tag => string.Equals(tag.Access, "read", System.StringComparison.OrdinalIgnoreCase))
             .SelectMany(ExpandAddresses)
+            .Concat(GetUbiDevicePageFixedAddresses())
+            .Concat(GetMachineAlertAddresses(configs))
             .Distinct(System.StringComparer.OrdinalIgnoreCase)
             .ToList();
 
@@ -175,6 +178,102 @@ public static class UbiRuntimeMapper
         }
 
         return string.Join(",", groups);
+    }
+
+    private static IEnumerable<string> GetUbiDevicePageFixedAddresses()
+    {
+        return
+        [
+            "D32", "D33", "D85", "D86", "D87", "D120", "D512", "D510", "D3400", "D3401"
+        ];
+    }
+
+    private static IEnumerable<string> GetMachineAlertAddresses(IEnumerable<UbiMachineConfig> configs)
+    {
+        foreach (var config in configs)
+        {
+            foreach (var address in ReadAddressesFromSensorFile(GetSensorConfigFile(config.Machine.Id)))
+            {
+                yield return address;
+            }
+
+            foreach (var address in ReadAddressesFromAlarmFile(GetAlarmConfigFile(config.Machine.Id)))
+            {
+                yield return address;
+            }
+        }
+    }
+
+    private static IEnumerable<string> ReadAddressesFromSensorFile(string filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+        {
+            return [];
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(filePath));
+            if (doc.RootElement.ValueKind != JsonValueKind.Array)
+            {
+                return [];
+            }
+
+            var addresses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var item in doc.RootElement.EnumerateArray())
+            {
+                if (item.TryGetProperty("Device", out var deviceProp) && deviceProp.ValueKind == JsonValueKind.String)
+                {
+                    var device = deviceProp.GetString();
+                    if (!string.IsNullOrWhiteSpace(device))
+                    {
+                        addresses.Add(device.Trim().ToUpperInvariant());
+                    }
+                }
+            }
+
+            return addresses;
+        }
+        catch
+        {
+            return [];
+        }
+    }
+
+    private static IEnumerable<string> ReadAddressesFromAlarmFile(string filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+        {
+            return [];
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(filePath));
+            if (!doc.RootElement.TryGetProperty("Alarms", out var alarms) || alarms.ValueKind != JsonValueKind.Array)
+            {
+                return [];
+            }
+
+            var addresses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var item in alarms.EnumerateArray())
+            {
+                if (item.TryGetProperty("Device", out var deviceProp) && deviceProp.ValueKind == JsonValueKind.String)
+                {
+                    var device = deviceProp.GetString();
+                    if (!string.IsNullOrWhiteSpace(device))
+                    {
+                        addresses.Add(device.Trim().ToUpperInvariant());
+                    }
+                }
+            }
+
+            return addresses;
+        }
+        catch
+        {
+            return [];
+        }
     }
 
     private static IEnumerable<string> ExpandAddresses(UbiTagConfig tag)

@@ -122,6 +122,7 @@ public partial class MainWindow : Window
 
         _selectedMachineId = machineId;
         var devicePage = new UbiDevicePage();
+        var printHeadConfigs = UbiRuntimeMapper.GetPrintHeadConfigFiles(config);
         devicePage.SetDeviceContext(new DeviceContext
         {
             MachineId = config.Machine.Id,
@@ -132,7 +133,9 @@ public partial class MainWindow : Window
             RunningAddress = UbiRuntimeMapper.GetTagAddress(config, "status", "isRunning"),
             AlarmAddress = UbiRuntimeMapper.GetTagAddress(config, "status", "isAlarm"),
             AlarmConfigFile = UbiRuntimeMapper.GetAlarmConfigFile(config.Machine.Id),
-            SensorConfigFile = UbiRuntimeMapper.GetSensorConfigFile(config.Machine.Id)
+            SensorConfigFile = UbiRuntimeMapper.GetSensorConfigFile(config.Machine.Id),
+            PrintHead1ConfigFile = printHeadConfigs.ElementAtOrDefault(0) ?? string.Empty,
+            PrintHead2ConfigFile = printHeadConfigs.ElementAtOrDefault(1) ?? string.Empty
         });
 
         MainShell.ShellContent = devicePage;

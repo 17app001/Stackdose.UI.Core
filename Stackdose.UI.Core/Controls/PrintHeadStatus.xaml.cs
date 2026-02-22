@@ -4,7 +4,9 @@ using Stackdose.PrintHead.Feiyang;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -21,11 +23,11 @@ namespace Stackdose.UI.Core.Controls
         #region Dependency Properties
 
         /// <summary>
-        /// 配置檔案路徑（例如：feiyang_head1.json，會自動從 Resources 目錄載入）
+        /// 配置檔案路徑（例如：Config/feiyang_head1.json）
         /// </summary>
         public static readonly DependencyProperty ConfigFilePathProperty =
             DependencyProperty.Register("ConfigFilePath", typeof(string), typeof(PrintHeadStatus), 
-                new PropertyMetadata("feiyang_head1.json"));
+                new PropertyMetadata("Config/feiyang_head1.json"));
 
         public string ConfigFilePath
         {
@@ -41,6 +43,16 @@ namespace Stackdose.UI.Core.Controls
         {
             get => (string)GetValue(HeadNameProperty);
             set => SetValue(HeadNameProperty, value);
+        }
+
+        public static readonly DependencyProperty HeadIndexProperty =
+            DependencyProperty.Register("HeadIndex", typeof(int), typeof(PrintHeadStatus),
+                new PropertyMetadata(0));
+
+        public int HeadIndex
+        {
+            get => (int)GetValue(HeadIndexProperty);
+            set => SetValue(HeadIndexProperty, value);
         }
 
         public static readonly DependencyProperty AutoConnectProperty =
@@ -191,19 +203,7 @@ namespace Stackdose.UI.Core.Controls
         {
             try
             {
-                // 🔥 使用 ResourcePathHelper 統一管理路徑
-                string fullPath;
-                
-                if (Path.IsPathRooted(ConfigFilePath) && File.Exists(ConfigFilePath))
-                {
-                    // 支援絕對路徑（向下相容）
-                    fullPath = ConfigFilePath;
-                }
-                else
-                {
-                    // 優先使用 ResourcePathHelper
-                    fullPath = ResourcePathHelper.GetResourceFilePath(ConfigFilePath);
-                }
+                string fullPath = ResolveConfigPath(ConfigFilePath);
 
                 if (!File.Exists(fullPath))
                 {
@@ -218,17 +218,17 @@ namespace Stackdose.UI.Core.Controls
 
                 // 🔥 使用 UTF-8 編碼讀取（支援中文）
                 string jsonContent = File.ReadAllText(fullPath, System.Text.Encoding.UTF8);
-                _config = JsonSerializer.Deserialize<PrintHeadConfig>(jsonContent, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip,
-                    AllowTrailingCommas = true
-                });
+                _config = LoadSingleOrMultiHeadConfig(jsonContent);
 
                 if (_config == null)
                 {
                     UpdateStatus(false);
                     return false;
+                }
+
+                if (!string.IsNullOrWhiteSpace(_config.Waveform) && !Path.IsPathRooted(_config.Waveform))
+                {
+                    _config.Waveform = ResolveWavePath(_config.Waveform);
                 }
 
                 // 更新 UI 顯示配置資訊（只顯示 IP:Port）
@@ -255,6 +255,67 @@ namespace Stackdose.UI.Core.Controls
                 );
                 return false;
             }
+        }
+
+        private PrintHeadConfig? LoadSingleOrMultiHeadConfig(string jsonContent)
+        {
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                ReadCommentHandling = JsonCommentHandling.Skip,
+                AllowTrailingCommas = true
+            };
+
+            var single = JsonSerializer.Deserialize<PrintHeadConfig>(jsonContent, options);
+            if (single != null && !string.IsNullOrWhiteSpace(single.BoardIP))
+            {
+                return single;
+            }
+
+            var rootNode = JsonNode.Parse(jsonContent) as JsonObject;
+            var commonNode = rootNode?["Common"] as JsonObject;
+            var headsNode = rootNode?["Heads"] as JsonArray;
+            if (headsNode == null || headsNode.Count == 0)
+            {
+                return null;
+            }
+
+            JsonObject? selectedHead = null;
+            if (!string.IsNullOrWhiteSpace(HeadName))
+            {
+                selectedHead = headsNode
+                    .OfType<JsonObject>()
+                    .FirstOrDefault(head => string.Equals(head?["Name"]?.GetValue<string>(), HeadName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            selectedHead ??= headsNode
+                .OfType<JsonObject>()
+                .Where(head => head?["Enable"]?.GetValue<bool>() != false)
+                .Skip(Math.Max(0, HeadIndex))
+                .FirstOrDefault();
+
+            selectedHead ??= headsNode
+                .OfType<JsonObject>()
+                .ElementAtOrDefault(Math.Clamp(HeadIndex, 0, headsNode.Count - 1));
+
+            if (selectedHead == null)
+            {
+                return null;
+            }
+
+            var normalized = new JsonObject
+            {
+                ["Model"] = commonNode?["Model"]?.GetValue<string>() ?? "M1536",
+                ["Name"] = selectedHead["Name"]?.GetValue<string>() ?? $"Head-{HeadIndex + 1}",
+                ["BoardIP"] = selectedHead["BoardIP"]?.GetValue<string>() ?? string.Empty,
+                ["BoardPort"] = selectedHead["BoardPort"]?.GetValue<int>() ?? 0,
+                ["PcIP"] = selectedHead["PcIP"]?.GetValue<string>() ?? string.Empty,
+                ["PcPort"] = selectedHead["PcPort"]?.GetValue<int>() ?? 0,
+                ["Firmware"] = selectedHead["Firmware"]?.DeepClone(),
+                ["PrintMode"] = selectedHead["PrintMode"]?.DeepClone()
+            };
+
+            return normalized.Deserialize<PrintHeadConfig>(options);
         }
 
         #endregion
@@ -303,15 +364,7 @@ namespace Stackdose.UI.Core.Controls
                 );
 
                 // 🔥 使用完整路徑初始化 FeiyangPrintHead
-                string fullPath;
-                if (Path.IsPathRooted(ConfigFilePath) && File.Exists(ConfigFilePath))
-                {
-                    fullPath = ConfigFilePath;
-                }
-                else
-                {
-                    fullPath = ResourcePathHelper.GetResourceFilePath(ConfigFilePath);
-                }
+                string fullPath = ResolveConfigPath(ConfigFilePath);
 
                 _printHead = new FeiyangPrintHead(fullPath);
                 
@@ -411,6 +464,52 @@ namespace Stackdose.UI.Core.Controls
                     PowerButton.IsEnabled = true;
                 });
             }
+        }
+
+        private static string ResolveConfigPath(string configPath)
+        {
+            if (Path.IsPathRooted(configPath) && File.Exists(configPath))
+            {
+                return configPath;
+            }
+
+            var appRelative = Path.Combine(AppContext.BaseDirectory, configPath.Replace('/', Path.DirectorySeparatorChar));
+            if (File.Exists(appRelative))
+            {
+                return appRelative;
+            }
+
+            var resourcePath = ResourcePathHelper.GetResourceFilePath(configPath);
+            if (File.Exists(resourcePath))
+            {
+                return resourcePath;
+            }
+
+            return appRelative;
+        }
+
+        private static string ResolveWavePath(string waveformPath)
+        {
+            var normalized = waveformPath.Replace('/', Path.DirectorySeparatorChar);
+            var fromBase = Path.Combine(AppContext.BaseDirectory, normalized);
+            if (File.Exists(fromBase))
+            {
+                return fromBase;
+            }
+
+            var fromConfigs = Path.Combine(AppContext.BaseDirectory, "Configs", normalized);
+            if (File.Exists(fromConfigs))
+            {
+                return fromConfigs;
+            }
+
+            var fromConfig = Path.Combine(AppContext.BaseDirectory, "Config", normalized);
+            if (File.Exists(fromConfig))
+            {
+                return fromConfig;
+            }
+
+            return fromConfigs;
         }
 
         /// <summary>

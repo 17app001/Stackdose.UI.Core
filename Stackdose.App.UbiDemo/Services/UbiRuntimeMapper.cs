@@ -92,6 +92,31 @@ public static class UbiRuntimeMapper
             : Path.Combine(AppContext.BaseDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
     }
 
+    public static IReadOnlyList<string> GetPrintHeadConfigFiles(UbiMachineConfig config)
+    {
+        if (config.PrintHeadConfigs.Count > 0)
+        {
+            return config.PrintHeadConfigs
+                .Where(path => !string.IsNullOrWhiteSpace(path))
+                .Select(ToAbsoluteConfigPath)
+                .ToList();
+        }
+
+        var fallback = config.Machine.Id.ToUpperInvariant() switch
+        {
+            "M1" => new[] { "Config/MachineA.feiyang_head1.json", "Config/MachineA.feiyang_head2.json" },
+            "M2" => new[] { "Config/MachineB.feiyang_head1.json", "Config/MachineB.feiyang_head2.json" },
+            _ => []
+        };
+
+        return fallback.Select(ToAbsoluteConfigPath).ToList();
+    }
+
+    private static string ToAbsoluteConfigPath(string relativePath)
+    {
+        return Path.Combine(AppContext.BaseDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
+    }
+
     private static MachineOverviewCard CreateCard(UbiMachineConfig config)
     {
         return new MachineOverviewCard

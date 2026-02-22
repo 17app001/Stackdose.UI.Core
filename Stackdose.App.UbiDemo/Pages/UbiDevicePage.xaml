@@ -90,13 +90,13 @@
                             </Grid.ColumnDefinitions>
 
                             <core:PrintHeadStatus HeadName="PrintHead 1"
-                                                  ConfigFilePath="feiyang_head1.json"
+                                                  ConfigFilePath="{Binding PrintHead1ConfigFile, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                   AutoConnect="False"
                                                   Margin="0,0,8,0" />
 
                             <core:PrintHeadStatus Grid.Column="1"
                                                   HeadName="PrintHead 2"
-                                                  ConfigFilePath="feiyang_head2.json"
+                                                  ConfigFilePath="{Binding PrintHead2ConfigFile, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                   AutoConnect="False"
                                                   Margin="8,0,0,0" />
                         </Grid>

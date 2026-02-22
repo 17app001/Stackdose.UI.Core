@@ -5,6 +5,7 @@ public sealed class UbiMachineConfig
     public UbiMachineInfo Machine { get; set; } = new();
     public UbiPlcInfo Plc { get; set; } = new();
     public UbiTagSections Tags { get; set; } = new();
+    public List<string> PrintHeadConfigs { get; set; } = [];
 }
 
 public sealed class UbiMachineInfo
@@ -66,4 +67,6 @@ public sealed class DeviceContext
     public string AlarmAddress { get; set; } = "--";
     public string AlarmConfigFile { get; set; } = string.Empty;
     public string SensorConfigFile { get; set; } = string.Empty;
+    public string PrintHead1ConfigFile { get; set; } = string.Empty;
+    public string PrintHead2ConfigFile { get; set; } = string.Empty;
 }

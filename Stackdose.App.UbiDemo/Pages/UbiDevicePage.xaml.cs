@@ -28,6 +28,12 @@ public partial class UbiDevicePage : UserControl
     public static readonly DependencyProperty SensorConfigFileProperty =
         DependencyProperty.Register(nameof(SensorConfigFile), typeof(string), typeof(UbiDevicePage), new PropertyMetadata(string.Empty));
 
+    public static readonly DependencyProperty PrintHead1ConfigFileProperty =
+        DependencyProperty.Register(nameof(PrintHead1ConfigFile), typeof(string), typeof(UbiDevicePage), new PropertyMetadata(string.Empty));
+
+    public static readonly DependencyProperty PrintHead2ConfigFileProperty =
+        DependencyProperty.Register(nameof(PrintHead2ConfigFile), typeof(string), typeof(UbiDevicePage), new PropertyMetadata(string.Empty));
+
     public string MachineName
     {
         get => (string)GetValue(MachineNameProperty);
@@ -70,6 +76,18 @@ public partial class UbiDevicePage : UserControl
         set => SetValue(SensorConfigFileProperty, value);
     }
 
+    public string PrintHead1ConfigFile
+    {
+        get => (string)GetValue(PrintHead1ConfigFileProperty);
+        set => SetValue(PrintHead1ConfigFileProperty, value);
+    }
+
+    public string PrintHead2ConfigFile
+    {
+        get => (string)GetValue(PrintHead2ConfigFileProperty);
+        set => SetValue(PrintHead2ConfigFileProperty, value);
+    }
+
     public ObservableCollection<string> CommandKeys { get; } =
     [
         "DeviceInitialization",
@@ -96,5 +114,7 @@ public partial class UbiDevicePage : UserControl
         AlarmAddress = context.AlarmAddress;
         AlarmConfigFile = context.AlarmConfigFile;
         SensorConfigFile = context.SensorConfigFile;
+        PrintHead1ConfigFile = context.PrintHead1ConfigFile;
+        PrintHead2ConfigFile = context.PrintHead2ConfigFile;
     }
 }

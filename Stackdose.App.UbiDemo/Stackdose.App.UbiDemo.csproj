@@ -9,17 +9,31 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\FeiyangWrapper.vcxproj" />
     <ProjectReference Include="..\Stackdose.UI.Core\Stackdose.UI.Core.csproj" />
     <ProjectReference Include="..\Stackdose.UI.Templates\Stackdose.UI.Templates.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Config\*.json">
+    <None Update="Config\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configs\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Resources\**\*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <Target Name="CopyFeiyangSdkLibs" AfterTargets="Build"
+          Condition="Exists('$(MSBuildProjectDirectory)\..\..\Sdk\FeiyangSDK-2.3.1\lib') and '$(TargetDir)' != ''">
+    <ItemGroup>
+      <FeiyangSdkLibs Include="$(MSBuildProjectDirectory)\..\..\Sdk\FeiyangSDK-2.3.1\lib\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(FeiyangSdkLibs)"
+          DestinationFolder="$(TargetDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>

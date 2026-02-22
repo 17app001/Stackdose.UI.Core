@@ -10,6 +10,10 @@
     "pollIntervalMs": 150,
     "autoConnect": true
   },
+  "printHeadConfigs": [
+    "Config/MachineB.feiyang_head1.json",
+    "Config/MachineB.feiyang_head2.json"
+  ],
   "tags": {
     "status": {
       "isConnected": { "address": "M220", "type": "bool", "access": "read" },

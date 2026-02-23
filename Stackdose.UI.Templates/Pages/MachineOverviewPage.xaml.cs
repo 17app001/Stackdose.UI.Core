@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Stackdose.UI.Core.Helpers;
 
 namespace Stackdose.UI.Templates.Pages;
 
@@ -189,6 +190,9 @@ public partial class MachineOverviewPage : UserControl
     {
         InitializeComponent();
 
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
+
         SelectMachineCommand = new DelegateCommand(param =>
         {
             if (param is string machineId && !string.IsNullOrWhiteSpace(machineId))
@@ -208,6 +212,81 @@ public partial class MachineOverviewPage : UserControl
             new OverviewInfoItem("Runtime", ".NET Windows"),
             new OverviewInfoItem("PLC Driver", "Mitsubishi MC Protocol")
         ];
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        #if DEBUG
+        System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] ===== OnLoaded START =====");
+        System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] PlcConnectionStatus={PlcConnectionStatus != null}");
+        System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] PlcConnectionStatus.IsConnected={PlcConnectionStatus?.CurrentManager?.IsConnected}");
+        System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] PlcConnectionStatus.HashCode={PlcConnectionStatus?.GetHashCode()}");
+        
+        // ?? 關鍵診斷：檢查 OverviewD120Label 是否存在
+        System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] OverviewD120Label={OverviewD120Label != null}");
+        if (OverviewD120Label != null)
+        {
+            System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] OverviewD120Label.Label='{OverviewD120Label.Label}'");
+            System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] OverviewD120Label.Address='{OverviewD120Label.Address}'");
+            System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] OverviewD120Label.Value='{OverviewD120Label.Value}'");
+            System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] OverviewD120Label.IsLoaded={OverviewD120Label.IsLoaded}");
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] ?? OverviewD120Label is NULL!");
+        }
+        
+        System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] OverviewD120Editor={OverviewD120Editor != null}");
+        #endif
+        
+        // Ensure the overview debug controls are bound to the same PlcStatus instance
+        // during first render, even when element binding resolves later.
+        if (OverviewD120Label != null)
+        {
+            OverviewD120Label.TargetStatus = PlcConnectionStatus;
+            PlcContext.SetStatus(OverviewD120Label, PlcConnectionStatus);
+            
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] TargetStatus set for OverviewD120Label");
+            #endif
+        }
+        
+        if (OverviewD120Editor != null)
+        {
+            PlcContext.SetStatus(OverviewD120Editor, PlcConnectionStatus);
+        }
+        
+        // ?? 關鍵修復：如果 PLC 已經連線，強制 PlcLabel 立即刷新數據
+        if (PlcConnectionStatus?.CurrentManager != null && PlcConnectionStatus.CurrentManager.IsConnected && OverviewD120Label != null)
+        {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] PLC already connected, forcing PlcLabel refresh");
+            #endif
+            
+            // 直接調用 PlcLabel 的 RefreshFrom 方法
+            OverviewD120Label.RefreshFrom(PlcConnectionStatus.CurrentManager);
+            
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] OverviewD120Label.Value after RefreshFrom = '{OverviewD120Label.Value}'");
+            #endif
+        }
+        else
+        {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] Cannot refresh: PlcConnected={PlcConnectionStatus?.CurrentManager?.IsConnected}, LabelExists={OverviewD120Label != null}");
+            #endif
+        }
+        
+        #if DEBUG
+        System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] ===== OnLoaded END =====");
+        #endif
+    }
+    
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        #if DEBUG
+        System.Diagnostics.Debug.WriteLine($"[MachineOverviewPage] OnUnloaded");
+        #endif
     }
 
     private void OnPlcScanUpdated(IPlcManager manager)

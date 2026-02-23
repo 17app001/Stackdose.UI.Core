@@ -3,6 +3,7 @@ using Stackdose.Abstractions.Logging;
 using Stackdose.Hardware.Plc;
 using Stackdose.Mitsubishi.Plc;
 using Stackdose.UI.Core.Helpers;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -24,6 +25,9 @@ namespace Stackdose.UI.Core.Controls
         
         // 🔥 追蹤是否已訂閱事件
         private bool _isEventSubscribed = false;
+
+        // 🔥 追蹤本次連線已註冊的 monitor 區塊，避免重複註冊
+        private readonly HashSet<string> _registeredMonitorKeys = new(StringComparer.OrdinalIgnoreCase);
 
         public IPlcManager? CurrentManager => _plcManager;
         
@@ -60,11 +64,11 @@ namespace Stackdose.UI.Core.Controls
         public int ScanInterval { get { return (int)GetValue(ScanIntervalProperty); } set { SetValue(ScanIntervalProperty, value); } }
 
         public static readonly DependencyProperty MonitorAddressProperty =
-            DependencyProperty.Register("MonitorAddress", typeof(string), typeof(PlcStatus), new PropertyMetadata(null));
+            DependencyProperty.Register("MonitorAddress", typeof(string), typeof(PlcStatus), new PropertyMetadata(null, OnMonitorAddressChanged));
         public string MonitorAddress { get { return (string)GetValue(MonitorAddressProperty); } set { SetValue(MonitorAddressProperty, value); } }
 
         public static readonly DependencyProperty MonitorLengthProperty =
-            DependencyProperty.Register("MonitorLength", typeof(int), typeof(PlcStatus), new PropertyMetadata(1));
+            DependencyProperty.Register("MonitorLength", typeof(int), typeof(PlcStatus), new PropertyMetadata(1, OnMonitorLengthChanged));
         public int MonitorLength { get { return (int)GetValue(MonitorLengthProperty); } set { SetValue(MonitorLengthProperty, value); } }
 
         public static readonly DependencyProperty IsGlobalProperty =
@@ -84,7 +88,34 @@ namespace Stackdose.UI.Core.Controls
             if (d is PlcStatus plcStatus && (bool)e.NewValue) PlcContext.GlobalStatus = plcStatus;
         }
 
+        private static void OnMonitorAddressChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is PlcStatus plcStatus)
+            {
+                plcStatus.TryRegisterConfiguredMonitorsAndRefresh();
+            }
+        }
+
+        private static void OnMonitorLengthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is PlcStatus plcStatus)
+            {
+                plcStatus.TryRegisterConfiguredMonitorsAndRefresh();
+            }
+        }
+
         #endregion
+
+        private void TryRegisterConfiguredMonitorsAndRefresh()
+        {
+            if (_plcManager?.Monitor == null || !_plcManager.IsConnected)
+            {
+                return;
+            }
+
+            RegisterAllMonitors();
+            ScanUpdated?.Invoke(_plcManager);
+        }
 
         private async void PlcStatus_Loaded(object sender, RoutedEventArgs e)
         {
@@ -176,22 +207,19 @@ namespace Stackdose.UI.Core.Controls
             try
             {
                 if (Dispatcher.HasShutdownStarted) return;
+
                 Dispatcher.BeginInvoke(() =>
                 {
-                    if (!Dispatcher.HasShutdownStarted)
-                    {
-                        // 🔥 scanInfo 已經是完整的字串（例如 "PLC Poll 耗時: 15 ms"），不需要再加 "ms"
-                        StatusText.Text = $"ONLINE ({scanInfo})";
-                        
-                        // 🔥 確保 UI 狀態是連線狀態
-                        StatusLight.Fill = new SolidColorBrush(Colors.LimeGreen);
-                        StatusLight.Effect = new DropShadowEffect { Color = Colors.LimeGreen, BlurRadius = 15, ShadowDepth = 0 };
-                        StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
-                    }
+                    if (Dispatcher.HasShutdownStarted) return;
+
+                    StatusText.Text = $"ONLINE ({scanInfo})";
+                    StatusLight.Fill = new SolidColorBrush(Colors.LimeGreen);
+                    StatusLight.Effect = new DropShadowEffect { Color = Colors.LimeGreen, BlurRadius = 15, ShadowDepth = 0 };
+                    StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
+
+                    // 在 UI 執行緒上觸發 ScanUpdated
+                    ScanUpdated?.Invoke(_plcManager!);
                 });
-                
-                // 觸發 ScanUpdated 事件
-                ScanUpdated?.Invoke(_plcManager!);
             }
             catch (Exception ex)
             {
@@ -295,9 +323,11 @@ namespace Stackdose.UI.Core.Controls
             });
 
             ComplianceContext.LogSystem($"PLC Connection Established ({IpAddress})", LogLevel.Success);
+            _registeredMonitorKeys.Clear();
             RegisterAllMonitors();
 
             ConnectionEstablished?.Invoke(_plcManager!);
+            ScanUpdated?.Invoke(_plcManager!);
             StartConnectionWatchdog();
         }
 
@@ -364,6 +394,8 @@ namespace Stackdose.UI.Core.Controls
                 RegisterMonitors(labelAddresses);
                 System.Diagnostics.Debug.WriteLine($"[PlcStatus] Refreshed PlcLabel monitors: {labelAddresses}");
             }
+
+            ScanUpdated?.Invoke(_plcManager);
         }
 
         private async Task DisconnectAsync()
@@ -484,13 +516,27 @@ namespace Stackdose.UI.Core.Controls
                 return;
             }
 
+            var normalizedAddress = (address ?? string.Empty).Trim().ToUpperInvariant();
+            if (string.IsNullOrWhiteSpace(normalizedAddress))
+            {
+                return;
+            }
+
+            var normalizedLength = length <= 0 ? 1 : length;
+            var registrationKey = $"{normalizedAddress}:{normalizedLength}";
+            if (!_registeredMonitorKeys.Add(registrationKey))
+            {
+                return;
+            }
+
             try
             {
-                _plcManager.Monitor.Register(address, length);
+                _plcManager.Monitor.Register(normalizedAddress, normalizedLength);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PlcStatus] Register monitor failed: {address}, len={length}, error={ex.Message}");
+                _registeredMonitorKeys.Remove(registrationKey);
+                System.Diagnostics.Debug.WriteLine($"[PlcStatus] Register monitor failed: {normalizedAddress}, len={normalizedLength}, error={ex.Message}");
             }
         }
 

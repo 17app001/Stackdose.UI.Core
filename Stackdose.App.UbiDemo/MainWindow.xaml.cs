@@ -23,6 +23,7 @@ public partial class MainWindow : Window
     private readonly LogViewerPage _logViewerPage = new();
     private readonly UserManagementPage _userManagementPage = new();
     private readonly SettingsPage _settingsPage = new();
+    private readonly Dictionary<string, UbiDevicePage> _devicePages = new(StringComparer.OrdinalIgnoreCase);
     private string _defaultPageTitle = "Machine Overview";
     private string? _selectedMachineId;
     private readonly Dictionary<string, OverviewAddressMap> _machineOverviewAddressMap = new(StringComparer.OrdinalIgnoreCase);
@@ -121,8 +122,9 @@ public partial class MainWindow : Window
 
         if (string.Equals(target, "SettingsPage", StringComparison.OrdinalIgnoreCase))
         {
+            _settingsPage.SetMonitorAddresses(_runtime.OverviewPage.PlcMonitorAddresses);
             MainShell.ShellContent = _settingsPage;
-            MainShell.PageTitle = "Settings";
+            MainShell.PageTitle = "Maintenance Mode";
         }
     }
 
@@ -134,7 +136,12 @@ public partial class MainWindow : Window
         }
 
         _selectedMachineId = machineId;
-        var devicePage = new UbiDevicePage();
+        if (!_devicePages.TryGetValue(machineId, out var devicePage))
+        {
+            devicePage = new UbiDevicePage();
+            _devicePages[machineId] = devicePage;
+        }
+
         var printHeadConfigs = UbiRuntimeMapper.GetPrintHeadConfigFiles(config);
         devicePage.SetDeviceContext(new DeviceContext
         {

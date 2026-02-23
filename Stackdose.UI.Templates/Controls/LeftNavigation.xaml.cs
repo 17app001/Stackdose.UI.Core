@@ -156,7 +156,7 @@ namespace Stackdose.UI.Templates.Controls
                 new NavigationItem { Title = "Machine Detail", NavigationTarget = "MachineDetailPage", RequiredLevel = AccessLevel.Operator },
                 new NavigationItem { Title = "Log Viewer", NavigationTarget = "LogViewerPage", RequiredLevel = AccessLevel.Instructor },
                 new NavigationItem { Title = "User Management", NavigationTarget = "UserManagementPage", RequiredLevel = AccessLevel.Admin },
-                new NavigationItem { Title = "Settings", NavigationTarget = "SettingsPage", RequiredLevel = AccessLevel.SuperAdmin }
+                new NavigationItem { Title = "Maintenance Mode", NavigationTarget = "SettingsPage", RequiredLevel = AccessLevel.SuperAdmin }
             ]);
 
             NavigationItems = new ObservableCollection<NavigationItem>(newItems);

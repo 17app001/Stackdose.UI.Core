@@ -8,7 +8,13 @@
     "ip": "192.168.22.39",
     "port": 3000,
     "pollIntervalMs": 150,
-    "autoConnect": true
+    "autoConnect": true,
+    "monitorAddresses": [
+      "D120",
+      "D130",
+      "M250",
+      "D500,4"
+    ]
   },
   "alarmConfigFile": "Config/MachineA/alarms.json",
   "sensorConfigFile": "Config/MachineA/sensors.json",

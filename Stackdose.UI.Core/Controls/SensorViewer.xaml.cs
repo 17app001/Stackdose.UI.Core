@@ -2,6 +2,7 @@
 using Stackdose.Abstractions.Logging;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
+using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -75,7 +76,7 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         public static readonly DependencyProperty ConfigFileProperty =
             DependencyProperty.Register("ConfigFile", typeof(string), typeof(SensorViewer), 
-                new PropertyMetadata("Sensors.json", OnConfigFileChanged));
+                new PropertyMetadata(string.Empty, OnConfigFileChanged));
         public string ConfigFile
         {
             get { return (string)GetValue(ConfigFileProperty); }
@@ -124,6 +125,12 @@ namespace Stackdose.UI.Core.Controls
 
         private void SensorViewer_Loaded(object sender, RoutedEventArgs e)
         {
+            if (DesignerProperties.GetIsInDesignMode(this))
+            {
+                BindSensorList();
+                return;
+            }
+
             #if DEBUG
             System.Diagnostics.Debug.WriteLine($"[SensorViewer] Loaded called. SensorStatesInitialized={_sensorStatesInitialized}, ConfigLoaded={_configLoaded}");
             #endif
@@ -173,6 +180,11 @@ namespace Stackdose.UI.Core.Controls
         private static void OnConfigFileChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var viewer = (SensorViewer)d;
+            if (DesignerProperties.GetIsInDesignMode(viewer))
+            {
+                return;
+            }
+
             if (viewer.IsLoaded && !string.IsNullOrEmpty(e.NewValue as string))
             {
                 SensorContext.LoadFromJson((string)e.NewValue!);

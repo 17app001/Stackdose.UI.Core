@@ -23,6 +23,7 @@ public sealed class UbiPlcInfo
     public int Port { get; set; } = 5000;
     public int PollIntervalMs { get; set; } = 300;
     public bool AutoConnect { get; set; } = true;
+    public List<string> MonitorAddresses { get; set; } = [];
 }
 
 public sealed class UbiTagSections

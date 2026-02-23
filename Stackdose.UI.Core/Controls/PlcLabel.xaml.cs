@@ -117,9 +117,17 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         public PlcLabel()
         {
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[PlcLabel] ===== Constructor CALLED =====");
+            #endif
+            
             InitializeComponent();
             this.Loaded += PlcLabel_Loaded;
             this.Unloaded += PlcLabel_Unloaded;
+            
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[PlcLabel] ===== Constructor END =====");
+            #endif
         }
 
         #endregion
@@ -313,7 +321,7 @@ namespace Stackdose.UI.Core.Controls
         public bool EnableAuditTrail
         {
             get { return (bool)GetValue(EnableAuditTrailProperty); }
-            set { SetValue(EnableAuditTrailProperty, value); }
+            set { SetValue(LabelForegroundProperty, value); }
         }
 
       
@@ -433,14 +441,35 @@ namespace Stackdose.UI.Core.Controls
         {
             if (d is PlcLabel label)
             {
-                if (e.NewValue is PlcStatus newStatus) label.BindToStatus(newStatus);
-                else label.TryResolveContextStatus();
+                if (e.NewValue is PlcStatus newStatus)
+                {
+                    label.BindToStatus(newStatus);
+
+                    // 🔥 如果 PLC 已連線，立即用 BeginInvoke 刷新
+                    if (newStatus.CurrentManager != null && newStatus.CurrentManager.IsConnected)
+                    {
+                        var manager = newStatus.CurrentManager;
+                        label.Dispatcher.BeginInvoke(() =>
+                        {
+                            if (!label.Dispatcher.HasShutdownStarted)
+                                label.RefreshFrom(manager);
+                        });
+                    }
+                }
+                else
+                {
+                    label.TryResolveContextStatus();
+                }
             }
         }
 
         private void PlcLabel_Loaded(object sender, RoutedEventArgs e)
         {
-            // 🔥 只在第一次載入時註冊到 PlcLabelContext（避免 Tab 切換重複註冊）
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[PlcLabel] ===== Loaded START ===== {Label} ({Address})");
+            #endif
+            
+            // 🔥 只在第一次載入時註冊到 PlcLabelContext（Avoid duplicate registration on tab switch）
             if (!_isRegistered)
             {
                 PlcLabelContext.Register(this);
@@ -454,19 +483,34 @@ namespace Stackdose.UI.Core.Controls
             // 🔥 註冊到 ThemeManager（自動接收主題變更通知）
             ThemeManager.Register(this);
 
+            // 🔥 監聽全域 PlcStatus 變更，避免首次載入錯過綁定時機
+            PlcContext.GlobalStatusChanged -= OnGlobalStatusChanged;
+            PlcContext.GlobalStatusChanged += OnGlobalStatusChanged;
+
             // 🔥 初始化底框顏色
             UpdateFrameBackground();
             
-            // 🔥 重新綁定到 PlcStatus（每次頁面載入都要執行，因為可能切換頁面後 GlobalStatus 有更新）
-            TryResolveContextStatus();
+            // 🔥 重新綁定到 PlcStatus（優先使用明確 TargetStatus，再回退到 Context/Global）
+            var preferredStatus = TargetStatus ?? PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
             
-            // 🔥 如果 PLC 已連線，主動註冊監控位址並讀取數據
-            if (_boundStatus?.CurrentManager != null && _boundStatus.CurrentManager.IsConnected)
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[PlcLabel] preferredStatus: TargetStatus={TargetStatus != null}, Context={PlcContext.GetStatus(this) != null}, Global={PlcContext.GlobalStatus != null}");
+            System.Diagnostics.Debug.WriteLine($"[PlcLabel] preferredStatus.IsConnected: {preferredStatus?.CurrentManager?.IsConnected}");
+            #endif
+            
+            if (preferredStatus != null)
             {
-                // 🔥 只做立即刷新，不在頁面切換時動態追加 Monitor
-                // Monitor 註冊應在啟動時集中完成，避免切頁後輪詢區塊持續膨脹。
-                RefreshFrom(_boundStatus.CurrentManager);
+                // 🔥 強制重新綁定，即使是同一個實例（確保事件訂閱正確）
+                ForceRebindToStatus(preferredStatus);
             }
+            else
+            {
+                TryResolveContextStatus();
+            }
+            
+            #if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[PlcLabel] ===== Loaded END ===== {Label} ({Address}), _boundStatus={_boundStatus != null}, IsConnected={_boundStatus?.CurrentManager?.IsConnected}");
+            #endif
         }
 
         private void TryResolveContextStatus()
@@ -474,7 +518,7 @@ namespace Stackdose.UI.Core.Controls
             var contextStatus = PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
             if (contextStatus != null) 
             {
-                BindToStatus(contextStatus);
+                ForceRebindToStatus(contextStatus);
                 
                 #if DEBUG
                 System.Diagnostics.Debug.WriteLine($"[PlcLabel] Bound to PlcStatus: {Label} ({Address}), IsConnected={contextStatus.CurrentManager?.IsConnected}");
@@ -488,34 +532,64 @@ namespace Stackdose.UI.Core.Controls
             }
         }
 
+        /// <summary>
+        /// 🔥 強制重新綁定到 PlcStatus（即使是同一個實例）
+        /// </summary>
+        private void ForceRebindToStatus(PlcStatus? newStatus)
+        {
+            // 先取消舊的訂閱
+            if (_boundStatus != null)
+            {
+                _boundStatus.ScanUpdated -= OnScanUpdated;
+                _boundStatus.ConnectionEstablished -= OnConnectionEstablished;
+            }
+
+            _boundStatus = newStatus;
+
+            if (_boundStatus != null)
+            {
+                _boundStatus.ScanUpdated += OnScanUpdated;
+                _boundStatus.ConnectionEstablished += OnConnectionEstablished;
+
+                // 🔥 如果已連線，用 BeginInvoke 非同步刷新，避免死鎖
+                if (_boundStatus.CurrentManager != null && _boundStatus.CurrentManager.IsConnected)
+                {
+                    var manager = _boundStatus.CurrentManager;
+                    Dispatcher.BeginInvoke(() =>
+                    {
+                        if (!Dispatcher.HasShutdownStarted)
+                            RefreshFrom(manager);
+                    });
+                }
+            }
+        }
+
+        /// <summary>
+        /// 🔥 處理 PLC 連線建立事件
+        /// </summary>
+        private void OnConnectionEstablished(IPlcManager manager)
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (!Dispatcher.HasShutdownStarted)
+                    RefreshFrom(manager);
+            });
+        }
+        
         private void BindToStatus(PlcStatus? newStatus)
         {
             // 🔥 移除「相同實例不重新綁定」的限制，因為頁面切換後事件可能已失效
             // if (_boundStatus == newStatus) return;
             
-            // 先取消舊的訂閱
-            if (_boundStatus != null) 
-            {
-                _boundStatus.ScanUpdated -= OnScanUpdated;
-            }
-            
-            _boundStatus = newStatus;
-            
-            if (_boundStatus != null)
-            {
-                _boundStatus.ScanUpdated += OnScanUpdated;
-                
-                // 🔥 如果已連線，立即讀取一次數據
-                if (_boundStatus.CurrentManager != null && _boundStatus.CurrentManager.IsConnected) 
-                {
-                    OnScanUpdated(_boundStatus.CurrentManager);
-                }
-            }
+            // 使用 ForceRebindToStatus 來確保重新綁定
+            ForceRebindToStatus(newStatus);
         }
 
         private void PlcLabel_Unloaded(object sender, RoutedEventArgs e)
         {
             PlcLabelContext.Unregister(this);
+
+            PlcContext.GlobalStatusChanged -= OnGlobalStatusChanged;
             
             // 🔥 註銷 ThemeManager（WeakReference 會自動處理，但手動註銷更安全）
             ThemeManager.Unregister(this);
@@ -523,14 +597,42 @@ namespace Stackdose.UI.Core.Controls
             if (_boundStatus != null)
             {
                 _boundStatus.ScanUpdated -= OnScanUpdated;
+                _boundStatus.ConnectionEstablished -= OnConnectionEstablished;
                 _boundStatus = null;
             }
 
             _isRegistered = false;
             
             #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[PlcLabel] Unloaded (keeping PLC binding): {Label} ({Address})");
+            System.Diagnostics.Debug.WriteLine($"[PlcLabel] Unloaded: {Label} ({Address})");
             #endif
+        }
+
+        private void OnGlobalStatusChanged(object? sender, PlcStatus? newStatus)
+        {
+            if (newStatus == null)
+            {
+                return;
+            }
+
+            // Explicit TargetStatus has highest priority; do not let global updates override it.
+            if (TargetStatus != null && !ReferenceEquals(TargetStatus, newStatus))
+            {
+                return;
+            }
+
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(() => OnGlobalStatusChanged(sender, newStatus));
+                return;
+            }
+
+            BindToStatus(newStatus);
+
+            if (newStatus.CurrentManager is { IsConnected: true } manager)
+            {
+                RefreshFrom(manager);
+            }
         }
 
         private void OnScanUpdated(IPlcManager manager)
@@ -538,161 +640,98 @@ namespace Stackdose.UI.Core.Controls
             try
             {
                 if (Dispatcher.HasShutdownStarted) return;
-                Dispatcher.Invoke(() => { if (!Dispatcher.HasShutdownStarted) RefreshFrom(manager); });
+                Dispatcher.BeginInvoke(() =>
+                {
+                    if (!Dispatcher.HasShutdownStarted)
+                        RefreshFrom(manager);
+                });
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PlcLabel] OnScanUpdated error: {Label} ({Address}), {ex.Message}");
+            }
         }
 
-        public void RefreshFrom(IPlcManager manager)
+        private object? ReadValueFromManager(IPlcManager manager)
         {
-            if (manager == null) return;
-            object? result = null;
+            if (manager == null) return null;
 
             switch (DataType)
             {
                 case PlcDataType.Bit:
                     if (BitIndex >= 0 && BitIndex <= 15)
                     {
-                        var wordVal = manager.ReadWord(Address);
-                        if (wordVal.HasValue) result = ((wordVal.Value >> BitIndex) & 1) == 1;
+                        var w = manager.ReadWord(Address);
+                        return w.HasValue ? (object)(((w.Value >> BitIndex) & 1) == 1) : null;
                     }
-                    else result = manager.ReadBit(Address);
-                    break;
-                case PlcDataType.Word: 
-                    result = manager.ReadWord(Address); 
-                    break;
-                case PlcDataType.DWord: 
-                    result = manager.ReadDWord(Address);
-                    #if DEBUG
-                    System.Diagnostics.Debug.WriteLine($"[PlcLabel] DWord Read: {Label} ({Address}) = {result}");
-                    #endif
-                    break;
+                    return manager.ReadBit(Address);
+                case PlcDataType.Word:
+                    return manager.ReadWord(Address);
+                case PlcDataType.DWord:
+                    return manager.ReadDWord(Address);
                 case PlcDataType.Float:
-                    var dwordVal = manager.ReadDWord(Address);
-                    if (dwordVal.HasValue) result = BitConverter.ToSingle(BitConverter.GetBytes(dwordVal.Value), 0);
-                    break;
+                    var dw = manager.ReadDWord(Address);
+                    return dw.HasValue ? (object)BitConverter.ToSingle(BitConverter.GetBytes(dw.Value), 0) : null;
+                default:
+                    return null;
             }
-            UpdateValue(result!);
         }
 
-        /// <summary>
-        /// 更新數值、格式化、觸發事件與紀錄 Log
-        /// </summary>
+        public void RefreshFrom(IPlcManager manager)
+        {
+            if (manager == null) return;
+            UpdateValue(ReadValueFromManager(manager)!);
+        }
+
         public void UpdateValue(object rawValue)
         {
             string newValueStr = "-";
             object? actualValue = null;
 
-            #if DEBUG
-            if (DataType == PlcDataType.DWord)
-            {
-                System.Diagnostics.Debug.WriteLine($"[PlcLabel] UpdateValue: {Label} ({Address}) rawValue={rawValue} (Type: {rawValue?.GetType().Name})");
-            }
-            #endif
-
             if (rawValue != null)
             {
                 if (DataType == PlcDataType.Bit)
                 {
-                    bool bVal = false;
-                    if (rawValue is bool b) bVal = b;
-                    else
-                    {
-                        var rawText = rawValue.ToString();
-                        bVal = rawText == "1" || string.Equals(rawText, "true", StringComparison.OrdinalIgnoreCase);
-                    }
-
+                    bool bVal = rawValue is bool b ? b
+                        : rawValue.ToString() is string s && (s == "1" || string.Equals(s, "true", StringComparison.OrdinalIgnoreCase));
                     newValueStr = bVal ? "ON" : "OFF";
                     actualValue = bVal;
                 }
+                else if (double.TryParse(rawValue.ToString(), out double dVal))
+                {
+                    double finalVal = dVal / Divisor;
+                    actualValue = finalVal;
+                    newValueStr = (DataType == PlcDataType.Float || Divisor != 1.0)
+                        ? finalVal.ToString(StringFormat)
+                        : finalVal.ToString();
+                }
                 else
                 {
-                    // 數值運算 (除法 + 格式化)
-                    if (double.TryParse(rawValue.ToString(), out double dVal))
-                    {
-                        double finalVal = dVal / Divisor;
-                        actualValue = finalVal;
-
-                        if (DataType == PlcDataType.Float || Divisor != 1.0)
-                            newValueStr = finalVal.ToString(StringFormat);
-                        else
-                            newValueStr = finalVal.ToString();
-                        
-                        #if DEBUG
-                        if (DataType == PlcDataType.DWord)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"[PlcLabel] DWord Formatted: {Label} = {newValueStr} (原始:{dVal}, 除數:{Divisor})");
-                        }
-                        #endif
-                    }
-                    else
-                    {
-                        newValueStr = rawValue.ToString() ?? "-";
-                        actualValue = rawValue;
-                        
-                        #if DEBUG
-                        if (DataType == PlcDataType.DWord)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"[PlcLabel] DWord Parse Failed: {Label} rawValue={rawValue}");
-                        }
-                        #endif
-                    }
+                    newValueStr = rawValue.ToString() ?? "-";
+                    actualValue = rawValue;
                 }
             }
 
-            // 只有數值改變時才執行後續動作
-            if (Value != newValueStr)
+            if (Value == newValueStr) return;
+
+            string oldValueStr = Value;
+            Value = newValueStr;
+
+            ValueChanged?.Invoke(this, new PlcValueChangedEventArgs(actualValue, newValueStr));
+            PlcLabelContext.NotifyValueChanged(this, actualValue ?? newValueStr);
+
+            if (EnableDataLog && newValueStr != "-" && !string.IsNullOrEmpty(Label))
             {
-                string oldValueStr = Value; // 紀錄舊值
-                Value = newValueStr;
+                string logLabel = Label, logAddr = Address, logVal = newValueStr;
+                Task.Run(() => ComplianceContext.LogDataHistory(logLabel, logAddr, logVal));
+            }
 
-                // 1. 觕發事件
-                ValueChanged?.Invoke(this, new PlcValueChangedEventArgs(actualValue, newValueStr));
-
-                // 🔥 1.5. 自動通知 PlcLabelContext（統一管理中心）
-                PlcLabelContext.NotifyValueChanged(this, actualValue ?? newValueStr);
-
-                // 2. 自動合規紀錄 - Data History (生產履歷)
-                if (EnableDataLog && newValueStr != "-" && !string.IsNullOrEmpty(Label))
-                {
-                    //ComplianceContext.LogDataHistory(Label, Address, newValueStr);
-                    // 捕獲變數以避免閉包問題
-                    string logLabel = Label;
-                    string logAddr = Address;
-                    string logVal = newValueStr;
-
-                    Task.Run(() =>
-                    {
-                     
-                        ComplianceContext.LogDataHistory(logLabel, logAddr, logVal);
-                    });
-                }
-
-                // 3. Auto compliance logging - Audit Trail (Critical state change tracking)
-                // Only log when EnableAuditTrail is True and value meaningfully changed
-                if (EnableAuditTrail && newValueStr != "-" && oldValueStr != "-" && !string.IsNullOrEmpty(Label) && oldValueStr != newValueStr)
-                {
-                    string logLabel = Label;
-                    string logAddr = Address;
-                    string oldVal = oldValueStr;
-                    string logVal = newValueStr;
-                    bool showInUi = ShowLog;
-                    Task.Run(() =>
-                    {
-                        // Since this is auto-read, mark Reason as system auto-tracking
-                        // New signature: (deviceName, address, oldValue, newValue, reason, parameter, batchId, showInUi)
-                        ComplianceContext.LogAuditTrail(
-                            logLabel,
-                            logAddr,
-                            oldVal,
-                            logVal,
-                            "System Auto-Read Change",
-                            parameter: "",  // parameter is empty for auto-read
-                            batchId: "",    // batchId is empty for auto-read
-                            showInUi
-                        );
-                    });
-                }
+            if (EnableAuditTrail && newValueStr != "-" && oldValueStr != "-" && !string.IsNullOrEmpty(Label))
+            {
+                string logLabel = Label, logAddr = Address, oldVal = oldValueStr, logVal = newValueStr;
+                bool showInUi = ShowLog;
+                Task.Run(() => ComplianceContext.LogAuditTrail(logLabel, logAddr, oldVal, logVal,
+                    "System Auto-Read Change", parameter: "", batchId: "", showInUi));
             }
         }
     }

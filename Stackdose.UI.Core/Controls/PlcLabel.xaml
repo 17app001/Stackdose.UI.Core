@@ -7,8 +7,28 @@
              mc:Ignorable="d" 
              d:DesignHeight="60" d:DesignWidth="200"
              x:Name="Root"
-             ToolTip="{Binding Address, RelativeSource={RelativeSource Self}}"
              Foreground="{DynamicResource Plc.Text.Value}">
+
+    <UserControl.ToolTip>
+        <ToolTip Background="#1A1E2A"
+                 BorderBrush="{DynamicResource Plc.Border}"
+                 BorderThickness="1"
+                 Padding="8,6"
+                 Placement="Mouse"
+                 HasDropShadow="True">
+            <StackPanel>
+                <TextBlock Text="PLC Address"
+                           Foreground="#B9C7E6"
+                           FontSize="10"
+                           FontFamily="Consolas" />
+                <TextBlock Text="{Binding PlacementTarget.Address, RelativeSource={RelativeSource AncestorType=ToolTip}}"
+                           Foreground="#5DE2FF"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           FontFamily="Consolas" />
+            </StackPanel>
+        </ToolTip>
+    </UserControl.ToolTip>
 
     <UserControl.Resources>
         <converters:PlcLabelColorThemeToBrushConverter x:Key="ColorThemeConverter"/>

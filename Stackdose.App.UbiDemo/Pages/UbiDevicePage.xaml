@@ -118,7 +118,7 @@
                 </GroupBox>
 
                 <GroupBox Grid.Row="1" Header="PrintHead Control">
-                    <core:PrintHeadController Margin="8" />
+                    <core:PlcDeviceEditor HorizontalAlignment="Left" Margin="146,0,0,0"/>
                 </GroupBox>
             </Grid>
 

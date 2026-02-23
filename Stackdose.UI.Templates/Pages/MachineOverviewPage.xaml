@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:core="http://schemas.stackdose.com/wpf"
+             xmlns:helpers="clr-namespace:Stackdose.UI.Core.Helpers;assembly=Stackdose.UI.Core"
              xmlns:controls="clr-namespace:Stackdose.UI.Templates.Controls"
              mc:Ignorable="d"
              d:DesignWidth="1400"
@@ -40,17 +41,44 @@
                     <TextBlock Text="Use this page as the default multi-machine dashboard template."
                                Style="{StaticResource Template.CaptionText}"
                                Margin="0,6,0,10"/>
-                    <core:PlcStatus Width="280"
-                                    x:Name="PlcConnectionStatus"
-                                    Height="58"
-                                    HorizontalAlignment="Left"
-                                    AutoConnect="{Binding PlcAutoConnect, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    IsGlobal="True"
-                                    ShowBorder="True"
-                                    IpAddress="{Binding PlcIpAddress, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    Port="{Binding PlcPort, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    ScanInterval="{Binding PlcScanInterval, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    MonitorAddress="{Binding PlcMonitorAddresses, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                    <WrapPanel Orientation="Horizontal"
+                               VerticalAlignment="Top"
+                               helpers:PlcContext.Status="{Binding ElementName=PlcConnectionStatus}">
+                        <core:PlcStatus Width="280"
+                                        x:Name="PlcConnectionStatus"
+                                        Height="58"
+                                        Margin="0,0,12,0"
+                                        HorizontalAlignment="Left"
+                                        AutoConnect="{Binding PlcAutoConnect, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        IsGlobal="True"
+                                        ShowBorder="True"
+                                        IpAddress="{Binding PlcIpAddress, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        Port="{Binding PlcPort, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        ScanInterval="{Binding PlcScanInterval, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        MonitorAddress="{Binding PlcMonitorAddresses, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
+                        <core:PlcLabel Label="D120"
+                                       x:Name="OverviewD120Label"
+                                       Address="D120"
+                                       TargetStatus="{Binding ElementName=PlcConnectionStatus}"
+                                       helpers:PlcContext.Status="{Binding ElementName=PlcConnectionStatus}"
+                                       Width="170"
+                                       Height="58"
+                                       Margin="0,0,12,0"
+                                       Divisor="10"
+                                       StringFormat="F1"
+                                       ShowFrame="True"
+                                       DefaultValue="0.0"/>
+
+                        <core:PlcDeviceEditor Label="D120 Editor"
+                                              x:Name="OverviewD120Editor"
+                                              Address="D120"
+                                              helpers:PlcContext.Status="{Binding ElementName=PlcConnectionStatus}"
+                                              Height="96"
+                                              Width="360"
+                                              Margin="0,0,12,0"
+                                              RequiredLevel="Supervisor"/>
+                    </WrapPanel>
                 </StackPanel>
 
                 <controls:SystemClock Grid.Column="1"

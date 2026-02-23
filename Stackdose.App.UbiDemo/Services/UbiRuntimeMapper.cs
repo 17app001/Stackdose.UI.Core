@@ -149,6 +149,7 @@ public static class UbiRuntimeMapper
             .SelectMany(config => config.Tags.Status.Values.Concat(config.Tags.Process.Values))
             .Where(tag => string.Equals(tag.Access, "read", System.StringComparison.OrdinalIgnoreCase))
             .SelectMany(ExpandAddresses)
+            .Concat(GetManualPlcMonitorAddresses(configs))
             .Concat(GetUbiDevicePageFixedAddresses())
             .Concat(GetMachineAlertAddresses(configs))
             .Distinct(System.StringComparer.OrdinalIgnoreCase)
@@ -188,8 +189,49 @@ public static class UbiRuntimeMapper
     {
         return
         [
-            "D32", "D33", "D85", "D86", "D87", "D120", "D512", "D510", "D3400", "D3401"
+            "D32", "D33", "D85", "D86", "D87", "D120", "D512", "D510", "D3400", "D3401",
+            "D300", "D301", "D320", "D321",
+            "M200", "M201", "M202", "M220", "M221", "M222"
         ];
+    }
+
+    private static IEnumerable<string> GetManualPlcMonitorAddresses(IEnumerable<UbiMachineConfig> configs)
+    {
+        foreach (var config in configs)
+        {
+            foreach (var entry in config.Plc.MonitorAddresses)
+            {
+                if (string.IsNullOrWhiteSpace(entry))
+                {
+                    continue;
+                }
+
+                var tokens = entry.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                for (var i = 0; i < tokens.Length; i++)
+                {
+                    var token = tokens[i];
+                    var parsed = ParseAddress(token);
+                    if (parsed == null)
+                    {
+                        continue;
+                    }
+
+                    var (prefix, start) = parsed.Value;
+                    var length = 1;
+
+                    if (i + 1 < tokens.Length && int.TryParse(tokens[i + 1], out var parsedLength) && parsedLength > 1)
+                    {
+                        length = parsedLength;
+                        i++;
+                    }
+
+                    for (var offset = 0; offset < length; offset++)
+                    {
+                        yield return $"{prefix}{start + offset}";
+                    }
+                }
+            }
+        }
     }
 
     private static IEnumerable<string> GetMachineAlertAddresses(IEnumerable<UbiMachineConfig> configs)

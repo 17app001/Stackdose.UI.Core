@@ -65,12 +65,14 @@ public static class UbiRuntimeMapper
         return tag.Address;
     }
 
-    public static string GetAlarmConfigFile(string machineId)
+    public static string GetAlarmConfigFile(UbiMachineConfig config)
     {
-        var relativePath = machineId.ToUpperInvariant() switch
+        var relativePath = !string.IsNullOrWhiteSpace(config.AlarmConfigFile)
+            ? config.AlarmConfigFile
+            : config.Machine.Id.ToUpperInvariant() switch
         {
-            "M1" => "Config/MachineA.alarms.json",
-            "M2" => "Config/MachineB.alarms.json",
+            "M1" => "Config/MachineA/alarms.json",
+            "M2" => "Config/MachineB/alarms.json",
             _ => string.Empty
         };
 
@@ -79,12 +81,14 @@ public static class UbiRuntimeMapper
             : Path.Combine(AppContext.BaseDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
     }
 
-    public static string GetSensorConfigFile(string machineId)
+    public static string GetSensorConfigFile(UbiMachineConfig config)
     {
-        var relativePath = machineId.ToUpperInvariant() switch
+        var relativePath = !string.IsNullOrWhiteSpace(config.SensorConfigFile)
+            ? config.SensorConfigFile
+            : config.Machine.Id.ToUpperInvariant() switch
         {
-            "M1" => "Config/MachineA.sensors.json",
-            "M2" => "Config/MachineB.sensors.json",
+            "M1" => "Config/MachineA/sensors.json",
+            "M2" => "Config/MachineB/sensors.json",
             _ => string.Empty
         };
 
@@ -105,8 +109,8 @@ public static class UbiRuntimeMapper
 
         var fallback = config.Machine.Id.ToUpperInvariant() switch
         {
-            "M1" => new[] { "Config/MachineA.feiyang_head1.json", "Config/MachineA.feiyang_head2.json" },
-            "M2" => new[] { "Config/MachineB.feiyang_head1.json", "Config/MachineB.feiyang_head2.json" },
+            "M1" => new[] { "Config/MachineA/feiyang_head1.json", "Config/MachineA/feiyang_head2.json" },
+            "M2" => new[] { "Config/MachineB/feiyang_head1.json", "Config/MachineB/feiyang_head2.json" },
             _ => []
         };
 
@@ -131,7 +135,7 @@ public static class UbiRuntimeMapper
             LeftTopLabel = "Heartbeat",
             LeftTopValue = "0",
             LeftBottomLabel = "Alarm",
-            LeftBottomValue = "Normal",
+            LeftBottomValue = "0",
             RightTopLabel = "Nozzle",
             RightTopValue = "--",
             RightBottomLabel = "Mode",
@@ -192,12 +196,12 @@ public static class UbiRuntimeMapper
     {
         foreach (var config in configs)
         {
-            foreach (var address in ReadAddressesFromSensorFile(GetSensorConfigFile(config.Machine.Id)))
+            foreach (var address in ReadAddressesFromSensorFile(GetSensorConfigFile(config)))
             {
                 yield return address;
             }
 
-            foreach (var address in ReadAddressesFromAlarmFile(GetAlarmConfigFile(config.Machine.Id)))
+            foreach (var address in ReadAddressesFromAlarmFile(GetAlarmConfigFile(config)))
             {
                 yield return address;
             }

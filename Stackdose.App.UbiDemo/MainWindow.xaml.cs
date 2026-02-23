@@ -1,3 +1,4 @@
+using Stackdose.Abstractions.Hardware;
 using Stackdose.App.UbiDemo.Models;
 using Stackdose.App.UbiDemo.Pages;
 using Stackdose.App.UbiDemo.Services;
@@ -5,19 +6,27 @@ using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
 using Stackdose.UI.Templates.Pages;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Windows;
 
 namespace Stackdose.App.UbiDemo;
 
 public partial class MainWindow : Window
 {
+    private sealed record AlarmBitPoint(string Device, int Bit);
+    private sealed record OverviewAddressMap(string BatchAddress, string RecipeAddress, string NozzleAddress, string RunningAddress, string AlarmAddress);
+
     private UbiRuntimeContext? _runtime;
     private readonly LogViewerPage _logViewerPage = new();
     private readonly UserManagementPage _userManagementPage = new();
     private readonly SettingsPage _settingsPage = new();
     private string _defaultPageTitle = "Machine Overview";
     private string? _selectedMachineId;
+    private readonly Dictionary<string, OverviewAddressMap> _machineOverviewAddressMap = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, IReadOnlyList<AlarmBitPoint>> _machineAlarmMap = new(StringComparer.OrdinalIgnoreCase);
 
     public MainWindow()
     {
@@ -38,7 +47,10 @@ public partial class MainWindow : Window
 
         _defaultPageTitle = MainShell.PageTitle;
         _runtime.OverviewPage.MachineSelected += OnMachineSelected;
+        _runtime.OverviewPage.PlcScanUpdated += OnPlcScanUpdated;
         MainShell.NavigationRequested += OnNavigationRequested;
+
+        BuildOverviewAddressMap();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -46,6 +58,7 @@ public partial class MainWindow : Window
         if (_runtime is not null)
         {
             _runtime.OverviewPage.MachineSelected -= OnMachineSelected;
+            _runtime.OverviewPage.PlcScanUpdated -= OnPlcScanUpdated;
         }
 
         MainShell.NavigationRequested -= OnNavigationRequested;
@@ -132,8 +145,8 @@ public partial class MainWindow : Window
             NozzleAddress = UbiRuntimeMapper.GetTagAddress(config, "process", "nozzleTemp"),
             RunningAddress = UbiRuntimeMapper.GetTagAddress(config, "status", "isRunning"),
             AlarmAddress = UbiRuntimeMapper.GetTagAddress(config, "status", "isAlarm"),
-            AlarmConfigFile = UbiRuntimeMapper.GetAlarmConfigFile(config.Machine.Id),
-            SensorConfigFile = UbiRuntimeMapper.GetSensorConfigFile(config.Machine.Id),
+            AlarmConfigFile = UbiRuntimeMapper.GetAlarmConfigFile(config),
+            SensorConfigFile = UbiRuntimeMapper.GetSensorConfigFile(config),
             PrintHead1ConfigFile = printHeadConfigs.ElementAtOrDefault(0) ?? string.Empty,
             PrintHead2ConfigFile = printHeadConfigs.ElementAtOrDefault(1) ?? string.Empty
         });
@@ -141,5 +154,157 @@ public partial class MainWindow : Window
         MainShell.ShellContent = devicePage;
         MainShell.CurrentMachineDisplayName = config.Machine.Name;
         MainShell.PageTitle = "Machine Detail";
+    }
+
+    private void BuildOverviewAddressMap()
+    {
+        _machineOverviewAddressMap.Clear();
+        _machineAlarmMap.Clear();
+        if (_runtime is null)
+        {
+            return;
+        }
+
+        foreach (var pair in _runtime.Machines)
+        {
+            var config = pair.Value;
+            _machineOverviewAddressMap[pair.Key] = new OverviewAddressMap(
+                UbiRuntimeMapper.GetTagAddress(config, "process", "batchNo"),
+                UbiRuntimeMapper.GetTagAddress(config, "process", "recipeNo"),
+                UbiRuntimeMapper.GetTagAddress(config, "process", "nozzleTemp"),
+                UbiRuntimeMapper.GetTagAddress(config, "status", "isRunning"),
+                UbiRuntimeMapper.GetTagAddress(config, "status", "isAlarm"));
+
+            _machineAlarmMap[pair.Key] = LoadAlarmBitPoints(UbiRuntimeMapper.GetAlarmConfigFile(config));
+        }
+    }
+
+    private void OnPlcScanUpdated(IPlcManager manager)
+    {
+        if (_runtime?.OverviewPage.MachineCards is null || _machineOverviewAddressMap.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var card in _runtime.OverviewPage.MachineCards)
+        {
+            if (!_machineOverviewAddressMap.TryGetValue(card.MachineId, out var map))
+            {
+                continue;
+            }
+
+            var isRunning = ReadBoolAddress(manager, map.RunningAddress);
+            var isAlarm = ReadBoolAddress(manager, map.AlarmAddress);
+            var alarmCount = GetActiveAlarmCount(manager, card.MachineId);
+
+            card.StatusText = isRunning ? "Running" : "Idle";
+            card.StatusBrush = isAlarm
+                ? System.Windows.Media.Brushes.OrangeRed
+                : isRunning
+                    ? System.Windows.Media.Brushes.LimeGreen
+                    : System.Windows.Media.Brushes.SlateGray;
+
+            card.LeftBottomLabel = "Alarm";
+            card.LeftBottomValue = alarmCount.ToString();
+            card.RightTopLabel = "Nozzle";
+            card.RightTopValue = ReadWordText(manager, map.NozzleAddress);
+            card.BatchValue = ReadWordText(manager, map.BatchAddress);
+            card.RecipeText = ReadWordText(manager, map.RecipeAddress);
+        }
+    }
+
+    private static bool ReadBoolAddress(IPlcManager manager, string address)
+    {
+        if (string.IsNullOrWhiteSpace(address) || address == "--")
+        {
+            return false;
+        }
+
+        if (address.Contains('.', StringComparison.Ordinal))
+        {
+            var parts = address.Split('.', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 2 && int.TryParse(parts[1], out var bitIndex))
+            {
+                return manager.Monitor?.GetBit(parts[0], bitIndex) ?? false;
+            }
+        }
+
+        return manager.ReadBit(address) ?? false;
+    }
+
+    private static string ReadWordText(IPlcManager manager, string address)
+    {
+        if (string.IsNullOrWhiteSpace(address) || address == "--")
+        {
+            return "--";
+        }
+
+        var value = manager.ReadWord(address);
+        return value?.ToString() ?? "--";
+    }
+
+    private int GetActiveAlarmCount(IPlcManager manager, string machineId)
+    {
+        if (!_machineAlarmMap.TryGetValue(machineId, out var alarmPoints) || alarmPoints.Count == 0)
+        {
+            return 0;
+        }
+
+        var active = 0;
+        foreach (var point in alarmPoints)
+        {
+            var word = manager.ReadWord(point.Device);
+            if (word.HasValue && ((word.Value >> point.Bit) & 1) == 1)
+            {
+                active++;
+            }
+        }
+
+        return active;
+    }
+
+    private static IReadOnlyList<AlarmBitPoint> LoadAlarmBitPoints(string alarmConfigPath)
+    {
+        if (string.IsNullOrWhiteSpace(alarmConfigPath) || !File.Exists(alarmConfigPath))
+        {
+            return [];
+        }
+
+        try
+        {
+            using var json = JsonDocument.Parse(File.ReadAllText(alarmConfigPath));
+            if (!json.RootElement.TryGetProperty("Alarms", out var alarms) || alarms.ValueKind != JsonValueKind.Array)
+            {
+                return [];
+            }
+
+            var points = new List<AlarmBitPoint>();
+            foreach (var item in alarms.EnumerateArray())
+            {
+                if (!item.TryGetProperty("Device", out var deviceProp) || deviceProp.ValueKind != JsonValueKind.String)
+                {
+                    continue;
+                }
+
+                if (!item.TryGetProperty("Bit", out var bitProp) || !bitProp.TryGetInt32(out var bit))
+                {
+                    continue;
+                }
+
+                var device = deviceProp.GetString();
+                if (string.IsNullOrWhiteSpace(device))
+                {
+                    continue;
+                }
+
+                points.Add(new AlarmBitPoint(device.Trim().ToUpperInvariant(), bit));
+            }
+
+            return points;
+        }
+        catch
+        {
+            return [];
+        }
     }
 }

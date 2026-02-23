@@ -1,8 +1,8 @@
 {
   "machine": {
     "id": "M2",
-    "name": "Ubi Device 02",
-    "enable": true
+    "name": "Ubi Device B",
+    "enable": false
   },
   "plc": {
     "ip": "192.168.22.39",
@@ -10,9 +10,11 @@
     "pollIntervalMs": 150,
     "autoConnect": true
   },
+  "alarmConfigFile": "Config/MachineB/alarms.json",
+  "sensorConfigFile": "Config/MachineB/sensors.json",
   "printHeadConfigs": [
-    "Config/MachineB.feiyang_head1.json",
-    "Config/MachineB.feiyang_head2.json"
+    "Config/MachineB/feiyang_head1.json",
+    "Config/MachineB/feiyang_head2.json"
   ],
   "tags": {
     "status": {

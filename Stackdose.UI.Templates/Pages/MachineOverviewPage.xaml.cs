@@ -1,5 +1,7 @@
 using Stackdose.Abstractions.Hardware;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using System.Windows;
 using System.Windows.Controls;
@@ -235,22 +237,119 @@ public sealed class DelegateCommand : ICommand
     }
 }
 
-public sealed class MachineOverviewCard
+public sealed class MachineOverviewCard : INotifyPropertyChanged
 {
-    public string MachineId { get; set; } = string.Empty;
-    public string Title { get; set; } = string.Empty;
-    public string BatchValue { get; set; } = string.Empty;
-    public string RecipeText { get; set; } = string.Empty;
-    public string StatusText { get; set; } = string.Empty;
-    public Brush StatusBrush { get; set; } = Brushes.Gray;
-    public string LeftTopLabel { get; set; } = string.Empty;
-    public string LeftTopValue { get; set; } = string.Empty;
-    public string LeftBottomLabel { get; set; } = string.Empty;
-    public string LeftBottomValue { get; set; } = string.Empty;
-    public string RightTopLabel { get; set; } = string.Empty;
-    public string RightTopValue { get; set; } = string.Empty;
-    public string RightBottomLabel { get; set; } = string.Empty;
-    public string RightBottomValue { get; set; } = string.Empty;
+    private string _machineId = string.Empty;
+    private string _title = string.Empty;
+    private string _batchValue = string.Empty;
+    private string _recipeText = string.Empty;
+    private string _statusText = string.Empty;
+    private Brush _statusBrush = Brushes.Gray;
+    private string _leftTopLabel = string.Empty;
+    private string _leftTopValue = string.Empty;
+    private string _leftBottomLabel = string.Empty;
+    private string _leftBottomValue = string.Empty;
+    private string _rightTopLabel = string.Empty;
+    private string _rightTopValue = string.Empty;
+    private string _rightBottomLabel = string.Empty;
+    private string _rightBottomValue = string.Empty;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public string MachineId
+    {
+        get => _machineId;
+        set => SetProperty(ref _machineId, value);
+    }
+
+    public string Title
+    {
+        get => _title;
+        set => SetProperty(ref _title, value);
+    }
+
+    public string BatchValue
+    {
+        get => _batchValue;
+        set => SetProperty(ref _batchValue, value);
+    }
+
+    public string RecipeText
+    {
+        get => _recipeText;
+        set => SetProperty(ref _recipeText, value);
+    }
+
+    public string StatusText
+    {
+        get => _statusText;
+        set => SetProperty(ref _statusText, value);
+    }
+
+    public Brush StatusBrush
+    {
+        get => _statusBrush;
+        set => SetProperty(ref _statusBrush, value);
+    }
+
+    public string LeftTopLabel
+    {
+        get => _leftTopLabel;
+        set => SetProperty(ref _leftTopLabel, value);
+    }
+
+    public string LeftTopValue
+    {
+        get => _leftTopValue;
+        set => SetProperty(ref _leftTopValue, value);
+    }
+
+    public string LeftBottomLabel
+    {
+        get => _leftBottomLabel;
+        set => SetProperty(ref _leftBottomLabel, value);
+    }
+
+    public string LeftBottomValue
+    {
+        get => _leftBottomValue;
+        set => SetProperty(ref _leftBottomValue, value);
+    }
+
+    public string RightTopLabel
+    {
+        get => _rightTopLabel;
+        set => SetProperty(ref _rightTopLabel, value);
+    }
+
+    public string RightTopValue
+    {
+        get => _rightTopValue;
+        set => SetProperty(ref _rightTopValue, value);
+    }
+
+    public string RightBottomLabel
+    {
+        get => _rightBottomLabel;
+        set => SetProperty(ref _rightBottomLabel, value);
+    }
+
+    public string RightBottomValue
+    {
+        get => _rightBottomValue;
+        set => SetProperty(ref _rightBottomValue, value);
+    }
+
+    private void SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return;
+        }
+
+        field = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 }
 
 public sealed class OverviewInfoItem

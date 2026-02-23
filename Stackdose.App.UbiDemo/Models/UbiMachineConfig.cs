@@ -5,6 +5,8 @@ public sealed class UbiMachineConfig
     public UbiMachineInfo Machine { get; set; } = new();
     public UbiPlcInfo Plc { get; set; } = new();
     public UbiTagSections Tags { get; set; } = new();
+    public string AlarmConfigFile { get; set; } = string.Empty;
+    public string SensorConfigFile { get; set; } = string.Empty;
     public List<string> PrintHeadConfigs { get; set; } = [];
 }
 

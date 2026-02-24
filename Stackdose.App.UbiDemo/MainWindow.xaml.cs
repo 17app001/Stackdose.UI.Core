@@ -60,13 +60,8 @@ public partial class MainWindow : Window
                 $"{machine.Machine.Name} ({machine.Machine.Id})"))
             .ToList();
 
-        var firstMachine = _runtime.Machines.Values.FirstOrDefault();
-        if (firstMachine != null)
-        {
-            _selectedMachineId = firstMachine.Machine.Id;
-            MainShell.SelectedMachineId = firstMachine.Machine.Id;
-            MainShell.CurrentMachineDisplayName = firstMachine.Machine.Name;
-        }
+        // Do NOT pre-select any machine; leave SelectedMachineId null so the
+        // "Select Machine" placeholder is shown on first load.
         _suppressHeaderMachineSelection = false;
 
         MainShell.SelectNavigationTarget("MachineOverviewPage");

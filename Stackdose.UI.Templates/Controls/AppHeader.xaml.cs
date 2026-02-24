@@ -57,7 +57,8 @@ namespace Stackdose.UI.Templates.Controls
 
         public static readonly DependencyProperty SelectedMachineIdProperty =
             DependencyProperty.Register(nameof(SelectedMachineId), typeof(string), typeof(AppHeader),
-                new PropertyMetadata(string.Empty));
+                new PropertyMetadata(null));
+
 
         public string MachineDisplayName
         {

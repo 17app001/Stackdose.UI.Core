@@ -3,6 +3,7 @@ using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
 using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -50,10 +51,30 @@ namespace Stackdose.UI.Templates.Controls
             DependencyProperty.Register(nameof(MachineDisplayName), typeof(string), typeof(AppHeader),
                 new PropertyMetadata(string.Empty));
 
+        public static readonly DependencyProperty MachineOptionsProperty =
+            DependencyProperty.Register(nameof(MachineOptions), typeof(IEnumerable), typeof(AppHeader),
+                new PropertyMetadata(null));
+
+        public static readonly DependencyProperty SelectedMachineIdProperty =
+            DependencyProperty.Register(nameof(SelectedMachineId), typeof(string), typeof(AppHeader),
+                new PropertyMetadata(string.Empty));
+
         public string MachineDisplayName
         {
             get => (string)GetValue(MachineDisplayNameProperty);
             set => SetValue(MachineDisplayNameProperty, value);
+        }
+
+        public IEnumerable? MachineOptions
+        {
+            get => (IEnumerable?)GetValue(MachineOptionsProperty);
+            set => SetValue(MachineOptionsProperty, value);
+        }
+
+        public string SelectedMachineId
+        {
+            get => (string)GetValue(SelectedMachineIdProperty);
+            set => SetValue(SelectedMachineIdProperty, value);
         }
 
         private string _userName = "Guest";
@@ -94,6 +115,7 @@ namespace Stackdose.UI.Templates.Controls
         public event RoutedEventHandler? CloseClicked;
         public event RoutedEventHandler? SwitchUserClicked;
         public event RoutedEventHandler? FullscreenClicked;
+        public event EventHandler<string>? MachineSelectionChanged;
 
         public AppHeader()
         {
@@ -314,6 +336,16 @@ namespace Stackdose.UI.Templates.Controls
             {
                 ComplianceContext.LogSystem($"[AppHeader] Close failed: {ex.Message}", LogLevel.Error, showInUi: false);
             }
+        }
+
+        private void MachineSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(SelectedMachineId))
+            {
+                return;
+            }
+
+            MachineSelectionChanged?.Invoke(this, SelectedMachineId);
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

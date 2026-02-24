@@ -198,5 +198,28 @@ namespace Stackdose.UI.Templates.Controls
             item.IsSelected = true;
             NavigationRequested?.Invoke(this, item);
         }
+
+        public void SelectNavigationTarget(string navigationTarget)
+        {
+            if (NavigationItems == null || string.IsNullOrWhiteSpace(navigationTarget))
+            {
+                return;
+            }
+
+            var targetItem = NavigationItems.FirstOrDefault(item =>
+                string.Equals(item.NavigationTarget, navigationTarget, StringComparison.OrdinalIgnoreCase));
+
+            if (targetItem == null)
+            {
+                return;
+            }
+
+            foreach (var navItem in NavigationItems)
+            {
+                navItem.IsSelected = false;
+            }
+
+            targetItem.IsSelected = true;
+        }
     }
 }

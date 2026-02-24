@@ -1,8 +1,11 @@
 using Stackdose.UI.Templates.Controls;
 using System;
+using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace Stackdose.UI.Templates.Shell
 {
@@ -20,6 +23,12 @@ namespace Stackdose.UI.Templates.Shell
         public static readonly DependencyProperty HeaderDeviceNameProperty =
             DependencyProperty.Register(nameof(HeaderDeviceName), typeof(string), typeof(MainContainer), new PropertyMetadata("MODEL-B"));
 
+        public static readonly DependencyProperty MachineOptionsProperty =
+            DependencyProperty.Register(nameof(MachineOptions), typeof(IEnumerable), typeof(MainContainer), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty SelectedMachineIdProperty =
+            DependencyProperty.Register(nameof(SelectedMachineId), typeof(string), typeof(MainContainer), new PropertyMetadata(string.Empty));
+
         public static readonly DependencyProperty ShellContentProperty =
             DependencyProperty.Register(nameof(ShellContent), typeof(object), typeof(MainContainer), new PropertyMetadata(null));
 
@@ -27,6 +36,7 @@ namespace Stackdose.UI.Templates.Shell
         public event EventHandler? LogoutRequested;
         public event EventHandler? CloseRequested;
         public event EventHandler? MinimizeRequested;
+        public event EventHandler<string>? MachineSelectionRequested;
 
         public string PageTitle
         {
@@ -52,6 +62,18 @@ namespace Stackdose.UI.Templates.Shell
             set => SetValue(HeaderDeviceNameProperty, value);
         }
 
+        public IEnumerable? MachineOptions
+        {
+            get => (IEnumerable?)GetValue(MachineOptionsProperty);
+            set => SetValue(MachineOptionsProperty, value);
+        }
+
+        public string SelectedMachineId
+        {
+            get => (string)GetValue(SelectedMachineIdProperty);
+            set => SetValue(SelectedMachineIdProperty, value);
+        }
+
         public object? ShellContent
         {
             get => GetValue(ShellContentProperty);
@@ -65,10 +87,41 @@ namespace Stackdose.UI.Templates.Shell
 
         private void Header_DragMove(object sender, MouseButtonEventArgs e)
         {
+            if (IsFromInteractiveHeaderElement(e.OriginalSource as DependencyObject))
+            {
+                return;
+            }
+
             if (e.ButtonState == MouseButtonState.Pressed)
             {
                 Window.GetWindow(this)?.DragMove();
             }
+        }
+
+        private static bool IsFromInteractiveHeaderElement(DependencyObject? source)
+        {
+            if (source == null)
+            {
+                return false;
+            }
+
+            DependencyObject? current = source;
+            while (current != null)
+            {
+                if (current is ButtonBase
+                    || current is ComboBox
+                    || current is ComboBoxItem
+                    || current is TextBox
+                    || current is PasswordBox
+                    || current is Selector)
+                {
+                    return true;
+                }
+
+                current = VisualTreeHelper.GetParent(current);
+            }
+
+            return false;
         }
 
         public void SetContent(object content, string title)
@@ -90,6 +143,17 @@ namespace Stackdose.UI.Templates.Shell
         public void SetCurrentMachineDisplayName(string machineName)
         {
             CurrentMachineDisplayName = machineName;
+        }
+
+        public void SetMachineSelection(IEnumerable options, string selectedMachineId)
+        {
+            MachineOptions = options;
+            SelectedMachineId = selectedMachineId;
+        }
+
+        public void SelectNavigationTarget(string target)
+        {
+            LeftNavigationControl?.SelectNavigationTarget(target);
         }
 
         private void OnLogout(object sender, RoutedEventArgs e)
@@ -117,6 +181,16 @@ namespace Stackdose.UI.Templates.Shell
         private void OnNavigate(object sender, NavigationItem e)
         {
             NavigationRequested?.Invoke(this, e.NavigationTarget);
+        }
+
+        private void OnMachineSelectionChanged(object? sender, string machineId)
+        {
+            if (string.IsNullOrWhiteSpace(machineId))
+            {
+                return;
+            }
+
+            MachineSelectionRequested?.Invoke(this, machineId);
         }
     }
 }

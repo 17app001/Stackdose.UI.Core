@@ -28,6 +28,7 @@ public partial class MainWindow : Window
     private string? _selectedMachineId;
     private readonly Dictionary<string, OverviewAddressMap> _machineOverviewAddressMap = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, IReadOnlyList<AlarmBitPoint>> _machineAlarmMap = new(StringComparer.OrdinalIgnoreCase);
+    private bool _suppressHeaderMachineSelection;
 
     public MainWindow()
     {
@@ -50,6 +51,25 @@ public partial class MainWindow : Window
         _runtime.OverviewPage.MachineSelected += OnMachineSelected;
         _runtime.OverviewPage.PlcScanUpdated += OnPlcScanUpdated;
         MainShell.NavigationRequested += OnNavigationRequested;
+        MainShell.MachineSelectionRequested += OnMachineSelectionRequested;
+
+        _suppressHeaderMachineSelection = true;
+        MainShell.MachineOptions = _runtime.Machines.Values
+            .Select(machine => new KeyValuePair<string, string>(
+                machine.Machine.Id,
+                $"{machine.Machine.Name} ({machine.Machine.Id})"))
+            .ToList();
+
+        var firstMachine = _runtime.Machines.Values.FirstOrDefault();
+        if (firstMachine != null)
+        {
+            _selectedMachineId = firstMachine.Machine.Id;
+            MainShell.SelectedMachineId = firstMachine.Machine.Id;
+            MainShell.CurrentMachineDisplayName = firstMachine.Machine.Name;
+        }
+        _suppressHeaderMachineSelection = false;
+
+        MainShell.SelectNavigationTarget("MachineOverviewPage");
 
         BuildOverviewAddressMap();
     }
@@ -63,11 +83,13 @@ public partial class MainWindow : Window
         }
 
         MainShell.NavigationRequested -= OnNavigationRequested;
+        MainShell.MachineSelectionRequested -= OnMachineSelectionRequested;
     }
 
     private void OnMachineSelected(string machineId)
     {
         NavigateToDevicePage(machineId);
+        MainShell.SelectNavigationTarget("MachineDetailPage");
     }
 
     private void OnNavigationRequested(object? sender, string target)
@@ -81,6 +103,7 @@ public partial class MainWindow : Window
         {
             MainShell.ShellContent = _runtime.OverviewPage;
             MainShell.PageTitle = _defaultPageTitle;
+            MainShell.SelectNavigationTarget("MachineOverviewPage");
             if (!string.IsNullOrWhiteSpace(_selectedMachineId) && _runtime.Machines.TryGetValue(_selectedMachineId, out var selectedMachine))
             {
                 MainShell.CurrentMachineDisplayName = selectedMachine.Machine.Name;
@@ -91,6 +114,7 @@ public partial class MainWindow : Window
 
         if (string.Equals(target, "MachineDetailPage", StringComparison.OrdinalIgnoreCase))
         {
+            MainShell.SelectNavigationTarget("MachineDetailPage");
             if (!string.IsNullOrWhiteSpace(_selectedMachineId) && _runtime.Machines.ContainsKey(_selectedMachineId))
             {
                 NavigateToDevicePage(_selectedMachineId);
@@ -110,6 +134,7 @@ public partial class MainWindow : Window
         {
             MainShell.ShellContent = _logViewerPage;
             MainShell.PageTitle = "Log Viewer";
+            MainShell.SelectNavigationTarget("LogViewerPage");
             return;
         }
 
@@ -117,6 +142,7 @@ public partial class MainWindow : Window
         {
             MainShell.ShellContent = _userManagementPage;
             MainShell.PageTitle = "User Management";
+            MainShell.SelectNavigationTarget("UserManagementPage");
             return;
         }
 
@@ -125,6 +151,7 @@ public partial class MainWindow : Window
             _settingsPage.SetMonitorAddresses(_runtime.OverviewPage.PlcMonitorAddresses);
             MainShell.ShellContent = _settingsPage;
             MainShell.PageTitle = "Maintenance Mode";
+            MainShell.SelectNavigationTarget("SettingsPage");
         }
     }
 
@@ -171,7 +198,19 @@ public partial class MainWindow : Window
 
         MainShell.ShellContent = devicePage;
         MainShell.CurrentMachineDisplayName = config.Machine.Name;
+        MainShell.SelectedMachineId = machineId;
         MainShell.PageTitle = "Machine Detail";
+    }
+
+    private void OnMachineSelectionRequested(object? sender, string machineId)
+    {
+        if (_suppressHeaderMachineSelection || string.IsNullOrWhiteSpace(machineId))
+        {
+            return;
+        }
+
+        NavigateToDevicePage(machineId);
+        MainShell.SelectNavigationTarget("MachineDetailPage");
     }
 
     private void BuildOverviewAddressMap()

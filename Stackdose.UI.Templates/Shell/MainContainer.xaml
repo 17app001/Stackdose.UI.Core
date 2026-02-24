@@ -33,6 +33,9 @@
                             DeviceName="{Binding ElementName=Root, Path=HeaderDeviceName}"
                             ShowMachineBadge="{Binding ElementName=Root, Path=IsShellMode}"
                             MachineDisplayName="{Binding ElementName=Root, Path=CurrentMachineDisplayName}"
+                            MachineOptions="{Binding ElementName=Root, Path=MachineOptions}"
+                            SelectedMachineId="{Binding ElementName=Root, Path=SelectedMachineId, Mode=TwoWay}"
+                            MachineSelectionChanged="OnMachineSelectionChanged"
                             LogoutClicked="OnLogout"
                             MinimizeClicked="OnMinimize"
                             CloseClicked="OnClose"/>

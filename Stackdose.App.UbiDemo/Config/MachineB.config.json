@@ -2,7 +2,7 @@
   "machine": {
     "id": "M2",
     "name": "Ubi Device B",
-    "enable": false
+    "enable": true
   },
   "plc": {
     "ip": "192.168.22.39",

@@ -2,7 +2,7 @@
   "machine": {
     "id": "M2",
     "name": "Ubi Device B",
-    "enable": true
+    "enable": false
   },
   "plc": {
     "ip": "192.168.22.39",
@@ -10,10 +10,7 @@
     "pollIntervalMs": 150,
     "autoConnect": true,
     "monitorAddresses": [
-      "D120",
-      "D130",
-      "M250",
-      "D500,4"
+     
     ]
   },
   "alarmConfigFile": "Config/MachineB/alarms.json",
@@ -22,6 +19,18 @@
     "Config/MachineB/feiyang_head1.json",
     "Config/MachineB/feiyang_head2.json"
   ],
+  "detailLabels": {
+    "totalTray": "D530",
+    "currentTray": "D531",
+    "totalLayer": "D532",
+    "currentLayer": "D533",
+    "switchGraphicLayer": "D534",
+    "switchAreaLayer": "D535",
+    "messageId": "D536",
+    "battery": "D537",
+    "elapsedTime": "D538",
+    "printHeadCount": "D539"
+  },
   "tags": {
     "status": {
       "isConnected": { "address": "M220", "type": "bool", "access": "read" },

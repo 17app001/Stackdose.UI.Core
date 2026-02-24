@@ -8,6 +8,7 @@ public sealed class UbiMachineConfig
     public string AlarmConfigFile { get; set; } = string.Empty;
     public string SensorConfigFile { get; set; } = string.Empty;
     public List<string> PrintHeadConfigs { get; set; } = [];
+    public Dictionary<string, string> DetailLabels { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 public sealed class UbiMachineInfo
@@ -72,4 +73,15 @@ public sealed class DeviceContext
     public string SensorConfigFile { get; set; } = string.Empty;
     public string PrintHead1ConfigFile { get; set; } = string.Empty;
     public string PrintHead2ConfigFile { get; set; } = string.Empty;
+
+    public string TotalTrayAddress { get; set; } = "D3400";
+    public string CurrentTrayAddress { get; set; } = "D33";
+    public string TotalLayerAddress { get; set; } = "D3401";
+    public string CurrentLayerAddress { get; set; } = "D32";
+    public string SwitchGraphicLayerAddress { get; set; } = "D510";
+    public string SwitchAreaLayerAddress { get; set; } = "D512";
+    public string MessageIdAddress { get; set; } = "D85";
+    public string BatteryAddress { get; set; } = "D120";
+    public string ElapsedTimeAddress { get; set; } = "D86";
+    public string PrintHeadCountAddress { get; set; } = "D87";
 }

@@ -155,7 +155,18 @@ public partial class MainWindow : Window
             AlarmConfigFile = UbiRuntimeMapper.GetAlarmConfigFile(config),
             SensorConfigFile = UbiRuntimeMapper.GetSensorConfigFile(config),
             PrintHead1ConfigFile = printHeadConfigs.ElementAtOrDefault(0) ?? string.Empty,
-            PrintHead2ConfigFile = printHeadConfigs.ElementAtOrDefault(1) ?? string.Empty
+            PrintHead2ConfigFile = printHeadConfigs.ElementAtOrDefault(1) ?? string.Empty,
+
+            TotalTrayAddress = UbiRuntimeMapper.GetDetailLabelAddress(config, "totalTray", "D3400"),
+            CurrentTrayAddress = UbiRuntimeMapper.GetDetailLabelAddress(config, "currentTray", "D33"),
+            TotalLayerAddress = UbiRuntimeMapper.GetDetailLabelAddress(config, "totalLayer", "D3401"),
+            CurrentLayerAddress = UbiRuntimeMapper.GetDetailLabelAddress(config, "currentLayer", "D32"),
+            SwitchGraphicLayerAddress = UbiRuntimeMapper.GetDetailLabelAddress(config, "switchGraphicLayer", "D510"),
+            SwitchAreaLayerAddress = UbiRuntimeMapper.GetDetailLabelAddress(config, "switchAreaLayer", "D512"),
+            MessageIdAddress = UbiRuntimeMapper.GetDetailLabelAddress(config, "messageId", "D85"),
+            BatteryAddress = UbiRuntimeMapper.GetDetailLabelAddress(config, "battery", "D120"),
+            ElapsedTimeAddress = UbiRuntimeMapper.GetDetailLabelAddress(config, "elapsedTime", "D86"),
+            PrintHeadCountAddress = UbiRuntimeMapper.GetDetailLabelAddress(config, "printHeadCount", "D87")
         });
 
         MainShell.ShellContent = devicePage;

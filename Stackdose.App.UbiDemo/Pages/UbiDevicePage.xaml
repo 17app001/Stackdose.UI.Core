@@ -51,16 +51,16 @@
                                     <Setter Property="Margin" Value="2" />
                                 </Style>
                             </UniformGrid.Resources>
-                            <core:PlcLabel Label="總盤數" Address="D3400" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="目前列印盤數" Address="D33" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="總層數" Address="D3401" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="目前列印層數" Address="D32" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="切換圖形(層)" Address="D510" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="切換區域(層)" Address="D512" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="MessageID" Address="D85" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="電池" Address="D120" Divisor="10" StringFormat="F1" ShowFrame="True" DefaultValue="0.0" />
-                            <core:PlcLabel Label="經過時間" Address="D86" ShowFrame="True" DefaultValue="00:00:00" />
-                            <core:PlcLabel Label="PrintHead Count" Address="D87" ShowFrame="True" DefaultValue="2" />
+                            <core:PlcLabel Label="總盤數" Address="{Binding TotalTrayAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="目前列印盤數" Address="{Binding CurrentTrayAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="總層數" Address="{Binding TotalLayerAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="目前列印層數" Address="{Binding CurrentLayerAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="切換圖形(層)" Address="{Binding SwitchGraphicLayerAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="切換區域(層)" Address="{Binding SwitchAreaLayerAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="MessageID" Address="{Binding MessageIdAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="電池" Address="{Binding BatteryAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" Divisor="10" StringFormat="F1" ShowFrame="True" DefaultValue="0.0" />
+                            <core:PlcLabel Label="經過時間" Address="{Binding ElapsedTimeAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="00:00:00" />
+                            <core:PlcLabel Label="PrintHead Count" Address="{Binding PrintHeadCountAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="2" />
                             <core:PlcLabel Label="Batch" Address="{Binding BatchAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="--"/>
                             <core:PlcLabel Label="Recipe" Address="{Binding RecipeAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="--"/>
                             <core:PlcLabel Label="Nozzle" Address="{Binding NozzleAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="--"/>

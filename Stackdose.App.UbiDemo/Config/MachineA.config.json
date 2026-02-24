@@ -22,6 +22,18 @@
     "Config/MachineA/feiyang_head1.json",
     "Config/MachineA/feiyang_head2.json"
   ],
+  "detailLabels": {
+    "totalTray": "D3400",
+    "currentTray": "D33",
+    "totalLayer": "D3401",
+    "currentLayer": "D32",
+    "switchGraphicLayer": "D510",
+    "switchAreaLayer": "D512",
+    "messageId": "D85",
+    "battery": "D120",
+    "elapsedTime": "D86",
+    "printHeadCount": "D87"
+  },
   "tags": {
     "status": {
       "isConnected": { "address": "M200", "type": "bool", "access": "read" },

@@ -131,9 +131,9 @@
                 Padding="6">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.2*"/>
+                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="6"/>
-                    <ColumnDefinition Width="1.4*"/>
+                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="6"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="4"/>
@@ -143,6 +143,7 @@
                 <TextBox x:Name="TxtAddress"
                          Grid.Column="0"
                          Style="{StaticResource EditorInputStyle}"
+                         MinWidth="120"
                          Text="{Binding Address, ElementName=root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=D10}"
                          IsEnabled="{Binding IsAuthorized, ElementName=root}"
                          ToolTip="PLC Address (Ex: M0, D100, R2002)"/>
@@ -170,6 +171,7 @@
                 <TextBox x:Name="TxtValue"
                          Grid.Column="2"
                          Style="{StaticResource EditorInputStyle}"
+                         MinWidth="120"
                          Text="{Binding Value, ElementName=root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=0}"
                          Foreground="{DynamicResource Plc.Text.Value}"
                          FontWeight="Bold"

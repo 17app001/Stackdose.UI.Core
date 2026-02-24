@@ -32,9 +32,8 @@
                         <Setter Property="Background" Value="{StaticResource HoverBackgroundBrush}"/>
                     </MultiDataTrigger>
                     <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                        <Setter Property="Background" Value="{StaticResource HoverBackgroundBrush}"/>
-                        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
-                        <Setter Property="BorderThickness" Value="2"/>
+                        <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
+                        <Setter Property="BorderThickness" Value="0"/>
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
@@ -71,7 +70,7 @@
                                                     <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+                                                            <Setter Property="Foreground" Value="{StaticResource WarningBrush}"/>
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding IsEnabled}" Value="False">
                                                             <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}"/>

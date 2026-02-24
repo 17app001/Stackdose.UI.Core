@@ -6,7 +6,6 @@ using System.Windows.Input;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Stackdose.UI.Core.Helpers;
 
 namespace Stackdose.UI.Templates.Pages;
 
@@ -190,9 +189,6 @@ public partial class MachineOverviewPage : UserControl
     {
         InitializeComponent();
 
-        Loaded += OnLoaded;
-        Unloaded += OnUnloaded;
-
         SelectMachineCommand = new DelegateCommand(param =>
         {
             if (param is string machineId && !string.IsNullOrWhiteSpace(machineId))
@@ -212,31 +208,6 @@ public partial class MachineOverviewPage : UserControl
             new OverviewInfoItem("Runtime", ".NET Windows"),
             new OverviewInfoItem("PLC Driver", "Mitsubishi MC Protocol")
         ];
-    }
-
-    private void OnLoaded(object sender, RoutedEventArgs e)
-    {
-        // Ensure the overview controls are bound to the same PlcStatus instance
-        // during first render, even when element binding resolves later.
-        if (OverviewD120Label != null)
-        {
-            OverviewD120Label.TargetStatus = PlcConnectionStatus;
-            PlcContext.SetStatus(OverviewD120Label, PlcConnectionStatus);
-        }
-        
-        if (OverviewD120Editor != null)
-        {
-            PlcContext.SetStatus(OverviewD120Editor, PlcConnectionStatus);
-        }
-        
-        if (PlcConnectionStatus?.CurrentManager != null && PlcConnectionStatus.CurrentManager.IsConnected && OverviewD120Label != null)
-        {
-            OverviewD120Label.RefreshFrom(PlcConnectionStatus.CurrentManager);
-        }
-    }
-    
-    private void OnUnloaded(object sender, RoutedEventArgs e)
-    {
     }
 
     private void OnPlcScanUpdated(IPlcManager manager)

@@ -182,12 +182,6 @@
 
                 <!-- Title -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="ALM" 
-                               Foreground="{DynamicResource Status.Error}"
-                               FontSize="15"
-                               FontWeight="Bold"
-                               FontFamily="Consolas"
-                               Margin="0,0,8,0"/>
                     <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                Foreground="{DynamicResource Sensor.Text.Title}" 
                                FontSize="16" 

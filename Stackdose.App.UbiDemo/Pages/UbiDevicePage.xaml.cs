@@ -34,6 +34,36 @@ public partial class UbiDevicePage : UserControl
     public static readonly DependencyProperty PrintHead2ConfigFileProperty =
         DependencyProperty.Register(nameof(PrintHead2ConfigFile), typeof(string), typeof(UbiDevicePage), new PropertyMetadata(string.Empty));
 
+    public static readonly DependencyProperty TotalTrayAddressProperty =
+        DependencyProperty.Register(nameof(TotalTrayAddress), typeof(string), typeof(UbiDevicePage), new PropertyMetadata("D3400"));
+
+    public static readonly DependencyProperty CurrentTrayAddressProperty =
+        DependencyProperty.Register(nameof(CurrentTrayAddress), typeof(string), typeof(UbiDevicePage), new PropertyMetadata("D33"));
+
+    public static readonly DependencyProperty TotalLayerAddressProperty =
+        DependencyProperty.Register(nameof(TotalLayerAddress), typeof(string), typeof(UbiDevicePage), new PropertyMetadata("D3401"));
+
+    public static readonly DependencyProperty CurrentLayerAddressProperty =
+        DependencyProperty.Register(nameof(CurrentLayerAddress), typeof(string), typeof(UbiDevicePage), new PropertyMetadata("D32"));
+
+    public static readonly DependencyProperty SwitchGraphicLayerAddressProperty =
+        DependencyProperty.Register(nameof(SwitchGraphicLayerAddress), typeof(string), typeof(UbiDevicePage), new PropertyMetadata("D510"));
+
+    public static readonly DependencyProperty SwitchAreaLayerAddressProperty =
+        DependencyProperty.Register(nameof(SwitchAreaLayerAddress), typeof(string), typeof(UbiDevicePage), new PropertyMetadata("D512"));
+
+    public static readonly DependencyProperty MessageIdAddressProperty =
+        DependencyProperty.Register(nameof(MessageIdAddress), typeof(string), typeof(UbiDevicePage), new PropertyMetadata("D85"));
+
+    public static readonly DependencyProperty BatteryAddressProperty =
+        DependencyProperty.Register(nameof(BatteryAddress), typeof(string), typeof(UbiDevicePage), new PropertyMetadata("D120"));
+
+    public static readonly DependencyProperty ElapsedTimeAddressProperty =
+        DependencyProperty.Register(nameof(ElapsedTimeAddress), typeof(string), typeof(UbiDevicePage), new PropertyMetadata("D86"));
+
+    public static readonly DependencyProperty PrintHeadCountAddressProperty =
+        DependencyProperty.Register(nameof(PrintHeadCountAddress), typeof(string), typeof(UbiDevicePage), new PropertyMetadata("D87"));
+
     public string MachineName
     {
         get => (string)GetValue(MachineNameProperty);
@@ -88,6 +118,66 @@ public partial class UbiDevicePage : UserControl
         set => SetValue(PrintHead2ConfigFileProperty, value);
     }
 
+    public string TotalTrayAddress
+    {
+        get => (string)GetValue(TotalTrayAddressProperty);
+        set => SetValue(TotalTrayAddressProperty, value);
+    }
+
+    public string CurrentTrayAddress
+    {
+        get => (string)GetValue(CurrentTrayAddressProperty);
+        set => SetValue(CurrentTrayAddressProperty, value);
+    }
+
+    public string TotalLayerAddress
+    {
+        get => (string)GetValue(TotalLayerAddressProperty);
+        set => SetValue(TotalLayerAddressProperty, value);
+    }
+
+    public string CurrentLayerAddress
+    {
+        get => (string)GetValue(CurrentLayerAddressProperty);
+        set => SetValue(CurrentLayerAddressProperty, value);
+    }
+
+    public string SwitchGraphicLayerAddress
+    {
+        get => (string)GetValue(SwitchGraphicLayerAddressProperty);
+        set => SetValue(SwitchGraphicLayerAddressProperty, value);
+    }
+
+    public string SwitchAreaLayerAddress
+    {
+        get => (string)GetValue(SwitchAreaLayerAddressProperty);
+        set => SetValue(SwitchAreaLayerAddressProperty, value);
+    }
+
+    public string MessageIdAddress
+    {
+        get => (string)GetValue(MessageIdAddressProperty);
+        set => SetValue(MessageIdAddressProperty, value);
+    }
+
+    public string BatteryAddress
+    {
+        get => (string)GetValue(BatteryAddressProperty);
+        set => SetValue(BatteryAddressProperty, value);
+    }
+
+    public string ElapsedTimeAddress
+    {
+        get => (string)GetValue(ElapsedTimeAddressProperty);
+        set => SetValue(ElapsedTimeAddressProperty, value);
+    }
+
+    public string PrintHeadCountAddress
+    {
+        get => (string)GetValue(PrintHeadCountAddressProperty);
+        set => SetValue(PrintHeadCountAddressProperty, value);
+    }
+
     public ObservableCollection<string> CommandKeys { get; } =
     [
         "DeviceInitialization",
@@ -116,5 +206,15 @@ public partial class UbiDevicePage : UserControl
         SensorConfigFile = context.SensorConfigFile;
         PrintHead1ConfigFile = context.PrintHead1ConfigFile;
         PrintHead2ConfigFile = context.PrintHead2ConfigFile;
+        TotalTrayAddress = context.TotalTrayAddress;
+        CurrentTrayAddress = context.CurrentTrayAddress;
+        TotalLayerAddress = context.TotalLayerAddress;
+        CurrentLayerAddress = context.CurrentLayerAddress;
+        SwitchGraphicLayerAddress = context.SwitchGraphicLayerAddress;
+        SwitchAreaLayerAddress = context.SwitchAreaLayerAddress;
+        MessageIdAddress = context.MessageIdAddress;
+        BatteryAddress = context.BatteryAddress;
+        ElapsedTimeAddress = context.ElapsedTimeAddress;
+        PrintHeadCountAddress = context.PrintHeadCountAddress;
     }
 }

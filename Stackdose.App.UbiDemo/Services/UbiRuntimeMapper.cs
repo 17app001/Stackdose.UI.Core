@@ -65,6 +65,16 @@ public static class UbiRuntimeMapper
         return tag.Address;
     }
 
+    public static string GetDetailLabelAddress(UbiMachineConfig config, string key, string fallback)
+    {
+        if (config.DetailLabels.TryGetValue(key, out var address) && !string.IsNullOrWhiteSpace(address))
+        {
+            return address.Trim();
+        }
+
+        return fallback;
+    }
+
     public static string GetAlarmConfigFile(UbiMachineConfig config)
     {
         var relativePath = !string.IsNullOrWhiteSpace(config.AlarmConfigFile)
@@ -150,7 +160,7 @@ public static class UbiRuntimeMapper
             .Where(tag => string.Equals(tag.Access, "read", System.StringComparison.OrdinalIgnoreCase))
             .SelectMany(ExpandAddresses)
             .Concat(GetManualPlcMonitorAddresses(configs))
-            .Concat(GetUbiDevicePageFixedAddresses())
+            .Concat(GetUbiDevicePageDetailLabelAddresses(configs))
             .Concat(GetMachineAlertAddresses(configs))
             .Distinct(System.StringComparer.OrdinalIgnoreCase)
             .ToList();
@@ -185,14 +195,33 @@ public static class UbiRuntimeMapper
         return string.Join(",", groups);
     }
 
-    private static IEnumerable<string> GetUbiDevicePageFixedAddresses()
+    private static IEnumerable<string> GetUbiDevicePageDetailLabelAddresses(IEnumerable<UbiMachineConfig> configs)
     {
-        return
-        [
-            "D32", "D33", "D85", "D86", "D87", "D120", "D512", "D510", "D3400", "D3401",
-            "D300", "D301", "D320", "D321",
-            "M200", "M201", "M202", "M220", "M221", "M222"
-        ];
+        var defaultAddresses = new[]
+        {
+            "D3400", "D33", "D3401", "D32", "D510", "D512", "D85", "D120", "D86", "D87"
+        };
+
+        foreach (var config in configs)
+        {
+            if (config.DetailLabels.Count == 0)
+            {
+                foreach (var address in defaultAddresses)
+                {
+                    yield return address;
+                }
+
+                continue;
+            }
+
+            foreach (var address in config.DetailLabels.Values)
+            {
+                if (!string.IsNullOrWhiteSpace(address))
+                {
+                    yield return address.Trim();
+                }
+            }
+        }
     }
 
     private static IEnumerable<string> GetManualPlcMonitorAddresses(IEnumerable<UbiMachineConfig> configs)

@@ -73,13 +73,12 @@ namespace Stackdose.UI.Core.Helpers
             WriteLoginDebug("Mode: SQLite Database Authentication");
             WriteLoginDebug("========================================");
 
-            // 🔥 資料庫驗證
             try
             {
                 WriteLoginDebug("[Step 1] 嘗試資料庫驗證...");
                 var userService = new Stackdose.UI.Core.Services.UserManagementService();
                 var dbResult = userService.AuthenticateAsync(userId, password).Result;
-                
+
                 if (dbResult.Success && dbResult.User != null)
                 {
                     WriteLoginDebug("✅ 資料庫驗證成功");
@@ -88,26 +87,48 @@ namespace Stackdose.UI.Core.Helpers
                     WriteLoginDebug($"   AccessLevel: {dbResult.User.AccessLevel}");
 
                     SessionCoordinator.BeginSession(dbResult.User);
-                    
-                    // 記錄到 Audit Trail (不包含 "via Database" 字樣)
-                    ComplianceContext.LogAuditTrail(
-                        "User Login",
-                        userId,
-                        "Logged Out",
-                        $"Logged In (Level {(int)dbResult.User.AccessLevel} - {dbResult.User.AccessLevel})",
-                        $"Login from {Environment.MachineName}",  // 🔥 移除 "via Database"
-                        showInUi: true
-                    );
 
-                    ComplianceContext.LogSystem(
-                        $"✅ Login Success: {dbResult.User.DisplayName} ({dbResult.User.AccessLevel})",
-                        LogLevel.Success,
-                        showInUi: true
-                    );
+                    // ✅ 所有 UI 操作必須回到 UI 執行緒執行
+                    var dispatcher = Application.Current?.Dispatcher;
+                    if (dispatcher != null && !dispatcher.CheckAccess())
+                    {
+                        dispatcher.Invoke(() =>
+                        {
+                            ComplianceContext.LogAuditTrail(
+                                "User Login",
+                                userId,
+                                "Logged Out",
+                                $"Logged In (Level {(int)dbResult.User.AccessLevel} - {dbResult.User.AccessLevel})",
+                                $"Login from {Environment.MachineName}",
+                                showInUi: true);
 
-                    // 觸發事件
-                    LoginSuccess?.Invoke(null, dbResult.User);
-                    AccessLevelChanged?.Invoke(null, EventArgs.Empty);
+                            ComplianceContext.LogSystem(
+                                $"✅ Login Success: {dbResult.User.DisplayName} ({dbResult.User.AccessLevel})",
+                                LogLevel.Success,
+                                showInUi: true);
+
+                            LoginSuccess?.Invoke(null, dbResult.User);
+                            AccessLevelChanged?.Invoke(null, EventArgs.Empty);
+                        });
+                    }
+                    else
+                    {
+                        ComplianceContext.LogAuditTrail(
+                            "User Login",
+                            userId,
+                            "Logged Out",
+                            $"Logged In (Level {(int)dbResult.User.AccessLevel} - {dbResult.User.AccessLevel})",
+                            $"Login from {Environment.MachineName}",
+                            showInUi: true);
+
+                        ComplianceContext.LogSystem(
+                            $"✅ Login Success: {dbResult.User.DisplayName} ({dbResult.User.AccessLevel})",
+                            LogLevel.Success,
+                            showInUi: true);
+
+                        LoginSuccess?.Invoke(null, dbResult.User);
+                        AccessLevelChanged?.Invoke(null, EventArgs.Empty);
+                    }
 
                     // 啟動自動登出計時器
                     if (EnableAutoLogout)
@@ -119,41 +140,58 @@ namespace Stackdose.UI.Core.Helpers
                     WriteLoginDebug("========================================");
                     WriteLoginDebug($"✅ Login COMPLETED in {stopwatch.ElapsedMilliseconds}ms");
                     WriteLoginDebug("========================================");
-                    
+
                     return true;
                 }
                 else
                 {
                     WriteLoginDebug($"❌ 資料庫驗證失敗: {dbResult.Message}");
-                    
-                    ComplianceContext.LogSystem(
-                        $"Login Failed: {userId} - {dbResult.Message}",
-                        LogLevel.Warning,
-                        showInUi: true
-                    );
-                    
-                    ComplianceContext.LogAuditTrail(
-                        "User Login",
-                        userId,
-                        "N/A",
-                        "Failed (Invalid Credentials)",
-                        $"驗證超時，請檢查網路連線或憑證設定",
-                        showInUi: false
-                    );
-                    
+
+                    var dispatcher = Application.Current?.Dispatcher;
+                    if (dispatcher != null && !dispatcher.CheckAccess())
+                    {
+                        dispatcher.Invoke(() =>
+                        {
+                            ComplianceContext.LogSystem(
+                                $"Login Failed: {userId} - {dbResult.Message}",
+                                LogLevel.Warning,
+                                showInUi: true);
+                        });
+                    }
+                    else
+                    {
+                        ComplianceContext.LogSystem(
+                            $"Login Failed: {userId} - {dbResult.Message}",
+                            LogLevel.Warning,
+                            showInUi: true);
+                    }
+
                     return false;
                 }
             }
             catch (Exception ex)
             {
                 WriteLoginDebug($"❌ 資料庫驗證錯誤: {ex.Message}");
-                
-                ComplianceContext.LogSystem(
-                    $"Authentication Error: {ex.Message}",
-                    LogLevel.Error,
-                    showInUi: true
-                );
-                
+
+                var dispatcher = Application.Current?.Dispatcher;
+                if (dispatcher != null && !dispatcher.CheckAccess())
+                {
+                    dispatcher.Invoke(() =>
+                    {
+                        ComplianceContext.LogSystem(
+                            $"Authentication Error: {ex.Message}",
+                            LogLevel.Error,
+                            showInUi: true);
+                    });
+                }
+                else
+                {
+                    ComplianceContext.LogSystem(
+                        $"Authentication Error: {ex.Message}",
+                        LogLevel.Error,
+                        showInUi: true);
+                }
+
                 return false;
             }
         }
@@ -539,6 +577,7 @@ namespace Stackdose.UI.Core.Helpers
                 AccessLevel.Instructor => "指導員 (Instructor)",
                 AccessLevel.Supervisor => "主管 (Supervisor)",
                 AccessLevel.Admin => "管理員 (Admin)",
+                AccessLevel.SuperAdmin => "超級管理員 (SuperAdmin)",
                 _ => "未知"
             };
         }

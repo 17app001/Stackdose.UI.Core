@@ -190,7 +190,7 @@ namespace Stackdose.UI.Core.Helpers
         /// </remarks>
         public static void LogPeriodicData(string batchId, double predryTemp, double dryTemp, double cdaInletPressure)
         {
-            // 🔥 自動取得當前使用者ID以符合 FDA 21 CFR Part 11 規範
+            // 🔥 自動取得當前使用者ID以符合 FDA 21 CFR 11 規範
             string userId = CurrentUser;
             
             #if DEBUG
@@ -331,19 +331,35 @@ namespace Stackdose.UI.Core.Helpers
         private static void AddToLiveLog(string msg, LogLevel level, bool showInUi = true)
         {
             if (!showInUi) return;
-            
-            lock (_lock)
-            {
-                // 因為是 ObservableCollection，一 Add 畫面就會自動更新
-                LiveLogs.Add(new LogEntry
-                {
-                    Timestamp = DateTime.Now,
-                    Message = msg,
-                    Level = level
-                });
 
-                // 限制只留最新的 100 筆
-                if (LiveLogs.Count > 100) LiveLogs.RemoveAt(0);
+            var entry = new LogEntry
+            {
+                Timestamp = DateTime.Now,
+                Message = msg,
+                Level = level
+            };
+
+            var dispatcher = System.Windows.Application.Current?.Dispatcher;
+
+            // 如果已在 UI 執行緒，直接操作；否則用 Invoke 切回 UI 執行緒
+            if (dispatcher == null || dispatcher.CheckAccess())
+            {
+                lock (_lock)
+                {
+                    LiveLogs.Add(entry);
+                    if (LiveLogs.Count > 100) LiveLogs.RemoveAt(0);
+                }
+            }
+            else
+            {
+                dispatcher.Invoke(() =>
+                {
+                    lock (_lock)
+                    {
+                        LiveLogs.Add(entry);
+                        if (LiveLogs.Count > 100) LiveLogs.RemoveAt(0);
+                    }
+                });
             }
         }
 

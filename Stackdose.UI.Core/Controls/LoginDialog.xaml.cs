@@ -29,8 +29,8 @@ namespace Stackdose.UI.Core.Controls
             // DEBUG mode: Auto-fill superadmin (for testing)
             System.Diagnostics.Debug.WriteLine("[LoginDialog] DEBUG Mode: Auto-filling superadmin credentials");
             UserIdTextBox.Text = "UID-000001";
-            PasswordBox.Password = "superadminsuperadmin";  // Pre-fill password for testing
-            System.Diagnostics.Debug.WriteLine("[LoginDialog] Tip: Use UID-000001 / superadminsuperadmin to login");
+            PasswordBox.Password = "superadmin";  // Pre-fill password for testing
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] Tip: Use UID-000001 / superadmin to login");
             #else
             // RELEASE mode: Auto-fill current Windows username
             try

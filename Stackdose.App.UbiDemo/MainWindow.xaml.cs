@@ -3,7 +3,6 @@ using Stackdose.App.UbiDemo.Models;
 using Stackdose.App.UbiDemo.Pages;
 using Stackdose.App.UbiDemo.Services;
 using Stackdose.UI.Core.Helpers;
-using Stackdose.UI.Core.Models;
 using Stackdose.UI.Templates.Pages;
 using System;
 using System.Collections.Generic;
@@ -45,7 +44,8 @@ public partial class MainWindow : Window
             return;
         }
 
-        SecurityContext.QuickLogin(AccessLevel.SuperAdmin);
+        // 登入已由 App.xaml.cs 的 OnStartup 完成，此處不再 QuickLogin
+        // SecurityContext.QuickLogin(AccessLevel.SuperAdmin);  // 已移除
 
         _defaultPageTitle = MainShell.PageTitle;
         _runtime.OverviewPage.MachineSelected += OnMachineSelected;

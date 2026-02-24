@@ -118,7 +118,25 @@
                 </GroupBox>
 
                 <GroupBox Grid.Row="1" Header="PrintHead Control">
-                    <core:PrintHeadController Margin="8" />
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="8" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <core:PlcDeviceEditor Grid.Row="0"
+                                              Height="118"
+                                              MinHeight="0"
+                                              Label="PrintHead Device Editor"
+                                              Address="D120"
+                                              Value="0"
+                                              Reason="PrintHead manual operation"
+                                              RequiredLevel="Supervisor"
+                                              EnableAuditTrail="True" />
+
+                        <core:PrintHeadController Grid.Row="2" />
+                    </Grid>
                 </GroupBox>
             </Grid>
 

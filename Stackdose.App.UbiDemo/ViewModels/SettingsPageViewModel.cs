@@ -94,12 +94,20 @@ public sealed class SettingsPageViewModel : ViewModelBase
 
         var lines = new List<string>();
         var blockCount = 0;
-        for (var i = 0; i < tokens.Length; i += 2)
+        for (var i = 0; i < tokens.Length; i++)
         {
             var address = tokens[i];
-            var length = (i + 1 < tokens.Length && int.TryParse(tokens[i + 1], out var parsedLength))
-                ? parsedLength
-                : 1;
+            if (int.TryParse(address, out _))
+            {
+                continue;
+            }
+
+            var length = 1;
+            if (i + 1 < tokens.Length && int.TryParse(tokens[i + 1], out var parsedLength) && parsedLength > 0)
+            {
+                length = parsedLength;
+                i++;
+            }
 
             lines.Add($"{address} (x{length})");
             blockCount++;

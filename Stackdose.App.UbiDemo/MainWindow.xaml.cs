@@ -17,6 +17,15 @@ namespace Stackdose.App.UbiDemo;
 
 public partial class MainWindow : Window
 {
+    private static readonly HashSet<string> SupportedNavigationTargets = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "MachineOverviewPage",
+        "MachineDetailPage",
+        "LogViewerPage",
+        "UserManagementPage",
+        "SettingsPage"
+    };
+
     private UbiRuntimeContext? _runtime;
     private UbiShellCoordinator? _shell;
     private readonly LogViewerPage _logViewerPage = new();
@@ -83,7 +92,7 @@ public partial class MainWindow : Window
             .ToList());
         _suppressHeaderMachineSelection = false;
 
-        var externalNavigationItems = CreateNavigationItems(_currentMeta.NavigationItems);
+        var externalNavigationItems = BuildNavigationItems(_currentMeta.NavigationItems);
         if (externalNavigationItems is not null)
         {
             MainShell.NavigationItems = externalNavigationItems;
@@ -254,7 +263,7 @@ public partial class MainWindow : Window
         ShowMachineDetail(machineId);
     }
 
-    private static ObservableCollection<NavigationItem>? CreateNavigationItems(IReadOnlyList<UbiNavigationMetaItem>? source)
+    private ObservableCollection<NavigationItem>? BuildNavigationItems(IReadOnlyList<UbiNavigationMetaItem>? source)
     {
         if (source is null || source.Count == 0)
         {
@@ -262,16 +271,31 @@ public partial class MainWindow : Window
         }
 
         var items = new ObservableCollection<NavigationItem>();
-        foreach (var item in source)
+        for (var index = 0; index < source.Count; index++)
         {
+            var item = source[index];
             if (string.IsNullOrWhiteSpace(item.Title) || string.IsNullOrWhiteSpace(item.NavigationTarget))
             {
+                ComplianceContext.LogSystem($"[UbiRuntime] Skip navigationItems[{index}]: title/target is empty", LogLevel.Warning, showInUi: true);
                 continue;
             }
 
-            var level = Enum.TryParse<AccessLevel>(item.RequiredLevel, true, out var parsedLevel)
-                ? parsedLevel
-                : AccessLevel.Operator;
+            if (!SupportedNavigationTargets.Contains(item.NavigationTarget))
+            {
+                ComplianceContext.LogSystem($"[UbiRuntime] Skip navigationItems[{index}]: unsupported target '{item.NavigationTarget}'", LogLevel.Warning, showInUi: true);
+                continue;
+            }
+
+            var level = AccessLevel.Operator;
+            if (!string.IsNullOrWhiteSpace(item.RequiredLevel)
+                && Enum.TryParse<AccessLevel>(item.RequiredLevel, true, out var parsedLevel))
+            {
+                level = parsedLevel;
+            }
+            else if (!string.IsNullOrWhiteSpace(item.RequiredLevel))
+            {
+                ComplianceContext.LogSystem($"[UbiRuntime] navigationItems[{index}] invalid requiredLevel '{item.RequiredLevel}', fallback to Operator", LogLevel.Warning, showInUi: true);
+            }
 
             items.Add(new NavigationItem
             {
@@ -426,7 +450,7 @@ public partial class MainWindow : Window
         MainShell.HeaderDeviceName = meta.HeaderDeviceName;
         UbiRuntimeMapper.ApplyMeta(_runtime.OverviewPage, meta);
 
-        var externalNavigationItems = CreateNavigationItems(meta.NavigationItems);
+        var externalNavigationItems = BuildNavigationItems(meta.NavigationItems);
         MainShell.NavigationItems = externalNavigationItems;
         PopulateNavigationTitles(meta.NavigationItems);
 

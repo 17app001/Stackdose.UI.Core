@@ -35,6 +35,10 @@
                             MachineDisplayName="{Binding ElementName=Root, Path=CurrentMachineDisplayName}"
                             MachineOptions="{Binding ElementName=Root, Path=MachineOptions}"
                             SelectedMachineId="{Binding ElementName=Root, Path=SelectedMachineId, Mode=TwoWay}"
+                            LogoutCommand="{Binding ElementName=Root, Path=LogoutCommand}"
+                            MinimizeCommand="{Binding ElementName=Root, Path=MinimizeCommand}"
+                            CloseCommand="{Binding ElementName=Root, Path=CloseCommand}"
+                            MachineSelectionChangedCommand="{Binding ElementName=Root, Path=MachineSelectionCommand}"
                             MachineSelectionChanged="OnMachineSelectionChanged"
                             LogoutClicked="OnLogout"
                             MinimizeClicked="OnMinimize"
@@ -53,6 +57,8 @@
             <controls:LeftNavigation x:Name="LeftNavigationControl"
                                      Grid.Column="0"
                                      IsMultiMachineMode="{Binding ElementName=Root, Path=IsShellMode}"
+                                     NavigationItems="{Binding ElementName=Root, Path=NavigationItems}"
+                                     NavigationCommand="{Binding ElementName=Root, Path=NavigationCommand}"
                                      NavigationRequested="OnNavigate"/>
 
             <!-- Dynamic Content Area -->

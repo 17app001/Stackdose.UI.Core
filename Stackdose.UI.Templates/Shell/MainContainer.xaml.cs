@@ -1,6 +1,7 @@
 using Stackdose.UI.Templates.Controls;
 using System;
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -31,6 +32,24 @@ namespace Stackdose.UI.Templates.Shell
 
         public static readonly DependencyProperty ShellContentProperty =
             DependencyProperty.Register(nameof(ShellContent), typeof(object), typeof(MainContainer), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty NavigationCommandProperty =
+            DependencyProperty.Register(nameof(NavigationCommand), typeof(ICommand), typeof(MainContainer), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty NavigationItemsProperty =
+            DependencyProperty.Register(nameof(NavigationItems), typeof(ObservableCollection<NavigationItem>), typeof(MainContainer), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty MachineSelectionCommandProperty =
+            DependencyProperty.Register(nameof(MachineSelectionCommand), typeof(ICommand), typeof(MainContainer), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty LogoutCommandProperty =
+            DependencyProperty.Register(nameof(LogoutCommand), typeof(ICommand), typeof(MainContainer), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty MinimizeCommandProperty =
+            DependencyProperty.Register(nameof(MinimizeCommand), typeof(ICommand), typeof(MainContainer), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty CloseCommandProperty =
+            DependencyProperty.Register(nameof(CloseCommand), typeof(ICommand), typeof(MainContainer), new PropertyMetadata(null));
 
         public event EventHandler<string>? NavigationRequested;
         public event EventHandler? LogoutRequested;
@@ -78,6 +97,42 @@ namespace Stackdose.UI.Templates.Shell
         {
             get => GetValue(ShellContentProperty);
             set => SetValue(ShellContentProperty, value);
+        }
+
+        public ICommand? NavigationCommand
+        {
+            get => (ICommand?)GetValue(NavigationCommandProperty);
+            set => SetValue(NavigationCommandProperty, value);
+        }
+
+        public ObservableCollection<NavigationItem>? NavigationItems
+        {
+            get => (ObservableCollection<NavigationItem>?)GetValue(NavigationItemsProperty);
+            set => SetValue(NavigationItemsProperty, value);
+        }
+
+        public ICommand? MachineSelectionCommand
+        {
+            get => (ICommand?)GetValue(MachineSelectionCommandProperty);
+            set => SetValue(MachineSelectionCommandProperty, value);
+        }
+
+        public ICommand? LogoutCommand
+        {
+            get => (ICommand?)GetValue(LogoutCommandProperty);
+            set => SetValue(LogoutCommandProperty, value);
+        }
+
+        public ICommand? MinimizeCommand
+        {
+            get => (ICommand?)GetValue(MinimizeCommandProperty);
+            set => SetValue(MinimizeCommandProperty, value);
+        }
+
+        public ICommand? CloseCommand
+        {
+            get => (ICommand?)GetValue(CloseCommandProperty);
+            set => SetValue(CloseCommandProperty, value);
         }
 
         public MainContainer()
@@ -158,11 +213,21 @@ namespace Stackdose.UI.Templates.Shell
 
         private void OnLogout(object sender, RoutedEventArgs e)
         {
+            if (TryExecuteCommand(LogoutCommand))
+            {
+                return;
+            }
+
             LogoutRequested?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnMinimize(object sender, RoutedEventArgs e)
         {
+            if (TryExecuteCommand(MinimizeCommand))
+            {
+                return;
+            }
+
             var window = Window.GetWindow(this);
             if (window != null)
             {
@@ -175,11 +240,21 @@ namespace Stackdose.UI.Templates.Shell
 
         private void OnClose(object sender, RoutedEventArgs e)
         {
+            if (TryExecuteCommand(CloseCommand))
+            {
+                return;
+            }
+
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnNavigate(object sender, NavigationItem e)
         {
+            if (TryExecuteCommand(NavigationCommand, e.NavigationTarget))
+            {
+                return;
+            }
+
             NavigationRequested?.Invoke(this, e.NavigationTarget);
         }
 
@@ -190,7 +265,23 @@ namespace Stackdose.UI.Templates.Shell
                 return;
             }
 
+            if (TryExecuteCommand(MachineSelectionCommand, machineId))
+            {
+                return;
+            }
+
             MachineSelectionRequested?.Invoke(this, machineId);
+        }
+
+        private static bool TryExecuteCommand(ICommand? command, object? parameter = null)
+        {
+            if (command == null || !command.CanExecute(parameter))
+            {
+                return false;
+            }
+
+            command.Execute(parameter);
+            return true;
         }
     }
 }

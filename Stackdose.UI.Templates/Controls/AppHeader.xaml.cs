@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
@@ -59,6 +60,24 @@ namespace Stackdose.UI.Templates.Controls
             DependencyProperty.Register(nameof(SelectedMachineId), typeof(string), typeof(AppHeader),
                 new PropertyMetadata(null));
 
+        public static readonly DependencyProperty LogoutCommandProperty =
+            DependencyProperty.Register(nameof(LogoutCommand), typeof(ICommand), typeof(AppHeader), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty SwitchUserCommandProperty =
+            DependencyProperty.Register(nameof(SwitchUserCommand), typeof(ICommand), typeof(AppHeader), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty MinimizeCommandProperty =
+            DependencyProperty.Register(nameof(MinimizeCommand), typeof(ICommand), typeof(AppHeader), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty FullscreenCommandProperty =
+            DependencyProperty.Register(nameof(FullscreenCommand), typeof(ICommand), typeof(AppHeader), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty CloseCommandProperty =
+            DependencyProperty.Register(nameof(CloseCommand), typeof(ICommand), typeof(AppHeader), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty MachineSelectionChangedCommandProperty =
+            DependencyProperty.Register(nameof(MachineSelectionChangedCommand), typeof(ICommand), typeof(AppHeader), new PropertyMetadata(null));
+
 
         public string MachineDisplayName
         {
@@ -76,6 +95,42 @@ namespace Stackdose.UI.Templates.Controls
         {
             get => (string)GetValue(SelectedMachineIdProperty);
             set => SetValue(SelectedMachineIdProperty, value);
+        }
+
+        public ICommand? LogoutCommand
+        {
+            get => (ICommand?)GetValue(LogoutCommandProperty);
+            set => SetValue(LogoutCommandProperty, value);
+        }
+
+        public ICommand? SwitchUserCommand
+        {
+            get => (ICommand?)GetValue(SwitchUserCommandProperty);
+            set => SetValue(SwitchUserCommandProperty, value);
+        }
+
+        public ICommand? MinimizeCommand
+        {
+            get => (ICommand?)GetValue(MinimizeCommandProperty);
+            set => SetValue(MinimizeCommandProperty, value);
+        }
+
+        public ICommand? FullscreenCommand
+        {
+            get => (ICommand?)GetValue(FullscreenCommandProperty);
+            set => SetValue(FullscreenCommandProperty, value);
+        }
+
+        public ICommand? CloseCommand
+        {
+            get => (ICommand?)GetValue(CloseCommandProperty);
+            set => SetValue(CloseCommandProperty, value);
+        }
+
+        public ICommand? MachineSelectionChangedCommand
+        {
+            get => (ICommand?)GetValue(MachineSelectionChangedCommandProperty);
+            set => SetValue(MachineSelectionChangedCommandProperty, value);
         }
 
         private string _userName = "Guest";
@@ -121,7 +176,6 @@ namespace Stackdose.UI.Templates.Controls
         public AppHeader()
         {
             InitializeComponent();
-            DataContext = this;
 
             Loaded += AppHeader_Loaded;
             Unloaded += AppHeader_Unloaded;
@@ -169,6 +223,11 @@ namespace Stackdose.UI.Templates.Controls
 
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
+            if (TryExecuteCommand(LogoutCommand))
+            {
+                return;
+            }
+
             try
             {
                 var result = CyberMessageBox.Show(
@@ -197,6 +256,11 @@ namespace Stackdose.UI.Templates.Controls
 
         private void SwitchUserButton_Click(object sender, RoutedEventArgs e)
         {
+            if (TryExecuteCommand(SwitchUserCommand))
+            {
+                return;
+            }
+
             try
             {
                 var result = CyberMessageBox.Show(
@@ -233,6 +297,11 @@ namespace Stackdose.UI.Templates.Controls
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
         {
+            if (TryExecuteCommand(MinimizeCommand))
+            {
+                return;
+            }
+
             try
             {
                 var window = Window.GetWindow(this);
@@ -252,6 +321,11 @@ namespace Stackdose.UI.Templates.Controls
 
         private void FullscreenButton_Click(object sender, RoutedEventArgs e)
         {
+            if (TryExecuteCommand(FullscreenCommand))
+            {
+                return;
+            }
+
             try
             {
                 var window = Window.GetWindow(this);
@@ -317,6 +391,11 @@ namespace Stackdose.UI.Templates.Controls
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
+            if (TryExecuteCommand(CloseCommand))
+            {
+                return;
+            }
+
             try
             {
                 var result = CyberMessageBox.Show(
@@ -346,7 +425,23 @@ namespace Stackdose.UI.Templates.Controls
                 return;
             }
 
+            if (TryExecuteCommand(MachineSelectionChangedCommand, SelectedMachineId))
+            {
+                return;
+            }
+
             MachineSelectionChanged?.Invoke(this, SelectedMachineId);
+        }
+
+        private static bool TryExecuteCommand(ICommand? command, object? parameter = null)
+        {
+            if (command == null || !command.CanExecute(parameter))
+            {
+                return false;
+            }
+
+            command.Execute(parameter);
+            return true;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

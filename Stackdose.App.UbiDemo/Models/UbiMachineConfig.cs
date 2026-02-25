@@ -52,12 +52,20 @@ public sealed class UbiAppMeta
     public string BottomLeftTitle { get; set; } = "Software Information";
     public string BottomRightTitle { get; set; } = "Live Log";
     public List<UbiMetaInfoItem> SoftwareInfoItems { get; set; } = [];
+    public List<UbiNavigationMetaItem> NavigationItems { get; set; } = [];
 }
 
 public sealed class UbiMetaInfoItem
 {
     public string Label { get; set; } = string.Empty;
     public string Value { get; set; } = string.Empty;
+}
+
+public sealed class UbiNavigationMetaItem
+{
+    public string Title { get; set; } = string.Empty;
+    public string NavigationTarget { get; set; } = string.Empty;
+    public string RequiredLevel { get; set; } = "Operator";
 }
 
 public sealed class DeviceContext

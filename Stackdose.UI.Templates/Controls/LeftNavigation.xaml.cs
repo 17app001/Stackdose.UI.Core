@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace Stackdose.UI.Templates.Controls
 {
@@ -58,12 +59,19 @@ namespace Stackdose.UI.Templates.Controls
 
     public partial class LeftNavigation : UserControl
     {
+        private bool _suppressNavigationItemsCallback;
+        private bool _useExternalNavigationItems;
+
         public static readonly DependencyProperty IsMultiMachineModeProperty =
             DependencyProperty.Register(nameof(IsMultiMachineMode), typeof(bool),
                 typeof(LeftNavigation), new PropertyMetadata(false, OnIsMultiMachineModeChanged));
 
         public static readonly DependencyProperty NavigationItemsProperty =
             DependencyProperty.Register(nameof(NavigationItems), typeof(ObservableCollection<NavigationItem>),
+                typeof(LeftNavigation), new PropertyMetadata(null, OnNavigationItemsChanged));
+
+        public static readonly DependencyProperty NavigationCommandProperty =
+            DependencyProperty.Register(nameof(NavigationCommand), typeof(ICommand),
                 typeof(LeftNavigation), new PropertyMetadata(null));
 
         public bool IsMultiMachineMode
@@ -78,13 +86,21 @@ namespace Stackdose.UI.Templates.Controls
             set => SetValue(NavigationItemsProperty, value);
         }
 
+        public ICommand? NavigationCommand
+        {
+            get => (ICommand?)GetValue(NavigationCommandProperty);
+            set => SetValue(NavigationCommandProperty, value);
+        }
+
         public event EventHandler<NavigationItem>? NavigationRequested;
 
         public LeftNavigation()
         {
             InitializeComponent();
 
+            _suppressNavigationItemsCallback = true;
             NavigationItems = new ObservableCollection<NavigationItem>();
+            _suppressNavigationItemsCallback = false;
             RebuildNavigationItems();
 
             Loaded += LeftNavigation_Loaded;
@@ -95,8 +111,31 @@ namespace Stackdose.UI.Templates.Controls
         {
             if (d is LeftNavigation navigation)
             {
+                if (navigation._useExternalNavigationItems)
+                {
+                    return;
+                }
+
                 navigation.RebuildNavigationItems();
             }
+        }
+
+        private static void OnNavigationItemsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not LeftNavigation navigation || navigation._suppressNavigationItemsCallback)
+            {
+                return;
+            }
+
+            navigation._useExternalNavigationItems = e.NewValue is ObservableCollection<NavigationItem>;
+
+            if (navigation._useExternalNavigationItems)
+            {
+                navigation.UpdateNavigationItemsState();
+                return;
+            }
+
+            navigation.RebuildNavigationItems();
         }
 
         private void LeftNavigation_Loaded(object sender, RoutedEventArgs e)
@@ -137,6 +176,11 @@ namespace Stackdose.UI.Templates.Controls
 
         private void RebuildNavigationItems()
         {
+            if (_useExternalNavigationItems)
+            {
+                return;
+            }
+
             var selectedTarget = NavigationItems?.FirstOrDefault(item => item.IsSelected)?.NavigationTarget;
 
             var newItems = new List<NavigationItem>();
@@ -159,7 +203,9 @@ namespace Stackdose.UI.Templates.Controls
                 new NavigationItem { Title = "Maintenance Mode", NavigationTarget = "SettingsPage", RequiredLevel = AccessLevel.SuperAdmin }
             ]);
 
+            _suppressNavigationItemsCallback = true;
             NavigationItems = new ObservableCollection<NavigationItem>(newItems);
+            _suppressNavigationItemsCallback = false;
 
             if (!string.IsNullOrWhiteSpace(selectedTarget))
             {
@@ -196,6 +242,13 @@ namespace Stackdose.UI.Templates.Controls
             }
 
             item.IsSelected = true;
+
+            if (NavigationCommand != null && NavigationCommand.CanExecute(item.NavigationTarget))
+            {
+                NavigationCommand.Execute(item.NavigationTarget);
+                return;
+            }
+
             NavigationRequested?.Invoke(this, item);
         }
 

@@ -1,24 +1,41 @@
 using Stackdose.Abstractions.Hardware;
+using Stackdose.App.UbiDemo.Models;
 using Stackdose.App.UbiDemo.Pages;
 using Stackdose.App.UbiDemo.Services;
+using Stackdose.UI.Core.Models;
+using Stackdose.UI.Templates.Controls;
 using Stackdose.UI.Templates.Pages;
+using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Input;
 
 namespace Stackdose.App.UbiDemo;
 
 public partial class MainWindow : Window
 {
     private UbiRuntimeContext? _runtime;
+    private UbiShellCoordinator? _shell;
     private readonly LogViewerPage _logViewerPage = new();
     private readonly UserManagementPage _userManagementPage = new();
     private readonly SettingsPage _settingsPage = new();
     private readonly Dictionary<string, UbiDevicePage> _devicePages = new(StringComparer.OrdinalIgnoreCase);
-    private string _defaultPageTitle = "Machine Overview";
     private string? _selectedMachineId;
     private bool _suppressHeaderMachineSelection;
+    private readonly Dictionary<string, Action> _navigationHandlers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> _navigationTitles = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ICommand _navigationCommand;
+    private readonly ICommand _machineSelectionCommand;
 
     public MainWindow()
     {
+        _navigationCommand = new DelegateCommand(
+            parameter => OnNavigationRequested(this, parameter as string ?? string.Empty),
+            parameter => parameter is string target && !string.IsNullOrWhiteSpace(target));
+
+        _machineSelectionCommand = new DelegateCommand(
+            parameter => OnMachineSelectionRequested(this, parameter as string ?? string.Empty),
+            parameter => parameter is string machineId && !string.IsNullOrWhiteSpace(machineId));
+
         InitializeComponent();
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
@@ -32,21 +49,31 @@ public partial class MainWindow : Window
             return;
         }
 
-        _defaultPageTitle = MainShell.PageTitle;
+        _shell = new UbiShellCoordinator(MainShell, MainShell.PageTitle);
         _runtime.OverviewPage.MachineSelected += OnMachineSelected;
         _runtime.OverviewPage.PlcScanUpdated  += OnPlcScanUpdated;
-        MainShell.NavigationRequested        += OnNavigationRequested;
-        MainShell.MachineSelectionRequested  += OnMachineSelectionRequested;
+
+        MainShell.NavigationCommand = _navigationCommand;
+        MainShell.MachineSelectionCommand = _machineSelectionCommand;
 
         _suppressHeaderMachineSelection = true;
-        MainShell.MachineOptions = _runtime.Machines.Values
+        _shell.SetMachineOptions(_runtime.Machines.Values
             .Select(machine => new KeyValuePair<string, string>(
                 machine.Machine.Id,
                 $"{machine.Machine.Name} ({machine.Machine.Id})"))
-            .ToList();
+            .ToList());
         _suppressHeaderMachineSelection = false;
 
-        MainShell.SelectNavigationTarget("MachineOverviewPage");
+        var externalNavigationItems = CreateNavigationItems(_runtime.AppMeta.NavigationItems);
+        if (externalNavigationItems is not null)
+        {
+            MainShell.NavigationItems = externalNavigationItems;
+        }
+
+        PopulateNavigationTitles(_runtime.AppMeta.NavigationItems);
+
+        BuildNavigationHandlers();
+        _shell.SelectNavigation("MachineOverviewPage");
         UbiRuntimeMapper.BuildRuntimeMaps(_runtime.Machines);
     }
 
@@ -58,14 +85,15 @@ public partial class MainWindow : Window
             _runtime.OverviewPage.PlcScanUpdated  -= OnPlcScanUpdated;
         }
 
-        MainShell.NavigationRequested       -= OnNavigationRequested;
-        MainShell.MachineSelectionRequested -= OnMachineSelectionRequested;
+        MainShell.NavigationCommand = null;
+        MainShell.MachineSelectionCommand = null;
+        _navigationHandlers.Clear();
+        _shell = null;
     }
 
     private void OnMachineSelected(string machineId)
     {
-        NavigateToDevicePage(machineId);
-        MainShell.SelectNavigationTarget("MachineDetailPage");
+        ShowMachineDetail(machineId);
     }
 
     private void OnPlcScanUpdated(IPlcManager manager)
@@ -80,55 +108,92 @@ public partial class MainWindow : Window
 
     private void OnNavigationRequested(object? sender, string target)
     {
+        if (_runtime is null || string.IsNullOrWhiteSpace(target))
+        {
+            return;
+        }
+
+        if (_navigationHandlers.TryGetValue(target, out var handler))
+        {
+            handler();
+        }
+    }
+
+    private void BuildNavigationHandlers()
+    {
+        _navigationHandlers.Clear();
+        _navigationHandlers["MACHINEOVERVIEWPAGE"] = ShowOverview;
+        _navigationHandlers["MACHINEDETAILPAGE"] = ShowCurrentOrFirstMachineDetail;
+        _navigationHandlers["LOGVIEWERPAGE"] = ShowLogViewer;
+        _navigationHandlers["USERMANAGEMENTPAGE"] = ShowUserManagement;
+        _navigationHandlers["SETTINGSPAGE"] = ShowSettings;
+    }
+
+    private void ShowOverview()
+    {
+        if (_runtime is null || _shell is null)
+        {
+            return;
+        }
+
+        var machineDisplayName = string.Empty;
+        if (!string.IsNullOrWhiteSpace(_selectedMachineId)
+            && _runtime.Machines.TryGetValue(_selectedMachineId, out var selectedMachine))
+        {
+            machineDisplayName = selectedMachine.Machine.Name;
+        }
+
+        _shell.ShowOverview(_runtime.OverviewPage, machineDisplayName);
+        MainShell.PageTitle = GetNavigationTitle("MachineOverviewPage", MainShell.PageTitle);
+    }
+
+    private void ShowCurrentOrFirstMachineDetail()
+    {
         if (_runtime is null)
         {
             return;
         }
 
-        switch (target.ToUpperInvariant())
+        var targetId = !string.IsNullOrWhiteSpace(_selectedMachineId)
+                       && _runtime.Machines.ContainsKey(_selectedMachineId)
+            ? _selectedMachineId
+            : _runtime.Machines.Keys.FirstOrDefault();
+
+        if (!string.IsNullOrWhiteSpace(targetId))
         {
-            case "MACHINEOVERVIEWPAGE":
-                MainShell.ShellContent = _runtime.OverviewPage;
-                MainShell.PageTitle = _defaultPageTitle;
-                MainShell.SelectNavigationTarget("MachineOverviewPage");
-                if (!string.IsNullOrWhiteSpace(_selectedMachineId)
-                    && _runtime.Machines.TryGetValue(_selectedMachineId, out var sel))
-                {
-                    MainShell.CurrentMachineDisplayName = sel.Machine.Name;
-                }
-                break;
-
-            case "MACHINEDETAILPAGE":
-                MainShell.SelectNavigationTarget("MachineDetailPage");
-                var targetId = !string.IsNullOrWhiteSpace(_selectedMachineId)
-                               && _runtime.Machines.ContainsKey(_selectedMachineId)
-                    ? _selectedMachineId
-                    : _runtime.Machines.Keys.FirstOrDefault();
-                if (!string.IsNullOrWhiteSpace(targetId))
-                {
-                    NavigateToDevicePage(targetId);
-                }
-                break;
-
-            case "LOGVIEWERPAGE":
-                MainShell.ShellContent = _logViewerPage;
-                MainShell.PageTitle = "Log Viewer";
-                MainShell.SelectNavigationTarget("LogViewerPage");
-                break;
-
-            case "USERMANAGEMENTPAGE":
-                MainShell.ShellContent = _userManagementPage;
-                MainShell.PageTitle = "User Management";
-                MainShell.SelectNavigationTarget("UserManagementPage");
-                break;
-
-            case "SETTINGSPAGE":
-                _settingsPage.SetMonitorAddresses(_runtime.OverviewPage.PlcMonitorAddresses);
-                MainShell.ShellContent = _settingsPage;
-                MainShell.PageTitle = "Maintenance Mode";
-                MainShell.SelectNavigationTarget("SettingsPage");
-                break;
+            ShowMachineDetail(targetId);
         }
+    }
+
+    private void ShowLogViewer()
+    {
+        _shell?.ShowLogViewer(_logViewerPage);
+        MainShell.PageTitle = GetNavigationTitle("LogViewerPage", MainShell.PageTitle);
+    }
+
+    private void ShowUserManagement()
+    {
+        _shell?.ShowUserManagement(_userManagementPage);
+        MainShell.PageTitle = GetNavigationTitle("UserManagementPage", MainShell.PageTitle);
+    }
+
+    private void ShowSettings()
+    {
+        if (_runtime is null || _shell is null)
+        {
+            return;
+        }
+
+        _settingsPage.SetMonitorAddresses(_runtime.OverviewPage.PlcMonitorAddresses);
+        _shell.ShowSettings(_settingsPage);
+        MainShell.PageTitle = GetNavigationTitle("SettingsPage", MainShell.PageTitle);
+    }
+
+    private void ShowMachineDetail(string machineId)
+    {
+        NavigateToDevicePage(machineId);
+        _shell?.SelectNavigation("MachineDetailPage");
+        MainShell.PageTitle = GetNavigationTitle("MachineDetailPage", MainShell.PageTitle);
     }
 
     private void NavigateToDevicePage(string machineId)
@@ -147,10 +212,7 @@ public partial class MainWindow : Window
 
         devicePage.SetDeviceContext(UbiRuntimeMapper.CreateDeviceContext(config));
 
-        MainShell.ShellContent = devicePage;
-        MainShell.CurrentMachineDisplayName = config.Machine.Name;
-        MainShell.SelectedMachineId = machineId;
-        MainShell.PageTitle = "Machine Detail";
+        _shell?.ShowMachineDetail(devicePage, machineId, config.Machine.Name);
     }
 
     private void OnMachineSelectionRequested(object? sender, string machineId)
@@ -160,7 +222,93 @@ public partial class MainWindow : Window
             return;
         }
 
-        NavigateToDevicePage(machineId);
-        MainShell.SelectNavigationTarget("MachineDetailPage");
+        ShowMachineDetail(machineId);
+    }
+
+    private static ObservableCollection<NavigationItem>? CreateNavigationItems(IReadOnlyList<UbiNavigationMetaItem>? source)
+    {
+        if (source is null || source.Count == 0)
+        {
+            return null;
+        }
+
+        var items = new ObservableCollection<NavigationItem>();
+        foreach (var item in source)
+        {
+            if (string.IsNullOrWhiteSpace(item.Title) || string.IsNullOrWhiteSpace(item.NavigationTarget))
+            {
+                continue;
+            }
+
+            var level = Enum.TryParse<AccessLevel>(item.RequiredLevel, true, out var parsedLevel)
+                ? parsedLevel
+                : AccessLevel.Operator;
+
+            items.Add(new NavigationItem
+            {
+                Title = item.Title,
+                NavigationTarget = item.NavigationTarget,
+                RequiredLevel = level
+            });
+        }
+
+        return items.Count > 0 ? items : null;
+    }
+
+    private void PopulateNavigationTitles(IReadOnlyList<UbiNavigationMetaItem>? source)
+    {
+        _navigationTitles.Clear();
+        _navigationTitles["MachineOverviewPage"] = "Machine Overview";
+        _navigationTitles["MachineDetailPage"] = "Machine Detail";
+        _navigationTitles["LogViewerPage"] = "Log Viewer";
+        _navigationTitles["UserManagementPage"] = "User Management";
+        _navigationTitles["SettingsPage"] = "Maintenance Mode";
+
+        if (source is null)
+        {
+            return;
+        }
+
+        foreach (var item in source)
+        {
+            if (string.IsNullOrWhiteSpace(item.NavigationTarget) || string.IsNullOrWhiteSpace(item.Title))
+            {
+                continue;
+            }
+
+            _navigationTitles[item.NavigationTarget] = item.Title;
+        }
+    }
+
+    private string GetNavigationTitle(string target, string fallback)
+    {
+        if (_navigationTitles.TryGetValue(target, out var title) && !string.IsNullOrWhiteSpace(title))
+        {
+            return title;
+        }
+
+        return fallback;
+    }
+
+    private sealed class DelegateCommand : ICommand
+    {
+        private readonly Action<object?> _execute;
+        private readonly Func<object?, bool>? _canExecute;
+
+        public DelegateCommand(Action<object?> execute, Func<object?, bool>? canExecute = null)
+        {
+            _execute = execute;
+            _canExecute = canExecute;
+        }
+
+        public bool CanExecute(object? parameter) => _canExecute?.Invoke(parameter) ?? true;
+
+        public void Execute(object? parameter) => _execute(parameter);
+
+        public event EventHandler? CanExecuteChanged
+        {
+            add { }
+            remove { }
+        }
     }
 }

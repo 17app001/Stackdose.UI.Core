@@ -7,6 +7,13 @@
   "bottomPanelHeight": 440,
   "bottomLeftTitle": "Software Information",
   "bottomRightTitle": "Live Log",
+  "navigationItems": [
+    { "title": "Machine Overview", "navigationTarget": "MachineOverviewPage", "requiredLevel": "Operator" },
+    { "title": "Machine Detail", "navigationTarget": "MachineDetailPage", "requiredLevel": "Operator" },
+    { "title": "Log Viewer", "navigationTarget": "LogViewerPage", "requiredLevel": "Instructor" },
+    { "title": "User Management", "navigationTarget": "UserManagementPage", "requiredLevel": "Admin" },
+    { "title": "Maintenance Mode", "navigationTarget": "SettingsPage", "requiredLevel": "SuperAdmin" }
+  ],
   "softwareInfoItems": [
     { "label": "Application", "value": "Stackdose.App.UbiDemo" },
     { "label": "Version", "value": "v0.1.0-ui" },

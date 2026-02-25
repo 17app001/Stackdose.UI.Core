@@ -250,7 +250,7 @@
                         Background="{StaticResource TextMutedBrush}"
                         CornerRadius="18"
                         Margin="0,0,8,0">
-                    <TextBlock Text="{Binding UserName, Converter={StaticResource FirstCharConverter}}"
+                    <TextBlock Text="{Binding UserName, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource FirstCharConverter}}"
                                FontSize="20"
                                FontWeight="Bold"
                                Foreground="{StaticResource TextPrimaryBrush}"
@@ -260,13 +260,13 @@
 
                 <!-- Display Name + UID + Role -->
                 <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
-                    <TextBlock Text="{Binding UserName}"
+                    <TextBlock Text="{Binding UserName, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                FontSize="13"
                                FontWeight="Bold"
                                Foreground="{StaticResource TextPrimaryBrush}"/>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock x:Name="UserIdText"
-                                   Text="{Binding UserId}"
+                                   Text="{Binding UserId, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                    FontSize="10"
                                    Foreground="{StaticResource InfoBrush}"
                                    FontWeight="SemiBold"
@@ -275,7 +275,7 @@
                                    FontSize="10"
                                    Foreground="{StaticResource TextTertiaryBrush}"
                                    Margin="0,0,6,0"/>
-                        <TextBlock Text="{Binding UserRole}"
+                        <TextBlock Text="{Binding UserRole, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                    FontSize="10"
                                    Foreground="{StaticResource TextSecondaryBrush}"/>
                     </StackPanel>

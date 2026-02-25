@@ -1,6 +1,8 @@
 using Stackdose.Abstractions.Hardware;
+using Stackdose.Abstractions.Logging;
 using Stackdose.App.UbiDemo.Pages;
 using Stackdose.App.UbiDemo.Services;
+using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Templates.Pages;
 using System.Windows;
 using System.Windows.Input;
@@ -23,6 +25,7 @@ public partial class MainWindow : Window
     private readonly UbiMetaRuntimeService _metaRuntimeService;
     private UbiMetaSnapshot _currentMetaSnapshot = UbiMetaSnapshot.Empty;
     private UbiShellPageService? _shellPages;
+    private bool _frameworkServicesEnabled;
 
     public MainWindow()
     {
@@ -66,6 +69,12 @@ public partial class MainWindow : Window
         _shell = bootstrapState.Shell;
         _shellPages = bootstrapState.ShellPages;
         _currentMetaSnapshot = bootstrapState.InitialMetaSnapshot;
+        _frameworkServicesEnabled = bootstrapState.FrameworkServicesEnabled;
+
+        ComplianceContext.LogSystem(
+            $"[UbiRuntime] Framework shell services mode: {(_frameworkServicesEnabled ? "enabled" : "disabled")}",
+            LogLevel.Info,
+            showInUi: true);
 
         _runtime.OverviewPage.MachineSelected += OnMachineSelected;
         _runtime.OverviewPage.PlcScanUpdated  += OnPlcScanUpdated;
@@ -89,6 +98,7 @@ public partial class MainWindow : Window
         _shellPages = null;
         _shell = null;
         _runtime = null;
+        _frameworkServicesEnabled = false;
     }
 
     private void OnMachineSelected(string machineId)

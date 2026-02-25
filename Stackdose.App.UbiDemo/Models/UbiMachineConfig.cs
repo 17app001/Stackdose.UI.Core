@@ -45,6 +45,7 @@ public sealed class UbiAppMeta
 {
     public string HeaderDeviceName { get; set; } = "UBI";
     public string DefaultPageTitle { get; set; } = "Machine Overview";
+    public bool UseFrameworkShellServices { get; set; } = false;
     public bool EnableMetaHotReload { get; set; } = false;
     public bool ShowMachineCards { get; set; } = true;
     public bool ShowSoftwareInfo { get; set; } = true;

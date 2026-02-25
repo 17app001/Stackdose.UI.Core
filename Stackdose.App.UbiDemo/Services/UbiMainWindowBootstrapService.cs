@@ -51,6 +51,7 @@ internal sealed class UbiMainWindowBootstrapService
             shell,
             shellPages,
             initialMetaSnapshot,
+            runtime.AppMeta.UseFrameworkShellServices,
             BuildMachineOptions(runtime.Machines));
     }
 
@@ -84,12 +85,14 @@ internal sealed class UbiMainWindowBootstrapState
         UbiShellCoordinator shell,
         UbiShellPageService shellPages,
         UbiMetaSnapshot initialMetaSnapshot,
+        bool frameworkServicesEnabled,
         IEnumerable machineOptions)
     {
         Runtime = runtime;
         Shell = shell;
         ShellPages = shellPages;
         InitialMetaSnapshot = initialMetaSnapshot;
+        FrameworkServicesEnabled = frameworkServicesEnabled;
         MachineOptions = machineOptions;
     }
 
@@ -97,5 +100,6 @@ internal sealed class UbiMainWindowBootstrapState
     public UbiShellCoordinator Shell { get; }
     public UbiShellPageService ShellPages { get; }
     public UbiMetaSnapshot InitialMetaSnapshot { get; }
+    public bool FrameworkServicesEnabled { get; }
     public IEnumerable MachineOptions { get; }
 }

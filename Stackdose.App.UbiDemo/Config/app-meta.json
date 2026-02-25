@@ -1,6 +1,7 @@
 {
   "headerDeviceName": "UBI",
   "defaultPageTitle": "Machine Overview",
+  "useFrameworkShellServices": false,
   "enableMetaHotReload": false,
   "showMachineCards": true,
   "showSoftwareInfo": true,

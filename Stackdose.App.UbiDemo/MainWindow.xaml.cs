@@ -14,15 +14,14 @@ public partial class MainWindow : Window
     private readonly LogViewerPage _logViewerPage = new();
     private readonly UserManagementPage _userManagementPage = new();
     private readonly SettingsPage _settingsPage = new();
-    private readonly Dictionary<string, UbiDevicePage> _devicePages = new(StringComparer.OrdinalIgnoreCase);
-    private string? _selectedMachineId;
+    private readonly UbiDevicePageService _devicePages;
     private bool _suppressHeaderMachineSelection;
-    private readonly Dictionary<string, Action> _navigationHandlers = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, string> _navigationTitles = new(StringComparer.OrdinalIgnoreCase);
+    private readonly UbiNavigationService _navigationService;
     private readonly ICommand _navigationCommand;
     private readonly ICommand _machineSelectionCommand;
     private readonly UbiMetaRuntimeService _metaRuntimeService;
     private UbiMetaSnapshot _currentMetaSnapshot = UbiMetaSnapshot.Empty;
+    private UbiShellPageService? _shellPages;
 
     public MainWindow()
     {
@@ -34,6 +33,8 @@ public partial class MainWindow : Window
             parameter => OnMachineSelectionRequested(this, parameter as string ?? string.Empty),
             parameter => parameter is string machineId && !string.IsNullOrWhiteSpace(machineId));
 
+        _devicePages = new UbiDevicePageService();
+        _navigationService = new UbiNavigationService();
         InitializeComponent();
         _metaRuntimeService = new UbiMetaRuntimeService(Dispatcher);
         _metaRuntimeService.SnapshotChanged += OnMetaSnapshotChanged;
@@ -52,6 +53,7 @@ public partial class MainWindow : Window
         _currentMetaSnapshot = _metaRuntimeService.Start(_runtime.ConfigDirectory, _runtime.MetaFilePath, _runtime.AppMeta);
 
         _shell = new UbiShellCoordinator(MainShell, MainShell.PageTitle);
+        _shellPages = new UbiShellPageService(_shell, _navigationService, MainShell);
         _runtime.OverviewPage.MachineSelected += OnMachineSelected;
         _runtime.OverviewPage.PlcScanUpdated  += OnPlcScanUpdated;
 
@@ -68,7 +70,12 @@ public partial class MainWindow : Window
 
         ApplyMetaSnapshot(_currentMetaSnapshot, updateCurrentPageTitle: false);
 
-        BuildNavigationHandlers();
+        _navigationService.RegisterDefaultHandlers(
+            ShowOverview,
+            ShowCurrentOrFirstMachineDetail,
+            ShowLogViewer,
+            ShowUserManagement,
+            ShowSettings);
         _shell.SelectNavigation("MachineOverviewPage");
         UbiRuntimeMapper.BuildRuntimeMaps(_runtime.Machines);
     }
@@ -84,7 +91,9 @@ public partial class MainWindow : Window
         MainShell.NavigationCommand = null;
         MainShell.MachineSelectionCommand = null;
         _metaRuntimeService.Stop();
-        _navigationHandlers.Clear();
+        _navigationService.Clear();
+        _devicePages.Clear();
+        _shellPages = null;
         _shell = null;
     }
 
@@ -110,20 +119,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (_navigationHandlers.TryGetValue(target, out var handler))
-        {
-            handler();
-        }
-    }
-
-    private void BuildNavigationHandlers()
-    {
-        _navigationHandlers.Clear();
-        _navigationHandlers["MACHINEOVERVIEWPAGE"] = ShowOverview;
-        _navigationHandlers["MACHINEDETAILPAGE"] = ShowCurrentOrFirstMachineDetail;
-        _navigationHandlers["LOGVIEWERPAGE"] = ShowLogViewer;
-        _navigationHandlers["USERMANAGEMENTPAGE"] = ShowUserManagement;
-        _navigationHandlers["SETTINGSPAGE"] = ShowSettings;
+        _navigationService.TryNavigate(target);
     }
 
     private void ShowOverview()
@@ -133,18 +129,11 @@ public partial class MainWindow : Window
             return;
         }
 
-        var machineDisplayName = string.Empty;
-        if (!string.IsNullOrWhiteSpace(_selectedMachineId)
-            && _runtime.Machines.TryGetValue(_selectedMachineId, out var selectedMachine))
-        {
-            machineDisplayName = selectedMachine.Machine.Name;
-        }
-
-        _shell.ShowOverview(_runtime.OverviewPage, machineDisplayName);
-        var fallbackTitle = string.IsNullOrWhiteSpace(_currentMetaSnapshot.Meta.DefaultPageTitle)
-            ? MainShell.PageTitle
-            : _currentMetaSnapshot.Meta.DefaultPageTitle;
-        MainShell.PageTitle = GetNavigationTitle("MachineOverviewPage", fallbackTitle);
+        _shellPages?.ShowOverview(
+            _runtime.OverviewPage,
+            _runtime.Machines,
+            _devicePages.SelectedMachineId,
+            _currentMetaSnapshot.Meta.DefaultPageTitle);
     }
 
     private void ShowCurrentOrFirstMachineDetail()
@@ -154,10 +143,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var targetId = !string.IsNullOrWhiteSpace(_selectedMachineId)
-                       && _runtime.Machines.ContainsKey(_selectedMachineId)
-            ? _selectedMachineId
-            : _runtime.Machines.Keys.FirstOrDefault();
+        var targetId = _devicePages.GetCurrentOrFirstMachineId(_runtime.Machines);
 
         if (!string.IsNullOrWhiteSpace(targetId))
         {
@@ -167,52 +153,42 @@ public partial class MainWindow : Window
 
     private void ShowLogViewer()
     {
-        _shell?.ShowLogViewer(_logViewerPage);
-        MainShell.PageTitle = GetNavigationTitle("LogViewerPage", MainShell.PageTitle);
+        _shellPages?.ShowLogViewer(_logViewerPage);
     }
 
     private void ShowUserManagement()
     {
-        _shell?.ShowUserManagement(_userManagementPage);
-        MainShell.PageTitle = GetNavigationTitle("UserManagementPage", MainShell.PageTitle);
+        _shellPages?.ShowUserManagement(_userManagementPage);
     }
 
     private void ShowSettings()
     {
-        if (_runtime is null || _shell is null)
+        if (_runtime is null || _shellPages is null)
         {
             return;
         }
 
         _settingsPage.SetMonitorAddresses(_runtime.OverviewPage.PlcMonitorAddresses);
-        _shell.ShowSettings(_settingsPage);
-        MainShell.PageTitle = GetNavigationTitle("SettingsPage", MainShell.PageTitle);
+        _shellPages.ShowSettings(_settingsPage);
     }
 
     private void ShowMachineDetail(string machineId)
     {
         NavigateToDevicePage(machineId);
-        _shell?.SelectNavigation("MachineDetailPage");
-        MainShell.PageTitle = GetNavigationTitle("MachineDetailPage", MainShell.PageTitle);
     }
 
     private void NavigateToDevicePage(string machineId)
     {
-        if (_runtime is null || !_runtime.Machines.TryGetValue(machineId, out var config))
+        if (_runtime is null)
         {
             return;
         }
 
-        _selectedMachineId = machineId;
-        if (!_devicePages.TryGetValue(machineId, out var devicePage))
+        if (_devicePages.TryGetDetailPage(machineId, _runtime.Machines, out var devicePage, out var machineName)
+            && devicePage is not null)
         {
-            devicePage = new UbiDevicePage();
-            _devicePages[machineId] = devicePage;
+            _shellPages?.ShowMachineDetail(devicePage, machineId, machineName);
         }
-
-        devicePage.SetDeviceContext(UbiRuntimeMapper.CreateDeviceContext(config));
-
-        _shell?.ShowMachineDetail(devicePage, machineId, config.Machine.Name);
     }
 
     private void OnMachineSelectionRequested(object? sender, string machineId)
@@ -223,16 +199,6 @@ public partial class MainWindow : Window
         }
 
         ShowMachineDetail(machineId);
-    }
-
-    private string GetNavigationTitle(string target, string fallback)
-    {
-        if (_navigationTitles.TryGetValue(target, out var title) && !string.IsNullOrWhiteSpace(title))
-        {
-            return title;
-        }
-
-        return fallback;
     }
 
     private void OnMetaSnapshotChanged(object? sender, UbiMetaSnapshotChangedEventArgs e)
@@ -251,12 +217,7 @@ public partial class MainWindow : Window
         MainShell.HeaderDeviceName = snapshot.Meta.HeaderDeviceName;
         UbiRuntimeMapper.ApplyMeta(_runtime.OverviewPage, snapshot.Meta);
         MainShell.NavigationItems = snapshot.NavigationItems;
-
-        _navigationTitles.Clear();
-        foreach (var (key, value) in snapshot.NavigationTitles)
-        {
-            _navigationTitles[key] = value;
-        }
+        _navigationService.UpdateTitles(snapshot.NavigationTitles);
 
         if (updateCurrentPageTitle)
         {
@@ -266,31 +227,7 @@ public partial class MainWindow : Window
 
     private void UpdateCurrentPageTitle()
     {
-        var target = MainShell.ShellContent switch
-        {
-            MachineOverviewPage => "MachineOverviewPage",
-            UbiDevicePage => "MachineDetailPage",
-            LogViewerPage => "LogViewerPage",
-            UserManagementPage => "UserManagementPage",
-            SettingsPage => "SettingsPage",
-            _ => string.Empty
-        };
-
-        if (string.IsNullOrWhiteSpace(target))
-        {
-            return;
-        }
-
-        if (string.Equals(target, "MachineOverviewPage", StringComparison.OrdinalIgnoreCase))
-        {
-            var fallback = string.IsNullOrWhiteSpace(_currentMetaSnapshot.Meta.DefaultPageTitle)
-                ? MainShell.PageTitle
-                : _currentMetaSnapshot.Meta.DefaultPageTitle;
-            MainShell.PageTitle = GetNavigationTitle(target, fallback);
-            return;
-        }
-
-        MainShell.PageTitle = GetNavigationTitle(target, MainShell.PageTitle);
+        _shellPages?.UpdateCurrentPageTitle(_currentMetaSnapshot.Meta.DefaultPageTitle);
     }
 
     private sealed class DelegateCommand : ICommand

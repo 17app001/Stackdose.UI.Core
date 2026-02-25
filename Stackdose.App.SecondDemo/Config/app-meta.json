@@ -1,0 +1,21 @@
+{
+  "appId": "SecondDemo",
+  "headerDeviceName": "SECOND",
+  "defaultPageTitle": "Machine Overview",
+  "useFrameworkShellServices": false,
+  "enableMetaHotReload": false,
+  "showMachineCards": true,
+  "showSoftwareInfo": true,
+  "showLiveLog": true,
+  "bottomPanelHeight": 340,
+  "bottomLeftTitle": "Software Information",
+  "bottomRightTitle": "Live Log",
+  "navigationItems": [
+    { "title": "Machine Overview", "navigationTarget": "MachineOverviewPage", "requiredLevel": "Operator" },
+    { "title": "Machine Detail", "navigationTarget": "MachineDetailPage", "requiredLevel": "Operator" }
+  ],
+  "softwareInfoItems": [
+    { "label": "Application", "value": "Stackdose.App.SecondDemo" },
+    { "label": "Version", "value": "v0.1.0" }
+  ]
+}

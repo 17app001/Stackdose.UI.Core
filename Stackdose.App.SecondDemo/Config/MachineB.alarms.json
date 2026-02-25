@@ -1,0 +1,10 @@
+{
+  "Alarms": [
+    {
+      "Group": "Safety",
+      "Device": "M120",
+      "Bit": 0,
+      "OperationDescription": "Emergency stop triggered"
+    }
+  ]
+}

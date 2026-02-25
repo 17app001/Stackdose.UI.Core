@@ -1,0 +1,10 @@
+[
+  {
+    "Group": "Temperature",
+    "Device": "D190",
+    "Bit": "",
+    "Value": ">75",
+    "Mode": "COMPARE",
+    "OperationDescription": "Heater temperature too high"
+  }
+]

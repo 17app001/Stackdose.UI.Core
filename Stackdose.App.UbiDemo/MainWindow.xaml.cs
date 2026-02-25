@@ -17,6 +17,7 @@ public partial class MainWindow : Window
     private readonly UbiDevicePageService _devicePages;
     private bool _suppressHeaderMachineSelection;
     private readonly UbiNavigationService _navigationService;
+    private readonly UbiMainWindowBootstrapService _bootstrapService;
     private readonly ICommand _navigationCommand;
     private readonly ICommand _machineSelectionCommand;
     private readonly UbiMetaRuntimeService _metaRuntimeService;
@@ -35,6 +36,7 @@ public partial class MainWindow : Window
 
         _devicePages = new UbiDevicePageService();
         _navigationService = new UbiNavigationService();
+        _bootstrapService = new UbiMainWindowBootstrapService();
         InitializeComponent();
         _metaRuntimeService = new UbiMetaRuntimeService(Dispatcher);
         _metaRuntimeService.SnapshotChanged += OnMetaSnapshotChanged;
@@ -44,40 +46,35 @@ public partial class MainWindow : Window
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        _runtime = UbiRuntimeHost.Start(MainShell);
-        if (_runtime is null)
-        {
-            return;
-        }
-
-        _currentMetaSnapshot = _metaRuntimeService.Start(_runtime.ConfigDirectory, _runtime.MetaFilePath, _runtime.AppMeta);
-
-        _shell = new UbiShellCoordinator(MainShell, MainShell.PageTitle);
-        _shellPages = new UbiShellPageService(_shell, _navigationService, MainShell);
-        _runtime.OverviewPage.MachineSelected += OnMachineSelected;
-        _runtime.OverviewPage.PlcScanUpdated  += OnPlcScanUpdated;
-
-        MainShell.NavigationCommand = _navigationCommand;
-        MainShell.MachineSelectionCommand = _machineSelectionCommand;
-
-        _suppressHeaderMachineSelection = true;
-        _shell.SetMachineOptions(_runtime.Machines.Values
-            .Select(machine => new KeyValuePair<string, string>(
-                machine.Machine.Id,
-                $"{machine.Machine.Name} ({machine.Machine.Id})"))
-            .ToList());
-        _suppressHeaderMachineSelection = false;
-
-        ApplyMetaSnapshot(_currentMetaSnapshot, updateCurrentPageTitle: false);
-
-        _navigationService.RegisterDefaultHandlers(
+        var bootstrapState = _bootstrapService.Start(
+            MainShell,
+            _metaRuntimeService,
+            _navigationService,
+            _navigationCommand,
+            _machineSelectionCommand,
             ShowOverview,
             ShowCurrentOrFirstMachineDetail,
             ShowLogViewer,
             ShowUserManagement,
             ShowSettings);
-        _shell.SelectNavigation("MachineOverviewPage");
-        UbiRuntimeMapper.BuildRuntimeMaps(_runtime.Machines);
+        if (bootstrapState is null)
+        {
+            return;
+        }
+
+        _runtime = bootstrapState.Runtime;
+        _shell = bootstrapState.Shell;
+        _shellPages = bootstrapState.ShellPages;
+        _currentMetaSnapshot = bootstrapState.InitialMetaSnapshot;
+
+        _runtime.OverviewPage.MachineSelected += OnMachineSelected;
+        _runtime.OverviewPage.PlcScanUpdated  += OnPlcScanUpdated;
+
+        _suppressHeaderMachineSelection = true;
+        _shell.SetMachineOptions(bootstrapState.MachineOptions);
+        _suppressHeaderMachineSelection = false;
+
+        ApplyMetaSnapshot(_currentMetaSnapshot, updateCurrentPageTitle: false);
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -88,13 +85,10 @@ public partial class MainWindow : Window
             _runtime.OverviewPage.PlcScanUpdated  -= OnPlcScanUpdated;
         }
 
-        MainShell.NavigationCommand = null;
-        MainShell.MachineSelectionCommand = null;
-        _metaRuntimeService.Stop();
-        _navigationService.Clear();
-        _devicePages.Clear();
+        _bootstrapService.Stop(MainShell, _metaRuntimeService, _navigationService, _devicePages);
         _shellPages = null;
         _shell = null;
+        _runtime = null;
     }
 
     private void OnMachineSelected(string machineId)

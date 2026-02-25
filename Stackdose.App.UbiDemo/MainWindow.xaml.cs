@@ -25,7 +25,8 @@ public partial class MainWindow : Window
     private readonly UbiMetaRuntimeService _metaRuntimeService;
     private UbiMetaSnapshot _currentMetaSnapshot = UbiMetaSnapshot.Empty;
     private UbiShellPageService? _shellPages;
-    private bool _frameworkServicesEnabled;
+    private UbiShellServiceMode _shellServiceMode = UbiShellServiceMode.Legacy;
+    private bool _isInitialized;
 
     public MainWindow()
     {
@@ -49,6 +50,12 @@ public partial class MainWindow : Window
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        if (_isInitialized || _runtime is not null)
+        {
+            ComplianceContext.LogSystem("[UbiRuntime] Skip duplicated MainWindow load initialization", LogLevel.Warning, showInUi: true);
+            return;
+        }
+
         var bootstrapState = _bootstrapService.Start(
             MainShell,
             _metaRuntimeService,
@@ -69,15 +76,16 @@ public partial class MainWindow : Window
         _shell = bootstrapState.Shell;
         _shellPages = bootstrapState.ShellPages;
         _currentMetaSnapshot = bootstrapState.InitialMetaSnapshot;
-        _frameworkServicesEnabled = bootstrapState.FrameworkServicesEnabled;
+        _shellServiceMode = bootstrapState.ServiceMode;
 
         ComplianceContext.LogSystem(
-            $"[UbiRuntime] Framework shell services mode: {(_frameworkServicesEnabled ? "enabled" : "disabled")}",
+            $"[UbiRuntime] Shell service mode: {_shellServiceMode}",
             LogLevel.Info,
             showInUi: true);
 
         _runtime.OverviewPage.MachineSelected += OnMachineSelected;
         _runtime.OverviewPage.PlcScanUpdated  += OnPlcScanUpdated;
+        _isInitialized = true;
 
         _suppressHeaderMachineSelection = true;
         _shell.SetMachineOptions(bootstrapState.MachineOptions);
@@ -98,7 +106,8 @@ public partial class MainWindow : Window
         _shellPages = null;
         _shell = null;
         _runtime = null;
-        _frameworkServicesEnabled = false;
+        _shellServiceMode = UbiShellServiceMode.Legacy;
+        _isInitialized = false;
     }
 
     private void OnMachineSelected(string machineId)

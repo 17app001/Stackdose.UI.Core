@@ -25,13 +25,18 @@ internal sealed class UbiMainWindowBootstrapService
             return null;
         }
 
+        var mode = runtime.AppMeta.UseFrameworkShellServices
+            ? UbiShellServiceMode.Framework
+            : UbiShellServiceMode.Legacy;
+
         var initialMetaSnapshot = metaRuntimeService.Start(
             runtime.ConfigDirectory,
             runtime.MetaFilePath,
             runtime.AppMeta,
             runtime.AppMeta.EnableMetaHotReload);
-        var shell = new UbiShellCoordinator(mainShell, mainShell.PageTitle);
-        var shellPages = new UbiShellPageService(shell, navigationService, mainShell);
+
+        var shell = CreateCoordinator(mode, mainShell);
+        var shellPages = CreateShellPageService(mode, shell, navigationService, mainShell);
 
         mainShell.NavigationCommand = navigationCommand;
         mainShell.MachineSelectionCommand = machineSelectionCommand;
@@ -51,7 +56,7 @@ internal sealed class UbiMainWindowBootstrapService
             shell,
             shellPages,
             initialMetaSnapshot,
-            runtime.AppMeta.UseFrameworkShellServices,
+            mode,
             BuildMachineOptions(runtime.Machines));
     }
 
@@ -76,6 +81,34 @@ internal sealed class UbiMainWindowBootstrapService
                 $"{machine.Machine.Name} ({machine.Machine.Id})"))
             .ToList();
     }
+
+    private static UbiShellCoordinator CreateCoordinator(UbiShellServiceMode mode, MainContainer mainShell)
+    {
+        return mode switch
+        {
+            UbiShellServiceMode.Framework => new UbiShellCoordinator(mainShell, mainShell.PageTitle),
+            _ => new UbiShellCoordinator(mainShell, mainShell.PageTitle)
+        };
+    }
+
+    private static UbiShellPageService CreateShellPageService(
+        UbiShellServiceMode mode,
+        UbiShellCoordinator shell,
+        UbiNavigationService navigationService,
+        MainContainer mainShell)
+    {
+        return mode switch
+        {
+            UbiShellServiceMode.Framework => new UbiShellPageService(shell, navigationService, mainShell),
+            _ => new UbiShellPageService(shell, navigationService, mainShell)
+        };
+    }
+}
+
+internal enum UbiShellServiceMode
+{
+    Legacy = 0,
+    Framework = 1
 }
 
 internal sealed class UbiMainWindowBootstrapState
@@ -85,14 +118,14 @@ internal sealed class UbiMainWindowBootstrapState
         UbiShellCoordinator shell,
         UbiShellPageService shellPages,
         UbiMetaSnapshot initialMetaSnapshot,
-        bool frameworkServicesEnabled,
+        UbiShellServiceMode serviceMode,
         IEnumerable machineOptions)
     {
         Runtime = runtime;
         Shell = shell;
         ShellPages = shellPages;
         InitialMetaSnapshot = initialMetaSnapshot;
-        FrameworkServicesEnabled = frameworkServicesEnabled;
+        ServiceMode = serviceMode;
         MachineOptions = machineOptions;
     }
 
@@ -100,6 +133,6 @@ internal sealed class UbiMainWindowBootstrapState
     public UbiShellCoordinator Shell { get; }
     public UbiShellPageService ShellPages { get; }
     public UbiMetaSnapshot InitialMetaSnapshot { get; }
-    public bool FrameworkServicesEnabled { get; }
+    public UbiShellServiceMode ServiceMode { get; }
     public IEnumerable MachineOptions { get; }
 }

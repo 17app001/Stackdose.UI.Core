@@ -13,7 +13,7 @@ namespace Stackdose.App.UbiDemo.Services;
 
 public static class UbiRuntimeMapper
 {
-    // ¢w¢w Internal address map types ¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w
+    // ï¿½wï¿½w Internal address map types ï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½w
     private sealed record AlarmBitPoint(string Device, int Bit);
     private sealed record OverviewAddressMap(
         string BatchAddress, string RecipeAddress,
@@ -21,11 +21,11 @@ public static class UbiRuntimeMapper
 
     private static readonly Regex AddressPattern = new("^([A-Za-z]+)(\\d+)$", RegexOptions.Compiled);
 
-    // ¢w¢w Runtime state (held internally) ¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w
+    // ï¿½wï¿½w Runtime state (held internally) ï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½w
     private static Dictionary<string, OverviewAddressMap> _cachedAddressMap = new(StringComparer.OrdinalIgnoreCase);
     private static Dictionary<string, IReadOnlyList<AlarmBitPoint>> _cachedAlarmMap = new(StringComparer.OrdinalIgnoreCase);
 
-    // ¢w¢w Overview card PLC update ¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w
+    // ï¿½wï¿½w Overview card PLC update ï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½w
 
     /// <summary>
     /// Builds and caches the internal address/alarm maps. Call once after config is loaded.
@@ -78,7 +78,7 @@ public static class UbiRuntimeMapper
         }
     }
 
-    // ¢w¢w PLC read helpers ¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w
+    // ï¿½wï¿½w PLC read helpers ï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½w
 
     private static bool ReadBoolAddress(IPlcManager manager, string address)
     {
@@ -117,10 +117,16 @@ public static class UbiRuntimeMapper
             return 0;
         }
 
+        var wordCache = new Dictionary<string, int?>(StringComparer.OrdinalIgnoreCase);
         var active = 0;
         foreach (var point in points)
         {
-            var word = manager.ReadWord(point.Device);
+            if (!wordCache.TryGetValue(point.Device, out var word))
+            {
+                word = manager.ReadWord(point.Device);
+                wordCache[point.Device] = word;
+            }
+
             if (word.HasValue && ((word.Value >> point.Bit) & 1) == 1)
             {
                 active++;
@@ -202,7 +208,7 @@ public static class UbiRuntimeMapper
         };
     }
 
-    // ¢w¢w Existing public API (unchanged) ¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w
+    // ï¿½wï¿½w Existing public API (unchanged) ï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½wï¿½w
 
     public static void ApplyMeta(MachineOverviewPage page, UbiAppMeta meta)
     {

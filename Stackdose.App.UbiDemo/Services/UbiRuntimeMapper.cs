@@ -24,6 +24,9 @@ public static class UbiRuntimeMapper
     // �w�w Runtime state (held internally) �w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w
     private static Dictionary<string, OverviewAddressMap> _cachedAddressMap = new(StringComparer.OrdinalIgnoreCase);
     private static Dictionary<string, IReadOnlyList<AlarmBitPoint>> _cachedAlarmMap = new(StringComparer.OrdinalIgnoreCase);
+    private static Dictionary<string, int> _cachedAlarmCount = new(StringComparer.OrdinalIgnoreCase);
+    private static Dictionary<string, DateTime> _cachedAlarmCountUpdatedAt = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly TimeSpan AlarmCountRefreshInterval = TimeSpan.FromMilliseconds(500);
 
     // �w�w Overview card PLC update �w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w
 
@@ -34,6 +37,8 @@ public static class UbiRuntimeMapper
     {
         _cachedAddressMap.Clear();
         _cachedAlarmMap.Clear();
+        _cachedAlarmCount.Clear();
+        _cachedAlarmCountUpdatedAt.Clear();
 
         foreach (var (key, config) in machines)
         {
@@ -60,9 +65,15 @@ public static class UbiRuntimeMapper
                 continue;
             }
 
-            var isRunning  = ReadBoolAddress(manager, map.RunningAddress);
-            var isAlarm    = ReadBoolAddress(manager, map.AlarmAddress);
-            var alarmCount = GetActiveAlarmCount(manager, card.MachineId);
+            var isRunning = ReadBoolAddress(manager, map.RunningAddress);
+            var isAlarm = ReadBoolAddress(manager, map.AlarmAddress);
+            var alarmCount = isAlarm ? GetActiveAlarmCount(manager, card.MachineId) : 0;
+
+            if (!isAlarm)
+            {
+                _cachedAlarmCount[card.MachineId] = 0;
+                _cachedAlarmCountUpdatedAt[card.MachineId] = DateTime.UtcNow;
+            }
 
             card.StatusText  = isRunning ? "Running" : "Idle";
             card.StatusBrush = isAlarm
@@ -112,8 +123,18 @@ public static class UbiRuntimeMapper
 
     private static int GetActiveAlarmCount(IPlcManager manager, string machineId)
     {
+        var now = DateTime.UtcNow;
+        if (_cachedAlarmCountUpdatedAt.TryGetValue(machineId, out var updatedAt)
+            && now - updatedAt < AlarmCountRefreshInterval
+            && _cachedAlarmCount.TryGetValue(machineId, out var cachedValue))
+        {
+            return cachedValue;
+        }
+
         if (!_cachedAlarmMap.TryGetValue(machineId, out var points) || points.Count == 0)
         {
+            _cachedAlarmCount[machineId] = 0;
+            _cachedAlarmCountUpdatedAt[machineId] = now;
             return 0;
         }
 
@@ -133,6 +154,8 @@ public static class UbiRuntimeMapper
             }
         }
 
+        _cachedAlarmCount[machineId] = active;
+        _cachedAlarmCountUpdatedAt[machineId] = now;
         return active;
     }
 

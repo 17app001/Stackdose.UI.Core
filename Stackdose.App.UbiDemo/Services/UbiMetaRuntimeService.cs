@@ -2,6 +2,7 @@ using Stackdose.Abstractions.Logging;
 using Stackdose.App.UbiDemo.Models;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
+using Stackdose.UI.Core.Shell;
 using Stackdose.UI.Templates.Controls;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -11,15 +12,6 @@ namespace Stackdose.App.UbiDemo.Services;
 
 public sealed class UbiMetaRuntimeService : IDisposable
 {
-    private static readonly HashSet<string> SupportedNavigationTargets = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "MachineOverviewPage",
-        "MachineDetailPage",
-        "LogViewerPage",
-        "UserManagementPage",
-        "SettingsPage"
-    };
-
     private readonly Dispatcher _dispatcher;
     private readonly DispatcherTimer _reloadTimer;
     private FileSystemWatcher? _watcher;
@@ -195,8 +187,7 @@ public sealed class UbiMetaRuntimeService : IDisposable
         foreach (var item in source)
         {
             if (string.IsNullOrWhiteSpace(item.Title)
-                || string.IsNullOrWhiteSpace(item.NavigationTarget)
-                || !SupportedNavigationTargets.Contains(item.NavigationTarget))
+                || !ShellRouteCatalog.IsSupportedTarget(item.NavigationTarget))
             {
                 continue;
             }
@@ -224,7 +215,7 @@ public sealed class UbiMetaRuntimeService : IDisposable
                 continue;
             }
 
-            if (!SupportedNavigationTargets.Contains(item.NavigationTarget))
+            if (!ShellRouteCatalog.IsSupportedTarget(item.NavigationTarget))
             {
                 ComplianceContext.LogSystem($"[UbiRuntime] Skip navigationItems[{index}]: unsupported target '{item.NavigationTarget}'", LogLevel.Warning, showInUi: true);
                 continue;

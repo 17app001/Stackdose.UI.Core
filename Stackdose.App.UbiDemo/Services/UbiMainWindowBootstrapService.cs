@@ -50,7 +50,7 @@ internal sealed class UbiMainWindowBootstrapService
             showSettings);
 
         UbiRuntimeMapper.BuildRuntimeMaps(runtime.Machines);
-        shell.SelectNavigation("MachineOverviewPage");
+        shell.SelectNavigation(ShellNavigationTargets.Overview);
 
         return new UbiMainWindowBootstrapState(
             runtime,

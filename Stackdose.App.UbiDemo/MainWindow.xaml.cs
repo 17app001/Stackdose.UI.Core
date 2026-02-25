@@ -40,7 +40,7 @@ public partial class MainWindow : Window
             parameter => parameter is string machineId && !string.IsNullOrWhiteSpace(machineId));
 
         _devicePages = new UbiDevicePageService();
-        _navigationService = new UbiNavigationService();
+        _navigationService = new ShellNavigationService();
         _bootstrapService = new UbiMainWindowBootstrapService();
         InitializeComponent();
         _metaRuntimeService = new UbiMetaRuntimeService(Dispatcher);

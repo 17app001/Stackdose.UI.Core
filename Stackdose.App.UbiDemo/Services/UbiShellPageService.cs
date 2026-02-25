@@ -32,42 +32,42 @@ internal sealed class UbiShellPageService
         var fallbackTitle = string.IsNullOrWhiteSpace(defaultOverviewTitle)
             ? _mainShell.PageTitle
             : defaultOverviewTitle;
-        _mainShell.PageTitle = _navigation.GetTitle("MachineOverviewPage", fallbackTitle);
+        _mainShell.PageTitle = _navigation.GetTitle(ShellNavigationTargets.Overview, fallbackTitle);
     }
 
     public void ShowMachineDetail(UbiDevicePage page, string machineId, string machineName)
     {
         _shell.ShowMachineDetail(page, machineId, machineName);
-        _mainShell.PageTitle = _navigation.GetTitle("MachineDetailPage", _mainShell.PageTitle);
+        _mainShell.PageTitle = _navigation.GetTitle(ShellNavigationTargets.Detail, _mainShell.PageTitle);
     }
 
     public void ShowLogViewer(LogViewerPage page)
     {
         _shell.ShowLogViewer(page);
-        _mainShell.PageTitle = _navigation.GetTitle("LogViewerPage", _mainShell.PageTitle);
+        _mainShell.PageTitle = _navigation.GetTitle(ShellNavigationTargets.LogViewer, _mainShell.PageTitle);
     }
 
     public void ShowUserManagement(UserManagementPage page)
     {
         _shell.ShowUserManagement(page);
-        _mainShell.PageTitle = _navigation.GetTitle("UserManagementPage", _mainShell.PageTitle);
+        _mainShell.PageTitle = _navigation.GetTitle(ShellNavigationTargets.UserManagement, _mainShell.PageTitle);
     }
 
     public void ShowSettings(SettingsPage page)
     {
         _shell.ShowSettings(page);
-        _mainShell.PageTitle = _navigation.GetTitle("SettingsPage", _mainShell.PageTitle);
+        _mainShell.PageTitle = _navigation.GetTitle(ShellNavigationTargets.Settings, _mainShell.PageTitle);
     }
 
     public void UpdateCurrentPageTitle(string defaultOverviewTitle)
     {
         var target = _mainShell.ShellContent switch
         {
-            MachineOverviewPage => "MachineOverviewPage",
-            UbiDevicePage => "MachineDetailPage",
-            LogViewerPage => "LogViewerPage",
-            UserManagementPage => "UserManagementPage",
-            SettingsPage => "SettingsPage",
+            MachineOverviewPage => ShellNavigationTargets.Overview,
+            UbiDevicePage => ShellNavigationTargets.Detail,
+            LogViewerPage => ShellNavigationTargets.LogViewer,
+            UserManagementPage => ShellNavigationTargets.UserManagement,
+            SettingsPage => ShellNavigationTargets.Settings,
             _ => string.Empty
         };
 
@@ -76,7 +76,7 @@ internal sealed class UbiShellPageService
             return;
         }
 
-        if (string.Equals(target, "MachineOverviewPage", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(target, ShellNavigationTargets.Overview, StringComparison.OrdinalIgnoreCase))
         {
             var fallback = string.IsNullOrWhiteSpace(defaultOverviewTitle)
                 ? _mainShell.PageTitle

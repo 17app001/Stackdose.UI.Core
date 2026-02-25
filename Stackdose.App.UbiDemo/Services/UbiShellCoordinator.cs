@@ -1,4 +1,5 @@
 using Stackdose.App.UbiDemo.Pages;
+using Stackdose.UI.Core.Shell;
 using Stackdose.UI.Templates.Pages;
 using Stackdose.UI.Templates.Shell;
 using System.Collections;
@@ -30,7 +31,7 @@ internal sealed class UbiShellCoordinator
     {
         _shell.ShellContent = overviewPage;
         _shell.PageTitle = _overviewTitle;
-        _shell.SelectNavigationTarget("MachineOverviewPage");
+        _shell.SelectNavigationTarget(ShellNavigationTargets.Overview);
 
         if (!string.IsNullOrWhiteSpace(machineDisplayName))
         {
@@ -44,27 +45,27 @@ internal sealed class UbiShellCoordinator
         _shell.CurrentMachineDisplayName = machineName;
         _shell.SelectedMachineId = machineId;
         _shell.PageTitle = "Machine Detail";
-        _shell.SelectNavigationTarget("MachineDetailPage");
+        _shell.SelectNavigationTarget(ShellNavigationTargets.Detail);
     }
 
     public void ShowLogViewer(LogViewerPage page)
     {
         _shell.ShellContent = page;
         _shell.PageTitle = "Log Viewer";
-        _shell.SelectNavigationTarget("LogViewerPage");
+        _shell.SelectNavigationTarget(ShellNavigationTargets.LogViewer);
     }
 
     public void ShowUserManagement(UserManagementPage page)
     {
         _shell.ShellContent = page;
         _shell.PageTitle = "User Management";
-        _shell.SelectNavigationTarget("UserManagementPage");
+        _shell.SelectNavigationTarget(ShellNavigationTargets.UserManagement);
     }
 
     public void ShowSettings(SettingsPage page)
     {
         _shell.ShellContent = page;
         _shell.PageTitle = "Maintenance Mode";
-        _shell.SelectNavigationTarget("SettingsPage");
+        _shell.SelectNavigationTarget(ShellNavigationTargets.Settings);
     }
 }

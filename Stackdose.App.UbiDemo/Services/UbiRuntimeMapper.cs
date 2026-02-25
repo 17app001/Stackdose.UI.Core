@@ -1,4 +1,5 @@
 using Stackdose.Abstractions.Hardware;
+using Stackdose.App.ShellShared.Services;
 using Stackdose.App.UbiDemo.Models;
 using Stackdose.UI.Templates.Pages;
 using System;
@@ -371,13 +372,14 @@ public static class UbiRuntimeMapper
 
     private static string BuildMonitorAddresses(IEnumerable<UbiMachineConfig> configs)
     {
-        var addresses = configs
-            .SelectMany(config => config.Tags.Status.Values.Concat(config.Tags.Process.Values))
-            .Where(tag => string.Equals(tag.Access, "read", StringComparison.OrdinalIgnoreCase))
-            .SelectMany(ExpandAddresses)
-            .Concat(GetManualPlcMonitorAddresses(configs))
-            .Concat(GetUbiDevicePageDetailLabelAddresses(configs))
-            .Concat(GetMachineAlertAddresses(configs))
+        var configList = configs as IReadOnlyList<UbiMachineConfig> ?? configs.ToList();
+        var sharedAddresses = ShellMonitorAddressBuilder.CollectReadableAddresses(
+            configList.Select(UbiShellSharedAdapter.ToShellMachineConfig));
+
+        var addresses = sharedAddresses
+            .Concat(GetManualPlcMonitorAddresses(configList))
+            .Concat(GetUbiDevicePageDetailLabelAddresses(configList))
+            .Concat(GetMachineAlertAddresses(configList))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 

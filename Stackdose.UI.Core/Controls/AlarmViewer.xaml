@@ -39,7 +39,6 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <!-- Alarm Indicator -->
@@ -133,15 +132,6 @@
                                 <Run Text=")"/>
                             </TextBlock>
                         </Border>
-
-                        <!-- Last Update Time -->
-                        <TextBlock Grid.Column="3" 
-                                   Text="{Binding LastUpdate, StringFormat='HH:mm:ss'}" 
-                                   Foreground="{DynamicResource Plc.Text.Default}" 
-                                   FontSize="10" 
-                                   FontFamily="Consolas"
-                                   VerticalAlignment="Center"
-                                   Margin="12,0,0,0"/>
                     </Grid>
                 </Border>
             </DataTemplate>

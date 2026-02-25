@@ -208,27 +208,24 @@ namespace Stackdose.UI.Core.Controls
         {
             if (manager == null || _allAlarms.Count == 0) return;
 
-            int activeCount = 0;
+            int activeCount = 0;
+            var wordCache = new Dictionary<string, int?>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var alarm in _allAlarms)
             {
-                // 讀取 Word，然後取出指定 Bit
-                var wordValue = manager.ReadWord(alarm.Device);
-                if (wordValue.HasValue)
-                {
-                    alarm.IsActive = ((wordValue.Value >> alarm.Bit) & 1) == 1;
+                // 讀取 Word，然後取出指定 Bit（同一 Device 每輪只讀一次）
+                if (!wordCache.TryGetValue(alarm.Device, out var wordValue)) {
+                    wordValue = manager.ReadWord(alarm.Device);
+                    wordCache[alarm.Device] = wordValue;
                 }
-                else
-                {
-                    alarm.IsActive = false;
+                var newIsActive = wordValue.HasValue && ((wordValue.Value >> alarm.Bit) & 1) == 1;
+                if (alarm.IsActive != newIsActive) {
+                    alarm.IsActive = newIsActive;
+                    alarm.LastUpdate = DateTime.Now;
                 }
                 
-                alarm.LastUpdate = DateTime.Now;
 
-                if (alarm.IsActive)
-                {
-                    activeCount++;
-                }
+                if (newIsActive) { activeCount++; }
             }
 
             TxtAlarmCount.Text = activeCount.ToString();

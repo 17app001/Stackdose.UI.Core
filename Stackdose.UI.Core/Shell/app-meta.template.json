@@ -1,0 +1,24 @@
+{
+  "appId": "MySecondApp",
+  "headerDeviceName": "MY-APP",
+  "defaultPageTitle": "Machine Overview",
+  "useFrameworkShellServices": false,
+  "enableMetaHotReload": false,
+  "showMachineCards": true,
+  "showSoftwareInfo": true,
+  "showLiveLog": true,
+  "bottomPanelHeight": 140,
+  "bottomLeftTitle": "Software Information",
+  "bottomRightTitle": "Live Log",
+  "navigationItems": [
+    { "title": "Machine Overview", "navigationTarget": "MachineOverviewPage", "requiredLevel": "Operator" },
+    { "title": "Machine Detail", "navigationTarget": "MachineDetailPage", "requiredLevel": "Operator" },
+    { "title": "Log Viewer", "navigationTarget": "LogViewerPage", "requiredLevel": "Instructor" },
+    { "title": "User Management", "navigationTarget": "UserManagementPage", "requiredLevel": "Admin" },
+    { "title": "Maintenance Mode", "navigationTarget": "SettingsPage", "requiredLevel": "SuperAdmin" }
+  ],
+  "softwareInfoItems": [
+    { "label": "Software Name", "value": "MY-APP" },
+    { "label": "Version", "value": "v0.1.0" }
+  ]
+}

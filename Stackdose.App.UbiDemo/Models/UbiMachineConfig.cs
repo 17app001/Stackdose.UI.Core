@@ -1,3 +1,5 @@
+using Stackdose.UI.Core.Shell;
+
 namespace Stackdose.App.UbiDemo.Models;
 
 public sealed class UbiMachineConfig
@@ -41,8 +43,9 @@ public sealed class UbiTagConfig
     public int Length { get; set; } = 1;
 }
 
-public sealed class UbiAppMeta
+public sealed class UbiAppMeta : IShellAppProfile
 {
+    public string AppId { get; set; } = "UbiDemo";
     public string HeaderDeviceName { get; set; } = "UBI";
     public string DefaultPageTitle { get; set; } = "Machine Overview";
     public bool UseFrameworkShellServices { get; set; } = false;
@@ -56,6 +59,11 @@ public sealed class UbiAppMeta
     public string BottomRightTitle { get; set; } = "Live Log";
     public List<UbiMetaInfoItem> SoftwareInfoItems { get; set; } = [];
     public List<UbiNavigationMetaItem> NavigationItems { get; set; } = [];
+
+    IReadOnlyList<ShellNavigationProfileItem> IShellAppProfile.NavigationItems
+        => NavigationItems
+            .Select(item => new ShellNavigationProfileItem(item.Title, item.NavigationTarget, item.RequiredLevel))
+            .ToList();
 }
 
 public sealed class UbiMetaInfoItem

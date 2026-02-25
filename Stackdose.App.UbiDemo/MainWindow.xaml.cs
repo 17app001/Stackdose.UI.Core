@@ -215,7 +215,7 @@ public partial class MainWindow : Window
         ShowMachineDetail(machineId);
     }
 
-    private void OnMetaSnapshotChanged(object? sender, UbiMetaSnapshotChangedEventArgs e)
+    private void OnMetaSnapshotChanged(object? sender, ShellMetaSnapshotChangedEventArgs<UbiMetaSnapshot> e)
     {
         ApplyMetaSnapshot(e.Snapshot, updateCurrentPageTitle: true);
     }

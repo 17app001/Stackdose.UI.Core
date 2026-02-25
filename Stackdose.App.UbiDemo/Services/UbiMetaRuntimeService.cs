@@ -10,7 +10,7 @@ using System.Windows.Threading;
 
 namespace Stackdose.App.UbiDemo.Services;
 
-public sealed class UbiMetaRuntimeService : IDisposable
+public sealed class UbiMetaRuntimeService : IShellMetaRuntimeService<UbiAppMeta, UbiMetaSnapshot>
 {
     private readonly Dispatcher _dispatcher;
     private readonly DispatcherTimer _reloadTimer;
@@ -30,7 +30,7 @@ public sealed class UbiMetaRuntimeService : IDisposable
         _reloadTimer.Tick += OnReloadTimerTick;
     }
 
-    public event EventHandler<UbiMetaSnapshotChangedEventArgs>? SnapshotChanged;
+    public event EventHandler<ShellMetaSnapshotChangedEventArgs<UbiMetaSnapshot>>? SnapshotChanged;
 
     public UbiMetaSnapshot CurrentSnapshot { get; private set; } = UbiMetaSnapshot.Empty;
 
@@ -152,7 +152,7 @@ public sealed class UbiMetaRuntimeService : IDisposable
             _lastMetaWriteUtc = writeUtc;
             CurrentSnapshot = BuildSnapshot(meta);
 
-            SnapshotChanged?.Invoke(this, new UbiMetaSnapshotChangedEventArgs(CurrentSnapshot));
+            SnapshotChanged?.Invoke(this, new ShellMetaSnapshotChangedEventArgs<UbiMetaSnapshot>(CurrentSnapshot));
             ComplianceContext.LogSystem($"[UbiRuntime] Reloaded app meta: {_metaFilePath}", LogLevel.Info, showInUi: true);
         }
         catch (Exception ex)
@@ -244,17 +244,7 @@ public sealed class UbiMetaRuntimeService : IDisposable
     }
 }
 
-public sealed class UbiMetaSnapshotChangedEventArgs : EventArgs
-{
-    public UbiMetaSnapshotChangedEventArgs(UbiMetaSnapshot snapshot)
-    {
-        Snapshot = snapshot;
-    }
-
-    public UbiMetaSnapshot Snapshot { get; }
-}
-
-public sealed class UbiMetaSnapshot
+public sealed class UbiMetaSnapshot : IShellMetaSnapshot
 {
     public static readonly UbiMetaSnapshot Empty = new(new UbiAppMeta(), null, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
 
@@ -266,6 +256,9 @@ public sealed class UbiMetaSnapshot
     }
 
     public UbiAppMeta Meta { get; }
+    public string HeaderDeviceName => Meta.HeaderDeviceName;
+    public string DefaultPageTitle => Meta.DefaultPageTitle;
     public ObservableCollection<NavigationItem>? NavigationItems { get; }
     public Dictionary<string, string> NavigationTitles { get; }
+    IReadOnlyDictionary<string, string> IShellMetaSnapshot.NavigationTitles => NavigationTitles;
 }

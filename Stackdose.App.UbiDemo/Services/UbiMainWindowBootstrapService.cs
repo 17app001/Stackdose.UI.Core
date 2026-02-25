@@ -7,6 +7,7 @@ using System.Windows.Input;
 namespace Stackdose.App.UbiDemo.Services;
 
 internal sealed class UbiMainWindowBootstrapService
+    : IShellBootstrapService<MainContainer, UbiMetaRuntimeService, IShellNavigationService, UbiMainWindowBootstrapState, UbiDevicePageService>
 {
     public UbiMainWindowBootstrapState? Start(
         MainContainer mainShell,
@@ -106,7 +107,7 @@ internal sealed class UbiMainWindowBootstrapService
     }
 }
 
-internal sealed class UbiMainWindowBootstrapState
+internal sealed class UbiMainWindowBootstrapState : IShellBootstrapState<UbiMetaSnapshot>
 {
     public UbiMainWindowBootstrapState(
         UbiRuntimeContext runtime,

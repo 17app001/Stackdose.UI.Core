@@ -25,7 +25,11 @@ internal sealed class UbiMainWindowBootstrapService
             return null;
         }
 
-        var initialMetaSnapshot = metaRuntimeService.Start(runtime.ConfigDirectory, runtime.MetaFilePath, runtime.AppMeta);
+        var initialMetaSnapshot = metaRuntimeService.Start(
+            runtime.ConfigDirectory,
+            runtime.MetaFilePath,
+            runtime.AppMeta,
+            runtime.AppMeta.EnableMetaHotReload);
         var shell = new UbiShellCoordinator(mainShell, mainShell.PageTitle);
         var shellPages = new UbiShellPageService(shell, navigationService, mainShell);
 

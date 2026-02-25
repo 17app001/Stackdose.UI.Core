@@ -26,6 +26,7 @@ public sealed class UbiMetaRuntimeService : IDisposable
     private DateTime _lastMetaWriteUtc;
     private string _metaFilePath = string.Empty;
     private string _configDirectory = string.Empty;
+    private bool _enableMetaHotReload;
 
     public UbiMetaRuntimeService(Dispatcher dispatcher)
     {
@@ -41,12 +42,13 @@ public sealed class UbiMetaRuntimeService : IDisposable
 
     public UbiMetaSnapshot CurrentSnapshot { get; private set; } = UbiMetaSnapshot.Empty;
 
-    public UbiMetaSnapshot Start(string configDirectory, string metaFilePath, UbiAppMeta initialMeta)
+    public UbiMetaSnapshot Start(string configDirectory, string metaFilePath, UbiAppMeta initialMeta, bool enableMetaHotReload)
     {
         Stop();
 
         _configDirectory = configDirectory;
         _metaFilePath = metaFilePath;
+        _enableMetaHotReload = enableMetaHotReload;
         _lastMetaWriteUtc = File.Exists(metaFilePath)
             ? File.GetLastWriteTimeUtc(metaFilePath)
             : DateTime.MinValue;
@@ -56,7 +58,16 @@ public sealed class UbiMetaRuntimeService : IDisposable
         ComplianceContext.LogSystem($"[UbiRuntime] Config directory: {_configDirectory}", LogLevel.Info, showInUi: true);
         ComplianceContext.LogSystem($"[UbiRuntime] App meta file: {_metaFilePath}", LogLevel.Info, showInUi: true);
 
-        StartWatcher();
+        if (_enableMetaHotReload)
+        {
+            StartWatcher();
+            ComplianceContext.LogSystem("[UbiRuntime] App meta hot reload enabled", LogLevel.Info, showInUi: true);
+        }
+        else
+        {
+            ComplianceContext.LogSystem("[UbiRuntime] App meta hot reload disabled", LogLevel.Info, showInUi: true);
+        }
+
         return CurrentSnapshot;
     }
 

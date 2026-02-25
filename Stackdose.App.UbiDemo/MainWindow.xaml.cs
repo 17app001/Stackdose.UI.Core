@@ -1,31 +1,14 @@
 using Stackdose.Abstractions.Hardware;
-using Stackdose.Abstractions.Logging;
-using Stackdose.App.UbiDemo.Models;
 using Stackdose.App.UbiDemo.Pages;
 using Stackdose.App.UbiDemo.Services;
-using Stackdose.UI.Core.Helpers;
-using Stackdose.UI.Core.Models;
-using Stackdose.UI.Templates.Controls;
 using Stackdose.UI.Templates.Pages;
-using System.Collections.ObjectModel;
-using System.IO;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace Stackdose.App.UbiDemo;
 
 public partial class MainWindow : Window
 {
-    private static readonly HashSet<string> SupportedNavigationTargets = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "MachineOverviewPage",
-        "MachineDetailPage",
-        "LogViewerPage",
-        "UserManagementPage",
-        "SettingsPage"
-    };
-
     private UbiRuntimeContext? _runtime;
     private UbiShellCoordinator? _shell;
     private readonly LogViewerPage _logViewerPage = new();
@@ -38,10 +21,8 @@ public partial class MainWindow : Window
     private readonly Dictionary<string, string> _navigationTitles = new(StringComparer.OrdinalIgnoreCase);
     private readonly ICommand _navigationCommand;
     private readonly ICommand _machineSelectionCommand;
-    private readonly DispatcherTimer _metaReloadTimer;
-    private FileSystemWatcher? _metaWatcher;
-    private DateTime _lastMetaWriteUtc;
-    private UbiAppMeta _currentMeta = new();
+    private readonly UbiMetaRuntimeService _metaRuntimeService;
+    private UbiMetaSnapshot _currentMetaSnapshot = UbiMetaSnapshot.Empty;
 
     public MainWindow()
     {
@@ -53,13 +34,9 @@ public partial class MainWindow : Window
             parameter => OnMachineSelectionRequested(this, parameter as string ?? string.Empty),
             parameter => parameter is string machineId && !string.IsNullOrWhiteSpace(machineId));
 
-        _metaReloadTimer = new DispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(300)
-        };
-        _metaReloadTimer.Tick += OnMetaReloadTimerTick;
-
         InitializeComponent();
+        _metaRuntimeService = new UbiMetaRuntimeService(Dispatcher);
+        _metaRuntimeService.SnapshotChanged += OnMetaSnapshotChanged;
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
     }
@@ -72,10 +49,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        ComplianceContext.LogSystem($"[UbiRuntime] Config directory: {_runtime.ConfigDirectory}", LogLevel.Info, showInUi: true);
-        ComplianceContext.LogSystem($"[UbiRuntime] App meta file: {_runtime.MetaFilePath}", LogLevel.Info, showInUi: true);
-
-        _currentMeta = _runtime.AppMeta;
+        _currentMetaSnapshot = _metaRuntimeService.Start(_runtime.ConfigDirectory, _runtime.MetaFilePath, _runtime.AppMeta);
 
         _shell = new UbiShellCoordinator(MainShell, MainShell.PageTitle);
         _runtime.OverviewPage.MachineSelected += OnMachineSelected;
@@ -92,18 +66,7 @@ public partial class MainWindow : Window
             .ToList());
         _suppressHeaderMachineSelection = false;
 
-        var externalNavigationItems = BuildNavigationItems(_currentMeta.NavigationItems);
-        if (externalNavigationItems is not null)
-        {
-            MainShell.NavigationItems = externalNavigationItems;
-        }
-        else
-        {
-            MainShell.NavigationItems = null;
-        }
-
-        PopulateNavigationTitles(_currentMeta.NavigationItems);
-        StartMetaWatcher();
+        ApplyMetaSnapshot(_currentMetaSnapshot, updateCurrentPageTitle: false);
 
         BuildNavigationHandlers();
         _shell.SelectNavigation("MachineOverviewPage");
@@ -120,8 +83,7 @@ public partial class MainWindow : Window
 
         MainShell.NavigationCommand = null;
         MainShell.MachineSelectionCommand = null;
-        StopMetaWatcher();
-        _metaReloadTimer.Stop();
+        _metaRuntimeService.Stop();
         _navigationHandlers.Clear();
         _shell = null;
     }
@@ -179,9 +141,9 @@ public partial class MainWindow : Window
         }
 
         _shell.ShowOverview(_runtime.OverviewPage, machineDisplayName);
-        var fallbackTitle = string.IsNullOrWhiteSpace(_currentMeta.DefaultPageTitle)
+        var fallbackTitle = string.IsNullOrWhiteSpace(_currentMetaSnapshot.Meta.DefaultPageTitle)
             ? MainShell.PageTitle
-            : _currentMeta.DefaultPageTitle;
+            : _currentMetaSnapshot.Meta.DefaultPageTitle;
         MainShell.PageTitle = GetNavigationTitle("MachineOverviewPage", fallbackTitle);
     }
 
@@ -263,76 +225,6 @@ public partial class MainWindow : Window
         ShowMachineDetail(machineId);
     }
 
-    private ObservableCollection<NavigationItem>? BuildNavigationItems(IReadOnlyList<UbiNavigationMetaItem>? source)
-    {
-        if (source is null || source.Count == 0)
-        {
-            return null;
-        }
-
-        var items = new ObservableCollection<NavigationItem>();
-        for (var index = 0; index < source.Count; index++)
-        {
-            var item = source[index];
-            if (string.IsNullOrWhiteSpace(item.Title) || string.IsNullOrWhiteSpace(item.NavigationTarget))
-            {
-                ComplianceContext.LogSystem($"[UbiRuntime] Skip navigationItems[{index}]: title/target is empty", LogLevel.Warning, showInUi: true);
-                continue;
-            }
-
-            if (!SupportedNavigationTargets.Contains(item.NavigationTarget))
-            {
-                ComplianceContext.LogSystem($"[UbiRuntime] Skip navigationItems[{index}]: unsupported target '{item.NavigationTarget}'", LogLevel.Warning, showInUi: true);
-                continue;
-            }
-
-            var level = AccessLevel.Operator;
-            if (!string.IsNullOrWhiteSpace(item.RequiredLevel)
-                && Enum.TryParse<AccessLevel>(item.RequiredLevel, true, out var parsedLevel))
-            {
-                level = parsedLevel;
-            }
-            else if (!string.IsNullOrWhiteSpace(item.RequiredLevel))
-            {
-                ComplianceContext.LogSystem($"[UbiRuntime] navigationItems[{index}] invalid requiredLevel '{item.RequiredLevel}', fallback to Operator", LogLevel.Warning, showInUi: true);
-            }
-
-            items.Add(new NavigationItem
-            {
-                Title = item.Title,
-                NavigationTarget = item.NavigationTarget,
-                RequiredLevel = level
-            });
-        }
-
-        return items.Count > 0 ? items : null;
-    }
-
-    private void PopulateNavigationTitles(IReadOnlyList<UbiNavigationMetaItem>? source)
-    {
-        _navigationTitles.Clear();
-        _navigationTitles["MachineOverviewPage"] = "Machine Overview";
-        _navigationTitles["MachineDetailPage"] = "Machine Detail";
-        _navigationTitles["LogViewerPage"] = "Log Viewer";
-        _navigationTitles["UserManagementPage"] = "User Management";
-        _navigationTitles["SettingsPage"] = "Maintenance Mode";
-
-        if (source is null)
-        {
-            return;
-        }
-
-        foreach (var item in source)
-        {
-            if (string.IsNullOrWhiteSpace(item.NavigationTarget) || string.IsNullOrWhiteSpace(item.Title))
-            {
-                continue;
-            }
-
-            _navigationTitles[item.NavigationTarget] = item.Title;
-        }
-    }
-
     private string GetNavigationTitle(string target, string fallback)
     {
         if (_navigationTitles.TryGetValue(target, out var title) && !string.IsNullOrWhiteSpace(title))
@@ -343,118 +235,33 @@ public partial class MainWindow : Window
         return fallback;
     }
 
-    private void StartMetaWatcher()
+    private void OnMetaSnapshotChanged(object? sender, UbiMetaSnapshotChangedEventArgs e)
     {
-        if (_runtime is null || string.IsNullOrWhiteSpace(_runtime.MetaFilePath))
-        {
-            return;
-        }
-
-        var metaDirectory = Path.GetDirectoryName(_runtime.MetaFilePath);
-        var metaFileName = Path.GetFileName(_runtime.MetaFilePath);
-        if (string.IsNullOrWhiteSpace(metaDirectory) || string.IsNullOrWhiteSpace(metaFileName) || !Directory.Exists(metaDirectory))
-        {
-            return;
-        }
-
-        StopMetaWatcher();
-        _lastMetaWriteUtc = File.Exists(_runtime.MetaFilePath)
-            ? File.GetLastWriteTimeUtc(_runtime.MetaFilePath)
-            : DateTime.MinValue;
-
-        _metaWatcher = new FileSystemWatcher(metaDirectory, metaFileName)
-        {
-            NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size | NotifyFilters.FileName | NotifyFilters.CreationTime,
-            IncludeSubdirectories = false,
-            EnableRaisingEvents = true
-        };
-
-        _metaWatcher.Changed += OnMetaFileChanged;
-        _metaWatcher.Created += OnMetaFileChanged;
-        _metaWatcher.Renamed += OnMetaFileRenamed;
+        ApplyMetaSnapshot(e.Snapshot, updateCurrentPageTitle: true);
     }
 
-    private void StopMetaWatcher()
-    {
-        if (_metaWatcher is null)
-        {
-            return;
-        }
-
-        _metaWatcher.EnableRaisingEvents = false;
-        _metaWatcher.Changed -= OnMetaFileChanged;
-        _metaWatcher.Created -= OnMetaFileChanged;
-        _metaWatcher.Renamed -= OnMetaFileRenamed;
-        _metaWatcher.Dispose();
-        _metaWatcher = null;
-    }
-
-    private void OnMetaFileChanged(object sender, FileSystemEventArgs e)
-    {
-        Dispatcher.BeginInvoke(new Action(() =>
-        {
-            _metaReloadTimer.Stop();
-            _metaReloadTimer.Start();
-        }));
-    }
-
-    private void OnMetaFileRenamed(object sender, RenamedEventArgs e)
-    {
-        Dispatcher.BeginInvoke(new Action(() =>
-        {
-            _metaReloadTimer.Stop();
-            _metaReloadTimer.Start();
-        }));
-    }
-
-    private void OnMetaReloadTimerTick(object? sender, EventArgs e)
-    {
-        _metaReloadTimer.Stop();
-        ReloadMetaIfChanged();
-    }
-
-    private void ReloadMetaIfChanged()
-    {
-        if (_runtime is null || string.IsNullOrWhiteSpace(_runtime.MetaFilePath) || !File.Exists(_runtime.MetaFilePath))
-        {
-            return;
-        }
-
-        try
-        {
-            var writeUtc = File.GetLastWriteTimeUtc(_runtime.MetaFilePath);
-            if (writeUtc <= _lastMetaWriteUtc)
-            {
-                return;
-            }
-
-            var meta = UbiRuntimeLoader.LoadMeta(_runtime.MetaFilePath);
-            _lastMetaWriteUtc = writeUtc;
-            ApplyMetaToRuntime(meta);
-            ComplianceContext.LogSystem($"[UbiRuntime] Reloaded app meta: {_runtime.MetaFilePath}", LogLevel.Info, showInUi: true);
-        }
-        catch (Exception ex)
-        {
-            ComplianceContext.LogSystem($"[UbiRuntime] Failed to reload app meta: {ex.Message}", LogLevel.Error, showInUi: true);
-        }
-    }
-
-    private void ApplyMetaToRuntime(UbiAppMeta meta)
+    private void ApplyMetaSnapshot(UbiMetaSnapshot snapshot, bool updateCurrentPageTitle)
     {
         if (_runtime is null)
         {
             return;
         }
 
-        _currentMeta = meta;
-        MainShell.HeaderDeviceName = meta.HeaderDeviceName;
-        UbiRuntimeMapper.ApplyMeta(_runtime.OverviewPage, meta);
+        _currentMetaSnapshot = snapshot;
+        MainShell.HeaderDeviceName = snapshot.Meta.HeaderDeviceName;
+        UbiRuntimeMapper.ApplyMeta(_runtime.OverviewPage, snapshot.Meta);
+        MainShell.NavigationItems = snapshot.NavigationItems;
 
-        var externalNavigationItems = BuildNavigationItems(meta.NavigationItems);
-        MainShell.NavigationItems = externalNavigationItems;
-        PopulateNavigationTitles(meta.NavigationItems);
+        _navigationTitles.Clear();
+        foreach (var (key, value) in snapshot.NavigationTitles)
+        {
+            _navigationTitles[key] = value;
+        }
 
-        UpdateCurrentPageTitle();
+        if (updateCurrentPageTitle)
+        {
+            UpdateCurrentPageTitle();
+        }
     }
 
     private void UpdateCurrentPageTitle()
@@ -476,9 +283,9 @@ public partial class MainWindow : Window
 
         if (string.Equals(target, "MachineOverviewPage", StringComparison.OrdinalIgnoreCase))
         {
-            var fallback = string.IsNullOrWhiteSpace(_currentMeta.DefaultPageTitle)
+            var fallback = string.IsNullOrWhiteSpace(_currentMetaSnapshot.Meta.DefaultPageTitle)
                 ? MainShell.PageTitle
-                : _currentMeta.DefaultPageTitle;
+                : _currentMetaSnapshot.Meta.DefaultPageTitle;
             MainShell.PageTitle = GetNavigationTitle(target, fallback);
             return;
         }

@@ -29,7 +29,8 @@ public static class UbiRuntimeHost
         shell.CurrentMachineDisplayName = configs.Count > 0 ? configs[0].Machine.Name : string.Empty;
 
         var machines = configs.ToDictionary(x => x.Machine.Id, StringComparer.OrdinalIgnoreCase);
-        return new UbiRuntimeContext(overviewPage, machines, meta);
+        var metaFilePath = Path.Combine(configDir, "app-meta.json");
+        return new UbiRuntimeContext(overviewPage, machines, meta, configDir, metaFilePath);
     }
 
     private static string ResolveConfigDirectory()
@@ -82,14 +83,23 @@ public static class UbiRuntimeHost
 
 public sealed class UbiRuntimeContext
 {
-    public UbiRuntimeContext(MachineOverviewPage overviewPage, IReadOnlyDictionary<string, UbiMachineConfig> machines, UbiAppMeta appMeta)
+    public UbiRuntimeContext(
+        MachineOverviewPage overviewPage,
+        IReadOnlyDictionary<string, UbiMachineConfig> machines,
+        UbiAppMeta appMeta,
+        string configDirectory,
+        string metaFilePath)
     {
         OverviewPage = overviewPage;
         Machines = machines;
         AppMeta = appMeta;
+        ConfigDirectory = configDirectory;
+        MetaFilePath = metaFilePath;
     }
 
     public MachineOverviewPage OverviewPage { get; }
     public IReadOnlyDictionary<string, UbiMachineConfig> Machines { get; }
     public UbiAppMeta AppMeta { get; }
+    public string ConfigDirectory { get; }
+    public string MetaFilePath { get; }
 }

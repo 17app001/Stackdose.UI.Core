@@ -3,6 +3,7 @@ using Stackdose.Abstractions.Logging;
 using Stackdose.App.UbiDemo.Pages;
 using Stackdose.App.UbiDemo.Services;
 using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Shell;
 using Stackdose.UI.Templates.Pages;
 using System.Windows;
 using System.Windows.Input;
@@ -18,14 +19,14 @@ public partial class MainWindow : Window
     private readonly SettingsPage _settingsPage = new();
     private readonly UbiDevicePageService _devicePages;
     private bool _suppressHeaderMachineSelection;
-    private readonly UbiNavigationService _navigationService;
+    private readonly IShellNavigationService _navigationService;
     private readonly UbiMainWindowBootstrapService _bootstrapService;
     private readonly ICommand _navigationCommand;
     private readonly ICommand _machineSelectionCommand;
     private readonly UbiMetaRuntimeService _metaRuntimeService;
     private UbiMetaSnapshot _currentMetaSnapshot = UbiMetaSnapshot.Empty;
     private UbiShellPageService? _shellPages;
-    private UbiShellServiceMode _shellServiceMode = UbiShellServiceMode.Legacy;
+    private ShellServiceMode _shellServiceMode = ShellServiceMode.Legacy;
     private bool _isInitialized;
 
     public MainWindow()
@@ -106,7 +107,7 @@ public partial class MainWindow : Window
         _shellPages = null;
         _shell = null;
         _runtime = null;
-        _shellServiceMode = UbiShellServiceMode.Legacy;
+        _shellServiceMode = ShellServiceMode.Legacy;
         _isInitialized = false;
     }
 

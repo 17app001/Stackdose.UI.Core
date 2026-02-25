@@ -1,8 +1,9 @@
 using System.Collections.Generic;
+using Stackdose.UI.Core.Shell;
 
 namespace Stackdose.App.UbiDemo.Services;
 
-public sealed class UbiNavigationService
+public sealed class UbiNavigationService : IShellNavigationService
 {
     private readonly Dictionary<string, Action> _handlers = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _titles = new(StringComparer.OrdinalIgnoreCase);

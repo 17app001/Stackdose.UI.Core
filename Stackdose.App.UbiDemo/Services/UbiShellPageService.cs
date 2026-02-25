@@ -1,5 +1,6 @@
 using Stackdose.App.UbiDemo.Models;
 using Stackdose.App.UbiDemo.Pages;
+using Stackdose.UI.Core.Shell;
 using Stackdose.UI.Templates.Pages;
 using Stackdose.UI.Templates.Shell;
 
@@ -8,10 +9,10 @@ namespace Stackdose.App.UbiDemo.Services;
 internal sealed class UbiShellPageService
 {
     private readonly UbiShellCoordinator _shell;
-    private readonly UbiNavigationService _navigation;
+    private readonly IShellNavigationService _navigation;
     private readonly MainContainer _mainShell;
 
-    public UbiShellPageService(UbiShellCoordinator shell, UbiNavigationService navigation, MainContainer mainShell)
+    public UbiShellPageService(UbiShellCoordinator shell, IShellNavigationService navigation, MainContainer mainShell)
     {
         _shell = shell;
         _navigation = navigation;

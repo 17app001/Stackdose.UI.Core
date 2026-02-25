@@ -1,4 +1,5 @@
 using Stackdose.App.UbiDemo.Models;
+using Stackdose.UI.Core.Shell;
 using Stackdose.UI.Templates.Shell;
 using System.Collections;
 using System.Windows.Input;
@@ -10,7 +11,7 @@ internal sealed class UbiMainWindowBootstrapService
     public UbiMainWindowBootstrapState? Start(
         MainContainer mainShell,
         UbiMetaRuntimeService metaRuntimeService,
-        UbiNavigationService navigationService,
+        IShellNavigationService navigationService,
         ICommand navigationCommand,
         ICommand machineSelectionCommand,
         Action showOverview,
@@ -26,8 +27,8 @@ internal sealed class UbiMainWindowBootstrapService
         }
 
         var mode = runtime.AppMeta.UseFrameworkShellServices
-            ? UbiShellServiceMode.Framework
-            : UbiShellServiceMode.Legacy;
+            ? ShellServiceMode.Framework
+            : ShellServiceMode.Legacy;
 
         var initialMetaSnapshot = metaRuntimeService.Start(
             runtime.ConfigDirectory,
@@ -63,7 +64,7 @@ internal sealed class UbiMainWindowBootstrapService
     public void Stop(
         MainContainer mainShell,
         UbiMetaRuntimeService metaRuntimeService,
-        UbiNavigationService navigationService,
+        IShellNavigationService navigationService,
         UbiDevicePageService devicePages)
     {
         mainShell.NavigationCommand = null;
@@ -82,33 +83,27 @@ internal sealed class UbiMainWindowBootstrapService
             .ToList();
     }
 
-    private static UbiShellCoordinator CreateCoordinator(UbiShellServiceMode mode, MainContainer mainShell)
+    private static UbiShellCoordinator CreateCoordinator(ShellServiceMode mode, MainContainer mainShell)
     {
         return mode switch
         {
-            UbiShellServiceMode.Framework => new UbiShellCoordinator(mainShell, mainShell.PageTitle),
+            ShellServiceMode.Framework => new UbiShellCoordinator(mainShell, mainShell.PageTitle),
             _ => new UbiShellCoordinator(mainShell, mainShell.PageTitle)
         };
     }
 
     private static UbiShellPageService CreateShellPageService(
-        UbiShellServiceMode mode,
+        ShellServiceMode mode,
         UbiShellCoordinator shell,
-        UbiNavigationService navigationService,
+        IShellNavigationService navigationService,
         MainContainer mainShell)
     {
         return mode switch
         {
-            UbiShellServiceMode.Framework => new UbiShellPageService(shell, navigationService, mainShell),
+            ShellServiceMode.Framework => new UbiShellPageService(shell, navigationService, mainShell),
             _ => new UbiShellPageService(shell, navigationService, mainShell)
         };
     }
-}
-
-internal enum UbiShellServiceMode
-{
-    Legacy = 0,
-    Framework = 1
 }
 
 internal sealed class UbiMainWindowBootstrapState
@@ -118,7 +113,7 @@ internal sealed class UbiMainWindowBootstrapState
         UbiShellCoordinator shell,
         UbiShellPageService shellPages,
         UbiMetaSnapshot initialMetaSnapshot,
-        UbiShellServiceMode serviceMode,
+        ShellServiceMode serviceMode,
         IEnumerable machineOptions)
     {
         Runtime = runtime;
@@ -133,6 +128,6 @@ internal sealed class UbiMainWindowBootstrapState
     public UbiShellCoordinator Shell { get; }
     public UbiShellPageService ShellPages { get; }
     public UbiMetaSnapshot InitialMetaSnapshot { get; }
-    public UbiShellServiceMode ServiceMode { get; }
+    public ShellServiceMode ServiceMode { get; }
     public IEnumerable MachineOptions { get; }
 }

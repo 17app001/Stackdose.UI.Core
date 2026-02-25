@@ -27,6 +27,7 @@ public static class UbiRuntimeMapper
     private static Dictionary<string, int> _cachedAlarmCount = new(StringComparer.OrdinalIgnoreCase);
     private static Dictionary<string, DateTime> _cachedAlarmCountUpdatedAt = new(StringComparer.OrdinalIgnoreCase);
     private static readonly TimeSpan AlarmCountRefreshInterval = TimeSpan.FromMilliseconds(500);
+    private static bool _enableOverviewAlarmCount;
 
     // �w�w Overview card PLC update �w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w
 
@@ -67,9 +68,11 @@ public static class UbiRuntimeMapper
 
             var isRunning = ReadBoolAddress(manager, map.RunningAddress);
             var isAlarm = ReadBoolAddress(manager, map.AlarmAddress);
-            var alarmCount = isAlarm ? GetActiveAlarmCount(manager, card.MachineId) : 0;
+            var alarmCount = _enableOverviewAlarmCount && isAlarm
+                ? GetActiveAlarmCount(manager, card.MachineId)
+                : 0;
 
-            if (!isAlarm)
+            if (!isAlarm || !_enableOverviewAlarmCount)
             {
                 _cachedAlarmCount[card.MachineId] = 0;
                 _cachedAlarmCountUpdatedAt[card.MachineId] = DateTime.UtcNow;
@@ -238,6 +241,7 @@ public static class UbiRuntimeMapper
         page.ShowMachineCards    = meta.ShowMachineCards;
         page.ShowSoftwareInfo    = meta.ShowSoftwareInfo;
         page.ShowLiveLog         = meta.ShowLiveLog;
+        _enableOverviewAlarmCount = meta.EnableOverviewAlarmCount;
         page.BottomPanelHeight   = new System.Windows.GridLength(meta.BottomPanelHeight);
         page.BottomLeftTitle     = meta.BottomLeftTitle;
         page.BottomRightTitle    = meta.BottomRightTitle;

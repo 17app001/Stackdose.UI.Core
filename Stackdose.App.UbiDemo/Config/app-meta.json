@@ -3,6 +3,7 @@
   "defaultPageTitle": "Machine Overview",
   "useFrameworkShellServices": false,
   "enableMetaHotReload": false,
+  "enableOverviewAlarmCount": false,
   "showMachineCards": true,
   "showSoftwareInfo": true,
   "showLiveLog": true,

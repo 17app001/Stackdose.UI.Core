@@ -9,6 +9,7 @@ For first runnable version, use JSON-only changes:
 - `Config/app-meta.json`
 - `Config/Machine*.config.json` with `alarmConfigFile` and `sensorConfigFile`
 - referenced alarm/sensor json files
+- use `detailPage` section in `app-meta.json` to change detail tag mapping without code edits
 
 ## 1) Prepare profile model
 

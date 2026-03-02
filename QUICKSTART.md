@@ -18,6 +18,8 @@ Update files under your new app's `Config/` folder:
 - `MachineA.config.json` / `MachineB.config.json` (if included)
 - alarm/sensor json files
 
+To change detail-page bindings without C# edits, set `detailPage` in `app-meta.json`.
+
 Minimum machine config keys (required for JSON-only flow):
 
 - `machine.id`

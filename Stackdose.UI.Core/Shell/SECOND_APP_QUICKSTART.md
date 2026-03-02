@@ -2,6 +2,8 @@
 
 Goal: create a new shell-based app with minimal code by reusing shared shell contracts.
 
+If you are new to this repo, start with `QUICKSTART.md` at repo root first.
+
 ## 1) Prepare profile model
 
 - Implement `IShellAppProfile` in your app metadata model.

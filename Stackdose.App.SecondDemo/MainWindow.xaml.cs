@@ -89,20 +89,23 @@ public partial class MainWindow : Window
         }
 
         _selectedMachineId = machineId;
+        var detailMeta = _runtime.Meta.DetailPage;
         var detailPage = new MachineDetailPage
         {
             MachineTitle = config.Machine.Name,
-            BatchNumber = ShellOverviewBinder.GetTagAddress(config, "process", "batchNo"),
-            RecipeName = ShellOverviewBinder.GetTagAddress(config, "process", "recipeNo"),
-            MachineState = ShellOverviewBinder.GetTagAddress(config, "status", "isRunning"),
-            AlarmState = ShellOverviewBinder.GetTagAddress(config, "status", "isAlarm"),
-            NozzleTempText = ShellOverviewBinder.GetTagAddress(config, "process", "nozzleTemp"),
+            BatchNumber = ShellOverviewBinder.GetTagAddress(config, detailMeta.BatchTagSection, detailMeta.BatchTagKey),
+            RecipeName = ShellOverviewBinder.GetTagAddress(config, detailMeta.RecipeTagSection, detailMeta.RecipeTagKey),
+            MachineState = ShellOverviewBinder.GetTagAddress(config, detailMeta.MachineStateTagSection, detailMeta.MachineStateTagKey),
+            AlarmState = ShellOverviewBinder.GetTagAddress(config, detailMeta.AlarmStateTagSection, detailMeta.AlarmStateTagKey),
+            NozzleTempText = ShellOverviewBinder.GetTagAddress(config, detailMeta.NozzleTempTagSection, detailMeta.NozzleTempTagKey),
             AlarmConfigFile = _runtime.GetAlarmConfigFile(config.Machine.Id),
             SensorConfigFile = _runtime.GetSensorConfigFile(config.Machine.Id)
         };
 
         MainShell.ShellContent = detailPage;
         MainShell.CurrentMachineDisplayName = config.Machine.Name;
-        MainShell.PageTitle = ShellRouteCatalog.DefaultTitles[ShellNavigationTargets.Detail];
+        MainShell.PageTitle = string.IsNullOrWhiteSpace(detailMeta.PageTitle)
+            ? ShellRouteCatalog.DefaultTitles[ShellNavigationTargets.Detail]
+            : detailMeta.PageTitle;
     }
 }

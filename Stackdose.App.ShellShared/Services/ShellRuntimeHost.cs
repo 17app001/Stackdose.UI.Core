@@ -26,7 +26,10 @@ public static class ShellRuntimeHost
             shell.CurrentMachineDisplayName = string.Empty;
             shell.PageTitle = meta.DefaultPageTitle;
             shell.HeaderDeviceName = meta.HeaderDeviceName;
-            return new ShellRuntimeContext(overviewPage, new Dictionary<string, ShellMachineConfig>(StringComparer.OrdinalIgnoreCase));
+            return new ShellRuntimeContext(
+                overviewPage,
+                new Dictionary<string, ShellMachineConfig>(StringComparer.OrdinalIgnoreCase),
+                meta);
         }
 
         shell.HeaderDeviceName = meta.HeaderDeviceName;
@@ -34,21 +37,26 @@ public static class ShellRuntimeHost
         shell.PageTitle = meta.DefaultPageTitle;
 
         var machines = configs.ToDictionary(x => x.Machine.Id, StringComparer.OrdinalIgnoreCase);
-        return new ShellRuntimeContext(overviewPage, machines);
+        return new ShellRuntimeContext(overviewPage, machines, meta);
     }
 
 }
 
 public sealed class ShellRuntimeContext
 {
-    public ShellRuntimeContext(MachineOverviewPage overviewPage, IReadOnlyDictionary<string, ShellMachineConfig> machines)
+    public ShellRuntimeContext(
+        MachineOverviewPage overviewPage,
+        IReadOnlyDictionary<string, ShellMachineConfig> machines,
+        ShellAppMeta meta)
     {
         OverviewPage = overviewPage;
         Machines = machines;
+        Meta = meta;
     }
 
     public MachineOverviewPage OverviewPage { get; }
     public IReadOnlyDictionary<string, ShellMachineConfig> Machines { get; }
+    public ShellAppMeta Meta { get; }
 
     public string GetAlarmConfigFile(string machineId)
     {

@@ -10,6 +10,19 @@
   "bottomPanelHeight": 140,
   "bottomLeftTitle": "Software Information",
   "bottomRightTitle": "Live Log",
+  "detailPage": {
+    "pageTitle": "Machine Detail",
+    "batchTagSection": "process",
+    "batchTagKey": "batchNo",
+    "recipeTagSection": "process",
+    "recipeTagKey": "recipeNo",
+    "machineStateTagSection": "status",
+    "machineStateTagKey": "isRunning",
+    "alarmStateTagSection": "status",
+    "alarmStateTagKey": "isAlarm",
+    "nozzleTempTagSection": "process",
+    "nozzleTempTagKey": "nozzleTemp"
+  },
   "navigationItems": [
     { "title": "Machine Overview", "navigationTarget": "MachineOverviewPage", "requiredLevel": "Operator" },
     { "title": "Machine Detail", "navigationTarget": "MachineDetailPage", "requiredLevel": "Operator" },

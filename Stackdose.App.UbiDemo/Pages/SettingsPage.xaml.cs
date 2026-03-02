@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using Stackdose.App.UbiDemo.Models;
 using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.App.UbiDemo.ViewModels;
@@ -22,6 +23,11 @@ public partial class SettingsPage : UserControl
     public void SetMonitorAddresses(string monitorAddresses)
     {
         _viewModel.ApplyMonitorAddresses(monitorAddresses);
+    }
+
+    public void SetMachineConfig(UbiMachineConfig config, string configRootPath)
+    {
+        _viewModel.ApplyMachineConfig(config, configRootPath);
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)

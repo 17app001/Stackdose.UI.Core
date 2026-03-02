@@ -183,6 +183,14 @@ public partial class MainWindow : Window
         }
 
         _settingsPage.SetMonitorAddresses(_runtime.OverviewPage.PlcMonitorAddresses);
+
+        var machineId = _devicePages.GetCurrentOrFirstMachineId(_runtime.Machines);
+        if (!string.IsNullOrWhiteSpace(machineId)
+            && _runtime.Machines.TryGetValue(machineId, out var machineConfig))
+        {
+            _settingsPage.SetMachineConfig(machineConfig, _runtime.ConfigDirectory);
+        }
+
         _shellPages.ShowSettings(_settingsPage);
     }
 

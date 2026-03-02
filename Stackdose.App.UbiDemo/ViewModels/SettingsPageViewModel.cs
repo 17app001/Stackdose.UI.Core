@@ -1,15 +1,16 @@
 using System;
 using System.Linq;
 using System.Collections.ObjectModel;
+using Stackdose.App.UbiDemo.Models;
 
 namespace Stackdose.App.UbiDemo.ViewModels;
 
 public sealed class SettingsPageViewModel : ViewModelBase
 {
-    private string _machineConfigPath = @"Config\MachineA.config.json";
-    private string _alarmConfigPath = @"Config\MachineA\alarms.json";
-    private string _sensorConfigPath = @"Config\MachineA\sensors.json";
-    private string _headProfilePath = @"Config\MachineA\feiyang_head1.json";
+    private string _machineConfigPath = @"Config\Machine*.config.json";
+    private string _alarmConfigPath = string.Empty;
+    private string _sensorConfigPath = string.Empty;
+    private string _headProfilePath = string.Empty;
     private string _wavePath = @"Config\waves";
     private string _plcIpAddress = "192.168.22.39";
     private string _plcPort = "3000";
@@ -120,5 +121,17 @@ public sealed class SettingsPageViewModel : ViewModelBase
         {
             RegisteredMonitorDeviceItems.Add(line);
         }
+    }
+
+    public void ApplyMachineConfig(UbiMachineConfig config, string configRootPath)
+    {
+        ConfigRootPath = string.IsNullOrWhiteSpace(configRootPath) ? @"Config" : configRootPath;
+        MachineConfigPath = @"Config\Machine*.config.json";
+        AlarmConfigPath = config.AlarmConfigFile ?? string.Empty;
+        SensorConfigPath = config.SensorConfigFile ?? string.Empty;
+        HeadProfilePath = config.PrintHeadConfigs.FirstOrDefault() ?? string.Empty;
+        PlcIpAddress = config.Plc.Ip;
+        PlcPort = config.Plc.Port.ToString();
+        ScanIntervalMs = config.Plc.PollIntervalMs.ToString();
     }
 }

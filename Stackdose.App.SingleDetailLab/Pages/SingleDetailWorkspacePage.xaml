@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:core="http://schemas.stackdose.com/wpf"
+             xmlns:Templates="http://schemas.stackdose.com/templates"
              mc:Ignorable="d"
              d:DesignHeight="900"
              d:DesignWidth="1400">
@@ -21,20 +22,39 @@
                 CornerRadius="8"
                 Padding="12"
                 Margin="0,0,0,12">
-            <StackPanel>
-                <TextBlock Text="Detail + PLC Lab"
-                           FontSize="20"
-                           FontWeight="SemiBold"
-                           Foreground="{DynamicResource TextPrimaryBrush}"/>
-                <TextBlock x:Name="MachineSummaryText"
-                           Margin="0,4,0,8"
-                           Foreground="{DynamicResource TextSecondaryBrush}"/>
-                <core:PlcStatus x:Name="TopPlcStatus"
-                                Height="58"
-                                IsGlobal="True"
-                                ShowBorder="True"
-                                AutoConnect="True"/>
-            </StackPanel>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0">
+                    <TextBlock Text="Detail + PLC Lab"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock x:Name="MachineSummaryText"
+                               Margin="0,4,0,10"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                </StackPanel>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="3*" />
+                    </Grid.ColumnDefinitions>
+
+                    <core:PlcStatus x:Name="TopPlcStatus"
+                                    Grid.Column="0"
+                                    Height="58"
+                                    IsGlobal="True"
+                                    ShowBorder="True"
+                                    AutoConnect="True"/>
+
+                    <Border Grid.Column="1"
+                            Background="Transparent"/>
+                </Grid>
+            </Grid>
         </Border>
 
         <Border Grid.Row="1"
@@ -57,36 +77,95 @@
 
                 <Grid Grid.Row="1">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="320" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="90" />
-                        <RowDefinition Height="90" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
 
-                    <core:PlcLabel x:Name="DefaultBatchLabel"
-                                   Grid.Row="0"
-                                   Grid.Column="0"
-                                   Label="Batch"
-                                   ShowFrame="True"
-                                   Margin="0,0,12,12"/>
+                    <Templates:GroupBoxBlock Grid.Column="0"
+                                             Header="Control Group A"
+                                             BadgeText="Primary"
+                                             GroupPadding="10">
+                        <Templates:GroupBoxBlock.GroupContent>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="320" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="90" />
+                                    <RowDefinition Height="90" />
+                                    <RowDefinition Height="90" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
 
-                    <core:PlcLabel x:Name="DefaultRecipeLabel"
-                                   Grid.Row="0"
-                                   Grid.Column="1"
-                                   Label="Recipe"
-                                   ShowFrame="True"
-                                   Margin="0,0,12,12"/>
+                                <core:PlcLabel Grid.Row="0"
+                                               Grid.Column="0"
+                                               Label="Batch"
+                                               Address="D400"
+                                               ShowFrame="True"
+                                               Margin="0,0,12,12"/>
 
-                    <core:PlcDeviceEditor x:Name="DefaultEditor"
-                                          Grid.Row="1"
-                                          Grid.Column="0"
-                                          Grid.ColumnSpan="1"
-                                          Label="Command Editor"
-                                          Reason="Single page lab test"
-                                          Margin="0,0,12,12"/>
+                                <core:PlcLabel Grid.Row="0"
+                                               Grid.Column="1"
+                                               Label="Recipe"
+                                               Address="D410"
+                                               ShowFrame="True"
+                                               Margin="0,0,12,12"/>
+
+                                <core:PlcDeviceEditor Grid.Row="1"
+                                                      Grid.Column="0"
+                                                      Label="Command Editor"
+                                                      Address="D420"
+                                                      Reason="Single page lab test"
+                                                      Margin="0,0,12,12"/>
+
+                                <core:PlcLabel Grid.Row="2"
+                                               Grid.Column="0"
+                                               Label="Running"
+                                               Address="M201"
+                                               DataType="Bit"
+                                               ShowFrame="True"
+                                               Margin="0,0,12,12"/>
+
+                                <core:PlcLabel Grid.Row="2"
+                                               Grid.Column="1"
+                                               Label="Alarm"
+                                               Address="M202"
+                                               DataType="Bit"
+                                               ShowFrame="True"
+                                               Margin="0,0,12,12"/>
+                            </Grid>
+                        </Templates:GroupBoxBlock.GroupContent>
+                    </Templates:GroupBoxBlock>
+
+                    <Templates:GroupBoxBlock Grid.Column="2"
+                                             Header="Control Group B"
+                                             BadgeText="Drop Here"
+                                             GroupPadding="10">
+                        <Templates:GroupBoxBlock.GroupContent>
+                            <Grid MinHeight="280">
+                                <TextBlock Text="Drag UI.Core controls here from Visual Studio toolbox/designer."
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           VerticalAlignment="Top" />
+                            </Grid>
+                        </Templates:GroupBoxBlock.GroupContent>
+                    </Templates:GroupBoxBlock>
+
+                    <Templates:GroupBoxBlock Grid.Column="4"
+                                             Header="Control Group C"
+                                             BadgeText="Drop Here"
+                                             GroupPadding="10">
+                        <Templates:GroupBoxBlock.GroupContent>
+                            <Grid MinHeight="280">
+                                <TextBlock Text="Use this group for custom monitoring widgets/layout experiments."
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           VerticalAlignment="Top" />
+                            </Grid>
+                        </Templates:GroupBoxBlock.GroupContent>
+                    </Templates:GroupBoxBlock>
                 </Grid>
 
                 <TextBlock Grid.Row="2"

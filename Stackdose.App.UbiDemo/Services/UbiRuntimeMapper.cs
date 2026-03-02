@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Text.Json;
 using System.Windows.Media;
 
 namespace Stackdose.App.UbiDemo.Services;
@@ -29,6 +28,12 @@ public static class UbiRuntimeMapper
     private static Dictionary<string, DateTime> _cachedAlarmCountUpdatedAt = new(StringComparer.OrdinalIgnoreCase);
     private static readonly TimeSpan AlarmCountRefreshInterval = TimeSpan.FromMilliseconds(500);
     private static bool _enableOverviewAlarmCount;
+    private static IUbiRuntimeMappingAdapter _mappingAdapter = new UbiRuntimeMappingAdapter();
+
+    internal static void ConfigureMappingAdapter(IUbiRuntimeMappingAdapter? adapter)
+    {
+        _mappingAdapter = adapter ?? new UbiRuntimeMappingAdapter();
+    }
 
     // �w�w Overview card PLC update �w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w�w
 
@@ -51,7 +56,11 @@ public static class UbiRuntimeMapper
                 GetTagAddress(config, "status",  "isRunning"),
                 GetTagAddress(config, "status",  "isAlarm"));
 
-            _cachedAlarmMap[key] = LoadAlarmBitPoints(GetAlarmConfigFile(config));
+            _cachedAlarmMap[key] =
+            [
+                .. _mappingAdapter.LoadAlarmBitPoints(config)
+                    .Select(point => new AlarmBitPoint(point.Device, point.Bit))
+            ];
         }
     }
 
@@ -163,52 +172,9 @@ public static class UbiRuntimeMapper
         return active;
     }
 
-    private static IReadOnlyList<AlarmBitPoint> LoadAlarmBitPoints(string alarmConfigPath)
-    {
-        if (string.IsNullOrWhiteSpace(alarmConfigPath) || !File.Exists(alarmConfigPath))
-        {
-            return [];
-        }
-
-        try
-        {
-            using var json = JsonDocument.Parse(File.ReadAllText(alarmConfigPath));
-            if (!json.RootElement.TryGetProperty("Alarms", out var alarms) || alarms.ValueKind != JsonValueKind.Array)
-            {
-                return [];
-            }
-
-            var points = new List<AlarmBitPoint>();
-            foreach (var item in alarms.EnumerateArray())
-            {
-                if (!item.TryGetProperty("Device", out var deviceProp) || deviceProp.ValueKind != JsonValueKind.String)
-                {
-                    continue;
-                }
-
-                if (!item.TryGetProperty("Bit", out var bitProp) || !bitProp.TryGetInt32(out var bit))
-                {
-                    continue;
-                }
-
-                var device = deviceProp.GetString();
-                if (!string.IsNullOrWhiteSpace(device))
-                {
-                    points.Add(new AlarmBitPoint(device.Trim().ToUpperInvariant(), bit));
-                }
-            }
-
-            return points;
-        }
-        catch
-        {
-            return [];
-        }
-    }
-
     public static DeviceContext CreateDeviceContext(UbiMachineConfig config)
     {
-        var printHeadConfigs = GetPrintHeadConfigFiles(config);
+        var printHeadConfigs = _mappingAdapter.GetPrintHeadConfigFiles(config);
         return new DeviceContext
         {
             MachineId    = config.Machine.Id,
@@ -218,20 +184,20 @@ public static class UbiRuntimeMapper
             NozzleAddress = GetTagAddress(config, "process", "nozzleTemp"),
             RunningAddress = GetTagAddress(config, "status", "isRunning"),
             AlarmAddress   = GetTagAddress(config, "status", "isAlarm"),
-            AlarmConfigFile  = GetAlarmConfigFile(config),
-            SensorConfigFile = GetSensorConfigFile(config),
+            AlarmConfigFile  = _mappingAdapter.GetAlarmConfigFile(config),
+            SensorConfigFile = _mappingAdapter.GetSensorConfigFile(config),
             PrintHead1ConfigFile = printHeadConfigs.ElementAtOrDefault(0) ?? string.Empty,
             PrintHead2ConfigFile = printHeadConfigs.ElementAtOrDefault(1) ?? string.Empty,
-            TotalTrayAddress    = GetDetailLabelAddress(config, "totalTray",          "D3400"),
-            CurrentTrayAddress  = GetDetailLabelAddress(config, "currentTray",        "D33"),
-            TotalLayerAddress   = GetDetailLabelAddress(config, "totalLayer",         "D3401"),
-            CurrentLayerAddress = GetDetailLabelAddress(config, "currentLayer",       "D32"),
-            SwitchGraphicLayerAddress = GetDetailLabelAddress(config, "switchGraphicLayer", "D510"),
-            SwitchAreaLayerAddress    = GetDetailLabelAddress(config, "switchAreaLayer",    "D512"),
-            MessageIdAddress      = GetDetailLabelAddress(config, "messageId",     "D85"),
-            BatteryAddress        = GetDetailLabelAddress(config, "battery",       "D120"),
-            ElapsedTimeAddress    = GetDetailLabelAddress(config, "elapsedTime",   "D86"),
-            PrintHeadCountAddress = GetDetailLabelAddress(config, "printHeadCount","D87")
+            TotalTrayAddress    = _mappingAdapter.GetDetailLabelAddress(config, "totalTray",          "D3400"),
+            CurrentTrayAddress  = _mappingAdapter.GetDetailLabelAddress(config, "currentTray",        "D33"),
+            TotalLayerAddress   = _mappingAdapter.GetDetailLabelAddress(config, "totalLayer",         "D3401"),
+            CurrentLayerAddress = _mappingAdapter.GetDetailLabelAddress(config, "currentLayer",       "D32"),
+            SwitchGraphicLayerAddress = _mappingAdapter.GetDetailLabelAddress(config, "switchGraphicLayer", "D510"),
+            SwitchAreaLayerAddress    = _mappingAdapter.GetDetailLabelAddress(config, "switchAreaLayer",    "D512"),
+            MessageIdAddress      = _mappingAdapter.GetDetailLabelAddress(config, "messageId",     "D85"),
+            BatteryAddress        = _mappingAdapter.GetDetailLabelAddress(config, "battery",       "D120"),
+            ElapsedTimeAddress    = _mappingAdapter.GetDetailLabelAddress(config, "elapsedTime",   "D86"),
+            PrintHeadCountAddress = _mappingAdapter.GetDetailLabelAddress(config, "printHeadCount","D87")
         };
     }
 
@@ -272,85 +238,28 @@ public static class UbiRuntimeMapper
 
     public static string GetTagAddress(UbiMachineConfig config, string section, string key)
     {
-        Dictionary<string, UbiTagConfig>? tags = section.ToLowerInvariant() switch
-        {
-            "status"  => config.Tags.Status,
-            "process" => config.Tags.Process,
-            _ => null
-        };
-
-        if (tags is null || !tags.TryGetValue(key, out var tag) || string.IsNullOrWhiteSpace(tag.Address))
-        {
-            return "--";
-        }
-
-        return tag.Address;
+        return _mappingAdapter.GetTagAddress(config, section, key);
     }
 
     public static string GetDetailLabelAddress(UbiMachineConfig config, string key, string fallback)
     {
-        if (config.DetailLabels.TryGetValue(key, out var address) && !string.IsNullOrWhiteSpace(address))
-        {
-            return address.Trim();
-        }
-
-        return fallback;
+        return _mappingAdapter.GetDetailLabelAddress(config, key, fallback);
     }
 
     public static string GetAlarmConfigFile(UbiMachineConfig config)
     {
-        var relativePath = !string.IsNullOrWhiteSpace(config.AlarmConfigFile)
-            ? config.AlarmConfigFile
-            : config.Machine.Id.ToUpperInvariant() switch
-            {
-                "M1" => "Config/MachineA/alarms.json",
-                "M2" => "Config/MachineB/alarms.json",
-                _    => string.Empty
-            };
-
-        return string.IsNullOrWhiteSpace(relativePath)
-            ? string.Empty
-            : Path.Combine(AppContext.BaseDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        return _mappingAdapter.GetAlarmConfigFile(config);
     }
 
     public static string GetSensorConfigFile(UbiMachineConfig config)
     {
-        var relativePath = !string.IsNullOrWhiteSpace(config.SensorConfigFile)
-            ? config.SensorConfigFile
-            : config.Machine.Id.ToUpperInvariant() switch
-            {
-                "M1" => "Config/MachineA/sensors.json",
-                "M2" => "Config/MachineB/sensors.json",
-                _    => string.Empty
-            };
-
-        return string.IsNullOrWhiteSpace(relativePath)
-            ? string.Empty
-            : Path.Combine(AppContext.BaseDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        return _mappingAdapter.GetSensorConfigFile(config);
     }
 
     public static IReadOnlyList<string> GetPrintHeadConfigFiles(UbiMachineConfig config)
     {
-        if (config.PrintHeadConfigs.Count > 0)
-        {
-            return config.PrintHeadConfigs
-                .Where(path => !string.IsNullOrWhiteSpace(path))
-                .Select(ToAbsoluteConfigPath)
-                .ToList();
-        }
-
-        var fallback = config.Machine.Id.ToUpperInvariant() switch
-        {
-            "M1" => new[] { "Config/MachineA/feiyang_head1.json", "Config/MachineA/feiyang_head2.json" },
-            "M2" => new[] { "Config/MachineB/feiyang_head1.json", "Config/MachineB/feiyang_head2.json" },
-            _    => []
-        };
-
-        return fallback.Select(ToAbsoluteConfigPath).ToList();
+        return _mappingAdapter.GetPrintHeadConfigFiles(config);
     }
-
-    private static string ToAbsoluteConfigPath(string relativePath)
-        => Path.Combine(AppContext.BaseDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
 
     private static MachineOverviewCard CreateCard(UbiMachineConfig config) => new()
     {
@@ -415,113 +324,17 @@ public static class UbiRuntimeMapper
 
     private static IEnumerable<string> GetUbiDevicePageDetailLabelAddresses(IEnumerable<UbiMachineConfig> configs)
     {
-        var defaultAddresses = new[] { "D3400", "D33", "D3401", "D32", "D510", "D512", "D85", "D120", "D86", "D87" };
-
-        foreach (var config in configs)
-        {
-            if (config.DetailLabels.Count == 0)
-            {
-                foreach (var address in defaultAddresses) yield return address;
-                continue;
-            }
-
-            foreach (var address in config.DetailLabels.Values)
-            {
-                if (!string.IsNullOrWhiteSpace(address)) yield return address.Trim();
-            }
-        }
+        return _mappingAdapter.GetDetailLabelAddresses(configs);
     }
 
     private static IEnumerable<string> GetManualPlcMonitorAddresses(IEnumerable<UbiMachineConfig> configs)
     {
-        foreach (var config in configs)
-        {
-            foreach (var entry in config.Plc.MonitorAddresses)
-            {
-                if (string.IsNullOrWhiteSpace(entry)) continue;
-
-                var tokens = entry.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                for (var i = 0; i < tokens.Length; i++)
-                {
-                    var parsed = ParseAddress(tokens[i]);
-                    if (parsed == null) continue;
-
-                    var (prefix, start) = parsed.Value;
-                    var length = 1;
-
-                    if (i + 1 < tokens.Length && int.TryParse(tokens[i + 1], out var parsedLength) && parsedLength > 1)
-                    {
-                        length = parsedLength;
-                        i++;
-                    }
-
-                    for (var offset = 0; offset < length; offset++)
-                    {
-                        yield return $"{prefix}{start + offset}";
-                    }
-                }
-            }
-        }
+        return _mappingAdapter.GetManualPlcMonitorAddresses(configs);
     }
 
     private static IEnumerable<string> GetMachineAlertAddresses(IEnumerable<UbiMachineConfig> configs)
     {
-        foreach (var config in configs)
-        {
-            foreach (var a in ReadAddressesFromSensorFile(GetSensorConfigFile(config))) yield return a;
-            foreach (var a in ReadAddressesFromAlarmFile(GetAlarmConfigFile(config)))  yield return a;
-        }
-    }
-
-    private static IEnumerable<string> ReadAddressesFromSensorFile(string filePath)
-    {
-        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath)) return [];
-
-        try
-        {
-            using var doc = JsonDocument.Parse(File.ReadAllText(filePath));
-            if (doc.RootElement.ValueKind != JsonValueKind.Array) return [];
-
-            var addresses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var item in doc.RootElement.EnumerateArray())
-            {
-                if (item.TryGetProperty("Device", out var d) && d.ValueKind == JsonValueKind.String)
-                {
-                    var device = d.GetString();
-                    if (!string.IsNullOrWhiteSpace(device)) addresses.Add(device.Trim().ToUpperInvariant());
-                }
-            }
-
-            return addresses;
-        }
-        catch { return []; }
-    }
-
-    private static IEnumerable<string> ReadAddressesFromAlarmFile(string filePath)
-    {
-        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath)) return [];
-
-        try
-        {
-            using var doc = JsonDocument.Parse(File.ReadAllText(filePath));
-            if (!doc.RootElement.TryGetProperty("Alarms", out var alarms) || alarms.ValueKind != JsonValueKind.Array)
-            {
-                return [];
-            }
-
-            var addresses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var item in alarms.EnumerateArray())
-            {
-                if (item.TryGetProperty("Device", out var d) && d.ValueKind == JsonValueKind.String)
-                {
-                    var device = d.GetString();
-                    if (!string.IsNullOrWhiteSpace(device)) addresses.Add(device.Trim().ToUpperInvariant());
-                }
-            }
-
-            return addresses;
-        }
-        catch { return []; }
+        return _mappingAdapter.GetMachineAlertAddresses(configs);
     }
 
     private static IEnumerable<string> ExpandAddresses(UbiTagConfig tag)

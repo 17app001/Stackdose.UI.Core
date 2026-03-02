@@ -37,55 +37,63 @@
             </StackPanel>
         </Border>
 
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="240" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+        <Border Grid.Row="1"
+                Background="{DynamicResource Surface.Bg.Panel}"
+                BorderBrush="{DynamicResource Surface.Border.Default}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12">
+            <Grid x:Name="DesignerHost">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-            <Border Grid.Column="0"
-                    Background="{DynamicResource Surface.Bg.Panel}"
-                    BorderBrush="{DynamicResource Surface.Border.Default}"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="10"
-                    Margin="0,0,12,0">
-                <StackPanel>
-                    <TextBlock Text="Widget Toolbox"
-                               FontSize="15"
-                               FontWeight="SemiBold"
-                               Margin="0,0,0,8"/>
-                    <Button Content="Add PlcLabel"
-                            Height="32"
-                            Margin="0,0,0,8"
-                            Click="AddPlcLabel_Click"/>
-                    <Button Content="Add PlcDeviceEditor"
-                            Height="32"
-                            Margin="0,0,0,8"
-                            Click="AddPlcDeviceEditor_Click"/>
-                    <Button Content="Add LiveLogViewer"
-                            Height="32"
-                            Margin="0,0,0,8"
-                            Click="AddLiveLogViewer_Click"/>
-                    <Button Content="Reset Default Layout"
-                            Height="32"
-                            Margin="0,0,0,16"
-                            Click="ResetLayout_Click"/>
-                    <TextBlock Text="Drag widgets by title bar"
-                               Foreground="{DynamicResource TextSecondaryBrush}"/>
-                </StackPanel>
-            </Border>
+                <TextBlock Grid.Row="0"
+                           Text="Design this area directly in Visual Studio (XAML Designer). Drag PlcLabel/PlcDeviceEditor/UI.Core controls here."
+                           Margin="0,0,0,12"
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
 
-            <Border Grid.Column="1"
-                    Background="{DynamicResource Surface.Bg.Panel}"
-                    BorderBrush="{DynamicResource Surface.Border.Default}"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="8">
-                <Canvas x:Name="DesignerCanvas"
-                        Background="#0F223046"
-                        ClipToBounds="True" />
-            </Border>
-        </Grid>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="320" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="90" />
+                        <RowDefinition Height="90" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <core:PlcLabel x:Name="DefaultBatchLabel"
+                                   Grid.Row="0"
+                                   Grid.Column="0"
+                                   Label="Batch"
+                                   ShowFrame="True"
+                                   Margin="0,0,12,12"/>
+
+                    <core:PlcLabel x:Name="DefaultRecipeLabel"
+                                   Grid.Row="0"
+                                   Grid.Column="1"
+                                   Label="Recipe"
+                                   ShowFrame="True"
+                                   Margin="0,0,12,12"/>
+
+                    <core:PlcDeviceEditor x:Name="DefaultEditor"
+                                          Grid.Row="1"
+                                          Grid.Column="0"
+                                          Grid.ColumnSpan="1"
+                                          Label="Command Editor"
+                                          Reason="Single page lab test"
+                                          Margin="0,0,12,12"/>
+                </Grid>
+
+                <TextBlock Grid.Row="2"
+                           Text="Tip: remove/replace sample controls in XAML and layout freely in designer."
+                           Margin="0,12,0,0"
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

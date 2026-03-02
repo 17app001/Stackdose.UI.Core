@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.App.SecondDemo", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.App.ShellShared", "Stackdose.App.ShellShared\Stackdose.App.ShellShared.csproj", "{341FB859-D370-4C29-8821-E57821DE5E6F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.App.SingleDetailLab", "Stackdose.App.SingleDetailLab\Stackdose.App.SingleDetailLab.csproj", "{7C6FE14D-44F7-4493-B7F3-D5EB57452DFE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -223,6 +225,18 @@ Global
 		{341FB859-D370-4C29-8821-E57821DE5E6F}.Release|x64.Build.0 = Release|Any CPU
 		{341FB859-D370-4C29-8821-E57821DE5E6F}.Release|x86.ActiveCfg = Release|Any CPU
 		{341FB859-D370-4C29-8821-E57821DE5E6F}.Release|x86.Build.0 = Release|Any CPU
+		{7C6FE14D-44F7-4493-B7F3-D5EB57452DFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C6FE14D-44F7-4493-B7F3-D5EB57452DFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C6FE14D-44F7-4493-B7F3-D5EB57452DFE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7C6FE14D-44F7-4493-B7F3-D5EB57452DFE}.Debug|x64.Build.0 = Debug|Any CPU
+		{7C6FE14D-44F7-4493-B7F3-D5EB57452DFE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7C6FE14D-44F7-4493-B7F3-D5EB57452DFE}.Debug|x86.Build.0 = Debug|Any CPU
+		{7C6FE14D-44F7-4493-B7F3-D5EB57452DFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C6FE14D-44F7-4493-B7F3-D5EB57452DFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C6FE14D-44F7-4493-B7F3-D5EB57452DFE}.Release|x64.ActiveCfg = Release|Any CPU
+		{7C6FE14D-44F7-4493-B7F3-D5EB57452DFE}.Release|x64.Build.0 = Release|Any CPU
+		{7C6FE14D-44F7-4493-B7F3-D5EB57452DFE}.Release|x86.ActiveCfg = Release|Any CPU
+		{7C6FE14D-44F7-4493-B7F3-D5EB57452DFE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

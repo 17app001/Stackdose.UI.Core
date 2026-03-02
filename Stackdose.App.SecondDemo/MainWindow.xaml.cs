@@ -97,8 +97,8 @@ public partial class MainWindow : Window
             MachineState = ShellOverviewBinder.GetTagAddress(config, "status", "isRunning"),
             AlarmState = ShellOverviewBinder.GetTagAddress(config, "status", "isAlarm"),
             NozzleTempText = ShellOverviewBinder.GetTagAddress(config, "process", "nozzleTemp"),
-            AlarmConfigFile = ShellRuntimeHost.GetAlarmConfigFile(config.Machine.Id),
-            SensorConfigFile = ShellRuntimeHost.GetSensorConfigFile(config.Machine.Id)
+            AlarmConfigFile = _runtime.GetAlarmConfigFile(config.Machine.Id),
+            SensorConfigFile = _runtime.GetSensorConfigFile(config.Machine.Id)
         };
 
         MainShell.ShellContent = detailPage;

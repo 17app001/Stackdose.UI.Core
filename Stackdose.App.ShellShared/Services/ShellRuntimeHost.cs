@@ -37,23 +37,6 @@ public static class ShellRuntimeHost
         return new ShellRuntimeContext(overviewPage, machines);
     }
 
-    public static string GetAlarmConfigFile(string machineId)
-    {
-        return string.Equals(machineId, "M1", StringComparison.OrdinalIgnoreCase)
-            ? "Config/MachineA.alarms.json"
-            : string.Equals(machineId, "M2", StringComparison.OrdinalIgnoreCase)
-                ? "Config/MachineB.alarms.json"
-                : string.Empty;
-    }
-
-    public static string GetSensorConfigFile(string machineId)
-    {
-        return string.Equals(machineId, "M1", StringComparison.OrdinalIgnoreCase)
-            ? "Config/MachineA.sensors.json"
-            : string.Equals(machineId, "M2", StringComparison.OrdinalIgnoreCase)
-                ? "Config/MachineB.sensors.json"
-                : string.Empty;
-    }
 }
 
 public sealed class ShellRuntimeContext
@@ -66,4 +49,26 @@ public sealed class ShellRuntimeContext
 
     public MachineOverviewPage OverviewPage { get; }
     public IReadOnlyDictionary<string, ShellMachineConfig> Machines { get; }
+
+    public string GetAlarmConfigFile(string machineId)
+    {
+        if (Machines.TryGetValue(machineId, out var machine)
+            && !string.IsNullOrWhiteSpace(machine.AlarmConfigFile))
+        {
+            return machine.AlarmConfigFile;
+        }
+
+        return string.Empty;
+    }
+
+    public string GetSensorConfigFile(string machineId)
+    {
+        if (Machines.TryGetValue(machineId, out var machine)
+            && !string.IsNullOrWhiteSpace(machine.SensorConfigFile))
+        {
+            return machine.SensorConfigFile;
+        }
+
+        return string.Empty;
+    }
 }

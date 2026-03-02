@@ -5,6 +5,8 @@ public sealed class ShellMachineConfig
     public ShellMachineInfo Machine { get; set; } = new();
     public ShellPlcInfo Plc { get; set; } = new();
     public ShellTagSections Tags { get; set; } = new();
+    public string AlarmConfigFile { get; set; } = string.Empty;
+    public string SensorConfigFile { get; set; } = string.Empty;
 }
 
 public sealed class ShellMachineInfo

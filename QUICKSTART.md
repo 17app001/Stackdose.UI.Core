@@ -54,3 +54,9 @@ To scaffold a single-page designer starter directly:
 ```powershell
 powershell -NoProfile -File .\scripts\init-shell-app.ps1 -AppName "Stackdose.App.YourSinglePage" -DestinationRoot . -SinglePageDesigner
 ```
+
+To scaffold a project-local editable designer page (recommended for per-project custom layouts):
+
+```powershell
+powershell -NoProfile -File .\scripts\init-shell-app.ps1 -AppName "Stackdose.App.YourSinglePage" -DestinationRoot . -SinglePageDesignerLocalEditable
+```

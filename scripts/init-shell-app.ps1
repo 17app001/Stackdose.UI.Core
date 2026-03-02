@@ -7,7 +7,9 @@ param(
 
     [switch]$IncludeSecondDemoSampleConfigs,
 
-    [switch]$SinglePageDesigner
+    [switch]$SinglePageDesigner,
+
+    [switch]$SinglePageDesignerLocalEditable
 )
 
 Set-StrictMode -Version Latest
@@ -56,7 +58,9 @@ if (Test-Path $projectDir) {
 Write-Host "[init-shell-app] Creating WPF project: $AppName"
 dotnet new wpf -n $AppName -o $projectDir
 
-if ($SinglePageDesigner) {
+$singlePageMode = $SinglePageDesigner -or $SinglePageDesignerLocalEditable
+
+if ($singlePageMode) {
     $projectFile = Join-Path $projectDir "$AppName.csproj"
     if (-not (Test-Path $projectFile)) {
         throw "Project file not found: $projectFile"
@@ -107,7 +111,158 @@ public partial class App : Application
 }
 "@ | Set-Content -Path (Join-Path $projectDir "App.xaml.cs") -Encoding UTF8
 
-    @"
+    if ($SinglePageDesignerLocalEditable) {
+        @"
+<Window x:Class="$AppName.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:Templates="http://schemas.stackdose.com/templates"
+        xmlns:pages="clr-namespace:$AppName.Pages"
+        mc:Ignorable="d"
+        Title="Single Detail Designer"
+        Height="900"
+        Width="1600"
+        WindowState="Maximized"
+        WindowStyle="None"
+        ResizeMode="CanResize">
+    <Templates:SinglePageContainer x:Name="MainShell"
+                                   HeaderDeviceName="SINGLE-DESIGNER"
+                                   PageTitle="Single Detail Designer"
+                                   CloseRequested="MainShell_OnCloseRequested"
+                                   MinimizeRequested="MainShell_OnMinimizeRequested"
+                                   LogoutRequested="MainShell_OnLogoutRequested">
+        <Templates:SinglePageContainer.ShellContent>
+            <pages:SingleDetailWorkspacePage />
+        </Templates:SinglePageContainer.ShellContent>
+    </Templates:SinglePageContainer>
+</Window>
+"@ | Set-Content -Path (Join-Path $projectDir "MainWindow.xaml") -Encoding UTF8
+
+        $pagesDir = Join-Path $projectDir "Pages"
+        New-Item -ItemType Directory -Path $pagesDir -Force | Out-Null
+
+        @"
+<UserControl x:Class="$AppName.Pages.SingleDetailWorkspacePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:core="http://schemas.stackdose.com/wpf"
+             xmlns:templateControls="clr-namespace:Stackdose.UI.Templates.Controls;assembly=Stackdose.UI.Templates"
+             mc:Ignorable="d"
+             d:DesignHeight="900"
+             d:DesignWidth="1400">
+
+    <Grid Background="{DynamicResource Surface.Bg.Page}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Background="{DynamicResource Surface.Bg.Panel}"
+                BorderBrush="{DynamicResource Surface.Border.Default}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12"
+                Margin="0,0,0,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0">
+                    <TextBlock Text="Detail + PLC Lab"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock x:Name="MachineSummaryText"
+                               Margin="0,4,0,10"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                </StackPanel>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="3*" />
+                    </Grid.ColumnDefinitions>
+
+                    <core:PlcStatus x:Name="TopPlcStatus"
+                                    Grid.Column="0"
+                                    Height="58"
+                                    IsGlobal="True"
+                                    ShowBorder="True"
+                                    AutoConnect="True"/>
+
+                    <Border Grid.Column="1" Background="Transparent"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1"
+                Background="{DynamicResource Surface.Bg.Panel}"
+                BorderBrush="{DynamicResource Surface.Border.Default}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Text="Design this area in Visual Studio Designer."
+                           Margin="0,0,0,12"
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <templateControls:GroupBoxBlock Grid.Column="0" Header="Control Group A" BadgeText="Primary" GroupPadding="10" />
+                    <templateControls:GroupBoxBlock Grid.Column="2" Header="Control Group B" BadgeText="Drop Here" GroupPadding="10" />
+                    <templateControls:GroupBoxBlock Grid.Column="4" Header="Control Group C" BadgeText="Drop Here" GroupPadding="10" />
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
+"@ | Set-Content -Path (Join-Path $pagesDir "SingleDetailWorkspacePage.xaml") -Encoding UTF8
+
+        @"
+using System.Windows.Controls;
+
+namespace $AppName.Pages;
+
+public partial class SingleDetailWorkspacePage : UserControl
+{
+    public SingleDetailWorkspacePage()
+    {
+        InitializeComponent();
+    }
+
+    public void Initialize(string machineName, string machineId, string plcIp, int plcPort, int scanIntervalMs, bool autoConnect, string monitorAddress)
+    {
+        MachineSummaryText.Text = $"Machine: {machineName} ({machineId})";
+        TopPlcStatus.IpAddress = plcIp;
+        TopPlcStatus.Port = plcPort;
+        TopPlcStatus.ScanInterval = scanIntervalMs;
+        TopPlcStatus.AutoConnect = autoConnect;
+        TopPlcStatus.MonitorAddress = monitorAddress;
+    }
+}
+"@ | Set-Content -Path (Join-Path $pagesDir "SingleDetailWorkspacePage.xaml.cs") -Encoding UTF8
+    } else {
+        @"
 <Window x:Class="$AppName.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -133,12 +288,16 @@ public partial class App : Application
     </Templates:SinglePageContainer>
 </Window>
 "@ | Set-Content -Path (Join-Path $projectDir "MainWindow.xaml") -Encoding UTF8
+    }
+
+    $workspaceUsing = if ($SinglePageDesignerLocalEditable) { "using $AppName.Pages;" } else { "" }
+    $workspaceType = if ($SinglePageDesignerLocalEditable) { "SingleDetailWorkspacePage" } else { "Stackdose.UI.Templates.Pages.SingleDetailWorkspacePage" }
 
     @"
 using System.IO;
 using System.Text.Json;
 using System.Windows;
-using Stackdose.UI.Templates.Pages;
+$workspaceUsing
 
 namespace $AppName;
 
@@ -170,7 +329,7 @@ public partial class MainWindow : Window
         var interval = plc.GetProperty("pollIntervalMs").GetInt32();
         var autoConnect = !plc.TryGetProperty("autoConnect", out var autoElement) || autoElement.GetBoolean();
 
-        if (MainShell.ShellContent is SingleDetailWorkspacePage page)
+        if (MainShell.ShellContent is $workspaceType page)
         {
             page.Initialize(machineName, machineId, ip, port, interval, autoConnect, "D400,40");
         }
@@ -255,12 +414,16 @@ if ($IncludeSecondDemoSampleConfigs) {
 }
 
 $readmePath = Join-Path $projectDir "SHELL_QUICKSTART.md"
-if ($SinglePageDesigner) {
+if ($singlePageMode) {
+    $singlePageModeTitle = if ($SinglePageDesignerLocalEditable) { "Single Page Designer (Local Editable Page)" } else { "Single Page Designer" }
+
     @"
-# Shell Quickstart (Single Page Designer)
+# Shell Quickstart ($singlePageModeTitle)
 
 1. Edit `Config/Machine1.config.json` for PLC connection and addresses.
-2. Open `MainWindow.xaml` + `Templates:SingleDetailWorkspacePage` in Visual Studio designer.
+2. Open the designer page in Visual Studio:
+   - local editable mode: `Pages/SingleDetailWorkspacePage.xaml`
+   - template mode: `Templates:SingleDetailWorkspacePage` inside `MainWindow.xaml`
 3. Drag `UI.Core` controls into Group A/B/C and run.
 
 Reference:

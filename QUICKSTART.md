@@ -46,3 +46,11 @@ Then open/run the app and confirm:
 - no unexpected PLC poll-time spikes
 
 For deeper integration details, see `Stackdose.UI.Core/Shell/SECOND_APP_QUICKSTART.md`.
+
+For single-page monitoring layout (designer-driven), see `Stackdose.App.SingleDetailLab/README_SINGLE_PAGE_QUICKSTART.md`.
+
+To scaffold a single-page designer starter directly:
+
+```powershell
+powershell -NoProfile -File .\scripts\init-shell-app.ps1 -AppName "Stackdose.App.YourSinglePage" -DestinationRoot . -SinglePageDesigner
+```

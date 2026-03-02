@@ -1,5 +1,5 @@
 using Stackdose.App.SingleDetailLab.Services;
-using Stackdose.App.SingleDetailLab.Pages;
+using Stackdose.UI.Templates.Pages;
 using System.IO;
 using System.Windows;
 
@@ -25,7 +25,14 @@ public partial class MainWindow : Window
 
         if (MainShell.ShellContent is SingleDetailWorkspacePage workspacePage)
         {
-            workspacePage.Initialize(machine);
+            workspacePage.Initialize(
+                machine.Machine.Name,
+                machine.Machine.Id,
+                machine.Plc.Ip,
+                machine.Plc.Port,
+                machine.Plc.PollIntervalMs,
+                machine.Plc.AutoConnect,
+                LabMonitorAddressBuilder.Build(machine));
         }
 
         MainShell.HeaderDeviceName = machine.Machine.Name;

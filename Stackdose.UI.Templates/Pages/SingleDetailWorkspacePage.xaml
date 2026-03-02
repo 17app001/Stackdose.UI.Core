@@ -1,10 +1,10 @@
-<UserControl x:Class="Stackdose.App.SingleDetailLab.Pages.SingleDetailWorkspacePage"
+<UserControl x:Class="Stackdose.UI.Templates.Pages.SingleDetailWorkspacePage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:core="http://schemas.stackdose.com/wpf"
-             xmlns:Templates="http://schemas.stackdose.com/templates"
+             xmlns:templateControls="clr-namespace:Stackdose.UI.Templates.Controls"
              mc:Ignorable="d"
              d:DesignHeight="900"
              d:DesignWidth="1400">
@@ -84,11 +84,11 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <Templates:GroupBoxBlock Grid.Column="0"
-                                             Header="Control Group A"
-                                             BadgeText="Primary"
-                                             GroupPadding="10">
-                        <Templates:GroupBoxBlock.GroupContent>
+                    <templateControls:GroupBoxBlock Grid.Column="0"
+                                                    Header="Control Group A"
+                                                    BadgeText="Primary"
+                                                    GroupPadding="10">
+                        <templateControls:GroupBoxBlock.GroupContent>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="320" />
@@ -138,34 +138,34 @@
                                                ShowFrame="True"
                                                Margin="0,0,12,12"/>
                             </Grid>
-                        </Templates:GroupBoxBlock.GroupContent>
-                    </Templates:GroupBoxBlock>
+                        </templateControls:GroupBoxBlock.GroupContent>
+                    </templateControls:GroupBoxBlock>
 
-                    <Templates:GroupBoxBlock Grid.Column="2"
-                                             Header="Control Group B"
-                                             BadgeText="Drop Here"
-                                             GroupPadding="10">
-                        <Templates:GroupBoxBlock.GroupContent>
+                    <templateControls:GroupBoxBlock Grid.Column="2"
+                                                    Header="Control Group B"
+                                                    BadgeText="Drop Here"
+                                                    GroupPadding="10">
+                        <templateControls:GroupBoxBlock.GroupContent>
                             <Grid MinHeight="280">
                                 <TextBlock Text="Drag UI.Core controls here from Visual Studio toolbox/designer."
                                            Foreground="{DynamicResource TextSecondaryBrush}"
                                            VerticalAlignment="Top" />
                             </Grid>
-                        </Templates:GroupBoxBlock.GroupContent>
-                    </Templates:GroupBoxBlock>
+                        </templateControls:GroupBoxBlock.GroupContent>
+                    </templateControls:GroupBoxBlock>
 
-                    <Templates:GroupBoxBlock Grid.Column="4"
-                                             Header="Control Group C"
-                                             BadgeText="Drop Here"
-                                             GroupPadding="10">
-                        <Templates:GroupBoxBlock.GroupContent>
+                    <templateControls:GroupBoxBlock Grid.Column="4"
+                                                    Header="Control Group C"
+                                                    BadgeText="Drop Here"
+                                                    GroupPadding="10">
+                        <templateControls:GroupBoxBlock.GroupContent>
                             <Grid MinHeight="280">
                                 <TextBlock Text="Use this group for custom monitoring widgets/layout experiments."
                                            Foreground="{DynamicResource TextSecondaryBrush}"
                                            VerticalAlignment="Top" />
                             </Grid>
-                        </Templates:GroupBoxBlock.GroupContent>
-                    </Templates:GroupBoxBlock>
+                        </templateControls:GroupBoxBlock.GroupContent>
+                    </templateControls:GroupBoxBlock>
                 </Grid>
 
                 <TextBlock Grid.Row="2"

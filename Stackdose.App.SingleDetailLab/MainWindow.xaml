@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:Templates="http://schemas.stackdose.com/templates"
-        xmlns:pages="clr-namespace:Stackdose.App.SingleDetailLab.Pages"
         mc:Ignorable="d"
         Title="Single Detail Lab"
         Height="900"
@@ -19,7 +18,7 @@
                                    MinimizeRequested="MainShell_OnMinimizeRequested"
                                    LogoutRequested="MainShell_OnLogoutRequested">
         <Templates:SinglePageContainer.ShellContent>
-            <pages:SingleDetailWorkspacePage />
+            <Templates:SingleDetailWorkspacePage />
         </Templates:SinglePageContainer.ShellContent>
     </Templates:SinglePageContainer>
 </Window>

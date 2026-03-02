@@ -4,6 +4,12 @@ Goal: create a new shell-based app with minimal code by reusing shared shell con
 
 If you are new to this repo, start with `QUICKSTART.md` at repo root first.
 
+For first runnable version, use JSON-only changes:
+
+- `Config/app-meta.json`
+- `Config/Machine*.config.json` with `alarmConfigFile` and `sensorConfigFile`
+- referenced alarm/sensor json files
+
 ## 1) Prepare profile model
 
 - Implement `IShellAppProfile` in your app metadata model.

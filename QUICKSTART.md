@@ -18,6 +18,17 @@ Update files under your new app's `Config/` folder:
 - `MachineA.config.json` / `MachineB.config.json` (if included)
 - alarm/sensor json files
 
+Minimum machine config keys (required for JSON-only flow):
+
+- `machine.id`
+- `machine.name`
+- `machine.enable`
+- `alarmConfigFile`
+- `sensorConfigFile`
+- `plc.ip` / `plc.port` / `plc.pollIntervalMs`
+- `tags.status.isRunning` / `tags.status.isAlarm`
+- `tags.process.batchNo` / `tags.process.recipeNo` / `tags.process.nozzleTemp`
+
 At this stage, do not change adapter code unless your machine needs custom mapping behavior.
 
 ## 3) Build and run

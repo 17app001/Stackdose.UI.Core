@@ -57,6 +57,49 @@ if ($IncludeSecondDemoSampleConfigs) {
     } else {
         Write-Warning "Sample config directory not found, skipping sample config copy: $sampleConfigDir"
     }
+} else {
+    @"
+{
+  "machine": {
+    "id": "M1",
+    "name": "Machine 01",
+    "enable": true
+  },
+  "alarmConfigFile": "Config/Machine1.alarms.json",
+  "sensorConfigFile": "Config/Machine1.sensors.json",
+  "plc": {
+    "ip": "127.0.0.1",
+    "port": 5000,
+    "pollIntervalMs": 150,
+    "autoConnect": true
+  },
+  "tags": {
+    "status": {
+      "isRunning": { "address": "M201", "type": "bool", "access": "read" },
+      "isAlarm": { "address": "M202", "type": "bool", "access": "read" }
+    },
+    "process": {
+      "batchNo": { "address": "D400", "type": "string", "access": "read", "length": 8 },
+      "recipeNo": { "address": "D410", "type": "string", "access": "read", "length": 8 },
+      "nozzleTemp": { "address": "D420", "type": "int16", "access": "read" }
+    }
+  }
+}
+"@ | Set-Content -Path (Join-Path $configDir "Machine1.config.json") -Encoding UTF8
+
+    @"
+{
+  "Alarms": [
+    { "Device": "M202", "Bit": 0, "Label": "General Alarm" }
+  ]
+}
+"@ | Set-Content -Path (Join-Path $configDir "Machine1.alarms.json") -Encoding UTF8
+
+    @"
+[
+  { "Device": "D420", "Name": "Nozzle Temp" }
+]
+"@ | Set-Content -Path (Join-Path $configDir "Machine1.sensors.json") -Encoding UTF8
 }
 
 $readmePath = Join-Path $projectDir "SHELL_QUICKSTART.md"
@@ -64,7 +107,8 @@ $readmePath = Join-Path $projectDir "SHELL_QUICKSTART.md"
 # Shell Quickstart
 
 1. Configure your app in `Config/app-meta.json`.
-2. If needed, update machine/alarm/sensor json files under `Config/`.
+2. Update machine/alarm/sensor json files under `Config/`.
+   - required keys in machine config: alarmConfigFile, sensorConfigFile
 3. Build and run your project.
 
 Reference:

@@ -63,13 +63,13 @@ $readmePath = Join-Path $projectDir "SHELL_QUICKSTART.md"
 @"
 # Shell Quickstart
 
-1. Add project references:
-   - Stackdose.UI.Core
-   - Stackdose.UI.Templates
-   - Stackdose.App.ShellShared
-2. Use MainContainer in MainWindow and load runtime via ShellShared services.
-3. Configure machine/meta settings in Config/app-meta.json.
-4. Reference: Stackdose.UI.Core/Shell/SECOND_APP_QUICKSTART.md
+1. Configure your app in `Config/app-meta.json`.
+2. If needed, update machine/alarm/sensor json files under `Config/`.
+3. Build and run your project.
+
+Reference:
+- Repo root `QUICKSTART.md` (recommended)
+- `Stackdose.UI.Core/Shell/SECOND_APP_QUICKSTART.md` (advanced wiring details)
 "@ | Set-Content -Path $readmePath -Encoding UTF8
 
 Write-Host "[init-shell-app] Done. Generated: $projectDir"

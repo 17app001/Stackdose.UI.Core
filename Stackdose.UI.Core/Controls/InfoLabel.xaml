@@ -1,0 +1,125 @@
+<UserControl x:Class="Stackdose.UI.Core.Controls.InfoLabel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="clr-namespace:Stackdose.UI.Core.Converters"
+             mc:Ignorable="d"
+             x:Name="Root"
+             d:DesignHeight="60"
+             d:DesignWidth="200"
+             Foreground="{DynamicResource Plc.Text.Value}">
+
+    <UserControl.Resources>
+        <converters:PlcLabelColorThemeToBrushConverter x:Key="ColorThemeConverter" />
+    </UserControl.Resources>
+
+    <Border Background="{Binding FrameBackground, ElementName=Root, Converter={StaticResource ColorThemeConverter}}">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="BorderBrush" Value="{DynamicResource Plc.Border}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="6" />
+                <Setter Property="Padding" Value="10,6" />
+
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding FrameBackground, ElementName=Root}" Value="Default">
+                        <Setter Property="Background" Value="{DynamicResource Plc.Bg.Main}" />
+                    </DataTrigger>
+
+                    <DataTrigger Binding="{Binding ShowFrame, ElementName=Root}" Value="False">
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="Padding" Value="0" />
+                    </DataTrigger>
+
+                    <DataTrigger Binding="{Binding FrameShape, ElementName=Root}" Value="Circle">
+                        <Setter Property="CornerRadius" Value="500" />
+                        <Setter Property="Padding" Value="14" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+
+        <Grid x:Name="ContentGrid">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding FrameShape, ElementName=Root}" Value="Circle">
+                            <Setter Property="Width" Value="{Binding ActualHeight, RelativeSource={RelativeSource Self}}" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0"
+                       Text="{Binding Label, ElementName=Root, FallbackValue='Label'}"
+                       Foreground="{Binding LabelForeground, ElementName=Root, Converter={StaticResource ColorThemeConverter}}"
+                       FontSize="{Binding LabelFontSize, ElementName=Root}"
+                       FontFamily="Microsoft JhengHei"
+                       HorizontalAlignment="{Binding LabelAlignment, ElementName=Root}"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"
+                       Margin="0,0,0,2" />
+
+            <TextBlock Grid.Row="1"
+                       Foreground="{Binding ValueForeground, ElementName=Root, Converter={StaticResource ColorThemeConverter}}"
+                       FontSize="{Binding ValueFontSize, ElementName=Root}"
+                       FontWeight="Bold"
+                       FontFamily="Consolas"
+                       HorizontalAlignment="{Binding ValueAlignment, ElementName=Root}"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Text" Value="{Binding Value, ElementName=Root}" />
+                        <Setter Property="Opacity" Value="1" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Value, ElementName=Root}" Value="">
+                                <Setter Property="Text" Value="{Binding DefaultValue, ElementName=Root}" />
+                                <Setter Property="Opacity" Value="0.55" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Value, ElementName=Root}" Value="{x:Null}">
+                                <Setter Property="Text" Value="{Binding DefaultValue, ElementName=Root}" />
+                                <Setter Property="Opacity" Value="0.55" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <TextBlock Grid.Row="2"
+                       Text="{Binding Caption, ElementName=Root}"
+                       Foreground="{Binding CaptionForeground, ElementName=Root, Converter={StaticResource ColorThemeConverter}}"
+                       FontSize="{Binding CaptionFontSize, ElementName=Root}"
+                       FontFamily="Consolas"
+                       HorizontalAlignment="{Binding CaptionAlignment, ElementName=Root}"
+                       VerticalAlignment="Center"
+                       Margin="0,2,0,0"
+                       Opacity="0.75">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ShowCaption, ElementName=Root}" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Caption, ElementName=Root}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Caption, ElementName=Root}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
+    </Border>
+</UserControl>

@@ -184,64 +184,25 @@ $designerLayoutMarkup = switch ($DesignerLayoutPreset) {
 @"
                 <Grid Grid.Row="1"
                       Background="{DynamicResource Surface.Bg.Panel}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <TextBlock Grid.Row="0"
-                               Text="Blank preset. Edit or remove starters as needed."
-                               Margin="0,0,0,12"
-                               Foreground="{DynamicResource TextSecondaryBrush}"/>
-
-                    <Canvas Grid.Row="1"
+                    <Canvas
                             x:Name="DesignSurface"
                             ClipToBounds="True"
                             Background="{DynamicResource Surface.Bg.Page}">
-                        <templateControls:GroupBoxBlock Canvas.Left="24"
-                                                        Canvas.Top="20"
-                                                        Width="540"
-                                                        Height="300"
-                                                        Header="Starter Samples"
-                                                        BadgeText="Edit Me"
-                                                        GroupPadding="10">
-                            <templateControls:GroupBoxBlock.GroupContent>
-                                <StackPanel>
-                                    <core:SecuredButton Width="180"
-                                                        Height="40"
-                                                        Content="Secured Test Button"
-                                                        Theme="Info"
-                                                        RequiredLevel="Operator"
-                                                        OperationName="Single Page Secured Test"
-                                                        Click="OnSecuredSampleButtonClick" />
+                        <core:SecuredButton Canvas.Left="24"
+                                            Canvas.Top="20"
+                                            Width="180"
+                                            Height="40"
+                                            Content="Secured Test Button"
+                                            Theme="Info"
+                                            RequiredLevel="Operator"
+                                            OperationName="Single Page Secured Test"
+                                            Click="OnSecuredSampleButtonClick" />
 
-                                    <TextBlock Margin="0,10,0,0"
-                                               Text="Trigger sample listens to M237 and raises RecipeStart on rising edge."
-                                               TextWrapping="Wrap"
-                                               Foreground="{DynamicResource TextSecondaryBrush}" />
-
-                                    <core:PlcEventTrigger Address="M237"
-                                                          EventName="RecipeStart"
-                                                          TriggerCondition="OnRising"
-                                                          AutoClear="True"
-                                                          TargetStatus="{Binding ElementName=TopPlcStatus}" />
-                                </StackPanel>
-                            </templateControls:GroupBoxBlock.GroupContent>
-                        </templateControls:GroupBoxBlock>
-
-                        <templateControls:PanelBlock Canvas.Left="590"
-                                                     Canvas.Top="20"
-                                                     Width="420"
-                                                     Height="230"
-                                                     Title="Tips"
-                                                     BlockPadding="10">
-                            <templateControls:PanelBlock.BlockContent>
-                                <StackPanel>
-                                    <TextBlock Text="- Drag UI.Core controls into this canvas." Margin="0,0,0,6" />
-                                    <TextBlock Text="- Keep PlcEventTrigger in XAML for event handling." TextWrapping="Wrap" />
-                                </StackPanel>
-                            </templateControls:PanelBlock.BlockContent>
-                        </templateControls:PanelBlock>
+                        <core:PlcEventTrigger Address="M237"
+                                              EventName="RecipeStart"
+                                              TriggerCondition="OnRising"
+                                              AutoClear="True"
+                                              TargetStatus="{Binding ElementName=TopPlcStatus}" />
                     </Canvas>
                 </Grid>
 "@
@@ -1126,7 +1087,7 @@ if ($singlePageMode) {
         '3. Drag `UI.Core` controls into Group A/B/C and run.',
         '4. Optional layout preset at generation: `-DesignerLayoutPreset ThreeColumn|TwoColumn64|TwoByTwo|Blank`',
         '5. For `TwoColumn64`, adjust ratio with: `-DesignerSplitLeftWeight <N> -DesignerSplitRightWeight <N>`',
-        '6. `Blank` preset includes SecuredButton + PlcEventTrigger starters.',
+        '6. `Blank` preset includes one SecuredButton and one PlcEventTrigger starter.',
         '',
         'Reference:',
         '- Repo root `Stackdose.App.SingleDetailLab/README_SINGLE_PAGE_QUICKSTART.md`'

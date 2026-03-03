@@ -78,7 +78,12 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid>
+    <Border BorderBrush="{DynamicResource Plc.Border}"
+            BorderThickness="1"
+            CornerRadius="6"
+            Background="{DynamicResource Plc.Bg.Dark}"
+            Padding="8">
+        <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -255,5 +260,6 @@
                  Margin="0,6,0,0"
                  IsEnabled="{Binding IsAuthorized, ElementName=root}"
                  ToolTip="Reason for change (for Audit Trail)"/>
-    </Grid>
+        </Grid>
+    </Border>
 </UserControl>

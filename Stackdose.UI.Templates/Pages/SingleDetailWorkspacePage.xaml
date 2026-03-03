@@ -9,6 +9,14 @@
              d:DesignHeight="900"
              d:DesignWidth="1400">
 
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Templates;component/Resources/CommonColors.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
     <Grid Background="{DynamicResource Surface.Bg.Page}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -49,7 +57,7 @@
                                     Height="58"
                                     IsGlobal="True"
                                     ShowBorder="True"
-                                    AutoConnect="True"/>
+                                    AutoConnect="False"/>
 
                     <Border Grid.Column="1"
                             Background="Transparent"/>

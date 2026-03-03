@@ -409,7 +409,6 @@ namespace Stackdose.UI.Templates.Controls
                     return;
                 }
 
-                Window.GetWindow(this)?.Close();
                 CloseClicked?.Invoke(this, e);
             }
             catch (Exception ex)

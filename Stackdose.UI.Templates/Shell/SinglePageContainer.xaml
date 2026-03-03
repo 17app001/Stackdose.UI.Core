@@ -30,6 +30,9 @@
                                 PageTitle="{Binding ElementName=Root, Path=PageTitle}"
                                 DeviceName="{Binding ElementName=Root, Path=HeaderDeviceName}"
                                 ShowMachineBadge="False"
+                                LogoutCommand="{Binding ElementName=Root, Path=LogoutCommand}"
+                                MinimizeCommand="{Binding ElementName=Root, Path=MinimizeCommand}"
+                                CloseCommand="{Binding ElementName=Root, Path=CloseCommand}"
                                 LogoutClicked="OnLogout"
                                 MinimizeClicked="OnMinimize"
                                 CloseClicked="OnClose"/>

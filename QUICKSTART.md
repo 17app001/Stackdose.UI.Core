@@ -60,3 +60,18 @@ To scaffold a project-local editable designer page (recommended for per-project 
 ```powershell
 powershell -NoProfile -File .\scripts\init-shell-app.ps1 -AppName "Stackdose.App.YourSinglePage" -DestinationRoot . -SinglePageDesignerLocalEditable
 ```
+
+Layout preset options for local editable mode:
+
+```powershell
+# 3 columns (default)
+powershell -NoProfile -File .\scripts\init-shell-app.ps1 -AppName "Stackdose.App.YourSinglePage" -DestinationRoot . -SinglePageDesignerLocalEditable -DesignerLayoutPreset ThreeColumn
+
+# 2 columns (custom ratio, example 4:6)
+powershell -NoProfile -File .\scripts\init-shell-app.ps1 -AppName "Stackdose.App.YourSinglePage" -DestinationRoot . -SinglePageDesignerLocalEditable -DesignerLayoutPreset TwoColumn64 -DesignerSplitLeftWeight 4 -DesignerSplitRightWeight 6
+
+# 2x2 blocks
+powershell -NoProfile -File .\scripts\init-shell-app.ps1 -AppName "Stackdose.App.YourSinglePage" -DestinationRoot . -SinglePageDesignerLocalEditable -DesignerLayoutPreset TwoByTwo
+```
+
+If you run the command inside `scripts/`, use `-DestinationRoot ..` to generate the app at repo root.

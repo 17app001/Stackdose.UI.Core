@@ -32,6 +32,25 @@ This keeps compatibility for older XAML while aligning visual output with Core t
 2. Merge `CommonColors.xaml` in app resources.
 3. Host content using `BasePage` or `MainContainer`.
 
+### Tab pages (designer-friendly)
+
+Use native `TabControl`/`TabItem` with template styles for drag-and-drop editing in Visual Studio Designer:
+
+```xaml
+<TabControl Style="{StaticResource Template.TabControl}">
+    <TabItem Header="Page A" Style="{StaticResource Template.TabItem}">
+        <Grid>
+            <!-- Drag UI.Core controls here -->
+        </Grid>
+    </TabItem>
+    <TabItem Header="Page B" Style="{StaticResource Template.TabItem}">
+        <Grid>
+            <!-- Another page -->
+        </Grid>
+    </TabItem>
+</TabControl>
+```
+
 ## Design rule
 
 - Keep templates presentation-focused.

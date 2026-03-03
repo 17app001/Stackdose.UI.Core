@@ -11,7 +11,7 @@ param(
 
     [switch]$SinglePageDesignerLocalEditable,
 
-    [ValidateSet("ThreeColumn", "TwoColumn64", "TwoByTwo", "Blank")]
+    [ValidateSet("ThreeColumn", "TwoColumn64", "TwoByTwo", "Blank", "BlankTabs")]
     [string]$DesignerLayoutPreset = "ThreeColumn",
 
     [ValidateRange(1, 20)]
@@ -204,6 +204,42 @@ $designerLayoutMarkup = switch ($DesignerLayoutPreset) {
                                               AutoClear="True"
                                               TargetStatus="{Binding ElementName=TopPlcStatus}" />
                     </Canvas>
+                </Grid>
+"@
+    }
+    "BlankTabs" {
+@"
+                <Grid Grid.Row="1"
+                      Background="{DynamicResource Surface.Bg.Panel}">
+                    <TabControl Style="{StaticResource Template.TabControl}"
+                                Margin="0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
+                        <TabItem Header="Page 1" Style="{StaticResource Template.TabItem}">
+                            <Grid Background="{DynamicResource Surface.Bg.Page}">
+                                <core:SecuredButton Width="180"
+                                                    Height="40"
+                                                    Margin="24,20,0,0"
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Top"
+                                                    Content="Secured Test Button"
+                                                    Theme="Info"
+                                                    RequiredLevel="Operator"
+                                                    OperationName="Single Page Secured Test"
+                                                    Click="OnSecuredSampleButtonClick" />
+
+                                <core:PlcEventTrigger Address="M237"
+                                                      EventName="RecipeStart"
+                                                      TriggerCondition="OnRising"
+                                                      AutoClear="True"
+                                                      TargetStatus="{Binding ElementName=TopPlcStatus}" />
+                            </Grid>
+                        </TabItem>
+
+                        <TabItem Header="Page 2" Style="{StaticResource Template.TabItem}">
+                            <Grid Background="{DynamicResource Surface.Bg.Page}" />
+                        </TabItem>
+                    </TabControl>
                 </Grid>
 "@
     }
@@ -1085,9 +1121,10 @@ if ($singlePageMode) {
         '   - local editable mode: `Pages/SingleDetailWorkspacePage.xaml`',
         '   - template mode: `Templates:SingleDetailWorkspacePage` inside `MainWindow.xaml`',
         '3. Drag `UI.Core` controls into Group A/B/C and run.',
-        '4. Optional layout preset at generation: `-DesignerLayoutPreset ThreeColumn|TwoColumn64|TwoByTwo|Blank`',
+        '4. Optional layout preset at generation: `-DesignerLayoutPreset ThreeColumn|TwoColumn64|TwoByTwo|Blank|BlankTabs`',
         '5. For `TwoColumn64`, adjust ratio with: `-DesignerSplitLeftWeight <N> -DesignerSplitRightWeight <N>`',
         '6. `Blank` preset includes one SecuredButton and one PlcEventTrigger starter.',
+        '7. `BlankTabs` preset provides a styled TabControl; add/remove TabItem pages as needed.',
         '',
         'Reference:',
         '- Repo root `Stackdose.App.SingleDetailLab/README_SINGLE_PAGE_QUICKSTART.md`'

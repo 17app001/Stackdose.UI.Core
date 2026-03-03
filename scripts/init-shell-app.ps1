@@ -74,6 +74,26 @@ if (-not (Test-Path $projectFile)) {
 
 [xml]$baseCsprojXml = Get-Content -Path $projectFile -Raw
 $baseProjectNode = $baseCsprojXml.Project
+$requiresCsprojSave = $false
+
+$propertyGroupNode = $baseCsprojXml.SelectSingleNode('/Project/PropertyGroup[1]')
+if ($null -eq $propertyGroupNode) {
+    $propertyGroupNode = $baseCsprojXml.CreateElement("PropertyGroup")
+    $baseProjectNode.PrependChild($propertyGroupNode) | Out-Null
+    $requiresCsprojSave = $true
+}
+
+$platformTargetNode = $baseCsprojXml.SelectSingleNode('/Project/PropertyGroup[1]/PlatformTarget')
+if ($null -eq $platformTargetNode) {
+    $platformTargetNode = $baseCsprojXml.CreateElement("PlatformTarget")
+    $platformTargetNode.InnerText = "x64"
+    $propertyGroupNode.AppendChild($platformTargetNode) | Out-Null
+    $requiresCsprojSave = $true
+} elseif ($platformTargetNode.InnerText -ne "x64") {
+    $platformTargetNode.InnerText = "x64"
+    $requiresCsprojSave = $true
+}
+
 $configCopyNode = $baseCsprojXml.SelectSingleNode('/Project/ItemGroup/None[@Update="Config\\*.json"]')
 if ($null -eq $configCopyNode) {
     $copyGroup = $baseCsprojXml.CreateElement("ItemGroup")
@@ -84,6 +104,10 @@ if ($null -eq $configCopyNode) {
     $noneNode.AppendChild($copyNode) | Out-Null
     $copyGroup.AppendChild($noneNode) | Out-Null
     $baseProjectNode.AppendChild($copyGroup) | Out-Null
+    $requiresCsprojSave = $true
+}
+
+if ($requiresCsprojSave) {
     $baseCsprojXml.Save($projectFile)
 }
 

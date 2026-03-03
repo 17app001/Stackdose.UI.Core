@@ -1,10 +1,10 @@
-using Stackdose.UI.Core.Controls;
+﻿using Stackdose.UI.Core.Controls;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace Stackdose.UI.Templates.Pages;
+namespace Stackdose.App.VerifySinglePageVmTmp.Pages;
 
 public partial class SingleDetailWorkspacePage : UserControl
 {

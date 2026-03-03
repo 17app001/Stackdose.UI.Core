@@ -1,15 +1,13 @@
-using Stackdose.UI.Core.Controls;
+﻿using Stackdose.UI.Core.Controls;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace Stackdose.UI.Templates.Pages;
+namespace Stackdose.App.VerifySinglePageTmp.Pages;
 
 public partial class SingleDetailWorkspacePage : UserControl
 {
-    public event EventHandler? SecuredSampleButtonClicked;
-
     public SingleDetailWorkspacePage()
     {
         InitializeComponent();
@@ -85,6 +83,10 @@ public partial class SingleDetailWorkspacePage : UserControl
 
     private void OnSecuredSampleButtonClick(object sender, RoutedEventArgs e)
     {
-        SecuredSampleButtonClicked?.Invoke(this, EventArgs.Empty);
+        CyberMessageBox.Show(
+            message: "SecuredButton click event triggered successfully.",
+            title: "SecuredButton Sample",
+            buttons: MessageBoxButton.OK,
+            icon: MessageBoxImage.Information);
     }
 }

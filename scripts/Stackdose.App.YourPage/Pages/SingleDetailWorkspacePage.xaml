@@ -1,0 +1,97 @@
+﻿<UserControl x:Class="Stackdose.App.YourPage.Pages.SingleDetailWorkspacePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:core="http://schemas.stackdose.com/wpf"
+             xmlns:templateControls="clr-namespace:Stackdose.UI.Templates.Controls;assembly=Stackdose.UI.Templates"
+             mc:Ignorable="d"
+             d:DesignHeight="900"
+             d:DesignWidth="1400">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Templates;component/Resources/CommonColors.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Background="{DynamicResource Surface.Bg.Page}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Background="{DynamicResource Surface.Bg.Panel}"
+                BorderBrush="{DynamicResource Surface.Border.Default}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12"
+                Margin="0,0,0,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0">
+                    <TextBlock Text="Detail + PLC Lab"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock x:Name="MachineSummaryText"
+                               Margin="0,4,0,10"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                </StackPanel>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="3*" />
+                    </Grid.ColumnDefinitions>
+
+                    <core:PlcStatus x:Name="TopPlcStatus"
+                                    Grid.Column="0"
+                                    Height="58"
+                                    IsGlobal="True"
+                                    ShowBorder="True"
+                                    AutoConnect="False"/>
+
+                    <Border Grid.Column="1" Background="Transparent"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1"
+                Background="{DynamicResource Surface.Bg.Panel}"
+                BorderBrush="{DynamicResource Surface.Border.Default}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Text="Design this area in Visual Studio Designer."
+                           Margin="0,0,0,12"
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+
+                    <templateControls:GroupBoxBlock Grid.Column="0" Header="Control Group A" BadgeText="60%" GroupPadding="10" />
+                    <templateControls:GroupBoxBlock Grid.Column="2" Header="Control Group B" BadgeText="40%" GroupPadding="10" />
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

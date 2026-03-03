@@ -145,6 +145,16 @@
                                                DataType="Bit"
                                                ShowFrame="True"
                                                Margin="0,0,12,12"/>
+
+                                <core:SecuredButton Grid.Row="3"
+                                                    Grid.Column="0"
+                                                    Width="180"
+                                                    Height="40"
+                                                    Content="Secured Test Button"
+                                                    Theme="Info"
+                                                    RequiredLevel="Operator"
+                                                    OperationName="Single Page Secured Test"
+                                                    Click="OnSecuredSampleButtonClick" />
                             </Grid>
                         </templateControls:GroupBoxBlock.GroupContent>
                     </templateControls:GroupBoxBlock>

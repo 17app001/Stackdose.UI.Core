@@ -9,16 +9,7 @@ param(
 
     [switch]$SinglePageDesigner,
 
-    [switch]$SinglePageDesignerLocalEditable,
-
-    [ValidateSet("ThreeColumn", "TwoColumn64", "TwoByTwo")]
-    [string]$DesignerLayoutPreset = "ThreeColumn",
-
-    [ValidateRange(1, 20)]
-    [int]$DesignerSplitLeftWeight = 3,
-
-    [ValidateRange(1, 20)]
-    [int]$DesignerSplitRightWeight = 2
+    [switch]$SinglePageDesignerLocalEditable
 )
 
 Set-StrictMode -Version Latest
@@ -89,107 +80,7 @@ if ($null -eq $configCopyNode) {
 
 $singlePageMode = $SinglePageDesigner -or $SinglePageDesignerLocalEditable
 
-$leftRatioPercent = [Math]::Round(($DesignerSplitLeftWeight * 100.0) / ($DesignerSplitLeftWeight + $DesignerSplitRightWeight))
-$rightRatioPercent = 100 - $leftRatioPercent
-
-$designerLayoutMarkup = switch ($DesignerLayoutPreset) {
-    "TwoColumn64" {
-@"
-                <Grid Grid.Row="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="$($DesignerSplitLeftWeight)*" />
-                        <ColumnDefinition Width="12" />
-                        <ColumnDefinition Width="$($DesignerSplitRightWeight)*" />
-                    </Grid.ColumnDefinitions>
-
-                    <templateControls:GroupBoxBlock Grid.Column="0" Header="Control Group A" BadgeText="$($leftRatioPercent)%" GroupPadding="10">
-                        <templateControls:GroupBoxBlock.GroupContent>
-                            <core:SecuredButton Width="180"
-                                                Height="40"
-                                                Content="Secured Test Button"
-                                                Theme="Info"
-                                                RequiredLevel="Operator"
-                                                OperationName="Single Page Secured Test"
-                                                Click="OnSecuredSampleButtonClick" />
-                        </templateControls:GroupBoxBlock.GroupContent>
-                    </templateControls:GroupBoxBlock>
-                    <templateControls:GroupBoxBlock Grid.Column="2" Header="Control Group B" BadgeText="$($rightRatioPercent)%" GroupPadding="10" />
-                </Grid>
-"@
-    }
-    "TwoByTwo" {
-@"
-                <Grid Grid.Row="1">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="12" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="12" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <templateControls:GroupBoxBlock Grid.Column="0" Header="Top Left" BadgeText="Group A" GroupPadding="10">
-                            <templateControls:GroupBoxBlock.GroupContent>
-                                <core:SecuredButton Width="180"
-                                                    Height="40"
-                                                    Content="Secured Test Button"
-                                                    Theme="Info"
-                                                    RequiredLevel="Operator"
-                                                    OperationName="Single Page Secured Test"
-                                                    Click="OnSecuredSampleButtonClick" />
-                            </templateControls:GroupBoxBlock.GroupContent>
-                        </templateControls:GroupBoxBlock>
-                        <templateControls:GroupBoxBlock Grid.Column="2" Header="Top Right" BadgeText="Group B" GroupPadding="10" />
-                    </Grid>
-                    <Grid Grid.Row="2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="12" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <templateControls:GroupBoxBlock Grid.Column="0" Header="Bottom Left" BadgeText="Group C" GroupPadding="10" />
-                        <templateControls:GroupBoxBlock Grid.Column="2" Header="Bottom Right" BadgeText="Group D" GroupPadding="10" />
-                    </Grid>
-                </Grid>
-"@
-    }
-    default {
-@"
-                <Grid Grid.Row="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="12" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="12" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <templateControls:GroupBoxBlock Grid.Column="0" Header="Control Group A" BadgeText="Primary" GroupPadding="10">
-                        <templateControls:GroupBoxBlock.GroupContent>
-                            <core:SecuredButton Width="180"
-                                                Height="40"
-                                                Content="Secured Test Button"
-                                                Theme="Info"
-                                                RequiredLevel="Operator"
-                                                OperationName="Single Page Secured Test"
-                                                Click="OnSecuredSampleButtonClick" />
-                        </templateControls:GroupBoxBlock.GroupContent>
-                    </templateControls:GroupBoxBlock>
-                    <templateControls:GroupBoxBlock Grid.Column="2" Header="Control Group B" BadgeText="Drop Here" GroupPadding="10" />
-                    <templateControls:GroupBoxBlock Grid.Column="4" Header="Control Group C" BadgeText="Drop Here" GroupPadding="10" />
-                </Grid>
-"@
-    }
-}
-
 if ($singlePageMode) {
-    if (-not $SinglePageDesignerLocalEditable -and $DesignerLayoutPreset -ne "ThreeColumn") {
-        Write-Warning "DesignerLayoutPreset applies to -SinglePageDesignerLocalEditable. Template mode keeps default layout."
-    }
-
     [xml]$csprojXml = Get-Content -Path $projectFile -Raw
     $projectNode = $csprojXml.Project
 
@@ -262,8 +153,8 @@ public partial class App : Application
         WindowStyle="None"
         ResizeMode="CanResize">
     <Templates:SinglePageContainer x:Name="MainShell"
-                                   HeaderDeviceName="{Binding HeaderDeviceName}"
-                                   PageTitle="{Binding PageTitle}"
+                                   HeaderDeviceName="SINGLE-DESIGNER"
+                                   PageTitle="Single Detail Designer"
                                    CloseRequested="MainShell_OnCloseRequested"
                                    MinimizeRequested="MainShell_OnMinimizeRequested"
                                    LogoutRequested="MainShell_OnLogoutRequested">
@@ -361,7 +252,19 @@ public partial class App : Application
                            Margin="0,0,0,12"
                            Foreground="{DynamicResource TextSecondaryBrush}"/>
 
-$designerLayoutMarkup
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <templateControls:GroupBoxBlock Grid.Column="0" Header="Control Group A" BadgeText="Primary" GroupPadding="10" />
+                    <templateControls:GroupBoxBlock Grid.Column="2" Header="Control Group B" BadgeText="Drop Here" GroupPadding="10" />
+                    <templateControls:GroupBoxBlock Grid.Column="4" Header="Control Group C" BadgeText="Drop Here" GroupPadding="10" />
+                </Grid>
             </Grid>
         </Border>
     </Grid>
@@ -369,33 +272,18 @@ $designerLayoutMarkup
 "@ | Set-Content -Path (Join-Path $pagesDir "SingleDetailWorkspacePage.xaml") -Encoding UTF8
 
         @"
-using Stackdose.UI.Core.Controls;
-using System.Collections.Generic;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 
 namespace $AppName.Pages;
 
 public partial class SingleDetailWorkspacePage : UserControl
 {
-    public event EventHandler? SecuredSampleButtonClicked;
-
     public SingleDetailWorkspacePage()
     {
         InitializeComponent();
     }
 
-    public void Initialize(
-        string machineName,
-        string machineId,
-        string plcIp,
-        int plcPort,
-        int scanIntervalMs,
-        bool autoConnect,
-        string monitorAddress,
-        string sensorConfigPath,
-        string alarmConfigPath)
+    public void Initialize(string machineName, string machineId, string plcIp, int plcPort, int scanIntervalMs, bool autoConnect, string monitorAddress)
     {
         MachineSummaryText.Text = $"Machine: {machineName} ({machineId})";
         TopPlcStatus.IpAddress = plcIp;
@@ -403,60 +291,6 @@ public partial class SingleDetailWorkspacePage : UserControl
         TopPlcStatus.ScanInterval = scanIntervalMs;
         TopPlcStatus.AutoConnect = autoConnect;
         TopPlcStatus.MonitorAddress = monitorAddress;
-
-        BindViewerConfigs(sensorConfigPath, alarmConfigPath);
-    }
-
-    private void BindViewerConfigs(string sensorConfigPath, string alarmConfigPath)
-    {
-        foreach (var viewer in FindVisualChildren<SensorViewer>(this))
-        {
-            if (string.IsNullOrWhiteSpace(viewer.ConfigFile))
-            {
-                viewer.ConfigFile = sensorConfigPath;
-            }
-        }
-
-        foreach (var viewer in FindVisualChildren<AlarmViewer>(this))
-        {
-            if (string.IsNullOrWhiteSpace(viewer.ConfigFile))
-            {
-                viewer.ConfigFile = alarmConfigPath;
-            }
-
-            if (viewer.TargetStatus == null)
-            {
-                viewer.TargetStatus = TopPlcStatus;
-            }
-        }
-    }
-
-    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject root) where T : DependencyObject
-    {
-        if (root == null)
-        {
-            yield break;
-        }
-
-        var childCount = VisualTreeHelper.GetChildrenCount(root);
-        for (var i = 0; i < childCount; i++)
-        {
-            var child = VisualTreeHelper.GetChild(root, i);
-            if (child is T typed)
-            {
-                yield return typed;
-            }
-
-            foreach (var descendant in FindVisualChildren<T>(child))
-            {
-                yield return descendant;
-            }
-        }
-    }
-
-    private void OnSecuredSampleButtonClick(object sender, RoutedEventArgs e)
-    {
-        SecuredSampleButtonClicked?.Invoke(this, EventArgs.Empty);
     }
 }
 "@ | Set-Content -Path (Join-Path $pagesDir "SingleDetailWorkspacePage.xaml.cs") -Encoding UTF8
@@ -476,8 +310,8 @@ public partial class SingleDetailWorkspacePage : UserControl
         WindowStyle="None"
         ResizeMode="CanResize">
     <Templates:SinglePageContainer x:Name="MainShell"
-                                   HeaderDeviceName="{Binding HeaderDeviceName}"
-                                   PageTitle="{Binding PageTitle}"
+                                   HeaderDeviceName="SINGLE-DESIGNER"
+                                   PageTitle="Single Detail Designer"
                                    CloseRequested="MainShell_OnCloseRequested"
                                    MinimizeRequested="MainShell_OnMinimizeRequested"
                                    LogoutRequested="MainShell_OnLogoutRequested">
@@ -492,179 +326,65 @@ public partial class SingleDetailWorkspacePage : UserControl
     $workspaceUsing = if ($SinglePageDesignerLocalEditable) { "using $AppName.Pages;" } else { "" }
     $workspaceType = if ($SinglePageDesignerLocalEditable) { "SingleDetailWorkspacePage" } else { "Stackdose.UI.Templates.Pages.SingleDetailWorkspacePage" }
 
-    @"
+@"
+using System.IO;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Input;
 $workspaceUsing
-using $AppName.Services;
-using $AppName.ViewModels;
 
 namespace $AppName;
 
 public partial class MainWindow : Window
 {
-    private readonly MainWindowViewModel _viewModel;
-
     public MainWindow()
     {
         InitializeComponent();
-
-        _viewModel = new MainWindowViewModel(
-            runtimeService: new SinglePageRuntimeService("$AppName"),
-            closeAction: Close,
-            minimizeAction: () => WindowState = WindowState.Minimized);
-
-        DataContext = _viewModel;
+        MainShell.MinimizeCommand = new ActionCommand(_ => WindowState = WindowState.Minimized);
         Loaded += OnLoaded;
-        Closed += OnClosed;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        if (!_viewModel.TryInitialize(out var runtime))
-        {
-            return;
-        }
-
-        if (MainShell.ShellContent is $workspaceType page)
-        {
-            page.Initialize(
-                runtime.MachineName,
-                runtime.MachineId,
-                runtime.Ip,
-                runtime.Port,
-                runtime.PollIntervalMs,
-                runtime.AutoConnect,
-                runtime.MonitorAddress,
-                runtime.SensorConfigPath,
-                runtime.AlarmConfigPath);
-
-            page.SecuredSampleButtonClicked -= OnSecuredSampleButtonClicked;
-            page.SecuredSampleButtonClicked += OnSecuredSampleButtonClicked;
-        }
-
-        _viewModel.AttachEvents();
-    }
-
-    private void OnClosed(object? sender, EventArgs e)
-    {
-        if (MainShell.ShellContent is $workspaceType page)
-        {
-            page.SecuredSampleButtonClicked -= OnSecuredSampleButtonClicked;
-        }
-
-        _viewModel.DetachEvents();
-    }
-
-    private void OnSecuredSampleButtonClicked(object? sender, EventArgs e) => _viewModel.SecuredSampleButtonCommand.Execute(null);
-
-    private void MainShell_OnLogoutRequested(object? sender, EventArgs e) => _viewModel.LogoutCommand.Execute(null);
-    private void MainShell_OnMinimizeRequested(object? sender, EventArgs e) => _viewModel.MinimizeCommand.Execute(null);
-    private void MainShell_OnCloseRequested(object? sender, EventArgs e) => _viewModel.CloseCommand.Execute(null);
-}
-"@ | Set-Content -Path (Join-Path $projectDir "MainWindow.xaml.cs") -Encoding UTF8
-
-    $servicesDir = Join-Path $projectDir "Services"
-    New-Item -ItemType Directory -Path $servicesDir -Force | Out-Null
-    @"
-using System.IO;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-
-namespace $AppName.Services;
-
-internal sealed class SinglePageRuntimeService
-{
-    private readonly string _projectFolderName;
-
-    public SinglePageRuntimeService(string projectFolderName)
-    {
-        _projectFolderName = projectFolderName;
-    }
-
-    public bool TryLoad(out SinglePageRuntimeConfig runtime)
-    {
-        runtime = default;
-
         var configPath = ResolveConfigPath();
         if (!File.Exists(configPath))
         {
-            return false;
+            return;
         }
 
         using var doc = JsonDocument.Parse(File.ReadAllText(configPath));
         var root = doc.RootElement;
 
-        if (!root.TryGetProperty("machine", out var machine) || !root.TryGetProperty("plc", out var plc))
-        {
-            return false;
-        }
-
-        var machineName = machine.TryGetProperty("name", out var nameElement) ? nameElement.GetString() ?? "Machine" : "Machine";
-        var machineId = machine.TryGetProperty("id", out var idElement) ? idElement.GetString() ?? "M1" : "M1";
-        var ip = plc.TryGetProperty("ip", out var ipElement) ? ipElement.GetString() ?? "127.0.0.1" : "127.0.0.1";
-        var port = plc.TryGetProperty("port", out var portElement) && portElement.TryGetInt32(out var portValue) ? portValue : 5000;
-        var interval = plc.TryGetProperty("pollIntervalMs", out var intervalElement) && intervalElement.TryGetInt32(out var intervalValue) ? intervalValue : 150;
+        var machine = root.GetProperty("machine");
+        var plc = root.GetProperty("plc");
+        var machineName = machine.GetProperty("name").GetString() ?? "Machine";
+        var machineId = machine.GetProperty("id").GetString() ?? "M1";
+        var ip = plc.GetProperty("ip").GetString() ?? "127.0.0.1";
+        var port = plc.GetProperty("port").GetInt32();
+        var interval = plc.GetProperty("pollIntervalMs").GetInt32();
         var autoConnect = !plc.TryGetProperty("autoConnect", out var autoElement) || autoElement.GetBoolean();
-        var sensorConfigFile = root.TryGetProperty("sensorConfigFile", out var sensorElement) && sensorElement.ValueKind == JsonValueKind.String
-            ? sensorElement.GetString() ?? "Config/Machine1.sensors.json"
-            : "Config/Machine1.sensors.json";
-        var alarmConfigFile = root.TryGetProperty("alarmConfigFile", out var alarmElement) && alarmElement.ValueKind == JsonValueKind.String
-            ? alarmElement.GetString() ?? "Config/Machine1.alarms.json"
-            : "Config/Machine1.alarms.json";
-        var sensorConfigPath = ResolveCompanionConfigPath(configPath, sensorConfigFile);
-        var alarmConfigPath = ResolveCompanionConfigPath(configPath, alarmConfigFile);
-
         var monitorAddress = BuildMonitorAddress(root);
-        if (plc.TryGetProperty("manualMonitorAddress", out var manualMonitor) && manualMonitor.ValueKind == JsonValueKind.String)
+
+        if (MainShell.ShellContent is $workspaceType page)
         {
-            var manual = manualMonitor.GetString()?.Trim();
-            if (!string.IsNullOrWhiteSpace(manual))
-            {
-                monitorAddress = string.IsNullOrWhiteSpace(monitorAddress)
-                    ? manual
-                    : $"{monitorAddress},{manual}";
-            }
+            page.Initialize(machineName, machineId, ip, port, interval, autoConnect, monitorAddress);
         }
 
-        runtime = new SinglePageRuntimeConfig(machineName, machineId, ip, port, interval, autoConnect, monitorAddress, sensorConfigPath, alarmConfigPath);
-        return true;
+        MainShell.HeaderDeviceName = machineName;
+        MainShell.PageTitle = $"{machineName} - Single Detail";
     }
 
-    private static string ResolveCompanionConfigPath(string mainConfigPath, string configuredPath)
-    {
-        if (string.IsNullOrWhiteSpace(configuredPath))
-        {
-            return configuredPath;
-        }
+    private void MainShell_OnLogoutRequested(object? sender, EventArgs e) => Close();
+    private void MainShell_OnMinimizeRequested(object? sender, EventArgs e) => WindowState = WindowState.Minimized;
+    private void MainShell_OnCloseRequested(object? sender, EventArgs e) => Close();
 
-        var normalized = configuredPath.Replace('/', Path.DirectorySeparatorChar);
-        if (Path.IsPathRooted(normalized))
-        {
-            return normalized;
-        }
-
-        var baseCandidate = Path.Combine(AppContext.BaseDirectory, normalized);
-        if (File.Exists(baseCandidate))
-        {
-            return baseCandidate;
-        }
-
-        var configDir = Path.GetDirectoryName(mainConfigPath) ?? AppContext.BaseDirectory;
-        if (normalized.StartsWith($"Config{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
-        {
-            var projectRoot = Directory.GetParent(configDir)?.FullName ?? configDir;
-            return Path.Combine(projectRoot, normalized);
-        }
-
-        return Path.Combine(configDir, normalized);
-    }
-
-    private string ResolveConfigPath()
+    private static string ResolveConfigPath()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
         for (var depth = 0; depth < 10 && current != null; depth++)
         {
-            var projectConfig = Path.Combine(current.FullName, _projectFolderName, "Config", "Machine1.config.json");
+            var projectConfig = Path.Combine(current.FullName, "$AppName", "Config", "Machine1.config.json");
             if (File.Exists(projectConfig))
             {
                 return projectConfig;
@@ -673,14 +393,20 @@ internal sealed class SinglePageRuntimeService
             current = current.Parent;
         }
 
-        return Path.Combine(AppContext.BaseDirectory, "Config", "Machine1.config.json");
+        var outputConfig = Path.Combine(AppContext.BaseDirectory, "Config", "Machine1.config.json");
+        if (File.Exists(outputConfig))
+        {
+            return outputConfig;
+        }
+
+        return outputConfig;
     }
 
     private static string BuildMonitorAddress(JsonElement root)
     {
         if (!root.TryGetProperty("tags", out var tags) || tags.ValueKind != JsonValueKind.Object)
         {
-            return string.Empty;
+            return "D400,40";
         }
 
         var expanded = new List<(string Prefix, int Number, string Raw)>();
@@ -689,7 +415,7 @@ internal sealed class SinglePageRuntimeService
 
         if (expanded.Count == 0)
         {
-            return string.Empty;
+            return "D400,40";
         }
 
         var sorted = expanded
@@ -771,7 +497,8 @@ internal sealed class SinglePageRuntimeService
 
             for (var i = 0; i < length; i++)
             {
-                result.Add((baseAddress.Value.Prefix, baseAddress.Value.Number + i, $"{baseAddress.Value.Prefix}{baseAddress.Value.Number + i}"));
+                var next = (baseAddress.Value.Prefix, baseAddress.Value.Number + i, $"{baseAddress.Value.Prefix}{baseAddress.Value.Number + i}");
+                result.Add(next);
             }
         }
     }
@@ -784,157 +511,19 @@ internal sealed class SinglePageRuntimeService
             return null;
         }
 
-        return int.TryParse(match.Groups[2].Value, out var number)
-            ? (match.Groups[1].Value.ToUpperInvariant(), number)
-            : null;
-    }
-}
-
-internal readonly record struct SinglePageRuntimeConfig(
-    string MachineName,
-    string MachineId,
-    string Ip,
-    int Port,
-    int PollIntervalMs,
-    bool AutoConnect,
-    string MonitorAddress,
-    string SensorConfigPath,
-    string AlarmConfigPath);
-"@ | Set-Content -Path (Join-Path $servicesDir "SinglePageRuntimeService.cs") -Encoding UTF8
-
-    $viewModelsDir = Join-Path $projectDir "ViewModels"
-    New-Item -ItemType Directory -Path $viewModelsDir -Force | Out-Null
-    @"
-using $AppName.Services;
-using Stackdose.UI.Core.Controls;
-using Stackdose.UI.Core.Helpers;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Windows;
-using System.Windows.Input;
-
-namespace $AppName.ViewModels;
-
-internal sealed class MainWindowViewModel : INotifyPropertyChanged
-{
-    private readonly SinglePageRuntimeService _runtimeService;
-    private string _headerDeviceName = "SINGLE-DESIGNER";
-    private string _pageTitle = "Single Detail Designer";
-
-    public MainWindowViewModel(SinglePageRuntimeService runtimeService, Action closeAction, Action minimizeAction)
-    {
-        _runtimeService = runtimeService;
-        CloseCommand = new RelayCommand(_ => closeAction());
-        LogoutCommand = new RelayCommand(_ => closeAction());
-        MinimizeCommand = new RelayCommand(_ => minimizeAction());
-        SecuredSampleButtonCommand = new RelayCommand(_ => ShowSecuredSampleMessage());
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    public ICommand CloseCommand { get; }
-    public ICommand LogoutCommand { get; }
-    public ICommand MinimizeCommand { get; }
-    public ICommand SecuredSampleButtonCommand { get; }
-
-    public string HeaderDeviceName
-    {
-        get => _headerDeviceName;
-        private set
+        if (!int.TryParse(match.Groups[2].Value, out var number))
         {
-            if (_headerDeviceName == value) return;
-            _headerDeviceName = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public string PageTitle
-    {
-        get => _pageTitle;
-        private set
-        {
-            if (_pageTitle == value) return;
-            _pageTitle = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public bool TryInitialize(out SinglePageRuntimeConfig runtime)
-    {
-        if (!_runtimeService.TryLoad(out runtime))
-        {
-            return false;
+            return null;
         }
 
-        HeaderDeviceName = runtime.MachineName;
-        PageTitle = $"{runtime.MachineName} - Single Detail";
-        return true;
+        return (match.Groups[1].Value.ToUpperInvariant(), number);
     }
 
-    public void AttachEvents()
-    {
-        PlcEventContext.EventTriggered -= OnPlcEventTriggered;
-        PlcEventContext.EventTriggered += OnPlcEventTriggered;
-    }
-
-    public void DetachEvents()
-    {
-        PlcEventContext.EventTriggered -= OnPlcEventTriggered;
-    }
-
-    private void OnPlcEventTriggered(object? sender, PlcEventTriggeredEventArgs e)
-    {
-        if (string.IsNullOrWhiteSpace(e.EventName))
-        {
-            return;
-        }
-
-        HandlePlcEvent(e.EventName, e);
-    }
-
-    private void HandlePlcEvent(string eventName, PlcEventTriggeredEventArgs e)
-    {
-        switch (eventName.Trim().ToLowerInvariant())
-        {
-            case "recipestart":
-                ShowEventMessage("RecipeStart", e.Address);
-                break;
-            default:
-                ShowEventMessage(eventName, e.Address);
-                break;
-        }
-    }
-
-    private void ShowEventMessage(string eventName, string address)
-    {
-        var timestamp = DateTime.Now.ToString("HH:mm:ss");
-        PageTitle = $"{HeaderDeviceName} - {eventName} @ {timestamp}";
-        CyberMessageBox.Show(
-            message: $"PLC Event Triggered\nName: {eventName}\nAddress: {address}\nTime: {timestamp}",
-            title: "PLC Event",
-            buttons: MessageBoxButton.OK,
-            icon: MessageBoxImage.Information);
-    }
-
-    private void ShowSecuredSampleMessage()
-    {
-        CyberMessageBox.Show(
-            message: "SecuredButton click event triggered via MainWindowViewModel.",
-            title: "SecuredButton Sample",
-            buttons: MessageBoxButton.OK,
-            icon: MessageBoxImage.Information);
-    }
-
-    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
-    private sealed class RelayCommand : ICommand
+    private sealed class ActionCommand : ICommand
     {
         private readonly Action<object?> _execute;
 
-        public RelayCommand(Action<object?> execute)
+        public ActionCommand(Action<object?> execute)
         {
             _execute = execute;
         }
@@ -950,7 +539,7 @@ internal sealed class MainWindowViewModel : INotifyPropertyChanged
         public void Execute(object? parameter) => _execute(parameter);
     }
 }
-"@ | Set-Content -Path (Join-Path $viewModelsDir "MainWindowViewModel.cs") -Encoding UTF8
+"@ | Set-Content -Path (Join-Path $projectDir "MainWindow.xaml.cs") -Encoding UTF8
 }
 
 $configDir = Join-Path $projectDir "Config"
@@ -990,8 +579,7 @@ if ($IncludeSecondDemoSampleConfigs) {
     "ip": "192.168.22.39",
     "port": 3000,
     "pollIntervalMs": 150,
-    "autoConnect": false,
-    "manualMonitorAddress": ""
+    "autoConnect": false
   },
   "tags": {
     "status": {
@@ -1034,8 +622,6 @@ if ($singlePageMode) {
    - local editable mode: `Pages/SingleDetailWorkspacePage.xaml`
    - template mode: `Templates:SingleDetailWorkspacePage` inside `MainWindow.xaml`
 3. Drag `UI.Core` controls into Group A/B/C and run.
-4. Optional layout preset at generation: `-DesignerLayoutPreset ThreeColumn|TwoColumn64|TwoByTwo`
-5. For `TwoColumn64`, adjust ratio with: `-DesignerSplitLeftWeight <N> -DesignerSplitRightWeight <N>`
 
 Reference:
 - Repo root `Stackdose.App.SingleDetailLab/README_SINGLE_PAGE_QUICKSTART.md`

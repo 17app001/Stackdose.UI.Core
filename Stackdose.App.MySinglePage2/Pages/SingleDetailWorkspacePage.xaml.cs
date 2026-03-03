@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace Stackdose.UI.Templates.Pages;
+namespace Stackdose.App.MySinglePage2.Pages;
 
 public partial class SingleDetailWorkspacePage : UserControl
 {

@@ -109,11 +109,15 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Background="{DynamicResource Sensor.Bg.Main}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <Border BorderBrush="{DynamicResource Sensor.Border}"
+            BorderThickness="1"
+            CornerRadius="6"
+            Background="{DynamicResource Sensor.Bg.Main}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
         <!-- Header Bar -->
         <Border Grid.Row="0" 
@@ -250,5 +254,6 @@
                            Margin="0,4,0,0"/>
             </StackPanel>
         </Border>
-    </Grid>
+        </Grid>
+    </Border>
 </UserControl>

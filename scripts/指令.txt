@@ -1,0 +1,35 @@
+.\init-shell-app.ps1 `
+  -AppName "Stackdose.App.MySinglePage3" `
+  -DestinationRoot ".." `
+  -SinglePageDesignerLocalEditable
+
+
+.\init-shell-app.ps1 -AppName "Stackdose.App.MySinglePage2" -DestinationRoot . -SinglePageDesignerLocalEditable -DesignerLayoutPreset TwoColumn64
+
+
+.\scripts\init-shell-app.ps1 `
+  -AppName "Stackdose.App.MySinglePage2" `
+  -DestinationRoot "." `
+  -SinglePageDesignerLocalEditable `
+  -DesignerLayoutPreset TwoColumn64 `
+  -DesignerSplitLeftWeight 7 `
+  -DesignerSplitRightWeight 3
+
+.\init-shell-app.ps1 `
+  -AppName "Stackdose.App.MySinglePage1" `
+  -DestinationRoot ".." `
+  -SinglePageDesignerLocalEditable `
+  -DesignerLayoutPreset TwoColumn64 `
+  -DesignerSplitLeftWeight 4 `
+  -DesignerSplitRightWeight 6
+
+.\init-shell-app.ps1 `
+  -AppName "Stackdose.App.MySinglePage2" `
+  -DestinationRoot ".." `
+  -SinglePageDesignerLocalEditable `
+  -DesignerLayoutPreset TwoByTwo `
+
+
+ThreeColumn
+TwoColumn64
+TwoByTwo

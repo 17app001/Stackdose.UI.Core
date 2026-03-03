@@ -1,8 +1,10 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup;
 
 namespace Stackdose.UI.Templates.Controls;
 
+[ContentProperty(nameof(GroupContent))]
 public partial class GroupBoxBlock : UserControl
 {
     public static readonly DependencyProperty HeaderProperty =

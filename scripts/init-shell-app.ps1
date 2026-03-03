@@ -11,7 +11,7 @@ param(
 
     [switch]$SinglePageDesignerLocalEditable,
 
-    [ValidateSet("ThreeColumn", "TwoColumn64", "TwoByTwo")]
+    [ValidateSet("ThreeColumn", "TwoColumn64", "TwoByTwo", "Blank")]
     [string]$DesignerLayoutPreset = "ThreeColumn",
 
     [ValidateRange(1, 20)]
@@ -156,6 +156,72 @@ $designerLayoutMarkup = switch ($DesignerLayoutPreset) {
                 </Grid>
 "@
     }
+    "Blank" {
+@"
+                <Grid Grid.Row="1"
+                      Background="{DynamicResource Surface.Bg.Panel}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="Blank preset. Edit or remove starters as needed."
+                               Margin="0,0,0,12"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+
+                    <Canvas Grid.Row="1"
+                            x:Name="DesignSurface"
+                            ClipToBounds="True"
+                            Background="{DynamicResource Surface.Bg.Page}">
+                        <templateControls:GroupBoxBlock Canvas.Left="24"
+                                                        Canvas.Top="20"
+                                                        Width="540"
+                                                        Height="300"
+                                                        Header="Starter Samples"
+                                                        BadgeText="Edit Me"
+                                                        GroupPadding="10">
+                            <templateControls:GroupBoxBlock.GroupContent>
+                                <StackPanel>
+                                    <core:SecuredButton Width="180"
+                                                        Height="40"
+                                                        Content="Secured Test Button"
+                                                        Theme="Info"
+                                                        RequiredLevel="Operator"
+                                                        OperationName="Single Page Secured Test"
+                                                        Click="OnSecuredSampleButtonClick" />
+
+                                    <TextBlock Margin="0,10,0,0"
+                                               Text="Trigger sample listens to M237 and raises RecipeStart on rising edge."
+                                               TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextSecondaryBrush}" />
+
+                                    <core:PlcEventTrigger Address="M237"
+                                                          EventName="RecipeStart"
+                                                          TriggerCondition="OnRising"
+                                                          AutoClear="True"
+                                                          TargetStatus="{Binding ElementName=TopPlcStatus}" />
+                                </StackPanel>
+                            </templateControls:GroupBoxBlock.GroupContent>
+                        </templateControls:GroupBoxBlock>
+
+                        <templateControls:PanelBlock Canvas.Left="590"
+                                                     Canvas.Top="20"
+                                                     Width="420"
+                                                     Height="230"
+                                                     Title="Tips"
+                                                     BlockPadding="10">
+                            <templateControls:PanelBlock.BlockContent>
+                                <StackPanel>
+                                    <TextBlock Text="- Drag UI.Core controls into this canvas." Margin="0,0,0,6" />
+                                    <TextBlock Text="- Keep PlcEventTrigger in XAML for event handling." TextWrapping="Wrap" />
+                                </StackPanel>
+                            </templateControls:PanelBlock.BlockContent>
+                        </templateControls:PanelBlock>
+                    </Canvas>
+                </Grid>
+"@
+    }
     default {
 @"
                 <Grid Grid.Row="1">
@@ -257,7 +323,7 @@ public partial class App : Application
         mc:Ignorable="d"
         Title="Single Detail Designer"
         Height="900"
-        Width="1600"
+        Width="1800"
         WindowState="Maximized"
         WindowStyle="None"
         ResizeMode="CanResize">
@@ -287,7 +353,7 @@ public partial class App : Application
              xmlns:templateControls="clr-namespace:Stackdose.UI.Templates.Controls;assembly=Stackdose.UI.Templates"
              mc:Ignorable="d"
              d:DesignHeight="900"
-             d:DesignWidth="1400">
+             d:DesignWidth="1800">
 
     <UserControl.Resources>
         <ResourceDictionary>
@@ -471,7 +537,7 @@ public partial class SingleDetailWorkspacePage : UserControl
         mc:Ignorable="d"
         Title="Single Detail Designer"
         Height="900"
-        Width="1600"
+        Width="1800"
         WindowState="Maximized"
         WindowStyle="None"
         ResizeMode="CanResize">
@@ -1026,33 +1092,38 @@ $readmePath = Join-Path $projectDir "SHELL_QUICKSTART.md"
 if ($singlePageMode) {
     $singlePageModeTitle = if ($SinglePageDesignerLocalEditable) { "Single Page Designer (Local Editable Page)" } else { "Single Page Designer" }
 
-    @"
-# Shell Quickstart ($singlePageModeTitle)
+    $singlePageReadme = @(
+        "# Shell Quickstart ($singlePageModeTitle)",
+        '',
+        '1. Edit `Config/Machine1.config.json` for PLC connection and addresses.',
+        '2. Open the designer page in Visual Studio:',
+        '   - local editable mode: `Pages/SingleDetailWorkspacePage.xaml`',
+        '   - template mode: `Templates:SingleDetailWorkspacePage` inside `MainWindow.xaml`',
+        '3. Drag `UI.Core` controls into Group A/B/C and run.',
+        '4. Optional layout preset at generation: `-DesignerLayoutPreset ThreeColumn|TwoColumn64|TwoByTwo|Blank`',
+        '5. For `TwoColumn64`, adjust ratio with: `-DesignerSplitLeftWeight <N> -DesignerSplitRightWeight <N>`',
+        '6. `Blank` preset includes SecuredButton + PlcEventTrigger starters.',
+        '',
+        'Reference:',
+        '- Repo root `Stackdose.App.SingleDetailLab/README_SINGLE_PAGE_QUICKSTART.md`'
+    )
 
-1. Edit `Config/Machine1.config.json` for PLC connection and addresses.
-2. Open the designer page in Visual Studio:
-   - local editable mode: `Pages/SingleDetailWorkspacePage.xaml`
-   - template mode: `Templates:SingleDetailWorkspacePage` inside `MainWindow.xaml`
-3. Drag `UI.Core` controls into Group A/B/C and run.
-4. Optional layout preset at generation: `-DesignerLayoutPreset ThreeColumn|TwoColumn64|TwoByTwo`
-5. For `TwoColumn64`, adjust ratio with: `-DesignerSplitLeftWeight <N> -DesignerSplitRightWeight <N>`
-
-Reference:
-- Repo root `Stackdose.App.SingleDetailLab/README_SINGLE_PAGE_QUICKSTART.md`
-"@ | Set-Content -Path $readmePath -Encoding UTF8
+    ($singlePageReadme -join "`r`n") | Set-Content -Path $readmePath -Encoding UTF8
 } else {
-    @"
-# Shell Quickstart
+    $shellReadme = @(
+        '# Shell Quickstart',
+        '',
+        '1. Configure your app in `Config/app-meta.json`.',
+        '2. Update machine/alarm/sensor json files under `Config/`.',
+        '   - required keys in machine config: alarmConfigFile, sensorConfigFile',
+        '3. Build and run your project.',
+        '',
+        'Reference:',
+        '- Repo root `QUICKSTART.md` (recommended)',
+        '- `Stackdose.UI.Core/Shell/SECOND_APP_QUICKSTART.md` (advanced wiring details)'
+    )
 
-1. Configure your app in `Config/app-meta.json`.
-2. Update machine/alarm/sensor json files under `Config/`.
-   - required keys in machine config: alarmConfigFile, sensorConfigFile
-3. Build and run your project.
-
-Reference:
-- Repo root `QUICKSTART.md` (recommended)
-- `Stackdose.UI.Core/Shell/SECOND_APP_QUICKSTART.md` (advanced wiring details)
-"@ | Set-Content -Path $readmePath -Encoding UTF8
+    ($shellReadme -join "`r`n") | Set-Content -Path $readmePath -Encoding UTF8
 }
 
 Write-Host "[init-shell-app] Done. Generated: $projectDir"

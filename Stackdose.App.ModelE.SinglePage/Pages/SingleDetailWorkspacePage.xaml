@@ -87,7 +87,7 @@
                             x:Name="DesignSurface"
                             ClipToBounds="True"
                             Background="{DynamicResource Surface.Bg.Page}">
-                        <core:SecuredButton Canvas.Left="24"
+                        <core:SecuredButton Canvas.Left="18"
                                             Canvas.Top="20"
                                             Width="180"
                                             Height="40"
@@ -95,7 +95,7 @@
                                             Theme="Info"
                                             RequiredLevel="Operator"
                                             OperationName="Single Page Secured Test"
-                                            Click="OnSecuredSampleButtonClick" />
+                                            Click="OnSecuredSampleButtonClick" HorizontalAlignment="Left" VerticalAlignment="Center" />
 
                         <core:PlcEventTrigger Address="M237"
                                               EventName="RecipeStart"

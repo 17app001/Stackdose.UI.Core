@@ -1,0 +1,25 @@
+﻿<Window x:Class="Stackdose.App.ModelE.SinglePage2.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:Templates="http://schemas.stackdose.com/templates"
+        xmlns:pages="clr-namespace:Stackdose.App.ModelE.SinglePage2.Pages"
+        mc:Ignorable="d"
+        Title="Single Detail Designer"
+        Height="900"
+        Width="1800"
+        WindowState="Maximized"
+        WindowStyle="None"
+        ResizeMode="CanResize">
+    <Templates:SinglePageContainer x:Name="MainShell"
+                                   HeaderDeviceName="{Binding HeaderDeviceName}"
+                                   PageTitle="{Binding PageTitle}"
+                                   CloseRequested="MainShell_OnCloseRequested"
+                                   MinimizeRequested="MainShell_OnMinimizeRequested"
+                                   LogoutRequested="MainShell_OnLogoutRequested">
+        <Templates:SinglePageContainer.ShellContent>
+            <pages:SingleDetailWorkspacePage />
+        </Templates:SinglePageContainer.ShellContent>
+    </Templates:SinglePageContainer>
+</Window>

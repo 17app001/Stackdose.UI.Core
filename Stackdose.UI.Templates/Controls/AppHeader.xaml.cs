@@ -410,6 +410,9 @@ namespace Stackdose.UI.Templates.Controls
                 }
 
                 CloseClicked?.Invoke(this, e);
+
+                // 若外部沒有訂閱 CloseClicked 處理關閉，則自行關閉視窗
+                Window.GetWindow(this)?.Close();
             }
             catch (Exception ex)
             {

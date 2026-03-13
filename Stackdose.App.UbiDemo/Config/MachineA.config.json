@@ -16,6 +16,16 @@
       "D500,4"
     ]
   },
+  "commands": {
+    "start": "M300",
+    "pause": "M301",
+    "stop": "M302"
+  },
+  "processMonitor": {
+    "isRunning": "M201",
+    "isCompleted": "M203",
+    "isAlarm": "M202"
+  },
   "alarmConfigFile": "Config/MachineA/alarms.json",
   "sensorConfigFile": "Config/MachineA/sensors.json",
   "printHeadConfigs": [

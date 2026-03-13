@@ -7,10 +7,21 @@
              mc:Ignorable="d"
              d:DesignWidth="1400"
              d:DesignHeight="900">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Stackdose.App.UbiDemo;component/Resources/DevicePageTemplates.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
     <Grid Background="{DynamicResource Surface.Bg.Page}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+
+        <ContentControl Content="{Binding}"
+                        ContentTemplate="{StaticResource DeviceProcessTriggerTemplate}" />
 
         <Grid Grid.Row="0">
             <Grid.RowDefinitions>
@@ -31,86 +42,10 @@
 
                 <GroupBox Grid.Row="0" Header="Command Operation" Margin="0,0,0,10">
                     <StackPanel Margin="8">
-                        <Border Padding="8"
-                                Margin="0,0,0,8"
-                                CornerRadius="6"
-                                Background="{DynamicResource Surface.Bg.Panel}"
-                                BorderBrush="{DynamicResource Surface.Border.Default}"
-                                BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="Machine"
-                                           Foreground="{DynamicResource Text.Secondary}" />
-                                <TextBlock Text="{Binding MachineName}"
-                                           FontWeight="SemiBold"
-                                           Margin="0,2,0,6" />
-                                <TextBlock Text="Machine ID"
-                                           Foreground="{DynamicResource Text.Secondary}" />
-                                <TextBlock Text="{Binding MachineId}"
-                                           Margin="0,2,0,0" />
-                            </StackPanel>
-                        </Border>
-
-                        <Border Padding="10"
-                                Margin="0,0,0,10"
-                                CornerRadius="8"
-                                Background="{DynamicResource Surface.Bg.Panel}"
-                                BorderBrush="#FF4FD8FF"
-                                BorderThickness="1.5">
-                            <StackPanel>
-                                <TextBlock Text="Command Setup"
-                                           FontSize="13"
-                                           FontWeight="SemiBold"
-                                           Foreground="#FF4FD8FF" />
-                                <TextBlock Text="Current Command"
-                                           Margin="0,8,0,2"
-                                           Foreground="{DynamicResource Text.Secondary}" />
-                                <Border Padding="10,8"
-                                        Margin="0,0,0,10"
-                                        CornerRadius="6"
-                                        Background="#2200B7FF"
-                                        BorderBrush="#664FD8FF"
-                                        BorderThickness="1">
-                                    <TextBlock Text="{Binding SelectedCommandKey}"
-                                               FontSize="15"
-                                               FontWeight="Bold"
-                                               Foreground="#FFFFFFFF" />
-                                </Border>
-
-                                <TextBlock Text="Command Key"
-                                           FontSize="13"
-                                           FontWeight="SemiBold"
-                                           Margin="0,0,0,4" />
-                                <ComboBox ItemsSource="{Binding CommandKeys}"
-                                          SelectedItem="{Binding SelectedCommandKey}"
-                                          MinHeight="36"
-                                          Padding="6,4"
-                                          FontSize="13"
-                                          FontWeight="SemiBold"
-                                          Margin="0,0,0,10" />
-
-                                <TextBlock Text="Parameter"
-                                           FontSize="13"
-                                           FontWeight="SemiBold"
-                                           Margin="0,0,0,4" />
-                                <TextBox Text="{Binding CommandParameter}"
-                                         MinHeight="34"
-                                         Padding="6,4"
-                                         FontSize="13"
-                                         Margin="0,0,0,0" />
-                            </StackPanel>
-                        </Border>
-
-                        <UniformGrid Columns="2" Margin="0,0,0,8">
-                            <core:SecuredButton Content="Start"
-                                                Theme="Success"
-                                                RequiredLevel="Operator"
-                                                OperationName="Start Process"
-                                                Click="StartButton_Click"
-                                                Margin="0,0,6,6" />
-                            <core:SecuredButton Content="Pause/Resume" Theme="Warning" RequiredLevel="Operator" OperationName="Pause Resume" Margin="6,0,0,6" />
-                            <core:SecuredButton Content="Stop" Theme="Error" RequiredLevel="Operator" OperationName="Stop Process" Margin="0,6,6,0" />
-                            <core:SecuredButton Content="Spit Execute" Theme="Warning" RequiredLevel="Operator" OperationName="Spit" Margin="6,6,0,0" />
-                        </UniformGrid>
+                        <ContentControl Content="{Binding}"
+                                        ContentTemplate="{StaticResource DeviceHeaderTemplate}" />
+                        <ContentControl Content="{Binding}"
+                                        ContentTemplate="{StaticResource DeviceCommandTemplate}" />
                     </StackPanel>
                 </GroupBox>
 
@@ -135,10 +70,10 @@
                             <core:PlcLabel Label="電池" Address="{Binding BatteryAddress}" Divisor="10" StringFormat="F1" ShowFrame="True" DefaultValue="0.0" />
                             <core:PlcLabel Label="經過時間" Address="{Binding ElapsedTimeAddress}" ShowFrame="True" DefaultValue="00:00:00" />
                             <core:PlcLabel Label="PrintHead Count" Address="{Binding PrintHeadCountAddress}" ShowFrame="True" DefaultValue="2" />
-                            <core:PlcLabel Label="Batch" Address="{Binding BatchAddress}" ShowFrame="True" DefaultValue="--"/>
-                            <core:PlcLabel Label="Recipe" Address="{Binding RecipeAddress}" ShowFrame="True" DefaultValue="--"/>
-                            <core:PlcLabel Label="Nozzle" Address="{Binding NozzleAddress}" ShowFrame="True" DefaultValue="--"/>
-                            <core:PlcLabel Label="Alarm" Address="{Binding AlarmAddress}" DataType="Bit" ShowFrame="True" DefaultValue="OFF"/>
+                            <core:PlcLabel Label="Batch" Address="{Binding BatchAddress}" ShowFrame="True" DefaultValue="--" />
+                            <core:PlcLabel Label="Recipe" Address="{Binding RecipeAddress}" ShowFrame="True" DefaultValue="--" />
+                            <core:PlcLabel Label="Nozzle" Address="{Binding NozzleAddress}" ShowFrame="True" DefaultValue="--" />
+                            <core:PlcLabel Label="Alarm" Address="{Binding AlarmAddress}" DataType="Bit" ShowFrame="True" DefaultValue="OFF" />
                         </UniformGrid>
                     </ScrollViewer>
                 </GroupBox>

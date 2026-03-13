@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Stackdose.UI.Core.Shell;
 
 namespace Stackdose.App.UbiDemo.Models;
@@ -11,6 +14,8 @@ public sealed class UbiMachineConfig
     public string SensorConfigFile { get; set; } = string.Empty;
     public List<string> PrintHeadConfigs { get; set; } = [];
     public Dictionary<string, string> DetailLabels { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public UbiMachineCommandProfile Commands { get; set; } = new();
+    public UbiProcessMonitorProfile ProcessMonitor { get; set; } = new();
 }
 
 public sealed class UbiMachineInfo
@@ -41,6 +46,20 @@ public sealed class UbiTagConfig
     public string Type { get; set; } = string.Empty;
     public string Access { get; set; } = string.Empty;
     public int Length { get; set; } = 1;
+}
+
+public sealed class UbiMachineCommandProfile
+{
+    public string Start { get; set; } = string.Empty;
+    public string Pause { get; set; } = string.Empty;
+    public string Stop { get; set; } = string.Empty;
+}
+
+public sealed class UbiProcessMonitorProfile
+{
+    public string IsRunning { get; set; } = string.Empty;
+    public string IsCompleted { get; set; } = string.Empty;
+    public string IsAlarm { get; set; } = string.Empty;
 }
 
 public sealed class UbiAppMeta : IShellAppProfile
@@ -87,12 +106,15 @@ public sealed class DeviceContext
     public string RecipeAddress { get; set; } = "--";
     public string NozzleAddress { get; set; } = "--";
     public string RunningAddress { get; set; } = "--";
+    public string CompletedAddress { get; set; } = "--";
     public string AlarmAddress { get; set; } = "--";
+    public string StartCommandAddress { get; set; } = "--";
+    public string PauseCommandAddress { get; set; } = "--";
+    public string StopCommandAddress { get; set; } = "--";
     public string AlarmConfigFile { get; set; } = string.Empty;
     public string SensorConfigFile { get; set; } = string.Empty;
     public string PrintHead1ConfigFile { get; set; } = string.Empty;
     public string PrintHead2ConfigFile { get; set; } = string.Empty;
-
     public string TotalTrayAddress { get; set; } = "D3400";
     public string CurrentTrayAddress { get; set; } = "D33";
     public string TotalLayerAddress { get; set; } = "D3401";

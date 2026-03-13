@@ -13,6 +13,16 @@
      
     ]
   },
+  "commands": {
+    "start": "M320",
+    "pause": "M321",
+    "stop": "M322"
+  },
+  "processMonitor": {
+    "isRunning": "M221",
+    "isCompleted": "M223",
+    "isAlarm": "M222"
+  },
   "alarmConfigFile": "Config/MachineB/alarms.json",
   "sensorConfigFile": "Config/MachineB/sensors.json",
   "printHeadConfigs": [

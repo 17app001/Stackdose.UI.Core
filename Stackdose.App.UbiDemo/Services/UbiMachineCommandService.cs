@@ -20,6 +20,10 @@ internal sealed class UbiMachineCommandService
             ? "(empty)"
             : request.Parameter;
 
-        return $"쨢헕을 Start\n\nMachine: {machineName}\nMachine ID: {machineId}\nCommand Key: {commandKey}\nParameter: {parameter}";
+        var startAddress = string.IsNullOrWhiteSpace(request.StartCommandAddress)
+            ? "--"
+            : request.StartCommandAddress;
+
+        return $"쨢헕을 Start\n\nMachine: {machineName}\nMachine ID: {machineId}\nCommand Key: {commandKey}\nParameter: {parameter}\nStart Address: {startAddress}";
     }
 }

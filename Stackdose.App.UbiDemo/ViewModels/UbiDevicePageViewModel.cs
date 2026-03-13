@@ -1,18 +1,27 @@
 using Stackdose.App.UbiDemo.Models;
 using Stackdose.App.UbiDemo.Services;
+using Stackdose.UI.Core.Controls;
 using System.Collections.ObjectModel;
+using System.Windows;
+using System.Windows.Input;
 
 namespace Stackdose.App.UbiDemo.ViewModels;
 
 public sealed class UbiDevicePageViewModel : ViewModelBase
 {
     private readonly UbiMachineCommandService _machineCommandService;
+    private readonly UbiProcessService _processService;
     private string _machineId = string.Empty;
     private string _machineName = "Machine";
     private string _batchAddress = "--";
     private string _recipeAddress = "--";
     private string _nozzleAddress = "--";
+    private string _runningAddress = "--";
     private string _alarmAddress = "--";
+    private string _completedAddress = "--";
+    private string _startCommandAddress = "--";
+    private string _pauseCommandAddress = "--";
+    private string _stopCommandAddress = "--";
     private string _alarmConfigFile = string.Empty;
     private string _sensorConfigFile = string.Empty;
     private string _printHead1ConfigFile = string.Empty;
@@ -33,16 +42,22 @@ public sealed class UbiDevicePageViewModel : ViewModelBase
     private string _printHeadEditorAddress = "D120";
     private string _printHeadEditorValue = "0";
     private string _printHeadEditorReason = "PrintHead manual operation";
+    private UbiProcessState _currentProcessState = UbiProcessState.Idle;
+    private string _currentProcessStateText = "Idle";
 
     public UbiDevicePageViewModel()
-        : this(new UbiMachineCommandService())
+        : this(new UbiMachineCommandService(), new UbiProcessService())
     {
     }
 
-    internal UbiDevicePageViewModel(UbiMachineCommandService machineCommandService)
+    internal UbiDevicePageViewModel(UbiMachineCommandService machineCommandService, UbiProcessService processService)
     {
         _machineCommandService = machineCommandService;
+        _processService = processService;
+        StartProcessCommand = new RelayCommand(async () => await ExecuteStartProcessAsync());
     }
+
+    public ICommand StartProcessCommand { get; }
 
     public string MachineId
     {
@@ -74,10 +89,40 @@ public sealed class UbiDevicePageViewModel : ViewModelBase
         set => SetProperty(ref _nozzleAddress, value);
     }
 
+    public string RunningAddress
+    {
+        get => _runningAddress;
+        set => SetProperty(ref _runningAddress, value);
+    }
+
     public string AlarmAddress
     {
         get => _alarmAddress;
         set => SetProperty(ref _alarmAddress, value);
+    }
+
+    public string CompletedAddress
+    {
+        get => _completedAddress;
+        set => SetProperty(ref _completedAddress, value);
+    }
+
+    public string StartCommandAddress
+    {
+        get => _startCommandAddress;
+        set => SetProperty(ref _startCommandAddress, value);
+    }
+
+    public string PauseCommandAddress
+    {
+        get => _pauseCommandAddress;
+        set => SetProperty(ref _pauseCommandAddress, value);
+    }
+
+    public string StopCommandAddress
+    {
+        get => _stopCommandAddress;
+        set => SetProperty(ref _stopCommandAddress, value);
     }
 
     public string AlarmConfigFile
@@ -208,15 +253,49 @@ public sealed class UbiDevicePageViewModel : ViewModelBase
         set => SetProperty(ref _printHeadEditorReason, value);
     }
 
+    public UbiProcessState CurrentProcessState
+    {
+        get => _currentProcessState;
+        private set => SetProperty(ref _currentProcessState, value);
+    }
+
+    public string CurrentProcessStateText
+    {
+        get => _currentProcessStateText;
+        private set => SetProperty(ref _currentProcessStateText, value);
+    }
+
     public string BuildStartClickMessage()
     {
-        var request = new UbiMachineCommandRequest(
-            MachineId,
-            MachineName,
-            SelectedCommandKey,
-            CommandParameter);
-
+        var request = BuildCommandRequest();
         return _machineCommandService.BuildStartClickMessage(request);
+    }
+
+    public async Task<UbiProcessExecutionResult> StartProcessAsync()
+    {
+        var result = await _processService.StartProcessAsync(BuildCommandRequest());
+        ApplyProcessState(result.State);
+        return result;
+    }
+
+    public void MarkProcessRunning()
+    {
+        ApplyProcessState(UbiProcessState.Running);
+    }
+
+    public void MarkProcessCompleted()
+    {
+        ApplyProcessState(UbiProcessState.Completed);
+    }
+
+    public void MarkProcessFaulted()
+    {
+        ApplyProcessState(UbiProcessState.Faulted);
+    }
+
+    public void MarkProcessStopped()
+    {
+        ApplyProcessState(UbiProcessState.Stopped);
     }
 
     public void ApplyDeviceContext(DeviceContext context)
@@ -226,7 +305,12 @@ public sealed class UbiDevicePageViewModel : ViewModelBase
         BatchAddress = context.BatchAddress;
         RecipeAddress = context.RecipeAddress;
         NozzleAddress = context.NozzleAddress;
+        RunningAddress = context.RunningAddress;
         AlarmAddress = context.AlarmAddress;
+        CompletedAddress = context.CompletedAddress;
+        StartCommandAddress = context.StartCommandAddress;
+        PauseCommandAddress = context.PauseCommandAddress;
+        StopCommandAddress = context.StopCommandAddress;
         AlarmConfigFile = context.AlarmConfigFile;
         SensorConfigFile = context.SensorConfigFile;
         PrintHead1ConfigFile = context.PrintHead1ConfigFile;
@@ -241,5 +325,36 @@ public sealed class UbiDevicePageViewModel : ViewModelBase
         BatteryAddress = context.BatteryAddress;
         ElapsedTimeAddress = context.ElapsedTimeAddress;
         PrintHeadCountAddress = context.PrintHeadCountAddress;
+        ApplyProcessState(UbiProcessState.Idle);
+    }
+
+    private async Task ExecuteStartProcessAsync()
+    {
+        var result = await StartProcessAsync();
+
+        CyberMessageBox.Show(
+            result.Message,
+            result.Success ? "Start Requested" : "Start Failed",
+            MessageBoxButton.OK,
+            result.Success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+    }
+
+    private UbiMachineCommandRequest BuildCommandRequest()
+    {
+        return new UbiMachineCommandRequest(
+            MachineId,
+            MachineName,
+            SelectedCommandKey,
+            CommandParameter,
+            StartCommandAddress,
+            RunningAddress,
+            CompletedAddress,
+            AlarmAddress);
+    }
+
+    private void ApplyProcessState(UbiProcessState state)
+    {
+        CurrentProcessState = state;
+        CurrentProcessStateText = state.ToString();
     }
 }

@@ -8,6 +8,14 @@ internal static class UbiDeviceContextMapper
     {
         var printHeadConfigs = adapter.GetPrintHeadConfigFiles(config);
 
+        var runningAddress = !string.IsNullOrWhiteSpace(config.ProcessMonitor.IsRunning)
+            ? config.ProcessMonitor.IsRunning
+            : adapter.GetTagAddress(config, "status", "isRunning");
+
+        var alarmAddress = !string.IsNullOrWhiteSpace(config.ProcessMonitor.IsAlarm)
+            ? config.ProcessMonitor.IsAlarm
+            : adapter.GetTagAddress(config, "status", "isAlarm");
+
         return new DeviceContext
         {
             MachineId = config.Machine.Id,
@@ -15,8 +23,12 @@ internal static class UbiDeviceContextMapper
             BatchAddress = adapter.GetTagAddress(config, "process", "batchNo"),
             RecipeAddress = adapter.GetTagAddress(config, "process", "recipeNo"),
             NozzleAddress = adapter.GetTagAddress(config, "process", "nozzleTemp"),
-            RunningAddress = adapter.GetTagAddress(config, "status", "isRunning"),
-            AlarmAddress = adapter.GetTagAddress(config, "status", "isAlarm"),
+            RunningAddress = runningAddress,
+            CompletedAddress = string.IsNullOrWhiteSpace(config.ProcessMonitor.IsCompleted) ? "--" : config.ProcessMonitor.IsCompleted,
+            AlarmAddress = alarmAddress,
+            StartCommandAddress = string.IsNullOrWhiteSpace(config.Commands.Start) ? "--" : config.Commands.Start,
+            PauseCommandAddress = string.IsNullOrWhiteSpace(config.Commands.Pause) ? "--" : config.Commands.Pause,
+            StopCommandAddress = string.IsNullOrWhiteSpace(config.Commands.Stop) ? "--" : config.Commands.Stop,
             AlarmConfigFile = adapter.GetAlarmConfigFile(config),
             SensorConfigFile = adapter.GetSensorConfigFile(config),
             PrintHead1ConfigFile = printHeadConfigs.ElementAtOrDefault(0) ?? string.Empty,

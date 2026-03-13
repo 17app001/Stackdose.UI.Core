@@ -1,8 +1,10 @@
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Helpers.UI;
 using Stackdose.UI.Core.Models;
+using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Stackdose.UI.Core.Controls
@@ -99,6 +101,26 @@ namespace Stackdose.UI.Core.Controls
             set => SetValue(OperationNameProperty, value);
         }
 
+        public static readonly DependencyProperty CommandProperty =
+            DependencyProperty.Register(nameof(Command), typeof(ICommand), typeof(SecuredButton),
+                new PropertyMetadata(null));
+
+        public ICommand? Command
+        {
+            get => (ICommand?)GetValue(CommandProperty);
+            set => SetValue(CommandProperty, value);
+        }
+
+        public static readonly DependencyProperty CommandParameterProperty =
+            DependencyProperty.Register(nameof(CommandParameter), typeof(object), typeof(SecuredButton),
+                new PropertyMetadata(null));
+
+        public object? CommandParameter
+        {
+            get => GetValue(CommandParameterProperty);
+            set => SetValue(CommandParameterProperty, value);
+        }
+
         public static readonly DependencyProperty BackgroundBrushProperty =
             DependencyProperty.Register("BackgroundBrush", typeof(Brush), typeof(SecuredButton),
                 new FrameworkPropertyMetadata(
@@ -171,6 +193,11 @@ namespace Stackdose.UI.Core.Controls
 
                 SecurityContext.CheckAccess(RequiredLevel, operation);
                 return;
+            }
+
+            if (Command?.CanExecute(CommandParameter) == true)
+            {
+                Command.Execute(CommandParameter);
             }
 
             Click?.Invoke(this, e);

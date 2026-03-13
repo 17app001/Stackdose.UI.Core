@@ -31,8 +31,82 @@
 
                 <GroupBox Grid.Row="0" Header="Command Operation" Margin="0,0,0,10">
                     <StackPanel Margin="8">
+                        <Border Padding="8"
+                                Margin="0,0,0,8"
+                                CornerRadius="6"
+                                Background="{DynamicResource Surface.Bg.Panel}"
+                                BorderBrush="{DynamicResource Surface.Border.Default}"
+                                BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="Machine"
+                                           Foreground="{DynamicResource Text.Secondary}" />
+                                <TextBlock Text="{Binding MachineName}"
+                                           FontWeight="SemiBold"
+                                           Margin="0,2,0,6" />
+                                <TextBlock Text="Machine ID"
+                                           Foreground="{DynamicResource Text.Secondary}" />
+                                <TextBlock Text="{Binding MachineId}"
+                                           Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Padding="10"
+                                Margin="0,0,0,10"
+                                CornerRadius="8"
+                                Background="{DynamicResource Surface.Bg.Panel}"
+                                BorderBrush="#FF4FD8FF"
+                                BorderThickness="1.5">
+                            <StackPanel>
+                                <TextBlock Text="Command Setup"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="#FF4FD8FF" />
+                                <TextBlock Text="Current Command"
+                                           Margin="0,8,0,2"
+                                           Foreground="{DynamicResource Text.Secondary}" />
+                                <Border Padding="10,8"
+                                        Margin="0,0,0,10"
+                                        CornerRadius="6"
+                                        Background="#2200B7FF"
+                                        BorderBrush="#664FD8FF"
+                                        BorderThickness="1">
+                                    <TextBlock Text="{Binding SelectedCommandKey}"
+                                               FontSize="15"
+                                               FontWeight="Bold"
+                                               Foreground="#FFFFFFFF" />
+                                </Border>
+
+                                <TextBlock Text="Command Key"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Margin="0,0,0,4" />
+                                <ComboBox ItemsSource="{Binding CommandKeys}"
+                                          SelectedItem="{Binding SelectedCommandKey}"
+                                          MinHeight="36"
+                                          Padding="6,4"
+                                          FontSize="13"
+                                          FontWeight="SemiBold"
+                                          Margin="0,0,0,10" />
+
+                                <TextBlock Text="Parameter"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Margin="0,0,0,4" />
+                                <TextBox Text="{Binding CommandParameter}"
+                                         MinHeight="34"
+                                         Padding="6,4"
+                                         FontSize="13"
+                                         Margin="0,0,0,0" />
+                            </StackPanel>
+                        </Border>
+
                         <UniformGrid Columns="2" Margin="0,0,0,8">
-                            <core:SecuredButton Content="Start" Theme="Success" RequiredLevel="Operator" OperationName="Start Process" Margin="0,0,6,6" />
+                            <core:SecuredButton Content="Start"
+                                                Theme="Success"
+                                                RequiredLevel="Operator"
+                                                OperationName="Start Process"
+                                                Click="StartButton_Click"
+                                                Margin="0,0,6,6" />
                             <core:SecuredButton Content="Pause/Resume" Theme="Warning" RequiredLevel="Operator" OperationName="Pause Resume" Margin="6,0,0,6" />
                             <core:SecuredButton Content="Stop" Theme="Error" RequiredLevel="Operator" OperationName="Stop Process" Margin="0,6,6,0" />
                             <core:SecuredButton Content="Spit Execute" Theme="Warning" RequiredLevel="Operator" OperationName="Spit" Margin="6,6,0,0" />
@@ -51,20 +125,20 @@
                                     <Setter Property="Margin" Value="2" />
                                 </Style>
                             </UniformGrid.Resources>
-                            <core:PlcLabel Label="總盤數" Address="{Binding TotalTrayAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="目前列印盤數" Address="{Binding CurrentTrayAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="總層數" Address="{Binding TotalLayerAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="目前列印層數" Address="{Binding CurrentLayerAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="切換圖形(層)" Address="{Binding SwitchGraphicLayerAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="切換區域(層)" Address="{Binding SwitchAreaLayerAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="MessageID" Address="{Binding MessageIdAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="電池" Address="{Binding BatteryAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" Divisor="10" StringFormat="F1" ShowFrame="True" DefaultValue="0.0" />
-                            <core:PlcLabel Label="經過時間" Address="{Binding ElapsedTimeAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="00:00:00" />
-                            <core:PlcLabel Label="PrintHead Count" Address="{Binding PrintHeadCountAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="2" />
-                            <core:PlcLabel Label="Batch" Address="{Binding BatchAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="--"/>
-                            <core:PlcLabel Label="Recipe" Address="{Binding RecipeAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="--"/>
-                            <core:PlcLabel Label="Nozzle" Address="{Binding NozzleAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" ShowFrame="True" DefaultValue="--"/>
-                            <core:PlcLabel Label="Alarm" Address="{Binding AlarmAddress, RelativeSource={RelativeSource AncestorType=UserControl}}" DataType="Bit" ShowFrame="True" DefaultValue="OFF"/>
+                            <core:PlcLabel Label="總盤數" Address="{Binding TotalTrayAddress}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="目前列印盤數" Address="{Binding CurrentTrayAddress}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="總層數" Address="{Binding TotalLayerAddress}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="目前列印層數" Address="{Binding CurrentLayerAddress}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="切換圖形(層)" Address="{Binding SwitchGraphicLayerAddress}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="切換區域(層)" Address="{Binding SwitchAreaLayerAddress}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="MessageID" Address="{Binding MessageIdAddress}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="電池" Address="{Binding BatteryAddress}" Divisor="10" StringFormat="F1" ShowFrame="True" DefaultValue="0.0" />
+                            <core:PlcLabel Label="經過時間" Address="{Binding ElapsedTimeAddress}" ShowFrame="True" DefaultValue="00:00:00" />
+                            <core:PlcLabel Label="PrintHead Count" Address="{Binding PrintHeadCountAddress}" ShowFrame="True" DefaultValue="2" />
+                            <core:PlcLabel Label="Batch" Address="{Binding BatchAddress}" ShowFrame="True" DefaultValue="--"/>
+                            <core:PlcLabel Label="Recipe" Address="{Binding RecipeAddress}" ShowFrame="True" DefaultValue="--"/>
+                            <core:PlcLabel Label="Nozzle" Address="{Binding NozzleAddress}" ShowFrame="True" DefaultValue="--"/>
+                            <core:PlcLabel Label="Alarm" Address="{Binding AlarmAddress}" DataType="Bit" ShowFrame="True" DefaultValue="OFF"/>
                         </UniformGrid>
                     </ScrollViewer>
                 </GroupBox>
@@ -90,13 +164,13 @@
                             </Grid.ColumnDefinitions>
 
                             <core:PrintHeadStatus HeadName="PrintHead 1"
-                                                  ConfigFilePath="{Binding PrintHead1ConfigFile, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                  ConfigFilePath="{Binding PrintHead1ConfigFile}"
                                                   AutoConnect="False"
                                                   Margin="0,0,8,0" />
 
                             <core:PrintHeadStatus Grid.Column="1"
                                                   HeadName="PrintHead 2"
-                                                  ConfigFilePath="{Binding PrintHead2ConfigFile, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                  ConfigFilePath="{Binding PrintHead2ConfigFile}"
                                                   AutoConnect="False"
                                                   Margin="8,0,0,0" />
                         </Grid>
@@ -110,7 +184,9 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Spit" VerticalAlignment="Center" Margin="0,0,6,0" />
-                            <TextBox Grid.Column="1" Text="0.1,1,1,1" Margin="0,0,8,0" />
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding SpitParameter}"
+                                     Margin="0,0,8,0" />
                             <core:SecuredButton Grid.Column="2" Content="Execute" Theme="Warning" RequiredLevel="Operator" OperationName="Spit" Margin="0,0,8,0" />
                             <core:SecuredButton Grid.Column="3" Content="Grating Reset" Theme="Primary" RequiredLevel="Operator" OperationName="Grating Reset" />
                         </Grid>
@@ -131,9 +207,9 @@
                                                   Height="118"
                                                   MinHeight="0"
                                                   Label="PrintHead Device Editor"
-                                                  Address="D120"
-                                                  Value="0"
-                                                  Reason="PrintHead manual operation"
+                                                  Address="{Binding PrintHeadEditorAddress}"
+                                                  Value="{Binding PrintHeadEditorValue}"
+                                                  Reason="{Binding PrintHeadEditorReason}"
                                                   RequiredLevel="Supervisor"
                                                   EnableAuditTrail="True" />
 
@@ -151,14 +227,14 @@
 
                 <GroupBox Header="Alarm Viewer" Margin="0,0,0,10">
                     <core:AlarmViewer Title="ALM"
-                                      ConfigFile="{Binding AlarmConfigFile, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                      ConfigFile="{Binding AlarmConfigFile}"
                                       ItemFontSize="12"
                                       ShowDeviceAddress="False" />
                 </GroupBox>
 
                 <GroupBox Grid.Row="1" Header="Sensor Viewer">
                     <core:SensorViewer Title="SNR"
-                                       ConfigFile="{Binding SensorConfigFile, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                       ConfigFile="{Binding SensorConfigFile}"
                                        ItemFontSize="12"
                                        ShowDeviceAddress="False"
                                        EnableGrouping="True"

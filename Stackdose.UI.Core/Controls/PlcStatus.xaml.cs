@@ -29,6 +29,31 @@ namespace Stackdose.UI.Core.Controls
         // 🔥 追蹤本次連線已註冊的 monitor 區塊，避免重複註冊
         private readonly HashSet<string> _registeredMonitorKeys = new(StringComparer.OrdinalIgnoreCase);
 
+        // 🔥 預建立靜態 Brush/Effect，避免每次 scan 都 new（GC 壓力 + UI 執行緒負擔）
+        private static readonly SolidColorBrush s_limeGreenBrush = CreateFrozenBrush(Colors.LimeGreen);
+        private static readonly SolidColorBrush s_orangeBrush = CreateFrozenBrush(Colors.Orange);
+        private static readonly SolidColorBrush s_redBrush = CreateFrozenBrush(Colors.Red);
+        private static readonly SolidColorBrush s_grayBrush = CreateFrozenBrush(Colors.Gray);
+        private static readonly DropShadowEffect s_greenGlow = CreateFrozenGlow(Colors.LimeGreen, 15);
+        private static readonly DropShadowEffect s_redGlow = CreateFrozenGlow(Colors.Red, 10);
+
+        private static SolidColorBrush CreateFrozenBrush(Color color)
+        {
+            var brush = new SolidColorBrush(color);
+            brush.Freeze();
+            return brush;
+        }
+
+        private static DropShadowEffect CreateFrozenGlow(Color color, double blurRadius)
+        {
+            var effect = new DropShadowEffect { Color = color, BlurRadius = blurRadius, ShadowDepth = 0 };
+            effect.Freeze();
+            return effect;
+        }
+
+        // 🔥 節流：避免每次 scan 都觸發 UI 更新
+        private string _lastScanInfo = "";
+
         public IPlcManager? CurrentManager => _plcManager;
         
         // 🔥 當 PLC 連線成功時觸發的事件
@@ -127,35 +152,35 @@ namespace Stackdose.UI.Core.Controls
             if (IsGlobal)
             {
                 var existingGlobal = PlcContext.GlobalStatus;
-                
-                // 🔥 情況1: 已有全局實例且已連線，且不是自己
+
+                // 🔥 情況1: 已有全局實例且已連線，且不是自己 → 接管連線
                 if (existingGlobal != null && existingGlobal != this && existingGlobal.CurrentManager?.IsConnected == true)
                 {
                     System.Diagnostics.Debug.WriteLine($"[PlcStatus] Reusing existing connection from {existingGlobal.GetHashCode()}");
-                    
+
                     // 🔥 關鍵：接管 PlcManager（共用同一個連線）
                     _plcManager = existingGlobal.CurrentManager;
-                    
+
                     // 🔥 關鍵：將自己設為新的全局實例（這樣 PlcLabel 才能正確綁定到我）
                     PlcContext.GlobalStatus = this;
-                    
+
                     // 🔥 訂閱 PlcManager 的 ScanElapsedChanged 事件
                     SubscribeToPlcManager();
-                    
+
                     // 更新 UI 狀態
                     UpdateUiState(ConnectionState.Connected);
-                    
+
                     ComplianceContext.LogSystem("[PlcStatus] Took over existing PLC connection", LogLevel.Info, showInUi: false);
-                    
+
                     // 🔥 立即觸發一次 ScanUpdated，讓所有 PlcLabel 能夠讀取數據
                     ScanUpdated?.Invoke(_plcManager);
-                    
+
                     // 🔥 啟動看門狗
                     StartConnectionWatchdog();
-                    
+
                     return;
                 }
-                
+
                 // 🔥 情況2: 沒有全局實例，或全局實例未連線
                 PlcContext.GlobalStatus = this;
                 ComplianceContext.LogSystem("System initialized. Main PLC set.", LogLevel.Info);
@@ -208,14 +233,18 @@ namespace Stackdose.UI.Core.Controls
             {
                 if (Dispatcher.HasShutdownStarted) return;
 
+                // 🔥 節流：避免每次 scan 都觸發 UI 更新
+                if (_lastScanInfo == scanInfo) return;
+                _lastScanInfo = scanInfo;
+
                 Dispatcher.BeginInvoke(() =>
                 {
                     if (Dispatcher.HasShutdownStarted) return;
 
                     StatusText.Text = $"ONLINE ({scanInfo})";
-                    StatusLight.Fill = new SolidColorBrush(Colors.LimeGreen);
-                    StatusLight.Effect = new DropShadowEffect { Color = Colors.LimeGreen, BlurRadius = 15, ShadowDepth = 0 };
-                    StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
+                    StatusLight.Fill = s_limeGreenBrush;
+                    StatusLight.Effect = s_greenGlow;
+                    StatusText.Foreground = s_limeGreenBrush;
 
                     // 在 UI 執行緒上觸發 ScanUpdated
                     ScanUpdated?.Invoke(_plcManager!);
@@ -605,21 +634,21 @@ namespace Stackdose.UI.Core.Controls
             switch (state)
             {
                 case ConnectionState.Connecting: 
-                    StatusLight.Fill = new SolidColorBrush(Colors.Orange); 
+                    StatusLight.Fill = s_orangeBrush; 
                     StatusLight.Effect = null; 
                     StatusText.Text = "CONNECTING..."; 
-                    StatusText.Foreground = new SolidColorBrush(Colors.Gray); 
+                    StatusText.Foreground = s_grayBrush; 
                     break;
                 case ConnectionState.Connected: 
-                    StatusLight.Fill = new SolidColorBrush(Colors.LimeGreen); 
-                    StatusLight.Effect = new DropShadowEffect { Color = Colors.LimeGreen, BlurRadius = 15, ShadowDepth = 0 }; 
+                    StatusLight.Fill = s_limeGreenBrush; 
+                    StatusLight.Effect = s_greenGlow; 
                     StatusText.Text = "CONNECTED"; 
-                    StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen); 
+                    StatusText.Foreground = s_limeGreenBrush; 
                     break;
                 case ConnectionState.Failed: 
-                    StatusLight.Fill = new SolidColorBrush(Colors.Red); 
-                    StatusLight.Effect = new DropShadowEffect { Color = Colors.Red, BlurRadius = 10, ShadowDepth = 0 }; 
-                    StatusText.Foreground = new SolidColorBrush(Colors.Red); 
+                    StatusLight.Fill = s_redBrush; 
+                    StatusLight.Effect = s_redGlow; 
+                    StatusText.Foreground = s_redBrush; 
                     break;
             }
         }

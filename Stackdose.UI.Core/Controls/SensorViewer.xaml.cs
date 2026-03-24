@@ -119,6 +119,18 @@ namespace Stackdose.UI.Core.Controls
             set { SetValue(AutoStartProperty, value); }
         }
 
+        /// <summary>
+        /// 預設是否勾選「Only ON」篩選 (預設 true)
+        /// </summary>
+        public static readonly DependencyProperty DefaultShowActiveOnlyProperty =
+            DependencyProperty.Register("DefaultShowActiveOnly", typeof(bool), typeof(SensorViewer),
+                new PropertyMetadata(true));
+        public bool DefaultShowActiveOnly
+        {
+            get { return (bool)GetValue(DefaultShowActiveOnlyProperty); }
+            set { SetValue(DefaultShowActiveOnlyProperty, value); }
+        }
+
         #endregion
 
         #region 事件處理
@@ -130,6 +142,9 @@ namespace Stackdose.UI.Core.Controls
                 BindSensorList();
                 return;
             }
+
+            // 🔥 套用預設 Only ON 勾選狀態
+            ChkShowAlarmsOnly.IsChecked = DefaultShowActiveOnly;
 
             #if DEBUG
             System.Diagnostics.Debug.WriteLine($"[SensorViewer] Loaded called. SensorStatesInitialized={_sensorStatesInitialized}, ConfigLoaded={_configLoaded}");

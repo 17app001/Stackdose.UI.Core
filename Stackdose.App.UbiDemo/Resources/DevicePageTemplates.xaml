@@ -31,25 +31,6 @@
                     BorderBrush="#FF4FD8FF"
                     BorderThickness="1.5">
                 <StackPanel>
-                    <TextBlock Text="Command Setup"
-                               FontSize="13"
-                               FontWeight="SemiBold"
-                               Foreground="#FF4FD8FF" />
-                    <TextBlock Text="Current Command"
-                               Margin="0,8,0,2"
-                               Foreground="{DynamicResource Text.Secondary}" />
-                    <Border Padding="10,8"
-                            Margin="0,0,0,10"
-                            CornerRadius="6"
-                            Background="#2200B7FF"
-                            BorderBrush="#664FD8FF"
-                            BorderThickness="1">
-                        <TextBlock Text="{Binding SelectedCommandKey}"
-                                   FontSize="15"
-                                   FontWeight="Bold"
-                                   Foreground="#FFFFFFFF" />
-                    </Border>
-
                     <TextBlock Text="Process State"
                                FontSize="13"
                                FontWeight="SemiBold"
@@ -65,27 +46,6 @@
                                    FontWeight="Bold"
                                    Foreground="#FFFFFFFF" />
                     </Border>
-
-                    <TextBlock Text="Command Key"
-                               FontSize="13"
-                               FontWeight="SemiBold"
-                               Margin="0,0,0,4" />
-                    <ComboBox ItemsSource="{Binding CommandKeys}"
-                              SelectedItem="{Binding SelectedCommandKey}"
-                              MinHeight="36"
-                              Padding="6,4"
-                              FontSize="13"
-                              FontWeight="SemiBold"
-                              Margin="0,0,0,10" />
-
-                    <TextBlock Text="Parameter"
-                               FontSize="13"
-                               FontWeight="SemiBold"
-                               Margin="0,0,0,4" />
-                    <TextBox Text="{Binding CommandParameter}"
-                             MinHeight="34"
-                             Padding="6,4"
-                             FontSize="13" />
                 </StackPanel>
             </Border>
 

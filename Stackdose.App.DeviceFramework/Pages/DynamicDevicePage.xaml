@@ -1,0 +1,146 @@
+<UserControl x:Class="Stackdose.App.DeviceFramework.Pages.DynamicDevicePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:core="clr-namespace:Stackdose.UI.Core.Controls;assembly=Stackdose.UI.Core"
+             mc:Ignorable="d"
+             d:DesignHeight="800" d:DesignWidth="1200"
+             Background="#FF1A1A2E">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Row 0: Header -->
+        <Border Grid.Row="0" Background="#FF16213E" CornerRadius="8" Padding="16,12" Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="{Binding MachineName}" FontSize="22" FontWeight="Bold" Foreground="#FFE0E0E0"/>
+                    <TextBlock Foreground="#FF90A4AE" FontSize="12" Margin="0,4,0,0">
+                        <Run Text="ID: "/><Run Text="{Binding MachineId, Mode=OneWay}"/>
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
+                    <TextBlock Text="{Binding CurrentProcessStateText}" FontSize="16" FontWeight="SemiBold"
+                               Foreground="#FF4FC3F7" HorizontalAlignment="Right"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Row 1: Process Monitor -->
+        <Border Grid.Row="1" Background="#FF16213E" CornerRadius="8" Padding="12,8" Margin="0,0,0,12">
+            <WrapPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,24,0">
+                    <TextBlock Text="Running: " Foreground="#FF90A4AE" FontSize="12"/>
+                    <core:PlcLabel Address="{Binding RunningAddress}" FontSize="12" Foreground="#FF4FC3F7" DefaultValue="--"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,24,0">
+                    <TextBlock Text="Alarm: " Foreground="#FF90A4AE" FontSize="12"/>
+                    <core:PlcLabel Address="{Binding AlarmAddress}" FontSize="12" Foreground="#FFE53935" DefaultValue="--"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,24,0">
+                    <TextBlock Text="Completed: " Foreground="#FF90A4AE" FontSize="12"/>
+                    <core:PlcLabel Address="{Binding CompletedAddress}" FontSize="12" Foreground="#FF28A745" DefaultValue="--"/>
+                </StackPanel>
+            </WrapPanel>
+        </Border>
+
+        <!-- Row 2: Dynamic Labels -->
+        <Border Grid.Row="2" Background="#FF16213E" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="Live Data" Foreground="#FFE0E0E0" FontSize="14" FontWeight="SemiBold" Margin="4,0,0,8"/>
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Labels}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#FF0F3460" CornerRadius="6" Padding="12,8" Margin="4" MinWidth="160">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Label}" Foreground="#FF90A4AE" FontSize="11"/>
+                                        <core:PlcLabel Address="{Binding Address}"
+                                                       DefaultValue="{Binding DefaultValue}"
+                                                       FontSize="20" FontWeight="Bold" Foreground="#FFE0E0E0"
+                                                       Margin="0,4,0,0"/>
+                                        <TextBlock Foreground="#FF546E7A" FontSize="10" Margin="0,2,0,0">
+                                            <Run Text="{Binding Address, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- Row 3: Dynamic Commands -->
+        <Border Grid.Row="3" Background="#FF16213E" CornerRadius="8" Padding="12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="Commands" Foreground="#FFE0E0E0" FontSize="14" FontWeight="SemiBold" Margin="4,0,0,8"/>
+                <ItemsControl Grid.Row="1" ItemsSource="{Binding Commands}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding DisplayName}"
+                                    Command="{Binding DataContext.ExecuteCommandCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    CommandParameter="{Binding Name}"
+                                    MinWidth="120" Height="40"
+                                    Margin="4"
+                                    FontSize="13" FontWeight="SemiBold"
+                                    Foreground="White" Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Background" Value="#FF0F3460"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                                            CornerRadius="6" Padding="16,8">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="Bd" Property="Opacity" Value="0.85"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsPressed" Value="True">
+                                                            <Setter TargetName="Bd" Property="Opacity" Value="0.7"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

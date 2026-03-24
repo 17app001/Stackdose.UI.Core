@@ -14,7 +14,7 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         var adapter = new UbiFrameworkMappingAdapter();
-        var runtimeMapper = new UbiRuntimeMapper(adapter);
+        var runtimeMapper = new RuntimeMapper(adapter);
         var runtimeHost = new RuntimeHost(runtimeMapper, "Stackdose.App.UbiDemo");
         var settingsPage = new SettingsPage();
 
@@ -45,17 +45,7 @@ public partial class MainWindow : Window
             }
         };
 
-        Loaded += OnLoaded;
-        Unloaded += OnUnloaded;
-    }
-
-    private void OnLoaded(object sender, RoutedEventArgs e)
-    {
-        _controller.Start();
-    }
-
-    private void OnUnloaded(object sender, RoutedEventArgs e)
-    {
-        _controller.Dispose();
+        Loaded += (_, _) => _controller.Start();
+        Unloaded += (_, _) => _controller.Dispose();
     }
 }

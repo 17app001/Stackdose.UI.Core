@@ -31,9 +31,15 @@ public class AppController : IDisposable
     private bool _suppressHeaderMachineSelection;
 
     /// <summary>
-    /// Settings 頁面 — App 層可設定自訂的 Settings 頁面。
+    /// Settings 頁面 — App 端可設定自訂的 Settings 頁面。
     /// </summary>
     public UserControl SettingsPage { get; set; }
+
+    /// <summary>
+    /// Settings 頁面導航前的回呼 — App 端可在此注入 Runtime 資訊到 SettingsPage。
+    /// 參數為 (SettingsPage, RuntimeContext, SelectedMachineId)。
+    /// </summary>
+    public Action<UserControl, RuntimeContext, string?>? OnSettingsNavigating { get; set; }
 
     public AppController(
         MainContainer mainShell,
@@ -179,6 +185,7 @@ public class AppController : IDisposable
     private void ShowSettings()
     {
         if (_session is null) return;
+        OnSettingsNavigating?.Invoke(SettingsPage, _session.Runtime, _devicePages.SelectedMachineId);
         _session.NavigationOrchestrator.ShowSettings(_session.Runtime);
     }
 

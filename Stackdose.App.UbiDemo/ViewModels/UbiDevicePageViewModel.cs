@@ -1,3 +1,4 @@
+using Stackdose.App.DeviceFramework.ViewModels;
 using Stackdose.App.UbiDemo.Models;
 using Stackdose.App.UbiDemo.Services;
 using Stackdose.UI.Core.Controls;
@@ -298,7 +299,7 @@ public sealed class UbiDevicePageViewModel : ViewModelBase
         ApplyProcessState(UbiProcessState.Stopped);
     }
 
-    public void ApplyDeviceContext(DeviceContext context)
+    public void ApplyDeviceContext(UbiDeviceContext context)
     {
         MachineId = context.MachineId;
         MachineName = context.MachineName;

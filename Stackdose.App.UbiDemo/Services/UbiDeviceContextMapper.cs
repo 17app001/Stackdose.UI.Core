@@ -1,48 +1,63 @@
+using Stackdose.App.DeviceFramework.Models;
 using Stackdose.App.UbiDemo.Models;
 
 namespace Stackdose.App.UbiDemo.Services;
 
+/// <summary>
+/// 從框架的 DeviceContext 映射到 Ubi 本地的 UbiDeviceContext。
+/// </summary>
 internal static class UbiDeviceContextMapper
 {
-    public static DeviceContext CreateDeviceContext(UbiMachineConfig config, IUbiRuntimeMappingAdapter adapter)
+    /// <summary>
+    /// 從框架的 DeviceContext 轉換成 UbiDeviceContext。
+    /// 框架的 DeviceContext 使用 Labels 字典和 Commands 字典，
+    /// UbiDeviceContext 使用硬編碼屬性。
+    /// </summary>
+    public static UbiDeviceContext FromFrameworkContext(DeviceContext context)
     {
-        var printHeadConfigs = adapter.GetPrintHeadConfigFiles(config);
-
-        var runningAddress = !string.IsNullOrWhiteSpace(config.ProcessMonitor.IsRunning)
-            ? config.ProcessMonitor.IsRunning
-            : adapter.GetTagAddress(config, "status", "isRunning");
-
-        var alarmAddress = !string.IsNullOrWhiteSpace(config.ProcessMonitor.IsAlarm)
-            ? config.ProcessMonitor.IsAlarm
-            : adapter.GetTagAddress(config, "status", "isAlarm");
-
-        return new DeviceContext
+        var ubiCtx = new UbiDeviceContext
         {
-            MachineId = config.Machine.Id,
-            MachineName = config.Machine.Name,
-            BatchAddress = adapter.GetTagAddress(config, "process", "batchNo"),
-            RecipeAddress = adapter.GetTagAddress(config, "process", "recipeNo"),
-            NozzleAddress = adapter.GetTagAddress(config, "process", "nozzleTemp"),
-            RunningAddress = runningAddress,
-            CompletedAddress = string.IsNullOrWhiteSpace(config.ProcessMonitor.IsCompleted) ? "--" : config.ProcessMonitor.IsCompleted,
-            AlarmAddress = alarmAddress,
-            StartCommandAddress = string.IsNullOrWhiteSpace(config.Commands.Start) ? "--" : config.Commands.Start,
-            PauseCommandAddress = string.IsNullOrWhiteSpace(config.Commands.Pause) ? "--" : config.Commands.Pause,
-            StopCommandAddress = string.IsNullOrWhiteSpace(config.Commands.Stop) ? "--" : config.Commands.Stop,
-            AlarmConfigFile = adapter.GetAlarmConfigFile(config),
-            SensorConfigFile = adapter.GetSensorConfigFile(config),
-            PrintHead1ConfigFile = printHeadConfigs.ElementAtOrDefault(0) ?? string.Empty,
-            PrintHead2ConfigFile = printHeadConfigs.ElementAtOrDefault(1) ?? string.Empty,
-            TotalTrayAddress = adapter.GetDetailLabelAddress(config, "totalTray", "D3400"),
-            CurrentTrayAddress = adapter.GetDetailLabelAddress(config, "currentTray", "D33"),
-            TotalLayerAddress = adapter.GetDetailLabelAddress(config, "totalLayer", "D3401"),
-            CurrentLayerAddress = adapter.GetDetailLabelAddress(config, "currentLayer", "D32"),
-            SwitchGraphicLayerAddress = adapter.GetDetailLabelAddress(config, "switchGraphicLayer", "D510"),
-            SwitchAreaLayerAddress = adapter.GetDetailLabelAddress(config, "switchAreaLayer", "D512"),
-            MessageIdAddress = adapter.GetDetailLabelAddress(config, "messageId", "D85"),
-            BatteryAddress = adapter.GetDetailLabelAddress(config, "battery", "D120"),
-            ElapsedTimeAddress = adapter.GetDetailLabelAddress(config, "elapsedTime", "D86"),
-            PrintHeadCountAddress = adapter.GetDetailLabelAddress(config, "printHeadCount", "D87")
+            MachineId = context.MachineId,
+            MachineName = context.MachineName,
+            RunningAddress = context.RunningAddress,
+            CompletedAddress = context.CompletedAddress,
+            AlarmAddress = context.AlarmAddress,
+            AlarmConfigFile = context.AlarmConfigFile,
+            SensorConfigFile = context.SensorConfigFile,
+            PrintHead1ConfigFile = context.PrintHeadConfigFiles.ElementAtOrDefault(0) ?? string.Empty,
+            PrintHead2ConfigFile = context.PrintHeadConfigFiles.ElementAtOrDefault(1) ?? string.Empty,
         };
+
+        // Commands
+        ubiCtx.StartCommandAddress = context.Commands.TryGetValue("Start", out var s) && !string.IsNullOrWhiteSpace(s) ? s : "--";
+        ubiCtx.PauseCommandAddress = context.Commands.TryGetValue("Pause", out var p) && !string.IsNullOrWhiteSpace(p) ? p : "--";
+        ubiCtx.StopCommandAddress = context.Commands.TryGetValue("Stop", out var st) && !string.IsNullOrWhiteSpace(st) ? st : "--";
+
+        // Labels → Ubi 硬編碼屬性
+        ubiCtx.BatchAddress = GetLabelAddress(context, "batchNo", "--");
+        ubiCtx.RecipeAddress = GetLabelAddress(context, "recipeNo", "--");
+        ubiCtx.NozzleAddress = GetLabelAddress(context, "nozzleTemp", "--");
+        ubiCtx.TotalTrayAddress = GetLabelAddress(context, "totalTray", "D3400");
+        ubiCtx.CurrentTrayAddress = GetLabelAddress(context, "currentTray", "D33");
+        ubiCtx.TotalLayerAddress = GetLabelAddress(context, "totalLayer", "D3401");
+        ubiCtx.CurrentLayerAddress = GetLabelAddress(context, "currentLayer", "D32");
+        ubiCtx.SwitchGraphicLayerAddress = GetLabelAddress(context, "switchGraphicLayer", "D510");
+        ubiCtx.SwitchAreaLayerAddress = GetLabelAddress(context, "switchAreaLayer", "D512");
+        ubiCtx.MessageIdAddress = GetLabelAddress(context, "messageId", "D85");
+        ubiCtx.BatteryAddress = GetLabelAddress(context, "battery", "D120");
+        ubiCtx.ElapsedTimeAddress = GetLabelAddress(context, "elapsedTime", "D86");
+        ubiCtx.PrintHeadCountAddress = GetLabelAddress(context, "printHeadCount", "D87");
+
+        return ubiCtx;
+    }
+
+    private static string GetLabelAddress(DeviceContext context, string key, string fallback)
+    {
+        if (context.Labels.TryGetValue(key, out var info) && !string.IsNullOrWhiteSpace(info.Address))
+        {
+            return info.Address;
+        }
+
+        return fallback;
     }
 }

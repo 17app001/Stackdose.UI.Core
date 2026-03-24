@@ -1,6 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
-using Stackdose.App.UbiDemo.Models;
+using Stackdose.App.DeviceFramework.Models;
 using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.App.UbiDemo.ViewModels;
@@ -25,7 +25,7 @@ public partial class SettingsPage : UserControl
         _viewModel.ApplyMonitorAddresses(monitorAddresses);
     }
 
-    public void SetMachineConfig(UbiMachineConfig config, string configRootPath)
+    public void SetMachineConfig(MachineConfig config, string configRootPath)
     {
         _viewModel.ApplyMachineConfig(config, configRootPath);
     }
@@ -33,7 +33,7 @@ public partial class SettingsPage : UserControl
     /// <summary>
     /// 設定所有可用機台，讓使用者在 SettingsPage 上選擇操作目標
     /// </summary>
-    public void SetMachines(IReadOnlyDictionary<string, UbiMachineConfig> machines, string configRootPath, string? defaultMachineId)
+    public void SetMachines(IReadOnlyDictionary<string, MachineConfig> machines, string configRootPath, string? defaultMachineId)
     {
         _viewModel.ApplyMachines(machines, configRootPath, defaultMachineId);
     }

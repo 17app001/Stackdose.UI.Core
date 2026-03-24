@@ -98,7 +98,7 @@ public sealed class UbiNavigationMetaItem
     public string RequiredLevel { get; set; } = "Operator";
 }
 
-public sealed class DeviceContext
+public sealed class UbiDeviceContext
 {
     public string MachineId { get; set; } = string.Empty;
     public string MachineName { get; set; } = string.Empty;

@@ -49,33 +49,26 @@
                     </StackPanel>
                 </GroupBox>
 
-                <GroupBox Grid.Row="1" Header="列印資訊 / Print Information">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <UniformGrid Columns="2" Margin="8">
-                            <UniformGrid.Resources>
-                                <Style TargetType="{x:Type core:PlcLabel}">
-                                    <Setter Property="LabelFontSize" Value="11" />
-                                    <Setter Property="ValueFontSize" Value="14" />
-                                    <Setter Property="ShowAddress" Value="False" />
-                                    <Setter Property="Margin" Value="2" />
-                                </Style>
-                            </UniformGrid.Resources>
-                            <core:PlcLabel Label="總盤數" Address="{Binding TotalTrayAddress}" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="目前列印盤數" Address="{Binding CurrentTrayAddress}" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="總層數" Address="{Binding TotalLayerAddress}" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="目前列印層數" Address="{Binding CurrentLayerAddress}" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="切換圖形(層)" Address="{Binding SwitchGraphicLayerAddress}" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="切換區域(層)" Address="{Binding SwitchAreaLayerAddress}" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="MessageID" Address="{Binding MessageIdAddress}" ShowFrame="True" DefaultValue="0" />
-                            <core:PlcLabel Label="電池" Address="{Binding BatteryAddress}" Divisor="10" StringFormat="F1" ShowFrame="True" DefaultValue="0.0" />
-                            <core:PlcLabel Label="經過時間" Address="{Binding ElapsedTimeAddress}" ShowFrame="True" DefaultValue="00:00:00" />
-                            <core:PlcLabel Label="PrintHead Count" Address="{Binding PrintHeadCountAddress}" ShowFrame="True" DefaultValue="2" />
-                            <core:PlcLabel Label="Batch" Address="{Binding BatchAddress}" ShowFrame="True" DefaultValue="--" />
-                            <core:PlcLabel Label="Recipe" Address="{Binding RecipeAddress}" ShowFrame="True" DefaultValue="--" />
-                            <core:PlcLabel Label="Nozzle" Address="{Binding NozzleAddress}" ShowFrame="True" DefaultValue="--" />
-                            <core:PlcLabel Label="Alarm" Address="{Binding AlarmAddress}" DataType="Bit" ShowFrame="True" DefaultValue="OFF" />
-                        </UniformGrid>
-                    </ScrollViewer>
+                <GroupBox Grid.Row="1" Header="Command Actions">
+                    <StackPanel Margin="8" VerticalAlignment="Top">
+                        <core:SecuredButton Content="Initialize"
+                                            Theme="Primary"
+                                            RequiredLevel="Operator"
+                                            OperationName="Initialize"
+                                            Margin="0,0,0,8"
+                                            HorizontalAlignment="Stretch" />
+                        <core:SecuredButton Content="Device Clean"
+                                            Theme="Warning"
+                                            RequiredLevel="Operator"
+                                            OperationName="Device Clean"
+                                            Margin="0,0,0,8"
+                                            HorizontalAlignment="Stretch" />
+                        <core:SecuredButton Content="Clear Alarm"
+                                            Theme="Error"
+                                            RequiredLevel="Operator"
+                                            OperationName="Clear Alarm"
+                                            HorizontalAlignment="Stretch" />
+                    </StackPanel>
                 </GroupBox>
             </Grid>
 
@@ -128,25 +121,32 @@
                     </Grid>
                 </GroupBox>
 
-                <GroupBox Grid.Row="1" Header="PrintHead Control">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <Grid Margin="8">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="8" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-
-                            <core:PlcDeviceEditor Grid.Row="0"
-                                                  MinHeight="0"
-                                                  Label="PrintHead Device Editor"
-                                                  Address="{Binding PrintHeadEditorAddress}"
-                                                  Value="{Binding PrintHeadEditorValue}"
-                                                  Reason="{Binding PrintHeadEditorReason}"
-                                                  RequiredLevel="Supervisor"
-                                                  EnableAuditTrail="True" Grid.RowSpan="2" />
-                        </Grid>
+                <GroupBox Grid.Row="1" Header="Print Information">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <UniformGrid Columns="2" Margin="8">
+                            <UniformGrid.Resources>
+                                <Style TargetType="{x:Type core:PlcLabel}">
+                                    <Setter Property="LabelFontSize" Value="11" />
+                                    <Setter Property="ValueFontSize" Value="14" />
+                                    <Setter Property="ShowAddress" Value="False" />
+                                    <Setter Property="Margin" Value="2" />
+                                </Style>
+                            </UniformGrid.Resources>
+                            <core:PlcLabel Label="Total Tray" Address="{Binding TotalTrayAddress}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="Current Tray" Address="{Binding CurrentTrayAddress}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="Total Layer" Address="{Binding TotalLayerAddress}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="Current Layer" Address="{Binding CurrentLayerAddress}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="Switch Graphic Layer" Address="{Binding SwitchGraphicLayerAddress}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="Switch Area Layer" Address="{Binding SwitchAreaLayerAddress}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="Message ID" Address="{Binding MessageIdAddress}" ShowFrame="True" DefaultValue="0" />
+                            <core:PlcLabel Label="Battery" Address="{Binding BatteryAddress}" Divisor="10" StringFormat="F1" ShowFrame="True" DefaultValue="0.0" />
+                            <core:PlcLabel Label="Elapsed Time" Address="{Binding ElapsedTimeAddress}" ShowFrame="True" DefaultValue="00:00:00" />
+                            <core:PlcLabel Label="PrintHead Count" Address="{Binding PrintHeadCountAddress}" ShowFrame="True" DefaultValue="2" />
+                            <core:PlcLabel Label="Batch" Address="{Binding BatchAddress}" ShowFrame="True" DefaultValue="--" />
+                            <core:PlcLabel Label="Recipe" Address="{Binding RecipeAddress}" ShowFrame="True" DefaultValue="--" />
+                            <core:PlcLabel Label="Nozzle" Address="{Binding NozzleAddress}" ShowFrame="True" DefaultValue="--" />
+                            <core:PlcLabel Label="Alarm" Address="{Binding AlarmAddress}" DataType="Bit" ShowFrame="True" DefaultValue="OFF" />
+                        </UniformGrid>
                     </ScrollViewer>
                 </GroupBox>
             </Grid>

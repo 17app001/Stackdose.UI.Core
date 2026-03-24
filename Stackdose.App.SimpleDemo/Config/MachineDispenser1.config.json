@@ -1,0 +1,53 @@
+{
+  "machine": {
+    "id": "DSP1",
+    "name": "Dispenser Unit B",
+    "enable": true
+  },
+  "plc": {
+    "ip": "192.168.22.39",
+    "port": 3000,
+    "pollIntervalMs": 150,
+    "autoConnect": false,
+    "monitorAddresses": [
+      "D500,6",
+      "M400,3"
+    ]
+  },
+  "commands": {
+    "Start": "M400",
+    "Pause": "M401",
+    "Stop": "M402",
+    "Prime": "M403",
+    "Purge": "M404"
+  },
+  "processMonitor": {
+    "isRunning": "M400",
+    "isCompleted": "M402",
+    "isAlarm": "M401"
+  },
+  "detailLabels": {
+    "Fluid Pressure": "D500",
+    "Needle Height": "D501",
+    "Dispense Volume": "D502",
+    "Dot Count": "D503",
+    "Fluid Level": "D504",
+    "Nozzle Temp": "D505",
+    "Elapsed Time": "D600"
+  },
+  "tags": {
+    "status": {
+      "isRunning": { "address": "M400", "type": "bool", "access": "read" },
+      "isAlarm": { "address": "M401", "type": "bool", "access": "read" },
+      "heartbeat": { "address": "D700", "type": "int16", "access": "read" }
+    },
+    "process": {
+      "batchNo": { "address": "D800", "type": "string", "access": "read", "length": 8 },
+      "recipeNo": { "address": "D810", "type": "string", "access": "read", "length": 8 },
+      "viscosity": { "address": "D820", "type": "int16", "access": "read" }
+    }
+  },
+  "modules": [
+    "processControl"
+  ]
+}

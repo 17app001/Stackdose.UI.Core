@@ -66,7 +66,7 @@ public sealed class NavigationOrchestrator
         _shellPages.ShowUserManagement(_userManagementPage);
     }
 
-    public void ShowSettings(RuntimeContext runtime)
+    public void ShowSettings()
     {
         _shellPages.ShowSettings(_settingsPage);
     }

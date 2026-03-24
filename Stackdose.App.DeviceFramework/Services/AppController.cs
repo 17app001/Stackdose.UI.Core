@@ -186,7 +186,7 @@ public class AppController : IDisposable
     {
         if (_session is null) return;
         OnSettingsNavigating?.Invoke(SettingsPage, _session.Runtime, _devicePages.SelectedMachineId);
-        _session.NavigationOrchestrator.ShowSettings(_session.Runtime);
+        _session.NavigationOrchestrator.ShowSettings();
     }
 
     private void OnMachineSelectionRequested(string machineId)

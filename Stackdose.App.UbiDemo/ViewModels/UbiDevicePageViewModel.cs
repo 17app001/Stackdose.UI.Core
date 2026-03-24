@@ -1,17 +1,18 @@
+using Stackdose.App.DeviceFramework.Models;
+using Stackdose.App.DeviceFramework.Services;
 using Stackdose.App.DeviceFramework.ViewModels;
 using Stackdose.App.UbiDemo.Models;
-using Stackdose.App.UbiDemo.Services;
 using Stackdose.UI.Core.Controls;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
+using ProcessState = Stackdose.App.DeviceFramework.Models.ProcessState;
 
 namespace Stackdose.App.UbiDemo.ViewModels;
 
 public sealed class UbiDevicePageViewModel : ViewModelBase
 {
-    private readonly UbiMachineCommandService _machineCommandService;
-    private readonly UbiProcessService _processService;
+    private readonly ProcessCommandService _commandService = new();
     private string _machineId = string.Empty;
     private string _machineName = "Machine";
     private string _batchAddress = "--";
@@ -43,18 +44,11 @@ public sealed class UbiDevicePageViewModel : ViewModelBase
     private string _printHeadEditorAddress = "D120";
     private string _printHeadEditorValue = "0";
     private string _printHeadEditorReason = "PrintHead manual operation";
-    private UbiProcessState _currentProcessState = UbiProcessState.Idle;
+    private ProcessState _currentProcessState = ProcessState.Idle;
     private string _currentProcessStateText = "Idle";
 
     public UbiDevicePageViewModel()
-        : this(new UbiMachineCommandService(), new UbiProcessService())
     {
-    }
-
-    internal UbiDevicePageViewModel(UbiMachineCommandService machineCommandService, UbiProcessService processService)
-    {
-        _machineCommandService = machineCommandService;
-        _processService = processService;
         StartProcessCommand = new RelayCommand(async () => await ExecuteStartProcessAsync());
     }
 
@@ -254,7 +248,7 @@ public sealed class UbiDevicePageViewModel : ViewModelBase
         set => SetProperty(ref _printHeadEditorReason, value);
     }
 
-    public UbiProcessState CurrentProcessState
+    public ProcessState CurrentProcessState
     {
         get => _currentProcessState;
         private set => SetProperty(ref _currentProcessState, value);
@@ -266,38 +260,10 @@ public sealed class UbiDevicePageViewModel : ViewModelBase
         private set => SetProperty(ref _currentProcessStateText, value);
     }
 
-    public string BuildStartClickMessage()
-    {
-        var request = BuildCommandRequest();
-        return _machineCommandService.BuildStartClickMessage(request);
-    }
-
-    public async Task<UbiProcessExecutionResult> StartProcessAsync()
-    {
-        var result = await _processService.StartProcessAsync(BuildCommandRequest());
-        ApplyProcessState(result.State);
-        return result;
-    }
-
-    public void MarkProcessRunning()
-    {
-        ApplyProcessState(UbiProcessState.Running);
-    }
-
-    public void MarkProcessCompleted()
-    {
-        ApplyProcessState(UbiProcessState.Completed);
-    }
-
-    public void MarkProcessFaulted()
-    {
-        ApplyProcessState(UbiProcessState.Faulted);
-    }
-
-    public void MarkProcessStopped()
-    {
-        ApplyProcessState(UbiProcessState.Stopped);
-    }
+    public void MarkProcessRunning() => ApplyProcessState(ProcessState.Running);
+    public void MarkProcessCompleted() => ApplyProcessState(ProcessState.Completed);
+    public void MarkProcessFaulted() => ApplyProcessState(ProcessState.Faulted);
+    public void MarkProcessStopped() => ApplyProcessState(ProcessState.Stopped);
 
     public void ApplyDeviceContext(UbiDeviceContext context)
     {
@@ -326,12 +292,15 @@ public sealed class UbiDevicePageViewModel : ViewModelBase
         BatteryAddress = context.BatteryAddress;
         ElapsedTimeAddress = context.ElapsedTimeAddress;
         PrintHeadCountAddress = context.PrintHeadCountAddress;
-        ApplyProcessState(UbiProcessState.Idle);
+        ApplyProcessState(ProcessState.Idle);
     }
 
     private async Task ExecuteStartProcessAsync()
     {
-        var result = await StartProcessAsync();
+        var result = await _commandService.ExecuteCommandAsync(
+            MachineId, MachineName, SelectedCommandKey, StartCommandAddress);
+
+        ApplyProcessState(result.State);
 
         CyberMessageBox.Show(
             result.Message,
@@ -340,20 +309,7 @@ public sealed class UbiDevicePageViewModel : ViewModelBase
             result.Success ? MessageBoxImage.Information : MessageBoxImage.Warning);
     }
 
-    private UbiMachineCommandRequest BuildCommandRequest()
-    {
-        return new UbiMachineCommandRequest(
-            MachineId,
-            MachineName,
-            SelectedCommandKey,
-            CommandParameter,
-            StartCommandAddress,
-            RunningAddress,
-            CompletedAddress,
-            AlarmAddress);
-    }
-
-    private void ApplyProcessState(UbiProcessState state)
+    private void ApplyProcessState(ProcessState state)
     {
         CurrentProcessState = state;
         CurrentProcessStateText = state.ToString();

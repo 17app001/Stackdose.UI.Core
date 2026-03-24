@@ -1,8 +1,6 @@
 using Stackdose.App.DeviceFramework.Models;
 using Stackdose.App.DeviceFramework.Services;
 using System.IO;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace Stackdose.App.UbiDemo.Services;
 
@@ -12,8 +10,6 @@ namespace Stackdose.App.UbiDemo.Services;
 /// </summary>
 internal sealed class UbiFrameworkMappingAdapter : DefaultRuntimeMappingAdapter
 {
-    private static readonly Regex AddressPattern = new("^([A-Za-z]+)(\\d+)$", RegexOptions.Compiled);
-
     public override string GetAlarmConfigFile(MachineConfig config)
     {
         if (!string.IsNullOrWhiteSpace(config.AlarmConfigFile))

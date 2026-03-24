@@ -139,14 +139,13 @@
                             </Grid.RowDefinitions>
 
                             <core:PlcDeviceEditor Grid.Row="0"
-                                                  Height="118"
                                                   MinHeight="0"
                                                   Label="PrintHead Device Editor"
                                                   Address="{Binding PrintHeadEditorAddress}"
                                                   Value="{Binding PrintHeadEditorValue}"
                                                   Reason="{Binding PrintHeadEditorReason}"
                                                   RequiredLevel="Supervisor"
-                                                  EnableAuditTrail="True" />
+                                                  EnableAuditTrail="True" Grid.RowSpan="2" />
 
                             <core:PrintHeadController Grid.Row="2" MinHeight="200" />
                         </Grid>

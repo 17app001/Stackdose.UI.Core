@@ -58,11 +58,21 @@ internal sealed class UbiOverviewRuntimeMapper
 
             var isRunning = ReadBoolAddress(manager, map.RunningAddress);
             var isAlarm = ReadBoolAddress(manager, map.AlarmAddress);
-            var alarmCount = EnableOverviewAlarmCount && isAlarm
-                ? GetActiveAlarmCount(manager, card.MachineId)
-                : 0;
 
-            if (!isAlarm || !EnableOverviewAlarmCount)
+            // ?? 如果啟用 Overview Alarm Count，直接掃描所有 alarm bit points，
+            // 不再依賴 isAlarm (M202) 作為前提條件，因為個別 alarm bit 可能獨立觸發
+            var alarmCount = 0;
+            if (EnableOverviewAlarmCount)
+            {
+                alarmCount = GetActiveAlarmCount(manager, card.MachineId);
+                // 如果掃描到有任何 alarm bit 被觸發，也視為 isAlarm = true
+                if (alarmCount > 0)
+                {
+                    isAlarm = true;
+                }
+            }
+
+            if (!EnableOverviewAlarmCount)
             {
                 _cachedAlarmCount[card.MachineId] = 0;
                 _cachedAlarmCountUpdatedAt[card.MachineId] = DateTime.UtcNow;

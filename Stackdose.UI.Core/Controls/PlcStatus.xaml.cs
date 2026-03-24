@@ -385,6 +385,13 @@ namespace Stackdose.UI.Core.Controls
         {
             if (_plcManager?.Monitor == null || !_plcManager.IsConnected) return;
 
+            // 🔥 如果是全域且已給了整包 MonitorAddress，跳過動態刷新
+            if (IsGlobal && !string.IsNullOrWhiteSpace(MonitorAddress))
+            {
+                System.Diagnostics.Debug.WriteLine("[PlcStatus] Skipping RefreshMonitors due to static global configuration.");
+                return;
+            }
+
             System.Diagnostics.Debug.WriteLine("[PlcStatus] RefreshMonitors called");
 
             // 重新註冊來自 PlcLabelContext 的監控位址
@@ -489,6 +496,14 @@ namespace Stackdose.UI.Core.Controls
 
         private void RegisterAutoMonitorAddresses()
         {
+            // 🔥 如果是全域模式且已經手動綁定了大包 MonitorAddress (如 UbiDemo 的做法)
+            // 就不需要依賴動態 AutoRegister，因為所有的住址應該都已經預先載入過了
+            if (IsGlobal && !string.IsNullOrWhiteSpace(MonitorAddress))
+            {
+                ComplianceContext.LogSystem($"[PlcStatus] Skipping dynamic AutoMonitor sources because global config is provided.", LogLevel.Info, showInUi: false);
+                return;
+            }
+
             foreach (var source in GetAutoMonitorSources())
             {
                 if (string.IsNullOrWhiteSpace(source.Addresses))

@@ -14,11 +14,68 @@ using System.Windows.Media.Imaging;
 namespace Stackdose.UI.Core.Controls
 {
     /// <summary>
+    /// 各機台獨立的 UI 狀態快照
+    /// </summary>
+    internal sealed class MachineUiState
+    {
+        public string ImagePath { get; set; } = string.Empty;
+        public BitmapImage? PreviewSource { get; set; }
+        public string Frequency { get; set; } = "0.1,1,1,1";
+        public string StartX { get; set; } = "50";
+        public string CaliMM { get; set; } = "30.5";
+        public int DirectionIndex { get; set; } = 0;
+        public string FilePathDisplay { get; set; } = "尚未選擇檔案";
+        public string ImageWidth { get; set; } = "-";
+        public string ImageHeight { get; set; } = "-";
+        public string XDpi { get; set; } = "-";
+        public string YDpi { get; set; } = "-";
+        public bool HasImage { get; set; } = false;
+    }
+
+    /// <summary>
     /// 噴頭控制器 - 統一控制所有已連接的噴頭
     /// </summary>
     public partial class PrintHeadController : UserControl
     {
         private string _currentImagePath = string.Empty;
+
+        /// <summary>
+        /// 各機台的 UI 狀態快照 (machineId → state)
+        /// </summary>
+        private readonly Dictionary<string, MachineUiState> _machineStates = new(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// 目前正在顯示的機台 ID（用於存回狀態）
+        /// </summary>
+        private string? _activeMachineId;
+
+        #region MachineId Dependency Property
+
+        public static readonly DependencyProperty MachineIdProperty =
+            DependencyProperty.Register(
+                nameof(MachineId),
+                typeof(string),
+                typeof(PrintHeadController),
+                new PropertyMetadata(null, OnMachineIdChanged));
+
+        /// <summary>
+        /// 目前操作的機台 ID，切換時自動儲存/還原 UI 狀態
+        /// </summary>
+        public string MachineId
+        {
+            get => (string)GetValue(MachineIdProperty);
+            set => SetValue(MachineIdProperty, value);
+        }
+
+        private static void OnMachineIdChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is PrintHeadController ctrl)
+            {
+                ctrl.HandleMachineSwitch(e.OldValue as string, e.NewValue as string);
+            }
+        }
+
+        #endregion
 
         public PrintHeadController()
         {
@@ -27,6 +84,90 @@ namespace Stackdose.UI.Core.Controls
             this.Loaded += PrintHeadController_Loaded;
             this.Unloaded += PrintHeadController_Unloaded;
         }
+
+        #region Machine Switch (Save / Restore)
+
+        private void HandleMachineSwitch(string? oldMachineId, string? newMachineId)
+        {
+            // 1. Save current UI state for old machine
+            if (!string.IsNullOrWhiteSpace(oldMachineId))
+            {
+                SaveCurrentState(oldMachineId);
+            }
+
+            _activeMachineId = newMachineId;
+
+            // 2. Restore UI state for new machine (or reset to default)
+            if (!string.IsNullOrWhiteSpace(newMachineId) && _machineStates.TryGetValue(newMachineId, out var state))
+            {
+                RestoreState(state);
+            }
+            else
+            {
+                ResetUiToDefault();
+            }
+        }
+
+        private void SaveCurrentState(string machineId)
+        {
+            if (!_machineStates.TryGetValue(machineId, out var state))
+            {
+                state = new MachineUiState();
+                _machineStates[machineId] = state;
+            }
+
+            state.ImagePath = _currentImagePath;
+            state.PreviewSource = PreviewImage.Source as BitmapImage;
+            state.Frequency = FrequencyBox.Text;
+            state.StartX = StartXBox.Text;
+            state.CaliMM = CaliMMBox.Text;
+            state.DirectionIndex = DirectionCombo.SelectedIndex;
+            state.FilePathDisplay = FilePathText.Text;
+            state.ImageWidth = ImageWidthText.Text;
+            state.ImageHeight = ImageHeightText.Text;
+            state.XDpi = XDpiText.Text;
+            state.YDpi = YDpiText.Text;
+            state.HasImage = PreviewImage.Source != null;
+        }
+
+        private void RestoreState(MachineUiState state)
+        {
+            _currentImagePath = state.ImagePath;
+            PreviewImage.Source = state.PreviewSource;
+            FrequencyBox.Text = state.Frequency;
+            StartXBox.Text = state.StartX;
+            CaliMMBox.Text = state.CaliMM;
+            DirectionCombo.SelectedIndex = state.DirectionIndex;
+            FilePathText.Text = state.FilePathDisplay;
+            ImageWidthText.Text = state.ImageWidth;
+            ImageHeightText.Text = state.ImageHeight;
+            XDpiText.Text = state.XDpi;
+            YDpiText.Text = state.YDpi;
+            ImageInfoText.Visibility = state.HasImage ? Visibility.Collapsed : Visibility.Visible;
+            if (!state.HasImage)
+            {
+                ImageInfoText.Text = "尚未載入圖片";
+            }
+        }
+
+        private void ResetUiToDefault()
+        {
+            _currentImagePath = string.Empty;
+            PreviewImage.Source = null;
+            FrequencyBox.Text = "0.1,1,1,1";
+            StartXBox.Text = "50";
+            CaliMMBox.Text = "30.5";
+            DirectionCombo.SelectedIndex = 0;
+            FilePathText.Text = "尚未選擇檔案";
+            ImageWidthText.Text = "-";
+            ImageHeightText.Text = "-";
+            XDpiText.Text = "-";
+            YDpiText.Text = "-";
+            ImageInfoText.Text = "尚未載入圖片";
+            ImageInfoText.Visibility = Visibility.Visible;
+        }
+
+        #endregion
 
         #region 初始化
 
@@ -48,6 +189,12 @@ namespace Stackdose.UI.Core.Controls
 
         private void PrintHeadController_Unloaded(object sender, RoutedEventArgs e)
         {
+            // 切換離開前先存檔
+            if (!string.IsNullOrWhiteSpace(_activeMachineId))
+            {
+                SaveCurrentState(_activeMachineId);
+            }
+
             // 取消訂閱
             PrintHeadContext.PrintHeadConnected -= OnPrintHeadConnected;
             PrintHeadContext.PrintHeadDisconnected -= OnPrintHeadDisconnected;
@@ -112,7 +259,6 @@ namespace Stackdose.UI.Core.Controls
 
             if (!ValidatePrintHeads()) return;
 
-            // 禁用按鈕
             var button = sender as Button;
             if (button != null) button.IsEnabled = false;
 

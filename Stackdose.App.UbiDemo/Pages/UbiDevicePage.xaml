@@ -146,8 +146,6 @@
                                                   Reason="{Binding PrintHeadEditorReason}"
                                                   RequiredLevel="Supervisor"
                                                   EnableAuditTrail="True" Grid.RowSpan="2" />
-
-                            <core:PrintHeadController Grid.Row="2" MinHeight="200" />
                         </Grid>
                     </ScrollViewer>
                 </GroupBox>

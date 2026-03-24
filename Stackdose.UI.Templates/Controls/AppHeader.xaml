@@ -16,8 +16,8 @@
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
             <Style x:Key="HeaderMachineComboStyle" TargetType="ComboBox">
-                <Setter Property="Foreground" Value="#162033"/>
-                <Setter Property="Background" Value="#F5F7FA"/>
+                <Setter Property="Foreground" Value="#FFFFFF"/>
+                <Setter Property="Background" Value="#1A2A40"/>
                 <Setter Property="BorderBrush" Value="{StaticResource WarningBrush}"/>
                 <Setter Property="BorderThickness" Value="2"/>
                 <Setter Property="Padding" Value="8,2"/>
@@ -25,7 +25,6 @@
                 <Setter Property="FontWeight" Value="SemiBold"/>
                 <Setter Property="IsEditable" Value="False"/>
                 <Setter Property="HorizontalContentAlignment" Value="Left"/>
-                <Setter Property="TextElement.Foreground" Value="#162033"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="ComboBox">
@@ -33,52 +32,66 @@
                                 <ToggleButton x:Name="ToggleButton"
                                               Focusable="False"
                                               IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
-                                              ClickMode="Press"
-                                              Background="{TemplateBinding Background}"
-                                              BorderBrush="{TemplateBinding BorderBrush}"
-                                              BorderThickness="{TemplateBinding BorderThickness}">
+                                              ClickMode="Press">
                                     <ToggleButton.Template>
                                         <ControlTemplate TargetType="ToggleButton">
                                             <Border x:Name="Border"
-                                                    Background="{TemplateBinding Background}"
-                                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                                    CornerRadius="4">
+                                                    Background="{Binding Background, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                                    BorderBrush="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                                    BorderThickness="{Binding BorderThickness, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                                    CornerRadius="6">
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="24"/>
+                                                        <ColumnDefinition Width="28"/>
                                                     </Grid.ColumnDefinitions>
+                                                    <!-- Separator line -->
+                                                    <Border Grid.Column="1"
+                                                            BorderBrush="#3A5068"
+                                                            BorderThickness="1,0,0,0"
+                                                            Margin="0,6"/>
                                                     <Path Grid.Column="1"
-                                                          Data="M0,0 L4,4 L8,0"
-                                                          Stroke="#162033"
-                                                          StrokeThickness="1.5"
+                                                          Data="M0,0 L5,5 L10,0"
+                                                          Stroke="{StaticResource WarningBrush}"
+                                                          StrokeThickness="2"
                                                           HorizontalAlignment="Center"
                                                           VerticalAlignment="Center"/>
                                                 </Grid>
                                             </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Border" Property="Background" Value="#243548"/>
+                                                    <Setter TargetName="Border" Property="BorderBrush" Value="#FFD166"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
                                         </ControlTemplate>
                                     </ToggleButton.Template>
                                 </ToggleButton>
-                                <!-- Placeholder: show hint text when nothing is selected -->
+
+                                <!-- Placeholder -->
                                 <TextBlock x:Name="PlaceholderText"
                                            Text="Select Machine"
                                            FontSize="{TemplateBinding FontSize}"
                                            FontWeight="{TemplateBinding FontWeight}"
-                                           Foreground="#888"
+                                           Foreground="#5A7A96"
                                            VerticalAlignment="Center"
                                            HorizontalAlignment="Left"
-                                           Margin="10,0,28,0"
+                                           Margin="12,0,32,0"
                                            IsHitTestVisible="False"
                                            Visibility="Collapsed"/>
+
+                                <!-- Selected item display -->
                                 <ContentPresenter x:Name="ContentSite"
                                                   IsHitTestVisible="False"
                                                   Content="{TemplateBinding SelectionBoxItem}"
                                                   ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
                                                   ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
-                                                  Margin="10,0,28,0"
+                                                  Margin="12,0,32,0"
                                                   VerticalAlignment="Center"
-                                                  HorizontalAlignment="Left"/>
+                                                  HorizontalAlignment="Left"
+                                                  TextElement.Foreground="#FFFFFF"/>
+
+                                <!-- Dropdown -->
                                 <Popup x:Name="Popup"
                                        Placement="Bottom"
                                        IsOpen="{TemplateBinding IsDropDownOpen}"
@@ -90,11 +103,15 @@
                                           MinWidth="{TemplateBinding ActualWidth}"
                                           MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                         <Border x:Name="DropDownBorder"
-                                                Background="#F5F7FA"
+                                                Background="#1A2A40"
                                                 BorderBrush="{StaticResource WarningBrush}"
                                                 BorderThickness="1"
-                                                CornerRadius="4">
-                                            <ScrollViewer Margin="4,4,4,4" SnapsToDevicePixels="True">
+                                                CornerRadius="0,0,6,6"
+                                                Margin="0,-1,0,0">
+                                            <Border.Effect>
+                                                <DropShadowEffect Color="#000000" BlurRadius="12" ShadowDepth="4" Opacity="0.5"/>
+                                            </Border.Effect>
+                                            <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
                                                 <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
                                             </ScrollViewer>
                                         </Border>
@@ -106,49 +123,36 @@
                                     <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible"/>
                                     <Setter TargetName="ContentSite" Property="Visibility" Value="Hidden"/>
                                 </Trigger>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="ToggleButton" Property="Background" Value="#FFFFFF"/>
-                                    <Setter TargetName="ToggleButton" Property="BorderBrush" Value="#FFD166"/>
-                                </Trigger>
-                                <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                    <Setter TargetName="ToggleButton" Property="Background" Value="#FFFFFF"/>
-                                    <Setter TargetName="ToggleButton" Property="BorderBrush" Value="#FFD166"/>
-                                </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="#FFFFFF"/>
-                        <Setter Property="BorderBrush" Value="#FFD166"/>
-                    </Trigger>
-                    <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                        <Setter Property="Background" Value="#FFFFFF"/>
-                        <Setter Property="BorderBrush" Value="#FFD166"/>
-                    </Trigger>
-                </Style.Triggers>
             </Style>
 
             <Style x:Key="HeaderMachineComboItemStyle" TargetType="ComboBoxItem">
                 <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="FontSize" Value="13"/>
-                <Setter Property="Padding" Value="8,6"/>
+                <Setter Property="Padding" Value="10,8"/>
                 <Setter Property="HorizontalContentAlignment" Value="Left"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="ComboBoxItem">
-                            <Border x:Name="ItemBorder" Background="{TemplateBinding Background}" CornerRadius="3">
-                                <ContentPresenter Margin="{TemplateBinding Padding}"/>
+                            <Border x:Name="ItemBorder"
+                                    Background="{TemplateBinding Background}"
+                                    CornerRadius="4"
+                                    Margin="2,1">
+                                <ContentPresenter Margin="{TemplateBinding Padding}"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}"/>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsHighlighted" Value="True">
-                                    <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource HoverBackgroundBrush}"/>
+                                    <Setter TargetName="ItemBorder" Property="Background" Value="#2A3D52"/>
+                                    <Setter Property="Foreground" Value="#FFD166"/>
                                 </Trigger>
                                 <Trigger Property="IsSelected" Value="True">
-                                    <Setter TargetName="ItemBorder" Property="Background" Value="#FFD166"/>
-                                    <Setter Property="Foreground" Value="#1A2030"/>
+                                    <Setter TargetName="ItemBorder" Property="Background" Value="#1A3A50"/>
+                                    <Setter Property="Foreground" Value="#FFD166"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -223,7 +227,7 @@
                           Visibility="{Binding ShowMachineBadge, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Value}" Foreground="#162033" FontSize="13"/>
+                            <TextBlock Text="{Binding Value}" Foreground="#FFFFFF" FontSize="13" FontWeight="SemiBold"/>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>

@@ -73,11 +73,9 @@ internal sealed class UbiNavigationOrchestrator
         _settingsPage.SetMonitorAddresses(runtime.OverviewPage.PlcMonitorAddresses);
 
         var machineId = _devicePages.GetCurrentOrFirstMachineId(runtime.Machines);
-        if (!string.IsNullOrWhiteSpace(machineId)
-            && runtime.Machines.TryGetValue(machineId, out var machineConfig))
-        {
-            _settingsPage.SetMachineConfig(machineConfig, runtime.ConfigDirectory);
-        }
+
+        // 傳入所有機台讓使用者在 SettingsPage 上選擇操作目標（如 PrintHeadController）
+        _settingsPage.SetMachines(runtime.Machines, runtime.ConfigDirectory, machineId);
 
         _shellPages.ShowSettings(_settingsPage);
     }

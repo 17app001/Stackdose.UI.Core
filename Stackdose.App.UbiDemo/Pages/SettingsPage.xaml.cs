@@ -30,6 +30,14 @@ public partial class SettingsPage : UserControl
         _viewModel.ApplyMachineConfig(config, configRootPath);
     }
 
+    /// <summary>
+    /// 設定所有可用機台，讓使用者在 SettingsPage 上選擇操作目標
+    /// </summary>
+    public void SetMachines(IReadOnlyDictionary<string, UbiMachineConfig> machines, string configRootPath, string? defaultMachineId)
+    {
+        _viewModel.ApplyMachines(machines, configRootPath, defaultMachineId);
+    }
+
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         var status = PlcContext.GlobalStatus;

@@ -1,7 +1,7 @@
 {
   "machine": {
-    "id": "CVR1",
-    "name": "Conveyor Line A",
+    "id": "OVEN1",
+    "name": "Reflow Oven A",
     "enable": true
   },
   "plc": {
@@ -10,15 +10,15 @@
     "pollIntervalMs": 200,
     "autoConnect": false,
     "monitorAddresses": [
-      "D100,101",
-      "M200,104"
+      "D100,4",
+      "M200,204"
     ]
   },
   "commands": {
-    "Start": "M300",
-    "Stop": "M301",
-    "EmergencyStop": "M302",
-    "Reset": "M303"
+    "Start": "M400",
+    "Stop": "M401",
+    "EmergencyStop": "M402",
+    "Reset": "M403"
   },
   "processMonitor": {
     "isRunning": "M200",
@@ -26,11 +26,10 @@
     "isAlarm": "M201"
   },
   "detailLabels": {
-    "Belt Speed": "D100",
-    "Motor Current": "D101",
-    "Temperature": "D102",
-    "Product Count": "D103",
-    "Elapsed Time": "D200"
+    "Oven Temp": "D100",
+    "Cooling Temp": "D101",
+    "Conveyor Speed": "D102",
+    "Product Count": "D103"
   },
   "tags": {
     "status": {
@@ -69,5 +68,5 @@
   "modules": [
     "processControl"
   ],
-  "showPlcEditor": false
+  "showPlcEditor": true
 }

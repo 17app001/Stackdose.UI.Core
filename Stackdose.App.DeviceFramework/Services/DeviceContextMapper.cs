@@ -31,6 +31,7 @@ public static class DeviceContextMapper
             AlarmConfigFile = adapter.GetAlarmConfigFile(config),
             SensorConfigFile = adapter.GetSensorConfigFile(config),
             PrintHeadConfigFiles = [.. adapter.GetPrintHeadConfigFiles(config)],
+            ShowPlcEditor = config.ShowPlcEditor,
             EnabledModules = [.. config.Modules]
         };
 

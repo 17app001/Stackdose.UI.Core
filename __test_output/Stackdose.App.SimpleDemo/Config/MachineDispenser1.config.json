@@ -1,51 +1,54 @@
 {
   "machine": {
-    "id": "CVR1",
-    "name": "Conveyor Line A",
+    "id": "DSP1",
+    "name": "Dispenser Unit B",
     "enable": true
   },
   "plc": {
     "ip": "192.168.22.39",
     "port": 3000,
-    "pollIntervalMs": 200,
+    "pollIntervalMs": 150,
     "autoConnect": false,
     "monitorAddresses": [
-      "D100,101",
-      "M200,104"
+      "D500,101",
+      "M400,5"
     ]
   },
   "commands": {
-    "Start": "M300",
-    "Stop": "M301",
-    "EmergencyStop": "M302",
-    "Reset": "M303"
+    "Start": "M400",
+    "Pause": "M401",
+    "Stop": "M402",
+    "Prime": "M403",
+    "Purge": "M404"
   },
   "processMonitor": {
-    "isRunning": "M200",
-    "isCompleted": "M202",
-    "isAlarm": "M201"
+    "isRunning": "M400",
+    "isCompleted": "M402",
+    "isAlarm": "M401"
   },
   "detailLabels": {
-    "Belt Speed": "D100",
-    "Motor Current": "D101",
-    "Temperature": "D102",
-    "Product Count": "D103",
-    "Elapsed Time": "D200"
+    "Fluid Pressure": "D500",
+    "Needle Height": "D501",
+    "Dispense Volume": "D502",
+    "Dot Count": "D503",
+    "Fluid Level": "D504",
+    "Nozzle Temp": "D505",
+    "Elapsed Time": "D600"
   },
   "tags": {
     "status": {
       "isRunning": {
-        "address": "M200",
+        "address": "M400",
         "type": "bool",
         "access": "read"
       },
       "isAlarm": {
-        "address": "M201",
+        "address": "M401",
         "type": "bool",
         "access": "read"
       },
       "heartbeat": {
-        "address": "D300",
+        "address": "D700",
         "type": "int16",
         "access": "read",
         "length": 1
@@ -53,21 +56,26 @@
     },
     "process": {
       "batchNo": {
-        "address": "D400",
+        "address": "D800",
         "type": "string",
         "access": "read",
         "length": 8
       },
       "recipeNo": {
-        "address": "D410",
+        "address": "D810",
         "type": "string",
         "access": "read",
         "length": 8
+      },
+      "viscosity": {
+        "address": "D820",
+        "type": "int16",
+        "access": "read",
+        "length": 1
       }
     }
   },
   "modules": [
     "processControl"
-  ],
-  "showPlcEditor": false
+  ]
 }

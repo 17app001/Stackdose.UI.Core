@@ -7,12 +7,16 @@
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1200"
              Background="#FF1A1A2E">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+    </UserControl.Resources>
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -140,6 +144,26 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+            </Grid>
+        </Border>
+
+        <!-- Row 4: PLC Device Editor (shown when ShowPlcEditor=true) -->
+        <Border Grid.Row="4" Background="#FF16213E" CornerRadius="8" Padding="12" Margin="0,12,0,0"
+                Visibility="{Binding ShowPlcEditor, Converter={StaticResource BoolToVisibility}}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="PLC Device Editor" Foreground="#FFE0E0E0" FontSize="14" FontWeight="SemiBold" Margin="4,0,0,8"/>
+                <core:PlcDeviceEditor Grid.Row="1"
+                                      Label="Device Editor"
+                                      Address="D200"
+                                      Value="0"
+                                      Reason="Manual Operation"
+                                      RequiredLevel="Supervisor"
+                                      EnableAuditTrail="True"
+                                      Height="200"/>
             </Grid>
         </Border>
     </Grid>

@@ -20,6 +20,9 @@ public sealed class DeviceContext
     public string SensorConfigFile { get; set; } = string.Empty;
     public List<string> PrintHeadConfigFiles { get; set; } = [];
 
+    /// <summary>是否在設備頁底部顯示 PlcDeviceEditor 面板</summary>
+    public bool ShowPlcEditor { get; set; } = false;
+
     // ── 命令位址（Key = 命令名稱, Value = PLC 位址） ──
     public Dictionary<string, string> Commands { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 

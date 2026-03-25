@@ -2,7 +2,7 @@ using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Templates.Helpers;
 using System.Windows;
 
-namespace Stackdose.App.SimpleDemo;
+namespace Stackdose.App.MyOvenDemo;
 
 public partial class App : Application
 {

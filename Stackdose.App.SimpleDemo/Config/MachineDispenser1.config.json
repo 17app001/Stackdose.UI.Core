@@ -10,8 +10,8 @@
     "pollIntervalMs": 150,
     "autoConnect": false,
     "monitorAddresses": [
-      "D500,6",
-      "M400,3"
+      "D500,101",
+      "M400,5"
     ]
   },
   "commands": {
@@ -37,17 +37,46 @@
   },
   "tags": {
     "status": {
-      "isRunning": { "address": "M400", "type": "bool", "access": "read" },
-      "isAlarm": { "address": "M401", "type": "bool", "access": "read" },
-      "heartbeat": { "address": "D700", "type": "int16", "access": "read" }
+      "isRunning": {
+        "address": "M400",
+        "type": "bool",
+        "access": "read"
+      },
+      "isAlarm": {
+        "address": "M401",
+        "type": "bool",
+        "access": "read"
+      },
+      "heartbeat": {
+        "address": "D700",
+        "type": "int16",
+        "access": "read",
+        "length": 1
+      }
     },
     "process": {
-      "batchNo": { "address": "D800", "type": "string", "access": "read", "length": 8 },
-      "recipeNo": { "address": "D810", "type": "string", "access": "read", "length": 8 },
-      "viscosity": { "address": "D820", "type": "int16", "access": "read" }
+      "batchNo": {
+        "address": "D800",
+        "type": "string",
+        "access": "read",
+        "length": 8
+      },
+      "recipeNo": {
+        "address": "D810",
+        "type": "string",
+        "access": "read",
+        "length": 8
+      },
+      "viscosity": {
+        "address": "D820",
+        "type": "int16",
+        "access": "read",
+        "length": 1
+      }
     }
   },
   "modules": [
     "processControl"
-  ]
+  ],
+  "showPlcEditor": false
 }

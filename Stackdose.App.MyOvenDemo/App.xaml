@@ -1,4 +1,4 @@
-<Application x:Class="Stackdose.App.SimpleDemo.App"
+<Application x:Class="Stackdose.App.MyOvenDemo.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Application.Resources>

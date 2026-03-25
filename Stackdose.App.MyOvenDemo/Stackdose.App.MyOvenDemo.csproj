@@ -7,8 +7,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <PlatformTarget>x64</PlatformTarget>
-    <RootNamespace>Stackdose.App.SimpleDemo</RootNamespace>
-    <AssemblyName>Stackdose.App.SimpleDemo</AssemblyName>
+    <RootNamespace>Stackdose.App.MyOvenDemo</RootNamespace>
+    <AssemblyName>Stackdose.App.MyOvenDemo</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

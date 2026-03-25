@@ -35,6 +35,9 @@ public sealed class MachineConfig
     /// 例如: ["processControl", "printHead", "alarm", "sensor"]
     /// </summary>
     public List<string> Modules { get; set; } = [];
+
+    /// <summary>是否在設備頁底部顯示 PlcDeviceEditor 面板</summary>
+    public bool ShowPlcEditor { get; set; } = false;
 }
 
 public sealed class MachineInfo

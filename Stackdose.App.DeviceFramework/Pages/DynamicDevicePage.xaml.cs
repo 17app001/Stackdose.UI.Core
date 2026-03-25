@@ -17,6 +17,14 @@ public partial class DynamicDevicePage : UserControl
     private readonly DevicePageViewModel _viewModel;
     private readonly ProcessCommandService _commandService = new();
 
+    /// <summary>
+    /// 命令攔截器 — App 端可設定此委派來攔截命令執行。
+    /// 參數：(machineId, commandName, address)
+    /// 回傳 true  → 繼續執行預設 PLC 寫入
+    /// 回傳 false → 跳過預設 PLC 寫入（由 App 端自行處理）
+    /// </summary>
+    public Func<string, string, string, bool>? CommandInterceptor { get; set; }
+
     public DynamicDevicePage()
     {
         _viewModel = new DevicePageViewModel();
@@ -87,6 +95,14 @@ public partial class DynamicDevicePage : UserControl
 
         if (cmd is null)
             return;
+
+        // 如果設定了攔截器，先呼叫攔截器
+        if (CommandInterceptor is not null)
+        {
+            var shouldContinue = CommandInterceptor(_viewModel.MachineId, commandName, cmd.Address);
+            if (!shouldContinue)
+                return;
+        }
 
         var result = await _commandService.ExecuteCommandAsync(
             _viewModel.MachineId,

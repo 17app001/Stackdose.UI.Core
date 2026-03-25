@@ -1,51 +1,50 @@
 {
   "machine": {
-    "id": "CVR1",
-    "name": "Conveyor Line A",
+    "id": "OVEN2",
+    "name": "Reflow Oven B",
     "enable": true
   },
   "plc": {
-    "ip": "192.168.22.39",
+    "ip": "192.168.1.101",
     "port": 3000,
     "pollIntervalMs": 200,
     "autoConnect": false,
     "monitorAddresses": [
-      "D100,101",
-      "M200,104"
+      "D200,4",
+      "M300,204"
     ]
   },
   "commands": {
-    "Start": "M300",
-    "Stop": "M301",
-    "EmergencyStop": "M302",
-    "Reset": "M303"
+    "Start": "M500",
+    "Stop": "M501",
+    "EmergencyStop": "M502",
+    "Reset": "M503"
   },
   "processMonitor": {
-    "isRunning": "M200",
-    "isCompleted": "M202",
-    "isAlarm": "M201"
+    "isRunning": "M300",
+    "isCompleted": "M302",
+    "isAlarm": "M301"
   },
   "detailLabels": {
-    "Belt Speed": "D100",
-    "Motor Current": "D101",
-    "Temperature": "D102",
-    "Product Count": "D103",
-    "Elapsed Time": "D200"
+    "Oven Temp": "D200",
+    "Cooling Temp": "D201",
+    "Conveyor Speed": "D202",
+    "Product Count": "D203"
   },
   "tags": {
     "status": {
       "isRunning": {
-        "address": "M200",
+        "address": "M300",
         "type": "bool",
         "access": "read"
       },
       "isAlarm": {
-        "address": "M201",
+        "address": "M301",
         "type": "bool",
         "access": "read"
       },
       "heartbeat": {
-        "address": "D300",
+        "address": "D350",
         "type": "int16",
         "access": "read",
         "length": 1
@@ -53,13 +52,13 @@
     },
     "process": {
       "batchNo": {
-        "address": "D400",
+        "address": "D450",
         "type": "string",
         "access": "read",
         "length": 8
       },
       "recipeNo": {
-        "address": "D410",
+        "address": "D460",
         "type": "string",
         "access": "read",
         "length": 8
@@ -69,5 +68,5 @@
   "modules": [
     "processControl"
   ],
-  "showPlcEditor": false
+  "showPlcEditor": true
 }

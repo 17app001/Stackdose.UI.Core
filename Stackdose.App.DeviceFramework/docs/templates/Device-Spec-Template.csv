@@ -1,0 +1,52 @@
+## ==============================
+## Sheet: Project
+## 專案層級設定（只有一列資料）
+## ==============================
+ProjectName,HeaderDeviceName,Version,PageMode,AutoConnect
+
+
+## ==============================
+## Sheet: Machines
+## 機台定義（每台一列）
+## ==============================
+MachineId,MachineName,PlcIp,PlcPort,PollIntervalMs,ProcessMonitor.IsRunning,ProcessMonitor.IsCompleted,ProcessMonitor.IsAlarm,Modules
+
+
+## ==============================
+## Sheet: Commands
+## 命令定義（每個命令一列，用 MachineId 關聯）
+## ==============================
+MachineId,CommandName,Address
+
+
+## ==============================
+## Sheet: Labels
+## 監控標籤定義（每個標籤一列，用 MachineId 關聯）
+## ==============================
+MachineId,LabelName,Address
+
+
+## ==============================
+## Sheet: Tags （選填，進階使用者才需要填）
+## 額外 Tag 定義
+## ==============================
+MachineId,Section,TagName,Address,Type,Access,Length
+
+
+## ==============================
+## Sheet: Panels （選填）
+## 面板定義 — 不加就只產出基本檔案
+##   PanelType: MaintenanceMode | Settings | PlcDeviceEditor
+##   MachineId: * = 所有機台共用
+##   Position:  Separate = 獨立導航頁  |  DevicePage.Bottom = 嵌入設備頁底部
+## ==============================
+PanelType,MachineId,Position,Title,RequiredLevel
+
+
+## ==============================
+## Sheet: MaintenanceItems （選填）
+## 維護模式操作項 — 只有 Panels 裡有 MaintenanceMode 才需要填
+##   Type: toggle | momentary | editor | readonly
+## ==============================
+MachineId,ItemName,Address,Type,Label
+

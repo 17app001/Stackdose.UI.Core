@@ -1,5 +1,5 @@
 {
-  "headerDeviceName": "SIMPLE DEMO",
+  "headerDeviceName": "MY OVEN",
   "defaultPageTitle": "Machine Overview",
   "useFrameworkShellServices": false,
   "enableMetaHotReload": false,
@@ -22,6 +22,16 @@
       "requiredLevel": "Operator"
     },
     {
+      "title": "Maintenance Mode",
+      "navigationTarget": "MaintenancePage",
+      "requiredLevel": "Supervisor"
+    },
+    {
+      "title": "Settings",
+      "navigationTarget": "SettingsPage",
+      "requiredLevel": "Admin"
+    },
+    {
       "title": "Log Viewer",
       "navigationTarget": "LogViewerPage",
       "requiredLevel": "Instructor"
@@ -35,7 +45,7 @@
   "softwareInfoItems": [
     {
       "label": "Application",
-      "value": "Stackdose.App.SimpleDemo"
+      "value": "Stackdose.App.MyOvenDemo"
     },
     {
       "label": "Version",

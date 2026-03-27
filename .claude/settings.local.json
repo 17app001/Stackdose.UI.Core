@@ -14,7 +14,12 @@
       "Bash(head -5 grep -rn \"class ComplianceContext\\\\|LiveLogs\" \"D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core\" --include=\"*.cs\")",
       "Bash(find D:/工作區/Project/Stackdose.UI.Core -name *AppBar* -o -name *TitleBar* -o -name *WindowBar* -o -name *Header*)",
       "Bash(grep -E \"\\\\.\\(xaml|cs\\)$\")",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(ls -la Stackdose.App.*/)",
+      "Bash(xargs wc:*)",
+      "Bash(grep -E \"\\\\.xaml$\")",
+      "Bash(sed 's/\\\\.xaml$//')",
+      "Bash(dotnet sln:*)"
     ]
   }
 }

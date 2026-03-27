@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.App.MyOvenDemo", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.App.SinglePageDemo", "Stackdose.App.SinglePageDemo\Stackdose.App.SinglePageDemo.csproj", "{42CF3A48-EA50-6173-F5F3-8FF42755EEEE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Tools.ProjectGeneratorUI", "Stackdose.Tools.ProjectGeneratorUI\Stackdose.Tools.ProjectGeneratorUI.csproj", "{0FE9ACCE-8A4F-462D-9938-29C0B52315C7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -223,6 +225,18 @@ Global
 		{42CF3A48-EA50-6173-F5F3-8FF42755EEEE}.Release|x64.Build.0 = Release|Any CPU
 		{42CF3A48-EA50-6173-F5F3-8FF42755EEEE}.Release|x86.ActiveCfg = Release|Any CPU
 		{42CF3A48-EA50-6173-F5F3-8FF42755EEEE}.Release|x86.Build.0 = Release|Any CPU
+		{0FE9ACCE-8A4F-462D-9938-29C0B52315C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FE9ACCE-8A4F-462D-9938-29C0B52315C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FE9ACCE-8A4F-462D-9938-29C0B52315C7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0FE9ACCE-8A4F-462D-9938-29C0B52315C7}.Debug|x64.Build.0 = Debug|Any CPU
+		{0FE9ACCE-8A4F-462D-9938-29C0B52315C7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0FE9ACCE-8A4F-462D-9938-29C0B52315C7}.Debug|x86.Build.0 = Debug|Any CPU
+		{0FE9ACCE-8A4F-462D-9938-29C0B52315C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FE9ACCE-8A4F-462D-9938-29C0B52315C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FE9ACCE-8A4F-462D-9938-29C0B52315C7}.Release|x64.ActiveCfg = Release|Any CPU
+		{0FE9ACCE-8A4F-462D-9938-29C0B52315C7}.Release|x64.Build.0 = Release|Any CPU
+		{0FE9ACCE-8A4F-462D-9938-29C0B52315C7}.Release|x86.ActiveCfg = Release|Any CPU
+		{0FE9ACCE-8A4F-462D-9938-29C0B52315C7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

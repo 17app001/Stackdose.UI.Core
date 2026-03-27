@@ -22,7 +22,7 @@ public sealed class ProjectInfo
     public string PageMode { get; set; } = "DynamicDevicePage";
     public bool AutoConnect { get; set; } = false;
 
-    /// <summary>Short name derived from ProjectName, e.g. "Stackdose.App.OvenControl" �� "OvenControl"</summary>
+    /// <summary>Short name derived from ProjectName, e.g. "Stackdose.App.OvenControl" �� "OvenControl"</summary>
     public string ShortName => ProjectName.Contains('.')
         ? ProjectName[(ProjectName.LastIndexOf('.') + 1)..]
         : ProjectName;
@@ -38,6 +38,16 @@ public sealed class MachineInfo
     public string ProcessMonitorIsRunning { get; set; } = "M200";
     public string ProcessMonitorIsCompleted { get; set; } = "M202";
     public string ProcessMonitorIsAlarm { get; set; } = "M201";
+
+    /// <summary>
+    /// 啟用的 UI 模組，分號分隔。可用值：
+    ///   processControl  — 製程狀態 + 指令按鈕（預設）
+    ///   sensors         — SensorViewer + 自動產生 sensors.json 範本
+    ///   alarm           — AlarmViewer  + 自動產生 alarms.json 範本
+    ///   printHead       — PrintHeadController + 自動產生 printhead1.json 範本
+    ///   recipe          — RecipeLoader 控制項
+    ///   simulator       — SimulatorControlPanel 控制項
+    /// </summary>
     public string Modules { get; set; } = "processControl";
 }
 

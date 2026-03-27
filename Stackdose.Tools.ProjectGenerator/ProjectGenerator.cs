@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 
 namespace Stackdose.Tools.ProjectGenerator;
@@ -502,6 +503,7 @@ public sealed class ProjectGenerator
 
     private void GenerateMachineConfig(MachineInfo machine)
     {
+        var machineLabel = BuildMachineFileLabel(machine);
         var commands = _spec.Commands.Where(c => c.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase)).ToList();
         var labels = _spec.Labels.Where(l => l.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase)).ToList();
         var tags = _spec.Tags.Where(t => t.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -537,28 +539,135 @@ public sealed class ProjectGenerator
         if (!tags.Any(t => t.TagName.Equals("heartbeat", StringComparison.OrdinalIgnoreCase)))
             statusTags["heartbeat"] = new { address = "D300", type = "int16", access = "read", length = 1 };
 
-        var modules = machine.Modules.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        // ── Module resolution ──────────────────────────────────────────────
+        var modules = machine.Modules
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(m => m.Trim())
+            .ToArray();
         if (modules.Length == 0) modules = ["processControl"];
 
-        // Check if PlcDeviceEditor panel is enabled for this machine
+        bool HasModule(string key) => modules.Any(m => m.Equals(key, StringComparison.OrdinalIgnoreCase));
+
+        // Generate sub-config templates and collect file references
+        string? alarmConfigFile = null;
+        string? sensorConfigFile = null;
+        string[]? printHeadConfigs = null;
+
+        if (HasModule("alarm"))
+        {
+            alarmConfigFile = $"Config/Machine{machineLabel}/alarms.json";
+            GenerateAlarmConfigTemplate(machineLabel);
+        }
+        if (HasModule("sensors"))
+        {
+            sensorConfigFile = $"Config/Machine{machineLabel}/sensors.json";
+            GenerateSensorConfigTemplate(machineLabel);
+        }
+        if (HasModule("printHead"))
+        {
+            printHeadConfigs = [$"Config/Machine{machineLabel}/printhead1.json"];
+            GeneratePrintHeadConfigTemplate(machineLabel);
+        }
+
+        // ── PlcDeviceEditor panel flag ─────────────────────────────────────
         var showPlcEditor = _spec.Panels.Any(p =>
             p.PanelType.Equals("PlcDeviceEditor", StringComparison.OrdinalIgnoreCase)
             && (p.MachineId == "*" || p.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase)));
 
-        var config = new
+        // ── Build JSON with optional fields ────────────────────────────────
+        var serOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var node = new JsonObject
         {
-            machine = new { id = machine.MachineId, name = machine.MachineName, enable = true },
-            plc = new { ip = machine.PlcIp, port = machine.PlcPort, pollIntervalMs = machine.PollIntervalMs, autoConnect = _spec.Project.AutoConnect, monitorAddresses },
-            commands = commandsDict,
-            processMonitor = new { isRunning = machine.ProcessMonitorIsRunning, isCompleted = machine.ProcessMonitorIsCompleted, isAlarm = machine.ProcessMonitorIsAlarm },
-            detailLabels = labelsDict,
-            tags = new { status = statusTags, process = processTags },
-            modules,
-            showPlcEditor,
+            ["machine"]        = JsonSerializer.SerializeToNode(new { id = machine.MachineId, name = machine.MachineName, enable = true }, serOpts),
+            ["plc"]            = JsonSerializer.SerializeToNode(new { ip = machine.PlcIp, port = machine.PlcPort, pollIntervalMs = machine.PollIntervalMs, autoConnect = _spec.Project.AutoConnect, monitorAddresses }, serOpts),
+            ["commands"]       = JsonSerializer.SerializeToNode(commandsDict, serOpts),
+            ["processMonitor"] = JsonSerializer.SerializeToNode(new { isRunning = machine.ProcessMonitorIsRunning, isCompleted = machine.ProcessMonitorIsCompleted, isAlarm = machine.ProcessMonitorIsAlarm }, serOpts),
         };
 
-        var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-        WriteFile($"Config/Machine{BuildMachineFileLabel(machine)}.config.json", json);
+        if (alarmConfigFile  != null) node["alarmConfigFile"]  = alarmConfigFile;
+        if (sensorConfigFile != null) node["sensorConfigFile"] = sensorConfigFile;
+        if (printHeadConfigs != null) node["printHeadConfigs"] = JsonSerializer.SerializeToNode(printHeadConfigs, serOpts);
+
+        node["detailLabels"] = JsonSerializer.SerializeToNode(labelsDict, serOpts);
+        node["tags"]         = JsonSerializer.SerializeToNode(new { status = statusTags, process = processTags }, serOpts);
+        node["modules"]      = JsonSerializer.SerializeToNode(modules, serOpts);
+        node["showPlcEditor"] = showPlcEditor;
+
+        var json = node.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+        WriteFile($"Config/Machine{machineLabel}.config.json", json);
+    }
+
+    // ═══════════════════════════════════════
+    //  Module Config Templates
+    // ═══════════════════════════════════════
+
+    private void GenerateAlarmConfigTemplate(string machineLabel)
+    {
+        var content = """
+            {
+              "Alarms": [
+                { "Group": "Safety",   "Device": "M100", "Bit": 0, "OperationDescription": "Emergency stop triggered" },
+                { "Group": "Safety",   "Device": "M100", "Bit": 1, "OperationDescription": "Door interlock open" },
+                { "Group": "Process",  "Device": "M101", "Bit": 0, "OperationDescription": "Process alarm 1" },
+                { "Group": "Process",  "Device": "M101", "Bit": 1, "OperationDescription": "Process alarm 2" }
+              ]
+            }
+            """;
+        WriteFile($"Config/Machine{machineLabel}/alarms.json", content);
+    }
+
+    private void GenerateSensorConfigTemplate(string machineLabel)
+    {
+        var content = """
+            [
+              { "Group": "Temperature", "Device": "D100", "Bit": "",  "Value": ">80",  "Mode": "COMPARE", "OperationDescription": "Temperature high warning" },
+              { "Group": "Temperature", "Device": "D101", "Bit": "",  "Value": "<10",  "Mode": "COMPARE", "OperationDescription": "Temperature low warning" },
+              { "Group": "Safety",      "Device": "M100", "Bit": "0", "Value": "1",    "Mode": "AND",     "OperationDescription": "Emergency stop active" }
+            ]
+            """;
+        WriteFile($"Config/Machine{machineLabel}/sensors.json", content);
+    }
+
+    private void GeneratePrintHeadConfigTemplate(string machineLabel)
+    {
+        var content = """
+            {
+              "DriverType": "Feiyang",
+              "Model": "Feiyang-M1536",
+              "Enabled": true,
+              "MachineType": "A",
+              "HeadIndex": 0,
+              "Name": "Head1",
+              "BoardIP": "192.168.1.200",
+              "BoardPort": 10000,
+              "PcIP": "192.168.1.100",
+              "PcPort": 10000,
+              "Waveform": "",
+              "Firmware": {
+                "MachineType": "M1536",
+                "JetColors": [0, 0, 0, 0],
+                "BaseVoltages": [23.5, 23.5, 23.5, 23.5],
+                "OffsetVoltages": [0.0, 0.0, 0.0, 0.0],
+                "HeatTemperature": 40.0,
+                "DisableColumnMask": 0,
+                "PrintheadColorCount": 1,
+                "InstallDirectionPositive": false,
+                "EncoderFunction": 0
+              },
+              "PrintMode": {
+                "PrintDirection": "Bidirection",
+                "GratingDpi": 1270,
+                "ImageDpi": 600,
+                "GrayScale": 0,
+                "GrayScaleDrop": 1,
+                "ResetEncoder": 1000,
+                "LColumnCali": [29.9, 22.3, 7.6],
+                "RColumnCali": [7.6, 22.3, 29.9],
+                "CaliPixelMM": 8
+              }
+            }
+            """;
+        WriteFile($"Config/Machine{machineLabel}/printhead1.json", content);
     }
 
     // ═══════════════════════════════════════

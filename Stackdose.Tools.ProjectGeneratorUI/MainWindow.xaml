@@ -502,9 +502,8 @@
                                 </StackPanel>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="設備" Style="{StaticResource SectionHeader}"/>
-                                    <TextBlock FontWeight="SemiBold">
-                                        <Run Text="{Binding Machines.Count}"/><Run Text=" 台設備"/>
-                                    </TextBlock>
+                                    <TextBlock FontWeight="SemiBold"
+                                               Text="{Binding Machines.Count, StringFormat='{}{0} 台設備'}"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Text="Panels" Style="{StaticResource SectionHeader}"/>
@@ -555,14 +554,14 @@
                 BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="0,1,0,0"
                 Height="26" Padding="16,0">
-            <TextBlock VerticalAlignment="Center" FontSize="11" Foreground="{StaticResource TextMutedBrush}">
-                <Run Text="{Binding Machines.Count}"/>
-                <Run Text=" 台設備"/>
-                <Run Text="  |  專案："/>
-                <Run Text="{Binding ProjectName}"/>
-                <Run Text="  |  模式："/>
-                <Run Text="{Binding PageMode}"/>
-            </TextBlock>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock FontSize="11" Foreground="{StaticResource TextMutedBrush}"
+                           Text="{Binding Machines.Count, StringFormat='{}{0} 台設備'}"/>
+                <TextBlock FontSize="11" Foreground="{StaticResource TextMutedBrush}" Text="  |  專案："/>
+                <TextBlock FontSize="11" Foreground="{StaticResource TextMutedBrush}" Text="{Binding ProjectName}"/>
+                <TextBlock FontSize="11" Foreground="{StaticResource TextMutedBrush}" Text="  |  模式："/>
+                <TextBlock FontSize="11" Foreground="{StaticResource TextMutedBrush}" Text="{Binding PageMode}"/>
+            </StackPanel>
         </Border>
     </Grid>
 </Window>

@@ -6,8 +6,8 @@ using System.IO;
 namespace Stackdose.App.DeviceFramework.Services;
 
 /// <summary>
-/// ³q¥Î RuntimeHost ¡X ¸ü¤J Config¡Bªì©l¤Æ Overview ­¶­±¡C
-/// ¥i³z¹L«Øºc¤lª`¤J¦Û­q RuntimeMapper¡C
+/// ï¿½qï¿½ï¿½ RuntimeHost ï¿½X ï¿½ï¿½ï¿½J Configï¿½Bï¿½ï¿½lï¿½ï¿½ Overview ï¿½ï¿½ï¿½ï¿½ï¿½C
+/// ï¿½iï¿½zï¿½Lï¿½Øºcï¿½lï¿½`ï¿½Jï¿½Û­q RuntimeMapperï¿½C
 /// </summary>
 public class RuntimeHost
 {
@@ -21,6 +21,15 @@ public class RuntimeHost
     }
 
     public RuntimeMapper Mapper => _runtimeMapper;
+
+    /// <summary>
+    /// Loads machine configs without requiring a shell. Use for SinglePage scenarios.
+    /// </summary>
+    public (List<MachineConfig> Configs, string ConfigDirectory) LoadConfigs()
+    {
+        var configDir = ResolveConfigDirectory();
+        return (ConfigLoader.LoadMachines(configDir), configDir);
+    }
 
     public RuntimeContext? Start(MainContainer shell)
     {
@@ -81,7 +90,7 @@ public class RuntimeHost
 }
 
 /// <summary>
-/// Runtime ¤W¤U¤å ¡X ¸ü¤J«áªº°ßÅª§Ö·Ó¡C
+/// Runtime ï¿½Wï¿½Uï¿½ï¿½ ï¿½X ï¿½ï¿½ï¿½Jï¿½áªºï¿½ï¿½Åªï¿½Ö·Ó¡C
 /// </summary>
 public sealed class RuntimeContext
 {

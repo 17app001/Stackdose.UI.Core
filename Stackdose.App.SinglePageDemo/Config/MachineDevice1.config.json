@@ -1,0 +1,74 @@
+{
+  "machine": {
+    "id": "DEV1",
+    "name": "Device Station 1",
+    "enable": true
+  },
+  "plc": {
+    "ip": "192.168.1.100",
+    "port": 3000,
+    "pollIntervalMs": 200,
+    "autoConnect": false,
+    "monitorAddresses": [
+      "D100,6",
+      "M100,104"
+    ]
+  },
+  "commands": {
+    "Start": "M200",
+    "Stop": "M201",
+    "Reset": "M202",
+    "EmergencyStop": "M203"
+  },
+  "processMonitor": {
+    "isRunning": "M100",
+    "isCompleted": "M102",
+    "isAlarm": "M101"
+  },
+  "detailLabels": {
+    "Speed": "D100",
+    "Temperature": "D101",
+    "Pressure": "D102",
+    "Current": "D103",
+    "Cycle Count": "D104",
+    "Elapsed Time": "D105"
+  },
+  "tags": {
+    "status": {
+      "isRunning": {
+        "address": "M100",
+        "type": "bool",
+        "access": "read"
+      },
+      "isAlarm": {
+        "address": "M101",
+        "type": "bool",
+        "access": "read"
+      },
+      "heartbeat": {
+        "address": "D300",
+        "type": "int16",
+        "access": "read",
+        "length": 1
+      }
+    },
+    "process": {
+      "batchNo": {
+        "address": "D400",
+        "type": "string",
+        "access": "read",
+        "length": 8
+      },
+      "recipeNo": {
+        "address": "D410",
+        "type": "string",
+        "access": "read",
+        "length": 8
+      }
+    }
+  },
+  "modules": [
+    "processControl"
+  ],
+  "showPlcEditor": false
+}

@@ -136,7 +136,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         if (SelectedMachine == null) return;
         var name = NextName(SelectedMachine.Commands.Select(c => c.Name), "Start");
-        SelectedMachine.Commands.Add(new CommandRow { Name = name, Address = "M300" });
+        var addr = NextAddress(SelectedMachine.Commands.Select(c => c.Address), "M300");
+        SelectedMachine.Commands.Add(new CommandRow { Name = name, Address = addr });
     }
 
     private void RemoveCommand(CommandRow? row)
@@ -149,7 +150,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         if (SelectedMachine == null) return;
         var name = NextName(SelectedMachine.Labels.Select(l => l.Name), "Label");
-        SelectedMachine.Labels.Add(new LabelRow { Name = name, Address = "D100" });
+        var addr = NextAddress(SelectedMachine.Labels.Select(l => l.Address), "D100");
+        SelectedMachine.Labels.Add(new LabelRow { Name = name, Address = addr });
     }
 
     private void RemoveLabel(LabelRow? row)
@@ -162,7 +164,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         if (SelectedMachine == null) return;
         var name = NextName(SelectedMachine.DataEvents.Select(d => d.Name), "OnEvent");
-        SelectedMachine.DataEvents.Add(new DataEventRow { Name = name, Address = "M200", Trigger = "changed" });
+        var addr = NextAddress(SelectedMachine.DataEvents.Select(d => d.Address), "M200");
+        SelectedMachine.DataEvents.Add(new DataEventRow { Name = name, Address = addr, Trigger = "changed" });
     }
 
     private static string NextName(IEnumerable<string> existing, string baseName)
@@ -171,6 +174,23 @@ public sealed class MainViewModel : INotifyPropertyChanged
         int i = 1;
         while (set.Contains(baseName + i)) i++;
         return baseName + i;
+    }
+
+    /// <summary>
+    /// 取現有地址清單的最後一筆，解析前綴+數字後回傳 +1 的地址。
+    /// 例：["M300","M301"] → "M302"；空清單或無法解析則回傳 defaultAddress。
+    /// </summary>
+    private static string NextAddress(IEnumerable<string> existing, string defaultAddress)
+    {
+        var last = existing.LastOrDefault();
+        if (last == null) return defaultAddress;
+
+        var match = System.Text.RegularExpressions.Regex.Match(last, @"^([A-Za-z]+)(\d+)$");
+        if (!match.Success) return defaultAddress;
+
+        var prefix = match.Groups[1].Value;
+        var num    = int.Parse(match.Groups[2].Value);
+        return prefix + (num + 1);
     }
 
     private void RemoveDataEvent(DataEventRow? row)

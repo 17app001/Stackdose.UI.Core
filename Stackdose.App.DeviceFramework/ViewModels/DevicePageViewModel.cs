@@ -21,6 +21,7 @@ public class DevicePageViewModel : ViewModelBase
     private string _currentProcessStateText = "Idle";
     private string _elapsedTimeAddress = "--";
     private bool _showPlcEditor = false;
+    private bool _showLiveLog = false;
     private string _layoutMode = "SplitRight";
 
     public DevicePageViewModel()
@@ -96,6 +97,12 @@ public class DevicePageViewModel : ViewModelBase
         set => SetProperty(ref _showPlcEditor, value);
     }
 
+    public bool ShowLiveLog
+    {
+        get => _showLiveLog;
+        set => SetProperty(ref _showLiveLog, value);
+    }
+
     public ProcessState CurrentProcessState
     {
         get => _currentProcessState;
@@ -158,6 +165,7 @@ public class DevicePageViewModel : ViewModelBase
         AlarmConfigFile = context.AlarmConfigFile;
         SensorConfigFile = context.SensorConfigFile;
         ShowPlcEditor = context.ShowPlcEditor;
+        ShowLiveLog = context.ShowLiveLog;
         LayoutMode = context.LayoutMode;
         CurrentProcessState = ProcessState.Idle;
 

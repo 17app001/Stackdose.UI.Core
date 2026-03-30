@@ -71,24 +71,45 @@ public partial class DynamicDevicePage : UserControl
 
     private void ApplyLayout()
     {
-        bool hasViewers = _viewModel.HasAnyViewer;
-        bool isSplit = _viewModel.LayoutMode is "SplitRight" or "Dashboard";
-        bool showRight = hasViewers && isSplit;
+        bool hasViewers   = _viewModel.HasAnyViewer;
+        bool hasAlarm     = _viewModel.HasAlarmConfig;
+        bool hasSensor    = _viewModel.HasSensorConfig;
+        bool hasBoth      = hasAlarm && hasSensor;
+        bool isSplitRight = _viewModel.LayoutMode == "SplitRight";
+        bool isDashboard  = _viewModel.LayoutMode == "Dashboard";
 
+        // ── SplitRight: right column ──────────────────────────────────────
+        bool showRight = hasViewers && isSplitRight;
         ColSpacer.Width = showRight ? new System.Windows.GridLength(12) : new System.Windows.GridLength(0);
         ColRight.Width  = showRight ? new System.Windows.GridLength(0.9, System.Windows.GridUnitType.Star)
                                     : new System.Windows.GridLength(0);
-
         RightViewersPanel.Visibility = showRight ? Visibility.Visible : Visibility.Collapsed;
 
-        // Adjust sensor row height within right panel
         if (showRight)
         {
-            bool hasBoth = _viewModel.HasAlarmConfig && _viewModel.HasSensorConfig;
-            RowAlarm.Height       = _viewModel.HasAlarmConfig  ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
-            RowSensorSpacer.Height = hasBoth ? new System.Windows.GridLength(12) : new System.Windows.GridLength(0);
-            RowSensor.Height      = _viewModel.HasSensorConfig ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
+            RowAlarm.Height        = hasAlarm  ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
+            RowSensorSpacer.Height = hasBoth   ? new System.Windows.GridLength(12) : new System.Windows.GridLength(0);
+            RowSensor.Height       = hasSensor ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
         }
+
+        // ── Dashboard: bottom panel (side-by-side) ────────────────────────
+        bool showBottom = hasViewers && isDashboard;
+        RowBottomSpacer.Height  = showBottom ? new System.Windows.GridLength(12) : new System.Windows.GridLength(0);
+        RowBottomViewers.Height = showBottom ? new System.Windows.GridLength(280) : new System.Windows.GridLength(0);
+        BottomViewersPanel.Visibility = showBottom ? Visibility.Visible : Visibility.Collapsed;
+
+        if (showBottom)
+        {
+            BottomColAlarm.Width  = hasAlarm  ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
+            BottomColSpacer.Width = hasBoth   ? new System.Windows.GridLength(12) : new System.Windows.GridLength(0);
+            BottomColSensor.Width = hasSensor ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
+        }
+
+        // ── LiveLog row ───────────────────────────────────────────────────
+        bool showLiveLog = _viewModel.ShowLiveLog;
+        RowLiveLogSpacer.Height = showLiveLog ? new System.Windows.GridLength(12) : new System.Windows.GridLength(0);
+        RowLiveLog.Height       = showLiveLog ? new System.Windows.GridLength(200) : new System.Windows.GridLength(0);
+        MachineLiveLog.Visibility = showLiveLog ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)

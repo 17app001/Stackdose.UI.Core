@@ -39,6 +39,9 @@ public sealed class MachineConfig
     /// <summary>�O�_�b�]�ƭ�������� PlcDeviceEditor ���O</summary>
     public bool ShowPlcEditor { get; set; } = false;
 
+    /// <summary>是否在機台頁面顯示 LiveLog（只顯示此機台的日誌）</summary>
+    public bool ShowLiveLog { get; set; } = false;
+
     /// <summary>�]�ưʺA���}���Ʀ塿 Standard | SplitRight | Dashboard</summary>
     public string LayoutMode { get; set; } = "SplitRight";
 

@@ -46,6 +46,11 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         private NotifyCollectionChangedEventHandler? _collectionChangedHandler;
 
+        /// <summary>
+        /// 🔥 每個 LiveLogViewer 實例獨立的 CollectionViewSource，用於 MachineFilter 過濾
+        /// </summary>
+        private readonly CollectionViewSource _cvs = new();
+
         #endregion
 
         #region Constructor
@@ -256,11 +261,58 @@ namespace Stackdose.UI.Core.Controls
             if (d is not LiveLogViewer control)
                 return;
 
-            // 綁定新的資料來源
-            control.LogList.ItemsSource = e.NewValue as IEnumerable;
+            // 🔥 更新 CollectionViewSource 的 Source，套用過濾
+            control._cvs.Source = e.NewValue;
+            control.LogList.ItemsSource = control._cvs.View;
+            control.ApplyFilter();
 
-            // 🔥 訂閱集合變更事件（會自動取消舊的訂閱）
+            // 🔥 訂閱底層集合變更事件（會自動取消舊的訂閱）
             control.SubscribeToCollection(e.NewValue as INotifyCollectionChanged);
+        }
+
+        /// <summary>
+        /// 機台過濾器依賴屬性：指定後只顯示 LogEntry.MachineId 相符的日誌；留空顯示全部
+        /// </summary>
+        public static readonly DependencyProperty MachineFilterProperty =
+            DependencyProperty.Register(
+                nameof(MachineFilter),
+                typeof(string),
+                typeof(LiveLogViewer),
+                new PropertyMetadata(null, OnMachineFilterChanged));
+
+        public string? MachineFilter
+        {
+            get => (string?)GetValue(MachineFilterProperty);
+            set => SetValue(MachineFilterProperty, value);
+        }
+
+        private static void OnMachineFilterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not LiveLogViewer control)
+                return;
+
+            control.ApplyFilter();
+        }
+
+        /// <summary>
+        /// 套用 MachineFilter 到 CollectionViewSource
+        /// </summary>
+        private void ApplyFilter()
+        {
+            if (_cvs.View == null) return;
+
+            var filter = MachineFilter;
+            if (string.IsNullOrEmpty(filter))
+            {
+                _cvs.View.Filter = null;
+            }
+            else
+            {
+                _cvs.View.Filter = obj => obj is LogEntry entry &&
+                    string.Equals(entry.MachineId, filter, StringComparison.OrdinalIgnoreCase);
+            }
+
+            ScrollToBottom();
         }
 
         #endregion

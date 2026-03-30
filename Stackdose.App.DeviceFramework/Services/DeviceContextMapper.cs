@@ -32,6 +32,7 @@ public static class DeviceContextMapper
             SensorConfigFile = adapter.GetSensorConfigFile(config),
             PrintHeadConfigFiles = [.. adapter.GetPrintHeadConfigFiles(config)],
             ShowPlcEditor = config.ShowPlcEditor,
+            ShowLiveLog = config.ShowLiveLog,
             LayoutMode = config.LayoutMode,
             EnabledModules = [.. config.Modules],
             DataEvents = [.. config.DataEvents],

@@ -68,6 +68,8 @@ public sealed class MachineViewModel : INotifyPropertyChanged
     private bool _modRecipe;
     private bool _modSimulator;
 
+    private bool _showLiveLog;
+
     public string MachineId   { get => _machineId;   set { _machineId   = value; N(); N(nameof(DisplayName)); } }
     public string MachineName { get => _machineName; set { _machineName = value; N(); N(nameof(DisplayName)); } }
     public string PlcIp       { get => _plcIp;       set { _plcIp       = value; N(); } }
@@ -83,6 +85,8 @@ public sealed class MachineViewModel : INotifyPropertyChanged
     public bool ModPrintHead      { get => _modPrintHead;      set { _modPrintHead      = value; N(); N(nameof(ModulesSummary)); } }
     public bool ModRecipe         { get => _modRecipe;         set { _modRecipe         = value; N(); N(nameof(ModulesSummary)); } }
     public bool ModSimulator      { get => _modSimulator;      set { _modSimulator      = value; N(); N(nameof(ModulesSummary)); } }
+
+    public bool ShowLiveLog       { get => _showLiveLog;       set { _showLiveLog       = value; N(); } }
 
     public ObservableCollection<CommandRow>   Commands   { get; } = [];
     public ObservableCollection<LabelRow>    Labels     { get; } = [];

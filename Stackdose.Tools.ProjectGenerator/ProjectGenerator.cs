@@ -600,7 +600,9 @@ public sealed class ProjectGenerator
         node["detailLabels"] = JsonSerializer.SerializeToNode(labelsDict, serOpts);
         node["tags"]         = JsonSerializer.SerializeToNode(new { status = statusTags, process = processTags }, serOpts);
         node["modules"]      = JsonSerializer.SerializeToNode(modules, serOpts);
+        node["layoutMode"]    = _spec.Project.LayoutMode;
         node["showPlcEditor"] = showPlcEditor;
+        node["showLiveLog"]   = machine.ShowLiveLog;
 
         var machineDataEvents = _spec.DataEvents
             .Where(e => e.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase))

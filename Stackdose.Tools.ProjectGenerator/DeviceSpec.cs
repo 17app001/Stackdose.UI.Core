@@ -61,6 +61,9 @@ public sealed class MachineInfo
     ///   simulator       — SimulatorControlPanel 控制項
     /// </summary>
     public string Modules { get; set; } = "processControl";
+
+    /// <summary>是否在機台頁面底部顯示 LiveLog（只顯示此機台的日誌）</summary>
+    public bool ShowLiveLog { get; set; } = false;
 }
 
 public sealed class CommandInfo

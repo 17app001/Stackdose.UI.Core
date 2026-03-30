@@ -27,8 +27,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Tools.ProjectGene
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Tools.ProjectGenerator", "Stackdose.Tools.ProjectGenerator\Stackdose.Tools.ProjectGenerator.csproj", "{49EB5E04-DDCA-7570-9BA5-D16193E57F91}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.App.MyDevice", "Stackdose.App.MyDevice\Stackdose.App.MyDevice.csproj", "{2950E107-DA0C-9C81-EB58-4B34E282CC14}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -183,18 +181,6 @@ Global
 		{49EB5E04-DDCA-7570-9BA5-D16193E57F91}.Release|x64.Build.0 = Release|Any CPU
 		{49EB5E04-DDCA-7570-9BA5-D16193E57F91}.Release|x86.ActiveCfg = Release|Any CPU
 		{49EB5E04-DDCA-7570-9BA5-D16193E57F91}.Release|x86.Build.0 = Release|Any CPU
-		{2950E107-DA0C-9C81-EB58-4B34E282CC14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2950E107-DA0C-9C81-EB58-4B34E282CC14}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2950E107-DA0C-9C81-EB58-4B34E282CC14}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{2950E107-DA0C-9C81-EB58-4B34E282CC14}.Debug|x64.Build.0 = Debug|Any CPU
-		{2950E107-DA0C-9C81-EB58-4B34E282CC14}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2950E107-DA0C-9C81-EB58-4B34E282CC14}.Debug|x86.Build.0 = Debug|Any CPU
-		{2950E107-DA0C-9C81-EB58-4B34E282CC14}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2950E107-DA0C-9C81-EB58-4B34E282CC14}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2950E107-DA0C-9C81-EB58-4B34E282CC14}.Release|x64.ActiveCfg = Release|Any CPU
-		{2950E107-DA0C-9C81-EB58-4B34E282CC14}.Release|x64.Build.0 = Release|Any CPU
-		{2950E107-DA0C-9C81-EB58-4B34E282CC14}.Release|x86.ActiveCfg = Release|Any CPU
-		{2950E107-DA0C-9C81-EB58-4B34E282CC14}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

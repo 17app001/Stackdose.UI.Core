@@ -270,6 +270,17 @@
                                 </UniformGrid>
                             </Border>
 
+                            <!-- LiveLog -->
+                            <TextBlock Style="{StaticResource SectionHeader}" Text="頁面選項" Margin="0,16,0,10"/>
+                            <Border Background="{StaticResource PanelBrush}" CornerRadius="6" Padding="16,12">
+                                <CheckBox IsChecked="{Binding ShowLiveLog}">
+                                    <StackPanel>
+                                        <TextBlock Text="顯示機台 LiveLog" FontWeight="SemiBold"/>
+                                        <TextBlock Text="在裝置頁面底部顯示僅屬於此機台的即時日誌" FontSize="10" Foreground="{StaticResource TextMutedBrush}"/>
+                                    </StackPanel>
+                                </CheckBox>
+                            </Border>
+
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>

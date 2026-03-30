@@ -4,7 +4,7 @@ using Stackdose.UI.Core.Helpers;
 namespace Stackdose.App.DeviceFramework.Services;
 
 /// <summary>
-/// ³q¥Î»sµ{©R¥OªA°È ¡X ®Ú¾Ú©R¥O¦WºÙ©M¦ì§}¼g¤J PLC¡C
+/// ï¿½qï¿½Î»sï¿½{ï¿½Rï¿½Oï¿½Aï¿½ï¿½ ï¿½X ï¿½Ú¾Ú©Rï¿½Oï¿½Wï¿½Ù©Mï¿½ï¿½}ï¿½gï¿½J PLCï¿½C
 /// </summary>
 public class ProcessCommandService
 {
@@ -41,7 +41,8 @@ public class ProcessCommandService
         }
 
         ComplianceContext.LogSystem(
-            $"[Process] {commandName} requested: {machineName} ({machineId}) -> {commandAddress}");
+            $"[Process] {commandName} requested: {machineName} ({machineId}) -> {commandAddress}",
+            machineId: machineId);
 
         return new ProcessExecutionResult(
             true,

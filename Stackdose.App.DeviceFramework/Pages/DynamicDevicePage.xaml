@@ -16,7 +16,11 @@
             <RowDefinition Height="Auto"/>   <!-- 0: Header -->
             <RowDefinition Height="Auto"/>   <!-- 1: Process Monitor -->
             <RowDefinition Height="*"/>      <!-- 2: Main content (left + right columns) -->
-            <RowDefinition Height="Auto"/>   <!-- 3: PlcEditor -->
+            <RowDefinition x:Name="RowBottomSpacer"  Height="0"/>  <!-- 3: Dashboard bottom spacer -->
+            <RowDefinition x:Name="RowBottomViewers" Height="0"/>  <!-- 4: Dashboard bottom viewers -->
+            <RowDefinition x:Name="RowLiveLogSpacer" Height="0"/>  <!-- 5: LiveLog spacer -->
+            <RowDefinition x:Name="RowLiveLog"       Height="0"/>  <!-- 6: Machine LiveLog -->
+            <RowDefinition Height="Auto"/>   <!-- 7: PlcEditor -->
         </Grid.RowDefinitions>
 
         <!-- Row 0: Header -->
@@ -57,7 +61,7 @@
             </WrapPanel>
         </Border>
 
-        <!-- Row 2: Main Content (left data + right viewers) -->
+        <!-- Row 2: Main Content (left data + right viewers for SplitRight) -->
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -162,12 +166,12 @@
                 </Border>
             </Grid>
 
-            <!-- Right Column: AlarmViewer + SensorViewer (shown when SplitRight or Dashboard) -->
+            <!-- Right Column: AlarmViewer + SensorViewer (SplitRight mode) -->
             <Grid x:Name="RightViewersPanel" Grid.Column="2" Visibility="Collapsed">
                 <Grid.RowDefinitions>
-                    <RowDefinition x:Name="RowAlarm"  Height="*"/>
+                    <RowDefinition x:Name="RowAlarm"        Height="*"/>
                     <RowDefinition x:Name="RowSensorSpacer" Height="0"/>
-                    <RowDefinition x:Name="RowSensor" Height="0"/>
+                    <RowDefinition x:Name="RowSensor"       Height="0"/>
                 </Grid.RowDefinitions>
 
                 <Border Grid.Row="0" Background="#FF16213E" CornerRadius="8" Padding="0"
@@ -194,8 +198,42 @@
             </Grid>
         </Grid>
 
-        <!-- Row 3: PLC Device Editor -->
-        <Border Grid.Row="3" Background="#FF16213E" CornerRadius="8" Padding="12" Margin="0,12,0,0"
+        <!-- Row 4: Bottom Viewers Panel (Dashboard mode — AlarmViewer | SensorViewer side by side) -->
+        <Grid x:Name="BottomViewersPanel" Grid.Row="4" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="BottomColAlarm"   Width="*"/>
+                <ColumnDefinition x:Name="BottomColSpacer"  Width="0"/>
+                <ColumnDefinition x:Name="BottomColSensor"  Width="0"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="#FF16213E" CornerRadius="8" Padding="0"
+                    Visibility="{Binding HasAlarmConfig, Converter={StaticResource BoolToVisibility}}">
+                <core:AlarmViewer ConfigFile="{Binding AlarmConfigFile}"
+                                  Title="Alarm Viewer"
+                                  ItemFontSize="12"
+                                  ShowDeviceAddress="False"/>
+            </Border>
+
+            <Border Grid.Column="2" Background="#FF16213E" CornerRadius="8" Padding="0"
+                    Visibility="{Binding HasSensorConfig, Converter={StaticResource BoolToVisibility}}">
+                <core:SensorViewer ConfigFile="{Binding SensorConfigFile}"
+                                   Title="Sensor Viewer"
+                                   ItemFontSize="12"
+                                   ShowDeviceAddress="False"
+                                   EnableGrouping="True"
+                                   AutoStart="True"
+                                   RefreshInterval="500"/>
+            </Border>
+        </Grid>
+
+        <!-- Row 6: Machine LiveLog -->
+        <core:LiveLogViewer x:Name="MachineLiveLog"
+                            Grid.Row="6"
+                            MachineFilter="{Binding MachineId}"
+                            Margin="0,0,0,0"/>
+
+        <!-- Row 7: PLC Device Editor -->
+        <Border Grid.Row="7" Background="#FF16213E" CornerRadius="8" Padding="12" Margin="0,12,0,0"
                 Visibility="{Binding ShowPlcEditor, Converter={StaticResource BoolToVisibility}}">
             <Grid>
                 <Grid.RowDefinitions>

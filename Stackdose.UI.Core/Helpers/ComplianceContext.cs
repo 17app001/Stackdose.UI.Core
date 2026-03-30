@@ -101,13 +101,14 @@ namespace Stackdose.UI.Core.Helpers
         /// 此方法使用批次寫入模式，日誌會先存入佇列，再定期批次寫入資料庫
         /// 符合 FDA 21 CFR Part 11 規範
         /// </remarks>
-        public static void LogAuditTrail(string deviceName, string address, string oldValue, string newValue, string reason = "Manual Operation", string parameter = "", string batchId = "", bool showInUi = true)
+        public static void LogAuditTrail(string deviceName, string address, string oldValue, string newValue, string reason = "Manual Operation", string parameter = "", string batchId = "", bool showInUi = true, string? machineId = null)
         {
             ExecuteWithUiLog(
                 persist: () => SqliteLogger.LogAudit(CurrentUser, "WRITE", $"{deviceName}({address})", oldValue, newValue, reason, parameter, batchId),
                 uiMessage: $"[Audit] {deviceName} ({address}) : {oldValue} -> {newValue}",
                 uiLevel: LogLevel.Warning,
-                showInUi: showInUi);
+                showInUi: showInUi,
+                machineId: machineId);
         }
 
         /// <summary>
@@ -116,9 +117,9 @@ namespace Stackdose.UI.Core.Helpers
         /// <param name="message">日誌訊息</param>
         /// <param name="level">日誌等級</param>
         /// <param name="showInUi">是否顯示在 UI 日誌檢視器</param>
-        public static void LogSystem(string message, LogLevel level = LogLevel.Info, bool showInUi = true)
+        public static void LogSystem(string message, LogLevel level = LogLevel.Info, bool showInUi = true, string? machineId = null)
         {
-            AddToLiveLog(message, level, showInUi);
+            AddToLiveLog(message, level, showInUi, machineId);
         }
 
         /// <summary>
@@ -147,13 +148,14 @@ namespace Stackdose.UI.Core.Helpers
         /// <param name="message">訊息</param>
         /// <param name="batchId">批次ID（選填）</param>
         /// <param name="showInUi">是否顯示在 UI 日誌檢視器</param>
-        public static void LogOperation(string userId, string commandName, string category, string beforeState, string afterState, string message, string batchId = "", bool showInUi = true)
+        public static void LogOperation(string userId, string commandName, string category, string beforeState, string afterState, string message, string batchId = "", bool showInUi = true, string? machineId = null)
         {
             ExecuteWithUiLog(
                 persist: () => SqliteLogger.LogOperation(userId, commandName, category, beforeState, afterState, message, batchId),
                 uiMessage: $"[Operation] {commandName} - {message}",
                 uiLevel: LogLevel.Info,
-                showInUi: showInUi);
+                showInUi: showInUi,
+                machineId: machineId);
         }
 
         /// <summary>
@@ -168,13 +170,14 @@ namespace Stackdose.UI.Core.Helpers
         /// <param name="message">訊息</param>
         /// <param name="batchId">批次ID（選填）</param>
         /// <param name="showInUi">是否顯示在 UI 日誌檢視器</param>
-        public static void LogEvent(string eventType, string eventCode, string eventDescription, string severity, string currentState, string userId, string message, string batchId = "", bool showInUi = true)
+        public static void LogEvent(string eventType, string eventCode, string eventDescription, string severity, string currentState, string userId, string message, string batchId = "", bool showInUi = true, string? machineId = null)
         {
             ExecuteWithUiLog(
                 persist: () => SqliteLogger.LogEvent(eventType, eventCode, eventDescription, severity, currentState, userId, message, batchId),
                 uiMessage: $"[Event] {eventDescription} - {message}",
                 uiLevel: MapEventSeverity(severity),
-                showInUi: showInUi);
+                showInUi: showInUi,
+                machineId: machineId);
         }
 
         /// <summary>
@@ -307,10 +310,10 @@ namespace Stackdose.UI.Core.Helpers
 
         #region Private Helper Methods
 
-        private static void ExecuteWithUiLog(Action persist, string uiMessage, LogLevel uiLevel, bool showInUi)
+        private static void ExecuteWithUiLog(Action persist, string uiMessage, LogLevel uiLevel, bool showInUi, string? machineId = null)
         {
             persist();
-            AddToLiveLog(uiMessage, uiLevel, showInUi);
+            AddToLiveLog(uiMessage, uiLevel, showInUi, machineId);
         }
 
         private static LogLevel MapEventSeverity(string severity)
@@ -328,7 +331,7 @@ namespace Stackdose.UI.Core.Helpers
         /// <summary>
         /// 加入即時日誌到 UI 顯示集合
         /// </summary>
-        private static void AddToLiveLog(string msg, LogLevel level, bool showInUi = true)
+        private static void AddToLiveLog(string msg, LogLevel level, bool showInUi = true, string? machineId = null)
         {
             if (!showInUi) return;
 
@@ -336,7 +339,8 @@ namespace Stackdose.UI.Core.Helpers
             {
                 Timestamp = DateTime.Now,
                 Message = msg,
-                Level = level
+                Level = level,
+                MachineId = machineId
             };
 
             var dispatcher = System.Windows.Application.Current?.Dispatcher;

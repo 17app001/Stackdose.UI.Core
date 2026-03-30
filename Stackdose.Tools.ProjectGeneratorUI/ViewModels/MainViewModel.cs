@@ -63,7 +63,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ObservableCollection<MaintenanceItemRow> MaintenanceItems { get; } = [];
 
     // ── Output ────────────────────────────────────────────────────────────
-    private string _outputPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+    private string _outputPath = FindSolutionFile(AppDomain.CurrentDomain.BaseDirectory) is { } slnFile
+        ? Path.GetDirectoryName(slnFile)!
+        : Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
     private string _generationLog = string.Empty;
     private bool   _isGenerating;
 
@@ -302,18 +304,23 @@ public sealed class MainViewModel : INotifyPropertyChanged
             var specBackupPath = Path.Combine(OutputPath, spec.Project.ProjectName, spec.Project.ProjectName + ".spec.json");
             File.WriteAllText(specBackupPath, JsonSerializer.Serialize(BuildSpecDto(), _jsonOpts), System.Text.Encoding.UTF8);
 
+            // 自動加入方案
+            var csprojPath = Path.Combine(OutputPath, spec.Project.ProjectName, $"{spec.Project.ProjectName}.csproj");
+            var slnPath    = FindSolutionFile(AppDomain.CurrentDomain.BaseDirectory);
+            var slnResult  = slnPath != null
+                ? AddProjectToSolution(slnPath, csprojPath)
+                : "⚠️ 未找到 .sln，請手動加入專案";
+
             var log = new System.Text.StringBuilder();
             log.AppendLine($"✅ 專案產生成功！");
             log.AppendLine($"📁 {Path.Combine(OutputPath, spec.Project.ProjectName)}/");
+            log.AppendLine(slnResult);
             log.AppendLine();
             foreach (var f in generator.GeneratedFiles)
                 log.AppendLine($"   • {f}");
             log.AppendLine($"   • {spec.Project.ProjectName}.spec.json  ← spec 備份");
             log.AppendLine();
-            log.AppendLine("下一步：");
-            log.AppendLine("  1. 在 Visual Studio 右鍵 Solution → Add → Existing Project");
-            log.AppendLine($"     選擇 {spec.Project.ProjectName}.csproj");
-            log.AppendLine("  2. F5 執行");
+            log.AppendLine("下一步：F5 執行");
 
             GenerationLog = log.ToString();
         }
@@ -324,6 +331,44 @@ public sealed class MainViewModel : INotifyPropertyChanged
         finally
         {
             IsGenerating = false;
+        }
+    }
+
+    private static string? FindSolutionFile(string startDir)
+    {
+        var dir = new DirectoryInfo(startDir);
+        while (dir != null)
+        {
+            var slnFiles = dir.GetFiles("*.sln");
+            if (slnFiles.Length > 0) return slnFiles[0].FullName;
+            dir = dir.Parent;
+        }
+        return null;
+    }
+
+    private static string AddProjectToSolution(string slnPath, string csprojPath)
+    {
+        try
+        {
+            var psi = new System.Diagnostics.ProcessStartInfo("dotnet")
+            {
+                Arguments             = $"sln \"{slnPath}\" add \"{csprojPath}\"",
+                RedirectStandardOutput = true,
+                RedirectStandardError  = true,
+                UseShellExecute        = false,
+                CreateNoWindow         = true
+            };
+            using var proc = System.Diagnostics.Process.Start(psi)!;
+            var stdout = proc.StandardOutput.ReadToEnd();
+            var stderr = proc.StandardError.ReadToEnd();
+            proc.WaitForExit(10_000);
+            return proc.ExitCode == 0
+                ? $"🔗 已加入方案：{Path.GetFileName(slnPath)}"
+                : $"⚠️ 加入方案失敗：{(string.IsNullOrWhiteSpace(stderr) ? stdout : stderr).Trim()}";
+        }
+        catch (Exception ex)
+        {
+            return $"⚠️ 加入方案失敗：{ex.Message}";
         }
     }
 
@@ -355,6 +400,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 ProcessMonitorIsCompleted = m.IsCompleted.Trim(),
                 ProcessMonitorIsAlarm    = m.IsAlarm.Trim(),
                 Modules                  = m.ModulesString,
+                ShowLiveLog              = m.ShowLiveLog,
             });
 
             foreach (var c in m.Commands)
@@ -402,6 +448,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             IsCompleted  = m.IsCompleted,
             IsAlarm      = m.IsAlarm,
             Modules      = m.ModulesString,
+            ShowLiveLog  = m.ShowLiveLog,
             Commands     = m.Commands.Select(c => new CommandDto { Name = c.Name, Address = c.Address }).ToList(),
             Labels       = m.Labels.Select(l => new LabelDto { Name = l.Name, Address = l.Address }).ToList(),
         }).ToList(),
@@ -468,6 +515,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                     IsCompleted = m.IsCompleted,
                     IsAlarm     = m.IsAlarm,
                 };
+                vm.ShowLiveLog = m.ShowLiveLog;
                 vm.ApplyModulesString(m.Modules);
                 foreach (var c in m.Commands) vm.Commands.Add(new CommandRow { Name = c.Name, Address = c.Address });
                 foreach (var l in m.Labels)   vm.Labels.Add(new LabelRow { Name = l.Name, Address = l.Address });
@@ -541,6 +589,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         public string IsCompleted { get; set; } = "M202";
         public string IsAlarm     { get; set; } = "M201";
         public string Modules     { get; set; } = "processControl";
+        public bool   ShowLiveLog { get; set; } = false;
         public List<CommandDto> Commands { get; set; } = [];
         public List<LabelDto>   Labels   { get; set; } = [];
     }

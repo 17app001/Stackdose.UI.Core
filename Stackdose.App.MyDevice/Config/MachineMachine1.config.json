@@ -1,0 +1,115 @@
+{
+  "machine": {
+    "id": "M1",
+    "name": "Machine 1",
+    "enable": true
+  },
+  "plc": {
+    "ip": "192.168.22.39",
+    "port": 3000,
+    "pollIntervalMs": 200,
+    "autoConnect": true,
+    "monitorAddresses": [
+      "D100,4",
+      "M200,104"
+    ]
+  },
+  "commands": {
+    "Start1": "M300",
+    "Start2": "M301",
+    "Start3": "M302",
+    "Start4": "M303"
+  },
+  "processMonitor": {
+    "isRunning": "M200",
+    "isCompleted": "M202",
+    "isAlarm": "M201"
+  },
+  "alarmConfigFile": "Config/MachineMachine1/alarms.json",
+  "sensorConfigFile": "Config/MachineMachine1/sensors.json",
+  "detailLabels": {
+    "Label1": "D100",
+    "Label2": "D101",
+    "Label3": "D102",
+    "Label4": "D103"
+  },
+  "tags": {
+    "status": {
+      "isRunning": {
+        "address": "M200",
+        "type": "bool",
+        "access": "read"
+      },
+      "isAlarm": {
+        "address": "M201",
+        "type": "bool",
+        "access": "read"
+      },
+      "heartbeat": {
+        "address": "D300",
+        "type": "int16",
+        "access": "read",
+        "length": 1
+      }
+    },
+    "process": {
+      "batchNo": {
+        "address": "D400",
+        "type": "string",
+        "access": "read",
+        "length": 8
+      },
+      "recipeNo": {
+        "address": "D410",
+        "type": "string",
+        "access": "read",
+        "length": 8
+      }
+    }
+  },
+  "modules": [
+    "processControl",
+    "sensors",
+    "alarm"
+  ],
+  "layoutMode": "SplitRight",
+  "showPlcEditor": true,
+  "showLiveLog": true,
+  "dataEvents": [
+    {
+      "name": "OnEvent1",
+      "address": "M200",
+      "trigger": "changed",
+      "threshold": 0,
+      "dataType": ""
+    },
+    {
+      "name": "OnEvent2",
+      "address": "M201",
+      "trigger": "changed",
+      "threshold": 0,
+      "dataType": ""
+    },
+    {
+      "name": "OnEvent3",
+      "address": "M202",
+      "trigger": "changed",
+      "threshold": 0,
+      "dataType": ""
+    },
+    {
+      "name": "OnEvent4",
+      "address": "M203",
+      "trigger": "changed",
+      "threshold": 0,
+      "dataType": ""
+    },
+    {
+      "name": "OnEvent5",
+      "address": "M204",
+      "trigger": "changed",
+      "threshold": 0,
+      "dataType": ""
+    }
+  ]
+}

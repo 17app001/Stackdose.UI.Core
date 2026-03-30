@@ -19,7 +19,22 @@
       "Bash(xargs wc:*)",
       "Bash(grep -E \"\\\\.xaml$\")",
       "Bash(sed 's/\\\\.xaml$//')",
-      "Bash(dotnet sln:*)"
+      "Bash(dotnet sln:*)",
+      "Bash(ls:*)",
+      "Bash(Get-Content \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\\\\Stackdose.Tools.ProjectGenerator\\\\ProjectGenerator.cs\")",
+      "Bash(Measure-Object -Line)",
+      "Bash(powershell.exe -Command \"\\(Get-Content 'D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\\\\Stackdose.Tools.ProjectGenerator\\\\ProjectGenerator.cs'\\).Count\")",
+      "Bash(powershell.exe -Command \"Get-ChildItem 'D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core' | Select-Object Name\")",
+      "Bash(xargs grep:*)",
+      "Bash(find /d/工作區/Project/Stackdose.Platform -name ProjectGenerator*)",
+      "Bash(powershell.exe -Command \"Test-Path 'D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\\\\Stackdose.Tools.ProjectGenerator'\")",
+      "Bash(powershell.exe -Command \"Get-ChildItem 'D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core' -Recurse -Filter '*.cs' | Where-Object { \\\\$_.Name -like '*Generator*' } | Select-Object FullName\")",
+      "Bash(find /d/工作區/Project/Stackdose.Platform -name IPlcManager*)",
+      "Bash(find /d/工作區/Project -name *LogEntry* -o -name *ComplianceContext*)",
+      "Bash(grep -r \"LiveLogViewer\\\\|Device.*Filter\\\\|Machine.*Filter\\\\|deviceId\\\\|machineId\" /d/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core --include=*.xaml --include=*.cs)",
+      "Bash(find /d/工作區/Project -name *Page.xaml -o -name *Page.xaml.cs)",
+      "Bash(find /d/工作區/Project -name *SqliteLogger* -o -name *Logger*)",
+      "Bash(grep -r \"Source.*Binding\\\\|Source.*ComplianceContext\\\\|FilteredLogs\\\\|DeviceLog\" /d/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core --include=*.cs --include=*.xaml)"
     ]
   }
 }

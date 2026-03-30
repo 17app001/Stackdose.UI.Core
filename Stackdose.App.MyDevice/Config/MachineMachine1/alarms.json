@@ -1,0 +1,8 @@
+{
+  "Alarms": [
+    { "Group": "Safety",   "Device": "M100", "Bit": 0, "OperationDescription": "Emergency stop triggered" },
+    { "Group": "Safety",   "Device": "M100", "Bit": 1, "OperationDescription": "Door interlock open" },
+    { "Group": "Process",  "Device": "M101", "Bit": 0, "OperationDescription": "Process alarm 1" },
+    { "Group": "Process",  "Device": "M101", "Bit": 1, "OperationDescription": "Process alarm 2" }
+  ]
+}

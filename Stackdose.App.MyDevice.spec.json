@@ -1,0 +1,65 @@
+﻿{
+  "ProjectName": "Stackdose.App.MyDevice",
+  "HeaderDeviceName": "MY DEVICE",
+  "Version": "v1.0.0",
+  "PageMode": "DynamicDevicePage",
+  "LayoutMode": "SplitRight",
+  "AutoConnect": false,
+  "Machines": [
+    {
+      "MachineId": "M1",
+      "MachineName": "Machine 1",
+      "PlcIp": "192.168.22.39",
+      "PlcPort": 3000,
+      "PollMs": 200,
+      "IsRunning": "M200",
+      "IsCompleted": "M202",
+      "IsAlarm": "M201",
+      "Modules": "processControl;sensors;alarm",
+      "Commands": [
+        {
+          "Name": "Start",
+          "Address": "M300"
+        },
+        {
+          "Name": "Stop",
+          "Address": "M301"
+        },
+        {
+          "Name": "Pause",
+          "Address": "M302"
+        }
+      ],
+      "Labels": [
+        {
+          "Name": "Speed",
+          "Address": "D100"
+        },
+        {
+          "Name": "\u6EAB\u5EA6",
+          "Address": "D102"
+        },
+        {
+          "Name": "CDA",
+          "Address": "D101"
+        }
+      ]
+    }
+  ],
+  "HasMaintenanceMode": true,
+  "HasSettings": true,
+  "HasPlcDeviceEditor": true,
+  "MaintenanceLevel": "Supervisor",
+  "SettingsLevel": "Admin",
+  "PlcDeviceEditorLevel": "Supervisor",
+  "MaintenanceItems": [
+    {
+      "MachineId": "*",
+      "ItemName": "\u6A5F\u5668\u8F49\u901F",
+      "Address": "D500",
+      "Type": "toggle",
+      "Label": "\u6A5F\u5668\u8F49\u901F"
+    }
+  ],
+  "DataEvents": []
+}

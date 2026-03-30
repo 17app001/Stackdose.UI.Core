@@ -1,0 +1,107 @@
+﻿{
+  "ProjectName": "Stackdose.App.MyDevice",
+  "HeaderDeviceName": "MY DEVICE",
+  "Version": "v1.0.0",
+  "PageMode": "DynamicDevicePage",
+  "LayoutMode": "SplitRight",
+  "AutoConnect": true,
+  "Machines": [
+    {
+      "MachineId": "M1",
+      "MachineName": "Machine 1",
+      "PlcIp": "192.168.22.39",
+      "PlcPort": 3000,
+      "PollMs": 200,
+      "IsRunning": "M200",
+      "IsCompleted": "M202",
+      "IsAlarm": "M201",
+      "Modules": "processControl;sensors;alarm",
+      "ShowLiveLog": true,
+      "Commands": [
+        {
+          "Name": "Start1",
+          "Address": "M300"
+        },
+        {
+          "Name": "Start2",
+          "Address": "M301"
+        },
+        {
+          "Name": "Start3",
+          "Address": "M302"
+        },
+        {
+          "Name": "Start4",
+          "Address": "M303"
+        }
+      ],
+      "Labels": [
+        {
+          "Name": "Label1",
+          "Address": "D100"
+        },
+        {
+          "Name": "Label2",
+          "Address": "D101"
+        },
+        {
+          "Name": "Label3",
+          "Address": "D102"
+        },
+        {
+          "Name": "Label4",
+          "Address": "D103"
+        }
+      ]
+    }
+  ],
+  "HasMaintenanceMode": true,
+  "HasSettings": true,
+  "HasPlcDeviceEditor": true,
+  "MaintenanceLevel": "Supervisor",
+  "SettingsLevel": "Admin",
+  "PlcDeviceEditorLevel": "Supervisor",
+  "MaintenanceItems": [],
+  "DataEvents": [
+    {
+      "MachineId": "M1",
+      "Name": "OnEvent1",
+      "Address": "M200",
+      "Trigger": "changed",
+      "Threshold": 0,
+      "DataType": ""
+    },
+    {
+      "MachineId": "M1",
+      "Name": "OnEvent2",
+      "Address": "M201",
+      "Trigger": "changed",
+      "Threshold": 0,
+      "DataType": ""
+    },
+    {
+      "MachineId": "M1",
+      "Name": "OnEvent3",
+      "Address": "M202",
+      "Trigger": "changed",
+      "Threshold": 0,
+      "DataType": ""
+    },
+    {
+      "MachineId": "M1",
+      "Name": "OnEvent4",
+      "Address": "M203",
+      "Trigger": "changed",
+      "Threshold": 0,
+      "DataType": ""
+    },
+    {
+      "MachineId": "M1",
+      "Name": "OnEvent5",
+      "Address": "M204",
+      "Trigger": "changed",
+      "Threshold": 0,
+      "DataType": ""
+    }
+  ]
+}

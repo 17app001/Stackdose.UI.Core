@@ -12,6 +12,17 @@ public sealed class DeviceSpec
     public List<TagInfo> Tags { get; set; } = [];
     public List<PanelInfo> Panels { get; set; } = [];
     public List<MaintenanceItemInfo> MaintenanceItems { get; set; } = [];
+    public List<DataEventInfo> DataEvents { get; set; } = [];
+}
+
+public sealed class DataEventInfo
+{
+    public string MachineId  { get; set; } = string.Empty;
+    public string Name       { get; set; } = string.Empty;
+    public string Address    { get; set; } = string.Empty;
+    public string Trigger    { get; set; } = "changed";
+    public int    Threshold  { get; set; } = 0;
+    public string DataType   { get; set; } = string.Empty;
 }
 
 public sealed class ProjectInfo
@@ -20,6 +31,7 @@ public sealed class ProjectInfo
     public string HeaderDeviceName { get; set; } = string.Empty;
     public string Version { get; set; } = "v1.0.0";
     public string PageMode { get; set; } = "DynamicDevicePage";
+    public string LayoutMode { get; set; } = "SplitRight";
     public bool AutoConnect { get; set; } = false;
 
     /// <summary>Short name derived from ProjectName, e.g. "Stackdose.App.OvenControl" �� "OvenControl"</summary>

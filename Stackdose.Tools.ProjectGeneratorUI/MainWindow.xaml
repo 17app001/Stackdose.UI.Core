@@ -73,36 +73,43 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="8"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="專案名稱"/>
-                            <TextBox   Grid.Row="0" Grid.Column="1" Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBox   Grid.Row="0" Grid.Column="1" Height="32" Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}"/>
 
                             <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="標題顯示名稱"/>
-                            <TextBox   Grid.Row="2" Grid.Column="1" Text="{Binding HeaderDeviceName, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBox   Grid.Row="2" Grid.Column="1" Height="32" Text="{Binding HeaderDeviceName, UpdateSourceTrigger=PropertyChanged}"/>
 
                             <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="版本"/>
-                            <TextBox   Grid.Row="4" Grid.Column="1" Text="{Binding Version, UpdateSourceTrigger=PropertyChanged}" Width="120" HorizontalAlignment="Left"/>
+                            <TextBox   Grid.Row="4" Grid.Column="1" Height="32" Text="{Binding Version, UpdateSourceTrigger=PropertyChanged}" Width="120" HorizontalAlignment="Left"/>
 
                             <TextBlock Grid.Row="6" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="頁面模式"/>
                             <ComboBox  Grid.Row="6" Grid.Column="1" ItemsSource="{Binding PageModes}" SelectedItem="{Binding PageMode}" Width="220" HorizontalAlignment="Left"/>
 
-                            <TextBlock Grid.Row="8" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="自動連線"/>
-                            <CheckBox  Grid.Row="8" Grid.Column="1" IsChecked="{Binding AutoConnect}"
+                            <TextBlock Grid.Row="8" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="排版模式"/>
+                            <ComboBox  Grid.Row="8" Grid.Column="1" ItemsSource="{Binding LayoutModes}" SelectedItem="{Binding LayoutMode}" Width="220" HorizontalAlignment="Left"/>
+
+                            <TextBlock Grid.Row="10" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="自動連線"/>
+                            <CheckBox  Grid.Row="10" Grid.Column="1" IsChecked="{Binding AutoConnect}"
                                        Content="啟動時自動連線 PLC" VerticalAlignment="Center"/>
                         </Grid>
 
                         <Separator Margin="0,16"/>
 
-                        <TextBlock Style="{StaticResource SectionHeader}" Text="頁面模式說明" Margin="0,0,0,10"/>
+                        <TextBlock Style="{StaticResource SectionHeader}" Text="模式說明" Margin="0,0,0,10"/>
                         <Border Background="{StaticResource PanelBrush}" CornerRadius="6" Padding="14,12">
                             <StackPanel>
-                                <TextBlock Text="DynamicDevicePage" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,4"/>
-                                <TextBlock Text="自動從 JSON 配置生成設備頁（最快，零程式碼）" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,10"/>
-                                <TextBlock Text="SinglePage" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,4"/>
-                                <TextBlock Text="單頁模式，適合簡單監控介面（自動登入 SuperAdmin）" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,10"/>
-                                <TextBlock Text="CustomPage" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,4"/>
-                                <TextBlock Text="生成可自訂的 DevicePage.xaml 骨架，手動擴充 UI" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
+                                <TextBlock Text="頁面模式" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="DynamicDevicePage — 自動從 JSON 配置生成設備頁（最快，零程式碼）" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBlock Text="SinglePage — 單頁模式，適合簡單監控介面（自動登入 SuperAdmin）" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBlock Text="CustomPage — 生成可自訂的 DevicePage.xaml 骨架，手動擴充 UI" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,12"/>
+                                <TextBlock Text="排版模式" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="SplitRight — 左：數據+指令 ｜ 右：Alarm+Sensor Viewer（推薦）" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBlock Text="Standard — 所有元件垂直堆疊" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBlock Text="Dashboard — 儀表板三欄式（開發中）" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                             </StackPanel>
                         </Border>
 
@@ -182,17 +189,17 @@
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="Machine ID"/>
-                                <TextBox   Grid.Row="0" Grid.Column="1" Text="{Binding MachineId, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBox   Grid.Row="0" Grid.Column="1" Height="32" Text="{Binding MachineId, UpdateSourceTrigger=PropertyChanged}"/>
                                 <TextBlock Grid.Row="0" Grid.Column="3" Style="{StaticResource FieldLabel}" Text="設備名稱"/>
-                                <TextBox   Grid.Row="0" Grid.Column="4" Text="{Binding MachineName, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBox   Grid.Row="0" Grid.Column="4" Height="32" Text="{Binding MachineName, UpdateSourceTrigger=PropertyChanged}"/>
 
                                 <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="PLC IP"/>
-                                <TextBox   Grid.Row="2" Grid.Column="1" Text="{Binding PlcIp, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBox   Grid.Row="2" Grid.Column="1" Height="32" Text="{Binding PlcIp, UpdateSourceTrigger=PropertyChanged}"/>
                                 <TextBlock Grid.Row="2" Grid.Column="3" Style="{StaticResource FieldLabel}" Text="Port"/>
-                                <TextBox   Grid.Row="2" Grid.Column="4" Text="{Binding PlcPort, UpdateSourceTrigger=PropertyChanged}" Width="80" HorizontalAlignment="Left"/>
+                                <TextBox   Grid.Row="2" Grid.Column="4" Height="32" Text="{Binding PlcPort, UpdateSourceTrigger=PropertyChanged}" Width="80" HorizontalAlignment="Left"/>
 
                                 <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="輪詢間隔 (ms)"/>
-                                <TextBox   Grid.Row="4" Grid.Column="1" Text="{Binding PollMs, UpdateSourceTrigger=PropertyChanged}" Width="80" HorizontalAlignment="Left"/>
+                                <TextBox   Grid.Row="4" Grid.Column="1" Height="32" Text="{Binding PollMs, UpdateSourceTrigger=PropertyChanged}" Width="80" HorizontalAlignment="Left"/>
                             </Grid>
 
                             <Separator Margin="0,14"/>
@@ -211,11 +218,11 @@
                                     <ColumnDefinition Width="100"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" Style="{StaticResource FieldLabel}" Text="IsRunning"/>
-                                <TextBox   Grid.Column="1" Text="{Binding IsRunning, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBox   Grid.Column="1" Height="32" Text="{Binding IsRunning, UpdateSourceTrigger=PropertyChanged}"/>
                                 <TextBlock Grid.Column="3" Style="{StaticResource FieldLabel}" Text="IsCompleted"/>
-                                <TextBox   Grid.Column="4" Text="{Binding IsCompleted, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBox   Grid.Column="4" Height="32" Text="{Binding IsCompleted, UpdateSourceTrigger=PropertyChanged}"/>
                                 <TextBlock Grid.Column="6" Style="{StaticResource FieldLabel}" Text="IsAlarm"/>
-                                <TextBox   Grid.Column="7" Text="{Binding IsAlarm, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBox   Grid.Column="7" Height="32" Text="{Binding IsAlarm, UpdateSourceTrigger=PropertyChanged}"/>
                             </Grid>
 
                             <Separator Margin="0,14"/>
@@ -276,6 +283,8 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="8"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="1.2*"/>
                     </Grid.RowDefinitions>
 
                     <!-- Machine selector -->
@@ -347,6 +356,61 @@
                             </DataGrid.Columns>
                         </DataGrid>
                         <Button Grid.Row="2" Content="+ 新增標籤" Command="{Binding AddLabelCmd}"
+                                HorizontalAlignment="Left" Margin="0,6,0,0"/>
+                    </Grid>
+
+                    <!-- Data Events DataGrid -->
+                    <Grid Grid.Row="5">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0" Margin="0,0,0,8">
+                            <TextBlock Style="{StaticResource SectionHeader}" Text="數據事件監聽 (Data Events)" VerticalAlignment="Center"/>
+                            <Button Content="從 Sensor/Alarm Config 匯入"
+                                    Command="{Binding ImportDataEventsCmd}"
+                                    HorizontalAlignment="Right"
+                                    Padding="10,4"/>
+                        </Grid>
+                        <DataGrid Grid.Row="1"
+                                  ItemsSource="{Binding SelectedMachine.DataEvents}"
+                                  CanUserAddRows="False" CanUserDeleteRows="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Handler 名稱" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+                                <DataGridTextColumn Header="地址" Binding="{Binding Address, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                                <DataGridTemplateColumn Header="觸發條件" Width="120">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox ItemsSource="{Binding TriggerOptions}"
+                                                      SelectedItem="{Binding Trigger, UpdateSourceTrigger=PropertyChanged}"
+                                                      Height="26" Margin="2"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="閾值" Binding="{Binding Threshold, UpdateSourceTrigger=PropertyChanged}" Width="70"/>
+                                <DataGridTemplateColumn Header="資料型別" Width="80">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox ItemsSource="{Binding DataTypeOptions}"
+                                                      SelectedItem="{Binding DataType, UpdateSourceTrigger=PropertyChanged}"
+                                                      Height="26" Margin="2"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Width="60">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="✕" Style="{StaticResource DangerButton}"
+                                                    Height="24" Width="30" FontSize="11" Padding="0"
+                                                    Command="{Binding DataContext.RemoveDataEventCmd, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Button Grid.Row="2" Content="+ 新增事件" Command="{Binding AddDataEventCmd}"
                                 HorizontalAlignment="Left" Margin="0,6,0,0"/>
                     </Grid>
                 </Grid>
@@ -474,7 +538,7 @@
                                 <ColumnDefinition Width="8"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox Grid.Column="0" Text="{Binding OutputPath, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBox Grid.Column="0" Height="32" Text="{Binding OutputPath, UpdateSourceTrigger=PropertyChanged}"/>
                             <Button  Grid.Column="2" Content="📁 瀏覽" Command="{Binding BrowseOutputCmd}" Width="90"/>
                         </Grid>
                         <TextBlock Margin="0,6,0,0" FontSize="11" Foreground="{StaticResource TextMutedBrush}">
@@ -540,7 +604,7 @@
                              FontFamily="Consolas"
                              FontSize="12"
                              Background="{StaticResource SurfaceBrush}"
-                             Foreground="{StaticResource TextSecondaryBrush}"
+                             Foreground="{StaticResource TextPrimaryBrush}"
                              BorderBrush="{StaticResource BorderBrush}"
                              Padding="12"/>
                 </Grid>

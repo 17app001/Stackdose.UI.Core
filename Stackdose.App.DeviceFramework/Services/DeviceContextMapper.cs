@@ -3,7 +3,7 @@ using Stackdose.App.DeviceFramework.Models;
 namespace Stackdose.App.DeviceFramework.Services;
 
 /// <summary>
-/// ±N MachineConfig Âà´«¬° DeviceContext ¡X ³q¥Î¬M®g¡A¤£§tµw½s½X¡C
+/// ï¿½N MachineConfig ï¿½à´«ï¿½ï¿½ DeviceContext ï¿½X ï¿½qï¿½Î¬Mï¿½gï¿½Aï¿½ï¿½ï¿½tï¿½wï¿½sï¿½Xï¿½C
 /// </summary>
 public static class DeviceContextMapper
 {
@@ -32,10 +32,12 @@ public static class DeviceContextMapper
             SensorConfigFile = adapter.GetSensorConfigFile(config),
             PrintHeadConfigFiles = [.. adapter.GetPrintHeadConfigFiles(config)],
             ShowPlcEditor = config.ShowPlcEditor,
-            EnabledModules = [.. config.Modules]
+            LayoutMode = config.LayoutMode,
+            EnabledModules = [.. config.Modules],
+            DataEvents = [.. config.DataEvents],
         };
 
-        // °ÊºA©R¥O
+        // ï¿½ÊºAï¿½Rï¿½O
         foreach (var (name, address) in config.Commands)
         {
             if (!string.IsNullOrWhiteSpace(address))
@@ -44,7 +46,7 @@ public static class DeviceContextMapper
             }
         }
 
-        // °ÊºA¼ÐÅÒ ¡X ±q DetailLabels ¦r¨å¶×¤J
+        // ï¿½ÊºAï¿½ï¿½ï¿½ï¿½ ï¿½X ï¿½q DetailLabels ï¿½rï¿½ï¿½×¤J
         foreach (var (key, address) in config.DetailLabels)
         {
             if (!string.IsNullOrWhiteSpace(address))
@@ -53,8 +55,8 @@ public static class DeviceContextMapper
             }
         }
 
-        // °ÊºA¼ÐÅÒ ¡X ±q Tags (status + process) ¦Û°Ê¶×¤J¥iÅªªº tag
-        // ³o¼Ë App ºÝ¤£»Ý­n override RuntimeMapper ´N¯à®³¨ì batchNo¡BrecipeNo µ¥
+        // ï¿½ÊºAï¿½ï¿½ï¿½ï¿½ ï¿½X ï¿½q Tags (status + process) ï¿½Û°Ê¶×¤Jï¿½iÅªï¿½ï¿½ tag
+        // ï¿½oï¿½ï¿½ App ï¿½Ý¤ï¿½ï¿½Ý­n override RuntimeMapper ï¿½Nï¿½à®³ï¿½ï¿½ batchNoï¿½BrecipeNo ï¿½ï¿½
         ImportTagsToLabels(context, config.Tags.Status);
         ImportTagsToLabels(context, config.Tags.Process);
 
@@ -65,7 +67,7 @@ public static class DeviceContextMapper
     {
         foreach (var (key, tag) in tags)
         {
-            // ¸õ¹L¤w¦s¦bªº¡]DetailLabels Àu¥ý¡^©M«D¥iÅªªº
+            // ï¿½ï¿½ï¿½Lï¿½wï¿½sï¿½bï¿½ï¿½ï¿½]DetailLabels ï¿½uï¿½ï¿½ï¿½^ï¿½Mï¿½Dï¿½iÅªï¿½ï¿½
             if (context.Labels.ContainsKey(key))
                 continue;
 

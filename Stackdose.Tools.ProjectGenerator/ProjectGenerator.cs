@@ -48,6 +48,7 @@ public sealed class ProjectGenerator
             return;
 
         GenerateCommandHandlers();
+        GenerateDataEventHandlers();
 
         if (_spec.Project.PageMode.Equals("CustomPage", StringComparison.OrdinalIgnoreCase))
         {
@@ -372,6 +373,7 @@ public sealed class ProjectGenerator
         sb.AppendLine("{");
         sb.AppendLine("    private readonly AppController _controller;");
         sb.AppendLine("    private readonly CommandHandlers _handlers = new();");
+        sb.AppendLine("    private readonly DataEventHandlers _dataEventHandlers = new();");
         sb.AppendLine();
         sb.AppendLine("    public MainWindow()");
         sb.AppendLine("    {");
@@ -420,12 +422,18 @@ public sealed class ProjectGenerator
             sb.AppendLine("                page.SetContext(ctx);");
             sb.AppendLine("                page.CommandInterceptor = (machineId, commandName, address) =>");
             sb.AppendLine("                    _handlers.HandleCommand(machineId, commandName, address);");
+            sb.AppendLine("                page.DataEventInterceptor = (name, addr, oldVal, newVal) =>");
+            sb.AppendLine("                    _dataEventHandlers.HandleEvent(name, addr, oldVal, newVal);");
             sb.AppendLine("                return page;");
             sb.AppendLine("            },");
             sb.AppendLine("            (page, ctx) =>");
             sb.AppendLine("            {");
             sb.AppendLine("                if (page is DynamicDevicePage dp)");
+            sb.AppendLine("                {");
             sb.AppendLine("                    dp.SetContext(ctx);");
+            sb.AppendLine("                    dp.DataEventInterceptor = (name, addr, oldVal, newVal) =>");
+            sb.AppendLine("                        _dataEventHandlers.HandleEvent(name, addr, oldVal, newVal);");
+            sb.AppendLine("                }");
             sb.AppendLine("            });");
         }
 
@@ -508,7 +516,8 @@ public sealed class ProjectGenerator
         var labels = _spec.Labels.Where(l => l.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase)).ToList();
         var tags = _spec.Tags.Where(t => t.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase)).ToList();
 
-        var monitorAddresses = BuildMonitorAddresses(machine, commands, labels);
+        var dataEvents = _spec.DataEvents.Where(e => e.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase)).ToList();
+        var monitorAddresses = BuildMonitorAddresses(machine, commands, labels, dataEvents);
 
         var commandsDict = new Dictionary<string, string>();
         foreach (var c in commands) commandsDict[c.CommandName] = c.Address;
@@ -592,6 +601,12 @@ public sealed class ProjectGenerator
         node["tags"]         = JsonSerializer.SerializeToNode(new { status = statusTags, process = processTags }, serOpts);
         node["modules"]      = JsonSerializer.SerializeToNode(modules, serOpts);
         node["showPlcEditor"] = showPlcEditor;
+
+        var machineDataEvents = _spec.DataEvents
+            .Where(e => e.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase))
+            .Select(e => new { name = e.Name, address = e.Address, trigger = e.Trigger, threshold = e.Threshold, dataType = e.DataType })
+            .ToArray();
+        node["dataEvents"] = JsonSerializer.SerializeToNode(machineDataEvents, serOpts);
 
         var json = node.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
         WriteFile($"Config/Machine{machineLabel}.config.json", json);
@@ -724,6 +739,98 @@ public sealed class ProjectGenerator
 
         sb.AppendLine("}");
         WriteFile("Handlers/CommandHandlers.cs", sb.ToString());
+    }
+
+    // ═══════════════════════════════════════
+    //  Handlers/DataEventHandlers.cs
+    // ═══════════════════════════════════════
+
+    private void GenerateDataEventHandlers()
+    {
+        Directory.CreateDirectory(Path.Combine(_outputRoot, "Handlers"));
+        var ns = _spec.Project.ProjectName;
+        var sb = new StringBuilder();
+
+        sb.AppendLine($"namespace {ns}.Handlers;");
+        sb.AppendLine();
+        sb.AppendLine("/// <summary>");
+        sb.AppendLine("/// PLC 數據變動事件處理器");
+        sb.AppendLine("/// 觸發條件在各機器 Config/*.config.json → dataEvents 定義");
+        sb.AppendLine("/// 規則：值未變動不觸發；第一次掃描只記錄初始值，不觸發");
+        sb.AppendLine("/// </summary>");
+        sb.AppendLine("public sealed class DataEventHandlers");
+        sb.AppendLine("{");
+        sb.AppendLine("    public void HandleEvent(string eventName, string address, int oldVal, int newVal)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        switch (eventName)");
+        sb.AppendLine("        {");
+
+        foreach (var machine in _spec.Machines)
+        {
+            var events = _spec.DataEvents.Where(e => e.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (events.Count == 0) continue;
+            sb.AppendLine($"            // {machine.MachineName} events:");
+            foreach (var ev in events)
+            {
+                bool isBit = IsBitDataEvent(ev);
+                if (isBit)
+                    sb.AppendLine($"            case \"{ev.Name}\": {ev.Name}(address, newVal != 0, oldVal != 0); break;");
+                else
+                    sb.AppendLine($"            case \"{ev.Name}\": {ev.Name}(address, newVal, oldVal); break;");
+            }
+        }
+
+        sb.AppendLine("        }");
+        sb.AppendLine("    }");
+
+        foreach (var machine in _spec.Machines)
+        {
+            var events = _spec.DataEvents.Where(e => e.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (events.Count == 0) continue;
+            sb.AppendLine();
+            sb.AppendLine($"    // ── {machine.MachineName} ({machine.MachineId}) ──");
+            foreach (var ev in events)
+            {
+                bool isBit = IsBitDataEvent(ev);
+                var triggerDesc = ev.Trigger.ToLowerInvariant() switch
+                {
+                    "risingedge"  => "上升沿 (0→1)",
+                    "fallingedge" => "下降沿 (1→0)",
+                    "above"       => $"超過 {ev.Threshold}",
+                    "below"       => $"低於 {ev.Threshold}",
+                    "equals"      => $"等於 {ev.Threshold}",
+                    _             => "數值變動",
+                };
+                sb.AppendLine();
+                sb.AppendLine($"    /// <summary>{ev.Address} {triggerDesc}</summary>");
+                if (isBit)
+                {
+                    sb.AppendLine($"    public void {ev.Name}(string address, bool newVal, bool oldVal)");
+                    sb.AppendLine("    {");
+                    sb.AppendLine($"        // TODO: 在此填寫邏輯");
+                    sb.AppendLine("    }");
+                }
+                else
+                {
+                    sb.AppendLine($"    public void {ev.Name}(string address, int newVal, int oldVal)");
+                    sb.AppendLine("    {");
+                    sb.AppendLine($"        // TODO: 在此填寫邏輯");
+                    sb.AppendLine("    }");
+                }
+            }
+        }
+
+        sb.AppendLine("}");
+        WriteFile("Handlers/DataEventHandlers.cs", sb.ToString());
+    }
+
+    private static bool IsBitDataEvent(DataEventInfo ev)
+    {
+        if (!string.IsNullOrWhiteSpace(ev.DataType))
+            return ev.DataType.Equals("bit", StringComparison.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(ev.Address)) return false;
+        char prefix = char.ToUpperInvariant(ev.Address.TrimStart()[0]);
+        return prefix == 'M' || prefix == 'X' || prefix == 'Y';
     }
 
     // ═══════════════════════════════════════
@@ -1178,7 +1285,7 @@ public sealed class ProjectGenerator
     private static string San(string name) => SanitizeIdentifier(name);
     private static string Esc(string text) => text.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
 
-    private static string[] BuildMonitorAddresses(MachineInfo machine, List<CommandInfo> commands, List<LabelInfo> labels)
+    private static string[] BuildMonitorAddresses(MachineInfo machine, List<CommandInfo> commands, List<LabelInfo> labels, List<DataEventInfo>? dataEvents = null)
     {
         var dAddresses = new SortedSet<int>();
         var mAddresses = new SortedSet<int>();
@@ -1196,6 +1303,8 @@ public sealed class ProjectGenerator
         AddAddress(machine.ProcessMonitorIsAlarm);
         foreach (var c in commands) AddAddress(c.Address);
         foreach (var l in labels) AddAddress(l.Address);
+        if (dataEvents != null)
+            foreach (var e in dataEvents) AddAddress(e.Address);
 
         var result = new List<string>();
         if (dAddresses.Count > 0) result.Add($"D{dAddresses.Min},{dAddresses.Max - dAddresses.Min + 1}");

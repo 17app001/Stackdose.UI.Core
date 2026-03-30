@@ -3,6 +3,7 @@ using Stackdose.App.DeviceFramework.Services;
 using Stackdose.App.DeviceFramework.ViewModels;
 using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Helpers;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -16,12 +17,19 @@ public partial class DynamicDevicePage : UserControl
 {
     private readonly DevicePageViewModel _viewModel;
     private readonly ProcessCommandService _commandService = new();
+    private readonly PlcDataEventMonitor _dataEventMonitor = new();
 
     /// <summary>
-    /// ©R¥OÄdºI¾¹ ¡X App ºİ¥i³]©w¦¹©e¬£¨ÓÄdºI©R¥O°õ¦æ¡C
-    /// °Ñ¼Æ¡G(machineId, commandName, address)
-    /// ¦^¶Ç true  ¡÷ Ä~Äò°õ¦æ¹w³] PLC ¼g¤J
-    /// ¦^¶Ç false ¡÷ ¸õ¹L¹w³] PLC ¼g¤J¡]¥Ñ App ºİ¦Û¦æ³B²z¡^
+    /// æ•¸æ“šäº‹ä»¶æ””æˆªå™¨ â€” App å´å¯è¨­å®šï¼Œç•¶ PLC æ•¸æ“šäº‹ä»¶è§¸ç™¼æ™‚å‘¼å«ã€‚
+    /// åƒæ•¸ï¼š(eventName, address, oldVal, newVal)
+    /// </summary>
+    public Action<string, string, int, int>? DataEventInterceptor { get; set; }
+
+    /// <summary>
+    /// ï¿½Rï¿½Oï¿½dï¿½Iï¿½ï¿½ ï¿½X App ï¿½İ¥iï¿½]ï¿½wï¿½ï¿½ï¿½eï¿½ï¿½ï¿½ï¿½ï¿½dï¿½Iï¿½Rï¿½Oï¿½ï¿½ï¿½ï¿½C
+    /// ï¿½Ñ¼Æ¡G(machineId, commandName, address)
+    /// ï¿½^ï¿½ï¿½ true  ï¿½ï¿½ ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½] PLC ï¿½gï¿½J
+    /// ï¿½^ï¿½ï¿½ false ï¿½ï¿½ ï¿½ï¿½ï¿½Lï¿½wï¿½] PLC ï¿½gï¿½Jï¿½]ï¿½ï¿½ App ï¿½İ¦Û¦ï¿½Bï¿½zï¿½^
     /// </summary>
     public Func<string, string, string, bool>? CommandInterceptor { get; set; }
 
@@ -43,6 +51,44 @@ public partial class DynamicDevicePage : UserControl
     public void SetContext(DeviceContext context)
     {
         _viewModel.ApplyDeviceContext(context);
+        ApplyLayout();
+
+        _dataEventMonitor.Unsubscribe();
+        if (context.DataEvents.Count > 0)
+        {
+            var status = PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
+            if (status != null)
+                _dataEventMonitor.Subscribe(status, context.DataEvents);
+        }
+        _dataEventMonitor.EventTriggered = (name, addr, oldVal, newVal) =>
+        {
+            if (!Dispatcher.CheckAccess())
+                Dispatcher.BeginInvoke(() => DataEventInterceptor?.Invoke(name, addr, oldVal, newVal));
+            else
+                DataEventInterceptor?.Invoke(name, addr, oldVal, newVal);
+        };
+    }
+
+    private void ApplyLayout()
+    {
+        bool hasViewers = _viewModel.HasAnyViewer;
+        bool isSplit = _viewModel.LayoutMode is "SplitRight" or "Dashboard";
+        bool showRight = hasViewers && isSplit;
+
+        ColSpacer.Width = showRight ? new System.Windows.GridLength(12) : new System.Windows.GridLength(0);
+        ColRight.Width  = showRight ? new System.Windows.GridLength(0.9, System.Windows.GridUnitType.Star)
+                                    : new System.Windows.GridLength(0);
+
+        RightViewersPanel.Visibility = showRight ? Visibility.Visible : Visibility.Collapsed;
+
+        // Adjust sensor row height within right panel
+        if (showRight)
+        {
+            bool hasBoth = _viewModel.HasAlarmConfig && _viewModel.HasSensorConfig;
+            RowAlarm.Height       = _viewModel.HasAlarmConfig  ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
+            RowSensorSpacer.Height = hasBoth ? new System.Windows.GridLength(12) : new System.Windows.GridLength(0);
+            RowSensor.Height      = _viewModel.HasSensorConfig ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
+        }
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -54,6 +100,7 @@ public partial class DynamicDevicePage : UserControl
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         PlcEventContext.EventTriggered -= OnPlcEvent;
+        _dataEventMonitor.Unsubscribe();
     }
 
     private void OnPlcEvent(object? sender, PlcEventTriggeredEventArgs e)
@@ -96,7 +143,7 @@ public partial class DynamicDevicePage : UserControl
         if (cmd is null)
             return;
 
-        // ¦pªG³]©w¤FÄdºI¾¹¡A¥ı©I¥sÄdºI¾¹
+        // ï¿½pï¿½Gï¿½]ï¿½wï¿½Fï¿½dï¿½Iï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Iï¿½sï¿½dï¿½Iï¿½ï¿½
         if (CommandInterceptor is not null)
         {
             var shouldContinue = CommandInterceptor(_viewModel.MachineId, commandName, cmd.Address);

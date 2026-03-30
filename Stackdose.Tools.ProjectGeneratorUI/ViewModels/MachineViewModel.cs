@@ -4,6 +4,27 @@ using System.Runtime.CompilerServices;
 
 namespace Stackdose.Tools.ProjectGeneratorUI.ViewModels;
 
+public sealed class DataEventRow : INotifyPropertyChanged
+{
+    private string _name      = string.Empty;
+    private string _address   = string.Empty;
+    private string _trigger   = "changed";
+    private int    _threshold = 0;
+    private string _dataType  = string.Empty;
+
+    public string Name      { get => _name;      set { _name      = value; N(); } }
+    public string Address   { get => _address;   set { _address   = value; N(); } }
+    public string Trigger   { get => _trigger;   set { _trigger   = value; N(); } }
+    public int    Threshold { get => _threshold; set { _threshold = value; N(); } }
+    public string DataType  { get => _dataType;  set { _dataType  = value; N(); } }
+
+    public string[] TriggerOptions { get; } = ["risingEdge", "fallingEdge", "above", "below", "equals", "changed"];
+    public string[] DataTypeOptions { get; } = ["", "bit", "word"];
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    private void N([CallerMemberName] string? n = null) => PropertyChanged?.Invoke(this, new(n));
+}
+
 public sealed class CommandRow : INotifyPropertyChanged
 {
     private string _name = string.Empty;
@@ -63,8 +84,9 @@ public sealed class MachineViewModel : INotifyPropertyChanged
     public bool ModRecipe         { get => _modRecipe;         set { _modRecipe         = value; N(); N(nameof(ModulesSummary)); } }
     public bool ModSimulator      { get => _modSimulator;      set { _modSimulator      = value; N(); N(nameof(ModulesSummary)); } }
 
-    public ObservableCollection<CommandRow> Commands { get; } = [];
-    public ObservableCollection<LabelRow>   Labels   { get; } = [];
+    public ObservableCollection<CommandRow>   Commands   { get; } = [];
+    public ObservableCollection<LabelRow>    Labels     { get; } = [];
+    public ObservableCollection<DataEventRow> DataEvents { get; } = [];
 
     public string DisplayName    => $"[{MachineId}] {MachineName}";
     public string ModulesSummary => string.Join(", ", GetEnabledModules());

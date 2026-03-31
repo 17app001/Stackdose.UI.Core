@@ -5,6 +5,8 @@
   "PageMode": "DynamicDevicePage",
   "LayoutMode": "SplitRight",
   "AutoConnect": true,
+  "RightColumnWidthStar": 0.85,
+  "LiveDataTitle": "Live Data",
   "Machines": [
     {
       "MachineId": "M1",
@@ -20,37 +22,60 @@
       "Commands": [
         {
           "Name": "Start1",
-          "Address": "M300"
+          "Address": "M300",
+          "Theme": "Primary"
         },
         {
           "Name": "Start2",
-          "Address": "M301"
+          "Address": "M301",
+          "Theme": "Success"
         },
         {
           "Name": "Start3",
-          "Address": "M302"
+          "Address": "M302",
+          "Theme": "Error"
         },
         {
           "Name": "Start4",
-          "Address": "M303"
+          "Address": "M303",
+          "Theme": "Warning"
+        },
+        {
+          "Name": "Start5",
+          "Address": "M304",
+          "Theme": "Info"
         }
       ],
       "Labels": [
         {
           "Name": "Label1",
-          "Address": "D100"
+          "Address": "D100",
+          "FrameShape": "Rectangle",
+          "ValueColorTheme": "NeonBlue"
         },
         {
           "Name": "Label2",
-          "Address": "D101"
+          "Address": "D101",
+          "FrameShape": "Rectangle",
+          "ValueColorTheme": "NeonBlue"
         },
         {
           "Name": "Label3",
-          "Address": "D102"
+          "Address": "D102",
+          "FrameShape": "Rectangle",
+          "ValueColorTheme": "NeonBlue"
         },
         {
           "Name": "Label4",
-          "Address": "D103"
+          "Address": "D103",
+          "FrameShape": "Rectangle",
+          "ValueColorTheme": "NeonBlue"
+        },
+        {
+          "Name": "Label5",
+          "Address": "D104",
+          "FrameShape": "Rectangle",
+          "ValueColorTheme": "NeonBlue"
         }
       ]
     }
@@ -69,7 +94,7 @@
       "Address": "M200",
       "Trigger": "changed",
       "Threshold": 0,
-      "DataType": ""
+      "DataType": "bit"
     },
     {
       "MachineId": "M1",
@@ -77,7 +102,7 @@
       "Address": "M201",
       "Trigger": "changed",
       "Threshold": 0,
-      "DataType": ""
+      "DataType": "word"
     },
     {
       "MachineId": "M1",
@@ -85,7 +110,7 @@
       "Address": "M202",
       "Trigger": "changed",
       "Threshold": 0,
-      "DataType": ""
+      "DataType": "bit"
     },
     {
       "MachineId": "M1",
@@ -93,7 +118,7 @@
       "Address": "M203",
       "Trigger": "changed",
       "Threshold": 0,
-      "DataType": ""
+      "DataType": "word"
     },
     {
       "MachineId": "M1",
@@ -101,7 +126,7 @@
       "Address": "M204",
       "Trigger": "changed",
       "Threshold": 0,
-      "DataType": ""
+      "DataType": "word"
     }
   ]
 }

@@ -75,6 +75,10 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="8"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="專案名稱"/>
@@ -95,6 +99,17 @@
                             <TextBlock Grid.Row="10" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="自動連線"/>
                             <CheckBox  Grid.Row="10" Grid.Column="1" IsChecked="{Binding AutoConnect}"
                                        Content="啟動時自動連線 PLC" VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Row="12" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="右欄寬度比例"
+                                       ToolTip="SplitRight 模式下右側 Alarm/Sensor 欄相對左側的寬度倍率（預設 0.85）"/>
+                            <TextBox   Grid.Row="12" Grid.Column="1" Height="32" Width="80" HorizontalAlignment="Left"
+                                       Text="{Binding RightColumnWidthStar, UpdateSourceTrigger=PropertyChanged}"
+                                       ToolTip="例：0.85 = 右欄約佔左欄的 85%；1.2 = 右欄較寬"/>
+
+                            <TextBlock Grid.Row="14" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="資料面板標題"
+                                       ToolTip="中央數值面板的標題文字，預設 'Live Data'"/>
+                            <TextBox   Grid.Row="14" Grid.Column="1" Height="32" Text="{Binding LiveDataTitle, UpdateSourceTrigger=PropertyChanged}"
+                                       ToolTip="例：Print Information、Process Data、Live Data"/>
                         </Grid>
 
                         <Separator Margin="0,16"/>
@@ -323,7 +338,17 @@
                                   CanUserAddRows="False" CanUserDeleteRows="False">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="指令名稱" Binding="{Binding Name}"    Width="*"/>
-                                <DataGridTextColumn Header="PLC 地址" Binding="{Binding Address}" Width="140"/>
+                                <DataGridTextColumn Header="PLC 地址" Binding="{Binding Address}" Width="120"/>
+                                <DataGridTemplateColumn Header="按鈕主題" Width="100">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox ItemsSource="{Binding ThemeOptions, Mode=OneTime}"
+                                                      SelectedItem="{Binding Theme, UpdateSourceTrigger=PropertyChanged}"
+                                                      Height="26" Margin="2"
+                                                      ToolTip="空白 = 依指令名稱自動推斷"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTemplateColumn Width="60">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -353,7 +378,25 @@
                                   CanUserAddRows="False" CanUserDeleteRows="False">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="標籤名稱" Binding="{Binding Name}"    Width="*"/>
-                                <DataGridTextColumn Header="PLC 地址" Binding="{Binding Address}" Width="140"/>
+                                <DataGridTextColumn Header="PLC 地址" Binding="{Binding Address}" Width="110"/>
+                                <DataGridTemplateColumn Header="形狀" Width="90">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox ItemsSource="{Binding FrameShapeOptions, Mode=OneTime}"
+                                                      SelectedItem="{Binding FrameShape, UpdateSourceTrigger=PropertyChanged}"
+                                                      Height="26" Margin="2"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="數值顏色" Width="110">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox ItemsSource="{Binding ValueColorThemeOptions, Mode=OneTime}"
+                                                      SelectedItem="{Binding ValueColorTheme, UpdateSourceTrigger=PropertyChanged}"
+                                                      Height="26" Margin="2"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTemplateColumn Width="60">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>

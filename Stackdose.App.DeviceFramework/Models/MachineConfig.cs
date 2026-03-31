@@ -45,8 +45,41 @@ public sealed class MachineConfig
     /// <summary>�]�ưʺA���}���Ʀ塿 Standard | SplitRight | Dashboard</summary>
     public string LayoutMode { get; set; } = "SplitRight";
 
+    /// <summary>SplitRight 模式右欄寬度比例（Star），預設 0.85</summary>
+    public double RightColumnWidthStar { get; set; } = 0.85;
+
+    /// <summary>中央面板標題，預設 "Live Data"</summary>
+    public string LiveDataTitle { get; set; } = "Live Data";
+
     /// <summary>數據變動事件清單</summary>
     public List<DataEventConfig> DataEvents { get; set; } = [];
+
+    /// <summary>
+    /// Label 視覺樣式覆寫 (Key = LabelName)。
+    /// 未設定的 key 採控件預設值（矩形、NeonBlue）。
+    /// </summary>
+    public Dictionary<string, LabelStyleConfig> DetailLabelStyles { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// 指令按鈕主題覆寫 (Key = CommandName)。
+    /// 未設定的 key 由 ViewModel 依名稱自動推斷。
+    /// </summary>
+    public Dictionary<string, CommandStyleConfig> CommandStyles { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+}
+
+public sealed class LabelStyleConfig
+{
+    /// <summary>底框形狀：Rectangle | Circle</summary>
+    public string FrameShape { get; set; } = "Rectangle";
+
+    /// <summary>數值顏色主題：NeonBlue | Success | Warning | Error | Info | White | Gray 等</summary>
+    public string ValueColorTheme { get; set; } = "NeonBlue";
+}
+
+public sealed class CommandStyleConfig
+{
+    /// <summary>按鈕主題：Primary | Success | Error | Warning | Info</summary>
+    public string Theme { get; set; } = "Primary";
 }
 
 public sealed class MachineInfo

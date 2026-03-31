@@ -33,6 +33,8 @@ public sealed class ProjectInfo
     public string PageMode { get; set; } = "DynamicDevicePage";
     public string LayoutMode { get; set; } = "SplitRight";
     public bool AutoConnect { get; set; } = false;
+    public double RightColumnWidthStar { get; set; } = 0.85;
+    public string LiveDataTitle { get; set; } = "Live Data";
 
     /// <summary>Short name derived from ProjectName, e.g. "Stackdose.App.OvenControl" �� "OvenControl"</summary>
     public string ShortName => ProjectName.Contains('.')
@@ -71,6 +73,8 @@ public sealed class CommandInfo
     public string MachineId { get; set; } = string.Empty;
     public string CommandName { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
+    /// <summary>按鈕主題：Primary | Success | Error | Warning | Info。空字串表示由 ViewModel 自動推斷。</summary>
+    public string Theme { get; set; } = string.Empty;
 }
 
 public sealed class LabelInfo
@@ -78,6 +82,10 @@ public sealed class LabelInfo
     public string MachineId { get; set; } = string.Empty;
     public string LabelName { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
+    /// <summary>底框形狀：Rectangle | Circle</summary>
+    public string FrameShape { get; set; } = "Rectangle";
+    /// <summary>數值顏色主題：NeonBlue | Success | Warning | Error | Info | White | Gray</summary>
+    public string ValueColorTheme { get; set; } = "NeonBlue";
 }
 
 public sealed class TagInfo

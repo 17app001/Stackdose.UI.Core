@@ -34,6 +34,8 @@ public static class DeviceContextMapper
             ShowPlcEditor = config.ShowPlcEditor,
             ShowLiveLog = config.ShowLiveLog,
             LayoutMode = config.LayoutMode,
+            RightColumnWidthStar = config.RightColumnWidthStar,
+            LiveDataTitle = config.LiveDataTitle,
             EnabledModules = [.. config.Modules],
             DataEvents = [.. config.DataEvents],
         };
@@ -47,14 +49,24 @@ public static class DeviceContextMapper
             }
         }
 
-        // �ʺA���� �X �q DetailLabels �r��פJ
+        // 動態標籤 — 從 DetailLabels 字串字典寫入
         foreach (var (key, address) in config.DetailLabels)
         {
             if (!string.IsNullOrWhiteSpace(address))
             {
-                context.Labels[key] = new DeviceLabelInfo(address.Trim());
+                var info = new DeviceLabelInfo(address.Trim());
+                if (config.DetailLabelStyles.TryGetValue(key, out var style))
+                {
+                    info.FrameShape      = style.FrameShape;
+                    info.ValueColorTheme = style.ValueColorTheme;
+                }
+                context.Labels[key] = info;
             }
         }
+
+        // 指令主題覆寫
+        foreach (var (name, cmdStyle) in config.CommandStyles)
+            context.CommandThemes[name] = cmdStyle.Theme;
 
         // �ʺA���� �X �q Tags (status + process) �۰ʶפJ�iŪ�� tag
         // �o�� App �ݤ��ݭn override RuntimeMapper �N�ள�� batchNo�BrecipeNo ��

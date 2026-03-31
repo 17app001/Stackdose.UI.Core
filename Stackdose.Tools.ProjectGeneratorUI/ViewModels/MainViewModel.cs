@@ -14,19 +14,23 @@ namespace Stackdose.Tools.ProjectGeneratorUI.ViewModels;
 public sealed class MainViewModel : INotifyPropertyChanged
 {
     // ── Project ───────────────────────────────────────────────────────────
-    private string _projectName       = "Stackdose.App.MyDevice";
-    private string _headerDeviceName  = "MY DEVICE";
-    private string _version           = "v1.0.0";
-    private string _pageMode          = "DynamicDevicePage";
-    private string _layoutMode        = "SplitRight";
-    private bool   _autoConnect       = false;
+    private string _projectName            = "Stackdose.App.MyDevice";
+    private string _headerDeviceName       = "MY DEVICE";
+    private string _version                = "v1.0.0";
+    private string _pageMode               = "DynamicDevicePage";
+    private string _layoutMode             = "SplitRight";
+    private bool   _autoConnect            = false;
+    private double _rightColumnWidthStar   = 0.85;
+    private string _liveDataTitle          = "Live Data";
 
-    public string ProjectName      { get => _projectName;      set { _projectName      = value; N(); } }
-    public string HeaderDeviceName { get => _headerDeviceName; set { _headerDeviceName = value; N(); } }
-    public string Version          { get => _version;          set { _version          = value; N(); } }
-    public string PageMode         { get => _pageMode;         set { _pageMode         = value; N(); } }
-    public string LayoutMode       { get => _layoutMode;       set { _layoutMode       = value; N(); } }
-    public bool   AutoConnect      { get => _autoConnect;      set { _autoConnect      = value; N(); } }
+    public string ProjectName           { get => _projectName;          set { _projectName          = value; N(); } }
+    public string HeaderDeviceName      { get => _headerDeviceName;     set { _headerDeviceName     = value; N(); } }
+    public string Version               { get => _version;              set { _version              = value; N(); } }
+    public string PageMode              { get => _pageMode;             set { _pageMode             = value; N(); } }
+    public string LayoutMode            { get => _layoutMode;           set { _layoutMode           = value; N(); } }
+    public bool   AutoConnect           { get => _autoConnect;          set { _autoConnect          = value; N(); } }
+    public double RightColumnWidthStar  { get => _rightColumnWidthStar; set { _rightColumnWidthStar = value; N(); } }
+    public string LiveDataTitle         { get => _liveDataTitle;        set { _liveDataTitle        = value; N(); } }
 
     public string[] PageModes   { get; } = ["DynamicDevicePage", "SinglePage", "CustomPage"];
     public string[] LayoutModes { get; } = ["SplitRight", "Standard", "Dashboard"];
@@ -401,9 +405,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 ProjectName      = ProjectName.Trim(),
                 HeaderDeviceName = HeaderDeviceName.Trim(),
                 Version          = Version.Trim(),
-                PageMode         = PageMode,
-                LayoutMode       = LayoutMode,
-                AutoConnect      = AutoConnect,
+                PageMode               = PageMode,
+                LayoutMode             = LayoutMode,
+                AutoConnect            = AutoConnect,
+                RightColumnWidthStar   = RightColumnWidthStar,
+                LiveDataTitle          = LiveDataTitle,
             }
         };
 
@@ -424,10 +430,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
             });
 
             foreach (var c in m.Commands)
-                spec.Commands.Add(new CommandInfo { MachineId = m.MachineId, CommandName = c.Name, Address = c.Address });
+                spec.Commands.Add(new CommandInfo { MachineId = m.MachineId, CommandName = c.Name, Address = c.Address, Theme = c.Theme });
 
             foreach (var l in m.Labels)
-                spec.Labels.Add(new LabelInfo { MachineId = m.MachineId, LabelName = l.Name, Address = l.Address });
+                spec.Labels.Add(new LabelInfo { MachineId = m.MachineId, LabelName = l.Name, Address = l.Address, FrameShape = l.FrameShape, ValueColorTheme = l.ValueColorTheme });
 
             foreach (var de in m.DataEvents)
                 spec.DataEvents.Add(new DataEventInfo { MachineId = m.MachineId, Name = de.Name, Address = de.Address, Trigger = de.Trigger, Threshold = de.Threshold, DataType = de.DataType });
@@ -454,9 +460,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ProjectName      = ProjectName,
         HeaderDeviceName = HeaderDeviceName,
         Version          = Version,
-        PageMode         = PageMode,
-        LayoutMode       = LayoutMode,
-        AutoConnect      = AutoConnect,
+        PageMode               = PageMode,
+        LayoutMode             = LayoutMode,
+        AutoConnect            = AutoConnect,
+        RightColumnWidthStar   = RightColumnWidthStar,
+        LiveDataTitle          = LiveDataTitle,
         Machines = Machines.Select(m => new MachineDto
         {
             MachineId    = m.MachineId,
@@ -469,8 +477,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
             IsAlarm      = m.IsAlarm,
             Modules      = m.ModulesString,
             ShowLiveLog  = m.ShowLiveLog,
-            Commands     = m.Commands.Select(c => new CommandDto { Name = c.Name, Address = c.Address }).ToList(),
-            Labels       = m.Labels.Select(l => new LabelDto { Name = l.Name, Address = l.Address }).ToList(),
+            Commands     = m.Commands.Select(c => new CommandDto { Name = c.Name, Address = c.Address, Theme = c.Theme }).ToList(),
+            Labels       = m.Labels.Select(l => new LabelDto { Name = l.Name, Address = l.Address, FrameShape = l.FrameShape, ValueColorTheme = l.ValueColorTheme }).ToList(),
         }).ToList(),
         HasMaintenanceMode    = HasMaintenanceMode,
         HasSettings           = HasSettings,
@@ -517,9 +525,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
             ProjectName      = dto.ProjectName;
             HeaderDeviceName = dto.HeaderDeviceName;
             Version          = dto.Version;
-            PageMode         = dto.PageMode;
-            LayoutMode       = dto.LayoutMode ?? "SplitRight";
-            AutoConnect      = dto.AutoConnect;
+            PageMode               = dto.PageMode;
+            LayoutMode             = dto.LayoutMode ?? "SplitRight";
+            AutoConnect            = dto.AutoConnect;
+            RightColumnWidthStar   = dto.RightColumnWidthStar > 0 ? dto.RightColumnWidthStar : 0.85;
+            LiveDataTitle          = string.IsNullOrEmpty(dto.LiveDataTitle) ? "Live Data" : dto.LiveDataTitle;
 
             Machines.Clear();
             foreach (var m in dto.Machines)
@@ -537,8 +547,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 };
                 vm.ShowLiveLog = m.ShowLiveLog;
                 vm.ApplyModulesString(m.Modules);
-                foreach (var c in m.Commands) vm.Commands.Add(new CommandRow { Name = c.Name, Address = c.Address });
-                foreach (var l in m.Labels)   vm.Labels.Add(new LabelRow { Name = l.Name, Address = l.Address });
+                foreach (var c in m.Commands) vm.Commands.Add(new CommandRow { Name = c.Name, Address = c.Address, Theme = c.Theme });
+                foreach (var l in m.Labels)   vm.Labels.Add(new LabelRow { Name = l.Name, Address = l.Address, FrameShape = l.FrameShape, ValueColorTheme = l.ValueColorTheme });
                 Machines.Add(vm);
 
             }
@@ -573,12 +583,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
     // ── DTO models for JSON serialization ────────────────────────────────
     private sealed class SpecDto
     {
-        public string ProjectName      { get; set; } = string.Empty;
-        public string HeaderDeviceName { get; set; } = string.Empty;
-        public string Version          { get; set; } = "v1.0.0";
-        public string PageMode         { get; set; } = "DynamicDevicePage";
-        public string LayoutMode       { get; set; } = "SplitRight";
-        public bool   AutoConnect      { get; set; }
+        public string ProjectName            { get; set; } = string.Empty;
+        public string HeaderDeviceName       { get; set; } = string.Empty;
+        public string Version                { get; set; } = "v1.0.0";
+        public string PageMode               { get; set; } = "DynamicDevicePage";
+        public string LayoutMode             { get; set; } = "SplitRight";
+        public bool   AutoConnect            { get; set; }
+        public double RightColumnWidthStar   { get; set; } = 0.85;
+        public string LiveDataTitle          { get; set; } = "Live Data";
         public List<MachineDto> Machines { get; set; } = [];
         public bool HasMaintenanceMode    { get; set; }
         public bool HasSettings           { get; set; }
@@ -613,8 +625,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         public List<CommandDto> Commands { get; set; } = [];
         public List<LabelDto>   Labels   { get; set; } = [];
     }
-    private sealed class CommandDto { public string Name { get; set; } = string.Empty; public string Address { get; set; } = string.Empty; }
-    private sealed class LabelDto   { public string Name { get; set; } = string.Empty; public string Address { get; set; } = string.Empty; }
+    private sealed class CommandDto { public string Name { get; set; } = string.Empty; public string Address { get; set; } = string.Empty; public string Theme { get; set; } = string.Empty; }
+    private sealed class LabelDto   { public string Name { get; set; } = string.Empty; public string Address { get; set; } = string.Empty; public string FrameShape { get; set; } = "Rectangle"; public string ValueColorTheme { get; set; } = "NeonBlue"; }
     private sealed class MaintenanceItemDto
     {
         public string MachineId { get; set; } = "*";

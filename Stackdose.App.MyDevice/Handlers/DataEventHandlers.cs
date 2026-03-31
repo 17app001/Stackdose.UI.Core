@@ -13,10 +13,10 @@ public sealed class DataEventHandlers
         {
             // Machine 1 events:
             case "OnEvent1": OnEvent1(address, newVal != 0, oldVal != 0); break;
-            case "OnEvent2": OnEvent2(address, newVal != 0, oldVal != 0); break;
+            case "OnEvent2": OnEvent2(address, newVal, oldVal); break;
             case "OnEvent3": OnEvent3(address, newVal != 0, oldVal != 0); break;
-            case "OnEvent4": OnEvent4(address, newVal != 0, oldVal != 0); break;
-            case "OnEvent5": OnEvent5(address, newVal != 0, oldVal != 0); break;
+            case "OnEvent4": OnEvent4(address, newVal, oldVal); break;
+            case "OnEvent5": OnEvent5(address, newVal, oldVal); break;
         }
     }
 
@@ -29,7 +29,7 @@ public sealed class DataEventHandlers
     }
 
     /// <summary>M201 數值變動</summary>
-    public void OnEvent2(string address, bool newVal, bool oldVal)
+    public void OnEvent2(string address, int newVal, int oldVal)
     {
         // TODO: 在此填寫邏輯
     }
@@ -41,13 +41,13 @@ public sealed class DataEventHandlers
     }
 
     /// <summary>M203 數值變動</summary>
-    public void OnEvent4(string address, bool newVal, bool oldVal)
+    public void OnEvent4(string address, int newVal, int oldVal)
     {
         // TODO: 在此填寫邏輯
     }
 
     /// <summary>M204 數值變動</summary>
-    public void OnEvent5(string address, bool newVal, bool oldVal)
+    public void OnEvent5(string address, int newVal, int oldVal)
     {
         // TODO: 在此填寫邏輯
     }

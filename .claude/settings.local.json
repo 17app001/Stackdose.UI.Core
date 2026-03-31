@@ -34,7 +34,10 @@
       "Bash(grep -r \"LiveLogViewer\\\\|Device.*Filter\\\\|Machine.*Filter\\\\|deviceId\\\\|machineId\" /d/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core --include=*.xaml --include=*.cs)",
       "Bash(find /d/工作區/Project -name *Page.xaml -o -name *Page.xaml.cs)",
       "Bash(find /d/工作區/Project -name *SqliteLogger* -o -name *Logger*)",
-      "Bash(grep -r \"Source.*Binding\\\\|Source.*ComplianceContext\\\\|FilteredLogs\\\\|DeviceLog\" /d/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core --include=*.cs --include=*.xaml)"
+      "Bash(grep -r \"Source.*Binding\\\\|Source.*ComplianceContext\\\\|FilteredLogs\\\\|DeviceLog\" /d/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core --include=*.cs --include=*.xaml)",
+      "Read(//d//**)",
+      "Bash(find /d/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls -type f -name *.xaml)",
+      "Bash(grep -r \"FrameShape\\\\|PlcLabelFrameShape\" /d/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core --include=*.cs -l)"
     ]
   }
 }

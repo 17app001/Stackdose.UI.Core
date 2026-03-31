@@ -27,11 +27,15 @@ public sealed class DataEventRow : INotifyPropertyChanged
 
 public sealed class CommandRow : INotifyPropertyChanged
 {
-    private string _name = string.Empty;
+    private string _name    = string.Empty;
     private string _address = string.Empty;
+    private string _theme   = string.Empty;   // 空字串 = 自動推斷
 
     public string Name    { get => _name;    set { _name    = value; N(); } }
     public string Address { get => _address; set { _address = value; N(); } }
+    public string Theme   { get => _theme;   set { _theme   = value; N(); } }
+
+    public static string[] ThemeOptions { get; } = ["", "Primary", "Success", "Error", "Warning", "Info"];
 
     public event PropertyChangedEventHandler? PropertyChanged;
     private void N([CallerMemberName] string? n = null) => PropertyChanged?.Invoke(this, new(n));
@@ -39,11 +43,18 @@ public sealed class CommandRow : INotifyPropertyChanged
 
 public sealed class LabelRow : INotifyPropertyChanged
 {
-    private string _name = string.Empty;
-    private string _address = string.Empty;
+    private string _name            = string.Empty;
+    private string _address         = string.Empty;
+    private string _frameShape      = "Rectangle";
+    private string _valueColorTheme = "NeonBlue";
 
-    public string Name    { get => _name;    set { _name    = value; N(); } }
-    public string Address { get => _address; set { _address = value; N(); } }
+    public string Name            { get => _name;            set { _name            = value; N(); } }
+    public string Address         { get => _address;         set { _address         = value; N(); } }
+    public string FrameShape      { get => _frameShape;      set { _frameShape      = value; N(); } }
+    public string ValueColorTheme { get => _valueColorTheme; set { _valueColorTheme = value; N(); } }
+
+    public static string[] FrameShapeOptions      { get; } = ["Rectangle", "Circle"];
+    public static string[] ValueColorThemeOptions { get; } = ["NeonBlue", "Success", "Warning", "Error", "Info", "White", "Gray", "NeonGreen", "NeonRed", "Primary"];
 
     public event PropertyChangedEventHandler? PropertyChanged;
     private void N([CallerMemberName] string? n = null) => PropertyChanged?.Invoke(this, new(n));

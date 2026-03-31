@@ -13,6 +13,7 @@ public sealed class CommandHandlers
             ("M1", "Start2") => OnM1Start2(machineId, address),
             ("M1", "Start3") => OnM1Start3(machineId, address),
             ("M1", "Start4") => OnM1Start4(machineId, address),
+            ("M1", "Start5") => OnM1Start5(machineId, address),
             _ => true,
         };
     }
@@ -44,6 +45,13 @@ public sealed class CommandHandlers
     public bool OnM1Start4(string machineId, string address)
     {
         // TODO: 填入 Start4 邏輯
+        return true;
+    }
+
+    /// <summary>Start5 (M304)</summary>
+    public bool OnM1Start5(string machineId, string address)
+    {
+        // TODO: 填入 Start5 邏輯
         return true;
     }
 }

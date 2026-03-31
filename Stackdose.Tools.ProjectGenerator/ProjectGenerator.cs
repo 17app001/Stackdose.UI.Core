@@ -525,6 +525,21 @@ public sealed class ProjectGenerator
         var labelsDict = new Dictionary<string, string>();
         foreach (var l in labels) labelsDict[l.LabelName] = l.Address;
 
+        // 視覺樣式（只寫入非預設值，保持 JSON 簡潔）
+        var labelStylesDict = new Dictionary<string, object>();
+        foreach (var l in labels)
+        {
+            if (l.FrameShape != "Rectangle" || l.ValueColorTheme != "NeonBlue")
+                labelStylesDict[l.LabelName] = new { frameShape = l.FrameShape, valueColorTheme = l.ValueColorTheme };
+        }
+
+        var commandStylesDict = new Dictionary<string, object>();
+        foreach (var c in commands)
+        {
+            if (!string.IsNullOrWhiteSpace(c.Theme))
+                commandStylesDict[c.CommandName] = new { theme = c.Theme };
+        }
+
         var statusTags = new Dictionary<string, object>();
         statusTags["isRunning"] = new { address = machine.ProcessMonitorIsRunning, type = "bool", access = "read" };
         statusTags["isAlarm"] = new { address = machine.ProcessMonitorIsAlarm, type = "bool", access = "read" };
@@ -598,11 +613,17 @@ public sealed class ProjectGenerator
         if (printHeadConfigs != null) node["printHeadConfigs"] = JsonSerializer.SerializeToNode(printHeadConfigs, serOpts);
 
         node["detailLabels"] = JsonSerializer.SerializeToNode(labelsDict, serOpts);
+        if (labelStylesDict.Count > 0)
+            node["detailLabelStyles"] = JsonSerializer.SerializeToNode(labelStylesDict, serOpts);
+        if (commandStylesDict.Count > 0)
+            node["commandStyles"] = JsonSerializer.SerializeToNode(commandStylesDict, serOpts);
         node["tags"]         = JsonSerializer.SerializeToNode(new { status = statusTags, process = processTags }, serOpts);
         node["modules"]      = JsonSerializer.SerializeToNode(modules, serOpts);
-        node["layoutMode"]    = _spec.Project.LayoutMode;
-        node["showPlcEditor"] = showPlcEditor;
-        node["showLiveLog"]   = machine.ShowLiveLog;
+        node["layoutMode"]             = _spec.Project.LayoutMode;
+        node["rightColumnWidthStar"]   = _spec.Project.RightColumnWidthStar;
+        node["liveDataTitle"]          = _spec.Project.LiveDataTitle;
+        node["showPlcEditor"]          = showPlcEditor;
+        node["showLiveLog"]            = machine.ShowLiveLog;
 
         var machineDataEvents = _spec.DataEvents
             .Where(e => e.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase))

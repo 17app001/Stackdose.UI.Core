@@ -29,8 +29,17 @@ public sealed class DeviceContext
     /// <summary>�]�ưʺA���}���Ʀ塿 Standard | SplitRight | Dashboard</summary>
     public string LayoutMode { get; set; } = "SplitRight";
 
+    /// <summary>SplitRight 模式右欄寬度比例（相對於左欄的 Star 比，預設 0.85）</summary>
+    public double RightColumnWidthStar { get; set; } = 0.85;
+
+    /// <summary>中央 Live Data 面板標題（預設 "Live Data"）</summary>
+    public string LiveDataTitle { get; set; } = "Live Data";
+
     // �w�w �R�O��}�]Key = �R�O�W��, Value = PLC ��}�^ �w�w
     public Dictionary<string, string> Commands { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>指令顏色主題覆寫 (Key = 指令名稱, Value = Theme 字串)。未設定時由 ViewModel 自動推斷。</summary>
+    public Dictionary<string, string> CommandThemes { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     // �w�w �ʺA�������]Key = ��ܦW��, Value = PLC ��}�^ �w�w
     // ���P�]�ƥi�ۥѩw�q�U�ۻݭn���ʱ����C
@@ -66,4 +75,10 @@ public sealed class DeviceLabelInfo
     public string DataType { get; set; } = "Word";
     public int Divisor { get; set; } = 1;
     public string StringFormat { get; set; } = string.Empty;
+
+    /// <summary>底框形狀：Rectangle | Circle</summary>
+    public string FrameShape { get; set; } = "Rectangle";
+
+    /// <summary>數值顏色主題：NeonBlue | Success | Warning | Error | Info | White | Gray 等</summary>
+    public string ValueColorTheme { get; set; } = "NeonBlue";
 }

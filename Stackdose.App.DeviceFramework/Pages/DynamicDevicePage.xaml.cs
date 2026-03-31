@@ -78,10 +78,10 @@ public partial class DynamicDevicePage : UserControl
         bool isSplitRight = _viewModel.LayoutMode == "SplitRight";
         bool isDashboard  = _viewModel.LayoutMode == "Dashboard";
 
-        // ── SplitRight: right column ──────────────────────────────────────
+        // ── SplitRight: right column (Alarm + Sensor 右側欄位) ────────────
         bool showRight = hasViewers && isSplitRight;
         ColSpacer.Width = showRight ? new System.Windows.GridLength(12) : new System.Windows.GridLength(0);
-        ColRight.Width  = showRight ? new System.Windows.GridLength(0.9, System.Windows.GridUnitType.Star)
+        ColRight.Width  = showRight ? new System.Windows.GridLength(_viewModel.RightColumnWidthStar, System.Windows.GridUnitType.Star)
                                     : new System.Windows.GridLength(0);
         RightViewersPanel.Visibility = showRight ? Visibility.Visible : Visibility.Collapsed;
 
@@ -105,10 +105,10 @@ public partial class DynamicDevicePage : UserControl
             BottomColSensor.Width = hasSensor ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
         }
 
-        // ── LiveLog row ───────────────────────────────────────────────────
+        // ── LiveLog row (System Log) ──────────────────────────────────────
         bool showLiveLog = _viewModel.ShowLiveLog;
         RowLiveLogSpacer.Height = showLiveLog ? new System.Windows.GridLength(12) : new System.Windows.GridLength(0);
-        RowLiveLog.Height       = showLiveLog ? new System.Windows.GridLength(200) : new System.Windows.GridLength(0);
+        RowLiveLog.Height       = showLiveLog ? new System.Windows.GridLength(220) : new System.Windows.GridLength(0);
         MachineLiveLog.Visibility = showLiveLog ? Visibility.Visible : Visibility.Collapsed;
     }
 

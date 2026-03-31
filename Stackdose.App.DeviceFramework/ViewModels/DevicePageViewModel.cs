@@ -23,6 +23,8 @@ public class DevicePageViewModel : ViewModelBase
     private bool _showPlcEditor = false;
     private bool _showLiveLog = false;
     private string _layoutMode = "SplitRight";
+    private double _rightColumnWidthStar = 0.85;
+    private string _liveDataTitle = "Live Data";
 
     public DevicePageViewModel()
     {
@@ -85,10 +87,22 @@ public class DevicePageViewModel : ViewModelBase
         set => SetProperty(ref _layoutMode, value);
     }
 
+    public double RightColumnWidthStar
+    {
+        get => _rightColumnWidthStar;
+        set => SetProperty(ref _rightColumnWidthStar, value);
+    }
+
+    public string LiveDataTitle
+    {
+        get => _liveDataTitle;
+        set => SetProperty(ref _liveDataTitle, value);
+    }
+
     public string ElapsedTimeAddress
     {
         get => _elapsedTimeAddress;
-        set => SetProperty(ref _elapsedTimeAddress, value);
+        set { SetProperty(ref _elapsedTimeAddress, value); OnPropertyChanged(nameof(HasElapsedTime)); }
     }
 
     public bool ShowPlcEditor
@@ -134,6 +148,21 @@ public class DevicePageViewModel : ViewModelBase
     public ObservableCollection<DeviceCommandViewModel> Commands { get; } = [];
 
     /// <summary>
+    /// 製程控制命令（Start / Stop / Pause 等主流程按鈕），顯示於 Command Operation 區塊。
+    /// </summary>
+    public ObservableCollection<DeviceCommandViewModel> ProcessCommands { get; } = [];
+
+    /// <summary>
+    /// 工具/維護命令（Initialize / Clean / Reset 等），顯示於 Command Actions 區塊。
+    /// </summary>
+    public ObservableCollection<DeviceCommandViewModel> ActionCommands { get; } = [];
+
+    public bool HasActionCommands => ActionCommands.Count > 0;
+
+    public bool HasElapsedTime =>
+        !string.IsNullOrEmpty(_elapsedTimeAddress) && _elapsedTimeAddress != "--";
+
+    /// <summary>
     /// PrintHead �]�w�ɸ��|�C
     /// </summary>
     public ObservableCollection<string> PrintHeadConfigFiles { get; } = [];
@@ -167,6 +196,8 @@ public class DevicePageViewModel : ViewModelBase
         ShowPlcEditor = context.ShowPlcEditor;
         ShowLiveLog = context.ShowLiveLog;
         LayoutMode = context.LayoutMode;
+        RightColumnWidthStar = context.RightColumnWidthStar;
+        LiveDataTitle = context.LiveDataTitle;
         CurrentProcessState = ProcessState.Idle;
 
         // �ʺA����
@@ -180,7 +211,9 @@ public class DevicePageViewModel : ViewModelBase
                 DefaultValue = info.DefaultValue,
                 DataType = info.DataType,
                 Divisor = info.Divisor,
-                StringFormat = info.StringFormat
+                StringFormat = info.StringFormat,
+                FrameShape = info.FrameShape,
+                ValueColorTheme = info.ValueColorTheme,
             });
 
             // �p�G�O ElapsedTime�A�P�B��M���ݩ�
@@ -191,19 +224,28 @@ public class DevicePageViewModel : ViewModelBase
             }
         }
 
-        // �ʺA�R�O
+        // 命令分組
         Commands.Clear();
+        ProcessCommands.Clear();
+        ActionCommands.Clear();
         foreach (var (name, address) in context.Commands)
         {
-            var theme = InferCommandTheme(name);
-            Commands.Add(new DeviceCommandViewModel
+            var theme = context.CommandThemes.TryGetValue(name, out var t) ? t : InferCommandTheme(name);
+            var cmd = new DeviceCommandViewModel
             {
                 Name = name,
                 DisplayName = FormatCommandDisplayName(name),
                 Address = address,
-                Theme = theme
-            });
+                Theme = theme,
+                Group = InferCommandGroup(name)
+            };
+            Commands.Add(cmd);
+            if (cmd.Group == "Process")
+                ProcessCommands.Add(cmd);
+            else
+                ActionCommands.Add(cmd);
         }
+        OnPropertyChanged(nameof(HasActionCommands));
 
         // PrintHead
         PrintHeadConfigFiles.Clear();
@@ -237,11 +279,24 @@ public class DevicePageViewModel : ViewModelBase
     private static string InferCommandTheme(string commandName)
     {
         var lower = commandName.ToLowerInvariant();
-        if (lower.Contains("start")) return "Success";
-        if (lower.Contains("stop") || lower.Contains("emergency")) return "Error";
-        if (lower.Contains("pause") || lower.Contains("spit") || lower.Contains("clean") || lower.Contains("warning")) return "Warning";
-        if (lower.Contains("init") || lower.Contains("reset") || lower.Contains("grating")) return "Primary";
+        if (lower.Contains("start") || lower.Contains("run")) return "Success";
+        if (lower.Contains("stop") || lower.Contains("emergency") || lower.Contains("abort") || lower.Contains("alarm")) return "Error";
+        if (lower.Contains("pause") || lower.Contains("resume") || lower.Contains("spit") || lower.Contains("clean") || lower.Contains("warning")) return "Warning";
+        if (lower.Contains("init") || lower.Contains("reset") || lower.Contains("grating") || lower.Contains("home") || lower.Contains("calibrate")) return "Primary";
         return "Info";
+    }
+
+    /// <summary>
+    /// 依命令名稱推斷分組：Process = 主製程控制，Action = 維護/工具命令。
+    /// </summary>
+    private static string InferCommandGroup(string commandName)
+    {
+        var lower = commandName.ToLowerInvariant();
+        if (lower.Contains("start") || lower.Contains("stop") || lower.Contains("pause") ||
+            lower.Contains("resume") || lower.Contains("execute") || lower.Contains("spit") ||
+            lower.Contains("run") || lower.Contains("abort"))
+            return "Process";
+        return "Action";
     }
 
     private static string FormatCommandDisplayName(string name)
@@ -264,6 +319,8 @@ public sealed class DeviceLabelViewModel : ViewModelBase
     private string _dataType = "Word";
     private int _divisor = 1;
     private string _stringFormat = string.Empty;
+    private string _frameShape = "Rectangle";
+    private string _valueColorTheme = "NeonBlue";
 
     public string Label { get => _label; set => SetProperty(ref _label, value); }
     public string Address { get => _address; set => SetProperty(ref _address, value); }
@@ -271,6 +328,8 @@ public sealed class DeviceLabelViewModel : ViewModelBase
     public string DataType { get => _dataType; set => SetProperty(ref _dataType, value); }
     public int Divisor { get => _divisor; set => SetProperty(ref _divisor, value); }
     public string StringFormat { get => _stringFormat; set => SetProperty(ref _stringFormat, value); }
+    public string FrameShape { get => _frameShape; set => SetProperty(ref _frameShape, value); }
+    public string ValueColorTheme { get => _valueColorTheme; set => SetProperty(ref _valueColorTheme, value); }
 }
 
 /// <summary>
@@ -283,8 +342,11 @@ public sealed class DeviceCommandViewModel : ViewModelBase
     private string _address = string.Empty;
     private string _theme = "Primary";
 
+    private string _group = "Action";
+
     public string Name { get => _name; set => SetProperty(ref _name, value); }
     public string DisplayName { get => _displayName; set => SetProperty(ref _displayName, value); }
     public string Address { get => _address; set => SetProperty(ref _address, value); }
     public string Theme { get => _theme; set => SetProperty(ref _theme, value); }
+    public string Group { get => _group; set => SetProperty(ref _group, value); }
 }

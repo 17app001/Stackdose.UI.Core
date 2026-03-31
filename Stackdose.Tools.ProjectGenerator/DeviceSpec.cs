@@ -9,6 +9,7 @@ public sealed class DeviceSpec
     public List<MachineInfo> Machines { get; set; } = [];
     public List<CommandInfo> Commands { get; set; } = [];
     public List<LabelInfo> Labels { get; set; } = [];
+    public List<LabelInfo> StatusLabels { get; set; } = [];
     public List<TagInfo> Tags { get; set; } = [];
     public List<PanelInfo> Panels { get; set; } = [];
     public List<MaintenanceItemInfo> MaintenanceItems { get; set; } = [];
@@ -34,7 +35,9 @@ public sealed class ProjectInfo
     public string LayoutMode { get; set; } = "SplitRight";
     public bool AutoConnect { get; set; } = false;
     public double RightColumnWidthStar { get; set; } = 0.85;
+    public int    LeftCommandWidthPx   { get; set; } = 250;
     public string LiveDataTitle { get; set; } = "Live Data";
+    public string DeviceStatusTitle { get; set; } = "Device Status";
 
     /// <summary>Short name derived from ProjectName, e.g. "Stackdose.App.OvenControl" �� "OvenControl"</summary>
     public string ShortName => ProjectName.Contains('.')

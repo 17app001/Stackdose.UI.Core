@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:Stackdose.Tools.ProjectGeneratorUI.ViewModels"
         xmlns:local="clr-namespace:Stackdose.Tools.ProjectGeneratorUI"
+        xmlns:ctrl="clr-namespace:Stackdose.Tools.ProjectGeneratorUI.Controls"
         Title="Stackdose Project Generator"
         Height="780" Width="1100"
         MinHeight="640" MinWidth="900"
@@ -16,6 +17,35 @@
     <Window.Resources>
         <local:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <local:InvertBoolConverter          x:Key="InvertBool"/>
+        <local:StringEqualityConverter      x:Key="StringEq"/>
+
+        <!-- RadioButton 當版面模式卡片用 -->
+        <Style x:Key="LayoutModeCard" TargetType="RadioButton">
+            <Setter Property="GroupName" Value="LayoutModeGroup"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd"
+                                Background="{StaticResource PanelBrush}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1.5" CornerRadius="8"
+                                Padding="10,9" Cursor="Hand">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="Bd" Property="Background"  Value="#152038"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#4070B0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -53,83 +83,282 @@
 
             <!-- ─────────── Tab 1: 專案設定 ─────────── -->
             <TabItem Header="① 專案設定">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,24">
-                    <StackPanel MaxWidth="560">
+                <Grid Margin="16,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="390" MinWidth="340"/>
+                        <ColumnDefinition Width="14"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                        <TextBlock Style="{StaticResource SectionHeader}" Text="基本資訊" Margin="0,0,0,12"/>
+                    <!-- ══════════════════════════════════════
+                         左：設定表單
+                         ══════════════════════════════════════ -->
+                    <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="0,4,12,4">
+                        <StackPanel>
 
-                        <Grid Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="140"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="8"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="8"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="8"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="8"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="8"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="8"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="8"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                            <!-- ── 基本資訊 ── -->
+                            <TextBlock Style="{StaticResource SectionHeader}" Text="基本資訊" Margin="0,0,0,10"/>
+                            <Grid Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="8"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="8"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="8"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="8"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="8"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="8"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="專案名稱"/>
-                            <TextBox   Grid.Row="0" Grid.Column="1" Height="32" Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBlock Grid.Row="0"  Grid.Column="0" Style="{StaticResource FieldLabel}" Text="專案名稱"/>
+                                <TextBox   Grid.Row="0"  Grid.Column="1" Height="32"
+                                           Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}"/>
 
-                            <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="標題顯示名稱"/>
-                            <TextBox   Grid.Row="2" Grid.Column="1" Height="32" Text="{Binding HeaderDeviceName, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBlock Grid.Row="2"  Grid.Column="0" Style="{StaticResource FieldLabel}" Text="標題顯示名稱"/>
+                                <TextBox   Grid.Row="2"  Grid.Column="1" Height="32"
+                                           Text="{Binding HeaderDeviceName, UpdateSourceTrigger=PropertyChanged}"/>
 
-                            <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="版本"/>
-                            <TextBox   Grid.Row="4" Grid.Column="1" Height="32" Text="{Binding Version, UpdateSourceTrigger=PropertyChanged}" Width="120" HorizontalAlignment="Left"/>
+                                <TextBlock Grid.Row="4"  Grid.Column="0" Style="{StaticResource FieldLabel}" Text="版本"/>
+                                <TextBox   Grid.Row="4"  Grid.Column="1" Height="32" Width="110" HorizontalAlignment="Left"
+                                           Text="{Binding Version, UpdateSourceTrigger=PropertyChanged}"/>
 
-                            <TextBlock Grid.Row="6" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="頁面模式"/>
-                            <ComboBox  Grid.Row="6" Grid.Column="1" ItemsSource="{Binding PageModes}" SelectedItem="{Binding PageMode}" Width="220" HorizontalAlignment="Left"/>
+                                <TextBlock Grid.Row="6"  Grid.Column="0" Style="{StaticResource FieldLabel}" Text="頁面模式"/>
+                                <ComboBox  Grid.Row="6"  Grid.Column="1" Width="200" HorizontalAlignment="Left"
+                                           ItemsSource="{Binding PageModes}" SelectedItem="{Binding PageMode}"/>
 
-                            <TextBlock Grid.Row="8" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="排版模式"/>
-                            <ComboBox  Grid.Row="8" Grid.Column="1" ItemsSource="{Binding LayoutModes}" SelectedItem="{Binding LayoutMode}" Width="220" HorizontalAlignment="Left"/>
+                                <TextBlock Grid.Row="8"  Grid.Column="0" Style="{StaticResource FieldLabel}" Text="自動連線"/>
+                                <CheckBox  Grid.Row="8"  Grid.Column="1" IsChecked="{Binding AutoConnect}"
+                                           Content="啟動時自動連線 PLC" VerticalAlignment="Center"/>
 
-                            <TextBlock Grid.Row="10" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="自動連線"/>
-                            <CheckBox  Grid.Row="10" Grid.Column="1" IsChecked="{Binding AutoConnect}"
-                                       Content="啟動時自動連線 PLC" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="10" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="LiveData 標題"
+                                           ToolTip="中央 Live Data 面板的標題文字"/>
+                                <ComboBox  Grid.Row="10" Grid.Column="1" Height="32" IsEditable="True"
+                                           Text="{Binding LiveDataTitle, UpdateSourceTrigger=PropertyChanged}"
+                                           ToolTip="例：Print Information、Process Data、Live Data">
+                                    <ComboBoxItem>Live Data</ComboBoxItem>
+                                    <ComboBoxItem>Print Information</ComboBoxItem>
+                                    <ComboBoxItem>Process Data</ComboBoxItem>
+                                    <ComboBoxItem>Sensor Readings</ComboBoxItem>
+                                    <ComboBoxItem>Device Data</ComboBoxItem>
+                                </ComboBox>
 
-                            <TextBlock Grid.Row="12" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="右欄寬度比例"
-                                       ToolTip="SplitRight 模式下右側 Alarm/Sensor 欄相對左側的寬度倍率（預設 0.85）"/>
-                            <TextBox   Grid.Row="12" Grid.Column="1" Height="32" Width="80" HorizontalAlignment="Left"
-                                       Text="{Binding RightColumnWidthStar, UpdateSourceTrigger=PropertyChanged}"
-                                       ToolTip="例：0.85 = 右欄約佔左欄的 85%；1.2 = 右欄較寬"/>
+                                <TextBlock Grid.Row="12" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="DeviceStatus 標題"
+                                           ToolTip="右側 Device Status 面板的標題文字（需設定 Status Labels 才會顯示）"/>
+                                <ComboBox  Grid.Row="12" Grid.Column="1" Height="32" IsEditable="True"
+                                           Text="{Binding DeviceStatusTitle, UpdateSourceTrigger=PropertyChanged}"
+                                           ToolTip="例：Device Status、Print Progress、Process Info">
+                                    <ComboBoxItem>Device Status</ComboBoxItem>
+                                    <ComboBoxItem>Print Progress</ComboBoxItem>
+                                    <ComboBoxItem>Process Info</ComboBoxItem>
+                                    <ComboBoxItem>Production Status</ComboBoxItem>
+                                    <ComboBoxItem>Job Status</ComboBoxItem>
+                                </ComboBox>
+                            </Grid>
 
-                            <TextBlock Grid.Row="14" Grid.Column="0" Style="{StaticResource FieldLabel}" Text="資料面板標題"
-                                       ToolTip="中央數值面板的標題文字，預設 'Live Data'"/>
-                            <TextBox   Grid.Row="14" Grid.Column="1" Height="32" Text="{Binding LiveDataTitle, UpdateSourceTrigger=PropertyChanged}"
-                                       ToolTip="例：Print Information、Process Data、Live Data"/>
-                        </Grid>
+                            <Separator Margin="0,14"/>
 
-                        <Separator Margin="0,16"/>
+                            <!-- ── 排版模式（視覺卡片） ── -->
+                            <TextBlock Style="{StaticResource SectionHeader}" Text="排版模式" Margin="0,0,0,10"/>
+                            <UniformGrid Columns="3" Margin="0,0,0,6">
 
-                        <TextBlock Style="{StaticResource SectionHeader}" Text="模式說明" Margin="0,0,0,10"/>
-                        <Border Background="{StaticResource PanelBrush}" CornerRadius="6" Padding="14,12">
+                                <RadioButton Style="{StaticResource LayoutModeCard}" Margin="0,0,6,0"
+                                             IsChecked="{Binding LayoutMode, Mode=TwoWay,
+                                                         Converter={StaticResource StringEq},
+                                                         ConverterParameter=SplitRight}">
+                                    <StackPanel>
+                                        <TextBlock Text="SplitRight" FontWeight="SemiBold" FontSize="12"
+                                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                                        <TextBlock Text="左指令｜中數據｜右Viewer" FontSize="10" Margin="0,4,0,0"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                                        <TextBlock Text="★ 推薦" FontSize="9" Margin="0,4,0,0" Foreground="#4FC3F7"/>
+                                    </StackPanel>
+                                </RadioButton>
+
+                                <RadioButton Style="{StaticResource LayoutModeCard}" Margin="0,0,6,0"
+                                             IsChecked="{Binding LayoutMode, Mode=TwoWay,
+                                                         Converter={StaticResource StringEq},
+                                                         ConverterParameter=SplitBottom}">
+                                    <StackPanel>
+                                        <TextBlock Text="SplitBottom" FontWeight="SemiBold" FontSize="12"
+                                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                                        <TextBlock Text="上主畫面｜下Viewer並排" FontSize="10" Margin="0,4,0,0"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </RadioButton>
+
+                                <RadioButton Style="{StaticResource LayoutModeCard}"
+                                             IsChecked="{Binding LayoutMode, Mode=TwoWay,
+                                                         Converter={StaticResource StringEq},
+                                                         ConverterParameter=Standard}">
+                                    <StackPanel>
+                                        <TextBlock Text="Standard" FontWeight="SemiBold" FontSize="12"
+                                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                                        <TextBlock Text="左右兩欄，無Viewer" FontSize="10" Margin="0,4,0,0"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </RadioButton>
+                            </UniformGrid>
+
+                            <Separator Margin="0,14"/>
+
+                            <!-- ── 版面比例（Slider） ── -->
+                            <TextBlock Style="{StaticResource SectionHeader}" Text="版面比例" Margin="0,0,0,10"/>
+
+                            <!-- 快速預設 -->
+                            <WrapPanel Margin="0,0,0,10">
+                                <TextBlock Text="預設：" FontSize="10" Foreground="{StaticResource TextMutedBrush}"
+                                           VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <Button FontSize="10" Padding="8,3" Margin="0,0,6,0"
+                                        Command="{Binding ApplyLayoutPresetCmd}" CommandParameter="compact"
+                                        ToolTip="左欄 200px，右欄比率 0.7">窄指令</Button>
+                                <Button FontSize="10" Padding="8,3" Margin="0,0,6,0"
+                                        Command="{Binding ApplyLayoutPresetCmd}" CommandParameter="standard"
+                                        ToolTip="左欄 250px，右欄比率 0.85">標準</Button>
+                                <Button FontSize="10" Padding="8,3" Margin="0,0,6,0"
+                                        Command="{Binding ApplyLayoutPresetCmd}" CommandParameter="wide"
+                                        ToolTip="左欄 340px，右欄比率 1.0">寬指令</Button>
+                                <Button FontSize="10" Padding="8,3"
+                                        Command="{Binding ApplyLayoutPresetCmd}" CommandParameter="wide-viewer"
+                                        ToolTip="左欄 250px，右欄比率 1.4">寬Viewer</Button>
+                            </WrapPanel>
+
+                            <!-- 左欄寬 Slider -->
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Style="{StaticResource FieldLabel}"
+                                           Text="左欄寬" ToolTip="指令面板固定寬度（px），推薦 200–360"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Slider Minimum="150" Maximum="500"
+                                            Value="{Binding LeftCommandWidthPx, UpdateSourceTrigger=PropertyChanged}"
+                                            Width="180" VerticalAlignment="Center"
+                                            IsSnapToTickEnabled="True" TickFrequency="10"/>
+                                    <TextBlock Text="{Binding LeftCommandWidthPx}" Width="36" Margin="8,0,2,0"
+                                               FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               VerticalAlignment="Center" TextAlignment="Right"/>
+                                    <TextBlock Text="px" Foreground="{StaticResource TextMutedBrush}"
+                                               FontSize="11" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- 右欄比率 Slider（SplitRight 有效） -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0"
+                                           Text="右欄比率"
+                                           ToolTip="SplitRight 模式有效；右側 Viewer 欄相對中欄的寬度比">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource FieldLabel}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding LayoutMode}" Value="Standard">
+                                                    <Setter Property="Opacity" Value="0.35"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding LayoutMode}" Value="SplitBottom">
+                                                    <Setter Property="Opacity" Value="0.35"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <StackPanel.IsEnabled>
+                                        <Binding Path="LayoutMode" Converter="{StaticResource StringEq}"
+                                                 ConverterParameter="SplitRight"/>
+                                    </StackPanel.IsEnabled>
+                                    <Slider Minimum="0.30" Maximum="2.00"
+                                            Value="{Binding RightColumnWidthStar, UpdateSourceTrigger=PropertyChanged}"
+                                            Width="180" VerticalAlignment="Center"
+                                            IsSnapToTickEnabled="True" TickFrequency="0.05"/>
+                                    <TextBlock Text="{Binding RightColumnWidthStar, StringFormat={}{0:F2}}"
+                                               Width="36" Margin="8,0,2,0"
+                                               FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               VerticalAlignment="Center" TextAlignment="Right"/>
+                                    <TextBlock Text="×" Foreground="{StaticResource TextMutedBrush}"
+                                               FontSize="11" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- ══════════════════════════════════════
+                         右：即時版型預覽（可拖拉分隔線）
+                         ══════════════════════════════════════ -->
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                            <TextBlock Style="{StaticResource SectionHeader}" Text="版型預覽" VerticalAlignment="Center"/>
+                            <TextBlock Text="（可拖拉分隔線調整比例）" FontSize="10"
+                                       Foreground="{StaticResource TextMutedBrush}"
+                                       VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        </StackPanel>
+
+                        <Border Grid.Row="1" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="10">
                             <StackPanel>
-                                <TextBlock Text="頁面模式" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6"/>
-                                <TextBlock Text="DynamicDevicePage — 自動從 JSON 配置生成設備頁（最快，零程式碼）" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4"/>
-                                <TextBlock Text="SinglePage — 單頁模式，適合簡單監控介面（自動登入 SuperAdmin）" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4"/>
-                                <TextBlock Text="CustomPage — 生成可自訂的 DevicePage.xaml 骨架，手動擴充 UI" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,12"/>
-                                <TextBlock Text="排版模式" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6"/>
-                                <TextBlock Text="SplitRight — 左：數據+指令 ｜ 右：Alarm+Sensor Viewer（推薦）" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4"/>
-                                <TextBlock Text="Standard — 所有元件垂直堆疊" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,4"/>
-                                <TextBlock Text="Dashboard — 儀表板三欄式（開發中）" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
+                                <ctrl:LayoutPreviewControl
+                                    LayoutMode="{Binding LayoutMode}"
+                                    HasAlarm="{Binding SelectedMachine.ModAlarm}"
+                                    HasSensor="{Binding SelectedMachine.ModSensors}"
+                                    HasLiveLog="{Binding SelectedMachine.ShowLiveLog}"
+                                    RightColumnWidthStar="{Binding RightColumnWidthStar, Mode=TwoWay}"
+                                    LeftCommandWidthPx="{Binding LeftCommandWidthPx, Mode=TwoWay}"
+                                    LiveDataTitle="{Binding LiveDataTitle}"
+                                    MinHeight="220" MaxHeight="340"/>
+
+                                <!-- 圖例 -->
+                                <WrapPanel Margin="0,10,0,0">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,3">
+                                        <Border Width="9" Height="9" CornerRadius="2" Background="#1A237E" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Command Op" FontSize="9" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,3">
+                                        <Border Width="9" Height="9" CornerRadius="2" Background="#0D47A1" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Cmd Actions" FontSize="9" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,3">
+                                        <Border Width="9" Height="9" CornerRadius="2" Background="#004D40" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Live Data" FontSize="9" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,3">
+                                        <Border Width="9" Height="9" CornerRadius="2" Background="#6A1B9A" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Alarm Viewer" FontSize="9" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,3">
+                                        <Border Width="9" Height="9" CornerRadius="2" Background="#1B5E20" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Sensor Viewer" FontSize="9" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,3">
+                                        <Border Width="9" Height="9" CornerRadius="2" Background="#263238" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="System Log" FontSize="9" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </WrapPanel>
+
+                                <TextBlock Margin="0,8,0,0" FontSize="9" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap"
+                                           Text="Alarm / Sensor / LiveLog 在 ② 設備 Tab 開啟後即時更新。拖拉藍色分隔線可調整欄寬，結果會同步回左側數值。"/>
                             </StackPanel>
                         </Border>
-
-                    </StackPanel>
-                </ScrollViewer>
+                    </Grid>
+                </Grid>
             </TabItem>
 
             <!-- ─────────── Tab 2: 設備 ─────────── -->
@@ -310,6 +539,8 @@
                         <RowDefinition Height="8"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="8"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="8"/>
                         <RowDefinition Height="1.2*"/>
                     </Grid.RowDefinitions>
 
@@ -413,8 +644,57 @@
                                 HorizontalAlignment="Left" Margin="0,6,0,0"/>
                     </Grid>
 
-                    <!-- Data Events DataGrid -->
+                    <!-- Status Labels DataGrid -->
                     <Grid Grid.Row="5">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Style="{StaticResource SectionHeader}" Text="狀態標籤 (Status Labels)" Margin="0,0,0,8"
+                                   ToolTip="顯示於 DeviceStatus 面板（右側），用於呈現列印進度、層數等狀態數值"/>
+                        <DataGrid Grid.Row="1"
+                                  ItemsSource="{Binding SelectedMachine.StatusLabels}"
+                                  CanUserAddRows="False" CanUserDeleteRows="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="標籤名稱" Binding="{Binding Name}"    Width="*"/>
+                                <DataGridTextColumn Header="地址"     Binding="{Binding Address}" Width="100"/>
+                                <DataGridTemplateColumn Header="框線形狀" Width="110">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox ItemsSource="{Binding FrameShapeOptions, Mode=OneTime}"
+                                                      SelectedItem="{Binding FrameShape, UpdateSourceTrigger=PropertyChanged}"
+                                                      Height="26" Margin="2"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="數值顏色" Width="120">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox ItemsSource="{Binding ValueColorThemeOptions, Mode=OneTime}"
+                                                      SelectedItem="{Binding ValueColorTheme, UpdateSourceTrigger=PropertyChanged}"
+                                                      Height="26" Margin="2"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Width="60">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="✕" Style="{StaticResource DangerButton}"
+                                                    Height="24" Width="30" FontSize="11" Padding="0"
+                                                    Command="{Binding DataContext.RemoveStatusLabelCmd, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Button Grid.Row="2" Content="+ 新增狀態標籤" Command="{Binding AddStatusLabelCmd}"
+                                HorizontalAlignment="Left" Margin="0,6,0,0"/>
+                    </Grid>
+
+                    <!-- Data Events DataGrid -->
+                    <Grid Grid.Row="7">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>

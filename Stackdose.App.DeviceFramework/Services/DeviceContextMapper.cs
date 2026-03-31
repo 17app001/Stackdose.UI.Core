@@ -35,7 +35,9 @@ public static class DeviceContextMapper
             ShowLiveLog = config.ShowLiveLog,
             LayoutMode = config.LayoutMode,
             RightColumnWidthStar = config.RightColumnWidthStar,
+            LeftCommandWidthPx   = config.LeftCommandWidthPx > 0 ? config.LeftCommandWidthPx : 250,
             LiveDataTitle = config.LiveDataTitle,
+            DeviceStatusTitle = config.DeviceStatusTitle,
             EnabledModules = [.. config.Modules],
             DataEvents = [.. config.DataEvents],
         };
@@ -61,6 +63,21 @@ public static class DeviceContextMapper
                     info.ValueColorTheme = style.ValueColorTheme;
                 }
                 context.Labels[key] = info;
+            }
+        }
+
+        // DeviceStatus 標籤
+        foreach (var (key, address) in config.DetailStatusLabels)
+        {
+            if (!string.IsNullOrWhiteSpace(address))
+            {
+                var info = new DeviceLabelInfo(address.Trim());
+                if (config.StatusLabelStyles.TryGetValue(key, out var style))
+                {
+                    info.FrameShape      = style.FrameShape;
+                    info.ValueColorTheme = style.ValueColorTheme;
+                }
+                context.StatusLabels[key] = info;
             }
         }
 

@@ -32,8 +32,17 @@ public sealed class DeviceContext
     /// <summary>SplitRight 模式右欄寬度比例（相對於左欄的 Star 比，預設 0.85）</summary>
     public double RightColumnWidthStar { get; set; } = 0.85;
 
+    /// <summary>左側指令面板固定寬度（px），預設 250</summary>
+    public int LeftCommandWidthPx { get; set; } = 250;
+
     /// <summary>中央 Live Data 面板標題（預設 "Live Data"）</summary>
     public string LiveDataTitle { get; set; } = "Live Data";
+
+    /// <summary>DeviceStatus 面板標籤（製程進度類：層數/時間/批號等）</summary>
+    public Dictionary<string, DeviceLabelInfo> StatusLabels { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>DeviceStatus 面板標題（預設 "Device Status"）</summary>
+    public string DeviceStatusTitle { get; set; } = "Device Status";
 
     // �w�w �R�O��}�]Key = �R�O�W��, Value = PLC ��}�^ �w�w
     public Dictionary<string, string> Commands { get; set; } = new(StringComparer.OrdinalIgnoreCase);

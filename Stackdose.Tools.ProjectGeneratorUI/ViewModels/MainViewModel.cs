@@ -21,7 +21,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _layoutMode             = "SplitRight";
     private bool   _autoConnect            = false;
     private double _rightColumnWidthStar   = 0.85;
+    private int    _leftCommandWidthPx     = 250;
     private string _liveDataTitle          = "Live Data";
+    private string _deviceStatusTitle      = "Device Status";
 
     public string ProjectName           { get => _projectName;          set { _projectName          = value; N(); } }
     public string HeaderDeviceName      { get => _headerDeviceName;     set { _headerDeviceName     = value; N(); } }
@@ -30,10 +32,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public string LayoutMode            { get => _layoutMode;           set { _layoutMode           = value; N(); } }
     public bool   AutoConnect           { get => _autoConnect;          set { _autoConnect          = value; N(); } }
     public double RightColumnWidthStar  { get => _rightColumnWidthStar; set { _rightColumnWidthStar = value; N(); } }
+    public int    LeftCommandWidthPx    { get => _leftCommandWidthPx;   set { _leftCommandWidthPx   = value; N(); } }
     public string LiveDataTitle         { get => _liveDataTitle;        set { _liveDataTitle        = value; N(); } }
+    public string DeviceStatusTitle     { get => _deviceStatusTitle;    set { _deviceStatusTitle    = value; N(); } }
 
     public string[] PageModes   { get; } = ["DynamicDevicePage", "SinglePage", "CustomPage"];
-    public string[] LayoutModes { get; } = ["SplitRight", "Standard", "Dashboard"];
+    public string[] LayoutModes { get; } = ["SplitRight", "Standard", "SplitBottom"];
 
     // ── Machines ─────────────────────────────────────────────────────────
     public ObservableCollection<MachineViewModel> Machines { get; } = [];
@@ -91,8 +95,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ICommand ImportDataEventsCmd   { get; }
     public ICommand BrowseOutputCmd       { get; }
     public ICommand GenerateCmd           { get; }
-    public ICommand SaveSpecCmd           { get; }
-    public ICommand LoadSpecCmd           { get; }
+    public ICommand SaveSpecCmd              { get; }
+    public ICommand LoadSpecCmd              { get; }
+    public ICommand ApplyLayoutPresetCmd     { get; }
+    public ICommand AddStatusLabelCmd        { get; }
+    public ICommand RemoveStatusLabelCmd     { get; }
 
     public MainViewModel()
     {
@@ -109,8 +116,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ImportDataEventsCmd = new RelayCommand(_ => ImportDataEvents(),  _ => HasSelectedMachine);
         BrowseOutputCmd  = new RelayCommand(_ => BrowseOutput());
         GenerateCmd      = new RelayCommand(_ => Generate(), _ => !IsGenerating);
-        SaveSpecCmd      = new RelayCommand(_ => SaveSpec());
-        LoadSpecCmd      = new RelayCommand(_ => LoadSpec());
+        SaveSpecCmd            = new RelayCommand(_ => SaveSpec());
+        LoadSpecCmd            = new RelayCommand(_ => LoadSpec());
+        ApplyLayoutPresetCmd   = new RelayCommand<string>(ApplyLayoutPreset);
+        AddStatusLabelCmd    = new RelayCommand(_ => AddStatusLabel(),           _ => HasSelectedMachine);
+        RemoveStatusLabelCmd = new RelayCommand<LabelRow>(RemoveStatusLabel, r => r != null);
 
         // Add a default machine
         AddMachine();
@@ -295,6 +305,29 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private sealed class AlarmImportItem  { public string Device { get; set; } = ""; public int Bit { get; set; } public string OperationDescription { get; set; } = ""; }
     private sealed class SensorImportItem { public string Device { get; set; } = ""; public string? Label { get; set; } public string? OperationDescription { get; set; } }
 
+    private void AddStatusLabel()
+    {
+        if (SelectedMachine == null) return;
+        var name = NextName(SelectedMachine.StatusLabels.Select(l => l.Name), "Status");
+        SelectedMachine.StatusLabels.Add(new LabelRow { Name = name, Address = NextAddress(SelectedMachine.StatusLabels.Select(l => l.Address), "D500") });
+    }
+
+    private void RemoveStatusLabel(LabelRow? row)
+    {
+        if (row != null) SelectedMachine?.StatusLabels.Remove(row);
+    }
+
+    private void ApplyLayoutPreset(string? preset)
+    {
+        switch (preset)
+        {
+            case "compact":      LeftCommandWidthPx = 200; RightColumnWidthStar = 0.70; break;
+            case "standard":     LeftCommandWidthPx = 250; RightColumnWidthStar = 0.85; break;
+            case "wide":         LeftCommandWidthPx = 340; RightColumnWidthStar = 1.00; break;
+            case "wide-viewer":  LeftCommandWidthPx = 250; RightColumnWidthStar = 1.40; break;
+        }
+    }
+
     private void BrowseOutput()
     {
         var dlg = new OpenFolderDialog { Title = "選擇輸出資料夾", InitialDirectory = OutputPath };
@@ -409,7 +442,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 LayoutMode             = LayoutMode,
                 AutoConnect            = AutoConnect,
                 RightColumnWidthStar   = RightColumnWidthStar,
+                LeftCommandWidthPx     = LeftCommandWidthPx,
                 LiveDataTitle          = LiveDataTitle,
+                DeviceStatusTitle      = DeviceStatusTitle,
             }
         };
 
@@ -434,6 +469,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
             foreach (var l in m.Labels)
                 spec.Labels.Add(new LabelInfo { MachineId = m.MachineId, LabelName = l.Name, Address = l.Address, FrameShape = l.FrameShape, ValueColorTheme = l.ValueColorTheme });
+            foreach (var l in m.StatusLabels)
+                spec.StatusLabels.Add(new LabelInfo { MachineId = m.MachineId, LabelName = l.Name, Address = l.Address, FrameShape = l.FrameShape, ValueColorTheme = l.ValueColorTheme });
 
             foreach (var de in m.DataEvents)
                 spec.DataEvents.Add(new DataEventInfo { MachineId = m.MachineId, Name = de.Name, Address = de.Address, Trigger = de.Trigger, Threshold = de.Threshold, DataType = de.DataType });
@@ -464,7 +501,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
         LayoutMode             = LayoutMode,
         AutoConnect            = AutoConnect,
         RightColumnWidthStar   = RightColumnWidthStar,
+        LeftCommandWidthPx     = LeftCommandWidthPx,
         LiveDataTitle          = LiveDataTitle,
+        DeviceStatusTitle      = DeviceStatusTitle,
         Machines = Machines.Select(m => new MachineDto
         {
             MachineId    = m.MachineId,
@@ -479,6 +518,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             ShowLiveLog  = m.ShowLiveLog,
             Commands     = m.Commands.Select(c => new CommandDto { Name = c.Name, Address = c.Address, Theme = c.Theme }).ToList(),
             Labels       = m.Labels.Select(l => new LabelDto { Name = l.Name, Address = l.Address, FrameShape = l.FrameShape, ValueColorTheme = l.ValueColorTheme }).ToList(),
+            StatusLabels = m.StatusLabels.Select(l => new LabelDto { Name = l.Name, Address = l.Address, FrameShape = l.FrameShape, ValueColorTheme = l.ValueColorTheme }).ToList(),
         }).ToList(),
         HasMaintenanceMode    = HasMaintenanceMode,
         HasSettings           = HasSettings,
@@ -529,7 +569,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
             LayoutMode             = dto.LayoutMode ?? "SplitRight";
             AutoConnect            = dto.AutoConnect;
             RightColumnWidthStar   = dto.RightColumnWidthStar > 0 ? dto.RightColumnWidthStar : 0.85;
+            LeftCommandWidthPx     = dto.LeftCommandWidthPx   > 0 ? dto.LeftCommandWidthPx   : 250;
             LiveDataTitle          = string.IsNullOrEmpty(dto.LiveDataTitle) ? "Live Data" : dto.LiveDataTitle;
+            DeviceStatusTitle      = string.IsNullOrEmpty(dto.DeviceStatusTitle) ? "Device Status" : dto.DeviceStatusTitle;
 
             Machines.Clear();
             foreach (var m in dto.Machines)
@@ -548,7 +590,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 vm.ShowLiveLog = m.ShowLiveLog;
                 vm.ApplyModulesString(m.Modules);
                 foreach (var c in m.Commands) vm.Commands.Add(new CommandRow { Name = c.Name, Address = c.Address, Theme = c.Theme });
-                foreach (var l in m.Labels)   vm.Labels.Add(new LabelRow { Name = l.Name, Address = l.Address, FrameShape = l.FrameShape, ValueColorTheme = l.ValueColorTheme });
+                foreach (var l in m.Labels)        vm.Labels.Add(new LabelRow { Name = l.Name, Address = l.Address, FrameShape = l.FrameShape, ValueColorTheme = l.ValueColorTheme });
+                foreach (var l in m.StatusLabels)  vm.StatusLabels.Add(new LabelRow { Name = l.Name, Address = l.Address, FrameShape = l.FrameShape, ValueColorTheme = l.ValueColorTheme });
                 Machines.Add(vm);
 
             }
@@ -590,7 +633,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
         public string LayoutMode             { get; set; } = "SplitRight";
         public bool   AutoConnect            { get; set; }
         public double RightColumnWidthStar   { get; set; } = 0.85;
+        public int    LeftCommandWidthPx     { get; set; } = 250;
         public string LiveDataTitle          { get; set; } = "Live Data";
+        public string DeviceStatusTitle      { get; set; } = "Device Status";
         public List<MachineDto> Machines { get; set; } = [];
         public bool HasMaintenanceMode    { get; set; }
         public bool HasSettings           { get; set; }
@@ -622,8 +667,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
         public string IsAlarm     { get; set; } = "M201";
         public string Modules     { get; set; } = "processControl";
         public bool   ShowLiveLog { get; set; } = false;
-        public List<CommandDto> Commands { get; set; } = [];
-        public List<LabelDto>   Labels   { get; set; } = [];
+        public List<CommandDto> Commands     { get; set; } = [];
+        public List<LabelDto>   Labels       { get; set; } = [];
+        public List<LabelDto>   StatusLabels { get; set; } = [];
     }
     private sealed class CommandDto { public string Name { get; set; } = string.Empty; public string Address { get; set; } = string.Empty; public string Theme { get; set; } = string.Empty; }
     private sealed class LabelDto   { public string Name { get; set; } = string.Empty; public string Address { get; set; } = string.Empty; public string FrameShape { get; set; } = "Rectangle"; public string ValueColorTheme { get; set; } = "NeonBlue"; }

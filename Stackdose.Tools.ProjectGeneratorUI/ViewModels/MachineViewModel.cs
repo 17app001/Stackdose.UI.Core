@@ -99,9 +99,10 @@ public sealed class MachineViewModel : INotifyPropertyChanged
 
     public bool ShowLiveLog       { get => _showLiveLog;       set { _showLiveLog       = value; N(); } }
 
-    public ObservableCollection<CommandRow>   Commands   { get; } = [];
-    public ObservableCollection<LabelRow>    Labels     { get; } = [];
-    public ObservableCollection<DataEventRow> DataEvents { get; } = [];
+    public ObservableCollection<CommandRow>   Commands     { get; } = [];
+    public ObservableCollection<LabelRow>    Labels       { get; } = [];
+    public ObservableCollection<LabelRow>    StatusLabels { get; } = [];
+    public ObservableCollection<DataEventRow> DataEvents  { get; } = [];
 
     public string DisplayName    => $"[{MachineId}] {MachineName}";
     public string ModulesSummary => string.Join(", ", GetEnabledModules());

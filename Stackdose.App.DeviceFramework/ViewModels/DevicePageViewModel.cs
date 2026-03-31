@@ -24,7 +24,9 @@ public class DevicePageViewModel : ViewModelBase
     private bool _showLiveLog = false;
     private string _layoutMode = "SplitRight";
     private double _rightColumnWidthStar = 0.85;
+    private int    _leftCommandWidthPx   = 250;
     private string _liveDataTitle = "Live Data";
+    private string _deviceStatusTitle = "Device Status";
 
     public DevicePageViewModel()
     {
@@ -93,11 +95,28 @@ public class DevicePageViewModel : ViewModelBase
         set => SetProperty(ref _rightColumnWidthStar, value);
     }
 
+    public int LeftCommandWidthPx
+    {
+        get => _leftCommandWidthPx;
+        set => SetProperty(ref _leftCommandWidthPx, value);
+    }
+
     public string LiveDataTitle
     {
         get => _liveDataTitle;
         set => SetProperty(ref _liveDataTitle, value);
     }
+
+    public string DeviceStatusTitle
+    {
+        get => _deviceStatusTitle;
+        set => SetProperty(ref _deviceStatusTitle, value);
+    }
+
+    /// <summary>DeviceStatus 面板標籤清單</summary>
+    public ObservableCollection<DeviceLabelViewModel> StatusLabels { get; } = [];
+
+    public bool HasDeviceStatus => StatusLabels.Count > 0;
 
     public string ElapsedTimeAddress
     {
@@ -197,7 +216,9 @@ public class DevicePageViewModel : ViewModelBase
         ShowLiveLog = context.ShowLiveLog;
         LayoutMode = context.LayoutMode;
         RightColumnWidthStar = context.RightColumnWidthStar;
+        LeftCommandWidthPx   = context.LeftCommandWidthPx > 0 ? context.LeftCommandWidthPx : 250;
         LiveDataTitle = context.LiveDataTitle;
+        DeviceStatusTitle = context.DeviceStatusTitle;
         CurrentProcessState = ProcessState.Idle;
 
         // �ʺA����
@@ -223,6 +244,24 @@ public class DevicePageViewModel : ViewModelBase
                 ElapsedTimeAddress = info.Address;
             }
         }
+
+        // DeviceStatus 標籤
+        StatusLabels.Clear();
+        foreach (var (name, info) in context.StatusLabels)
+        {
+            StatusLabels.Add(new DeviceLabelViewModel
+            {
+                Label = name,
+                Address = info.Address,
+                DefaultValue = info.DefaultValue,
+                DataType = info.DataType,
+                Divisor = info.Divisor,
+                StringFormat = info.StringFormat,
+                FrameShape = info.FrameShape,
+                ValueColorTheme = info.ValueColorTheme,
+            });
+        }
+        OnPropertyChanged(nameof(HasDeviceStatus));
 
         // 命令分組
         Commands.Clear();

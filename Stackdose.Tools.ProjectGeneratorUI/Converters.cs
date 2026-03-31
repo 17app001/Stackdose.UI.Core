@@ -30,6 +30,16 @@ public sealed class BoolToTextConverter : IValueConverter
         throw new NotImplementedException();
 }
 
+/// <summary>string == parameter → true/false (for RadioButton ↔ string LayoutMode binding)</summary>
+public sealed class StringEqualityConverter : IValueConverter
+{
+    public static readonly StringEqualityConverter Instance = new();
+    public object Convert(object v, Type t, object p, CultureInfo c) =>
+        v?.ToString() == p?.ToString();
+    public object ConvertBack(object v, Type t, object p, CultureInfo c) =>
+        v is true ? p : Binding.DoNothing;
+}
+
 /// <summary>bool → inverted bool (for IsEnabled binding)</summary>
 public sealed class InvertBoolConverter : IValueConverter
 {

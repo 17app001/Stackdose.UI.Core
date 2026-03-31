@@ -6,13 +6,13 @@
              xmlns:core="clr-namespace:Stackdose.UI.Core.Controls;assembly=Stackdose.UI.Core"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1280"
-             Background="#FF1A1A2E">
+             Background="#FF0D1117">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
 
         <!-- 面板卡片樣式 -->
         <Style x:Key="PanelCard" TargetType="Border">
-            <Setter Property="Background" Value="#FF16213E"/>
+            <Setter Property="Background" Value="#FF1B2634"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="BorderBrush" Value="#FF253040"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -94,32 +94,36 @@
         </Style>
     </UserControl.Resources>
 
+    <!--
+        外層 RootGrid：3 欄（左中內容 | 間距 | 右側 Viewer）
+        LiveLog / PlcEditor 放在左中欄位內，不橫跨右側 Viewer
+    -->
     <Grid x:Name="RootGrid" Margin="12">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>                                              <!-- 0: Main content -->
-            <RowDefinition x:Name="RowBottomSpacer"  Height="0"/>                   <!-- 1: Dashboard spacer -->
-            <RowDefinition x:Name="RowBottomViewers" Height="0"/>                   <!-- 2: Dashboard viewers -->
-            <RowDefinition x:Name="RowLiveLogSpacer" Height="0"/>                   <!-- 3: LiveLog spacer -->
-            <RowDefinition x:Name="RowLiveLog"       Height="0"/>                   <!-- 4: LiveLog -->
-            <RowDefinition Height="Auto"/>                                           <!-- 5: PlcEditor -->
-        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>                                        <!-- 0: 左中內容區 -->
+            <ColumnDefinition x:Name="ColSpacer" Width="0"/>                    <!-- 1: 右側間距 -->
+            <ColumnDefinition x:Name="ColRight"  Width="0"/>                    <!-- 2: 右側 Viewer -->
+        </Grid.ColumnDefinitions>
 
         <!-- ════════════════════════════════════════════════════
-             Row 0: Main Content
+             左中內容欄（Commands + LiveData + Viewers + Log + Editor）
              ════════════════════════════════════════════════════ -->
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>                                        <!-- Left+Center area -->
-                <ColumnDefinition x:Name="ColSpacer" Width="0"/>                    <!-- Right spacer -->
-                <ColumnDefinition x:Name="ColRight"  Width="0"/>                    <!-- Right viewers -->
-            </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>                                      <!-- 0: Main content -->
+                <RowDefinition x:Name="RowBottomSpacer"  Height="0"/>           <!-- 1: SplitBottom spacer -->
+                <RowDefinition x:Name="RowBottomViewers" Height="0"/>           <!-- 2: SplitBottom viewers -->
+                <RowDefinition x:Name="RowLiveLogSpacer" Height="0"/>           <!-- 3: LiveLog spacer -->
+                <RowDefinition x:Name="RowLiveLog"       Height="0"/>           <!-- 4: LiveLog -->
+                <RowDefinition Height="Auto"/>                                   <!-- 5: PlcEditor -->
+            </Grid.RowDefinitions>
 
-            <!-- ── Left+Center sub-layout ─────────────────────── -->
-            <Grid Grid.Column="0">
+            <!-- ── Row 0: Commands + Live Data ─────────────────── -->
+            <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="250"/>                                  <!-- Command panels -->
-                    <ColumnDefinition Width="12"/>                                   <!-- gap -->
-                    <ColumnDefinition Width="*"/>                                    <!-- Live Data -->
+                    <ColumnDefinition x:Name="ColCommands" Width="250"/>        <!-- Command panels -->
+                    <ColumnDefinition Width="12"/>                               <!-- gap -->
+                    <ColumnDefinition Width="*"/>                                <!-- Live Data -->
                 </Grid.ColumnDefinitions>
 
                 <!-- ════════════════════════════════
@@ -127,10 +131,10 @@
                      ════════════════════════════════ -->
                 <Grid Grid.Column="0">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>                              <!-- Command Operation -->
+                        <RowDefinition Height="Auto"/>                          <!-- Command Operation -->
                         <RowDefinition Height="12"/>
-                        <RowDefinition Height="Auto"/>                              <!-- Command Actions -->
-                        <RowDefinition Height="*"/>                                 <!-- fill -->
+                        <RowDefinition Height="Auto"/>                          <!-- Command Actions -->
+                        <RowDefinition Height="*"/>                             <!-- fill -->
                     </Grid.RowDefinitions>
 
                     <!-- Command Operation 面板 -->
@@ -282,18 +286,15 @@
                 </Border>
             </Grid>
 
-            <!-- ════════════════════════════════
-                 RIGHT: AlarmViewer + SensorViewer
-                 (SplitRight 模式，由 ApplyLayout 控制)
-                 ════════════════════════════════ -->
-            <Grid x:Name="RightViewersPanel" Grid.Column="2" Visibility="Collapsed">
-                <Grid.RowDefinitions>
-                    <RowDefinition x:Name="RowAlarm"        Height="*"/>
-                    <RowDefinition x:Name="RowSensorSpacer" Height="0"/>
-                    <RowDefinition x:Name="RowSensor"       Height="0"/>
-                </Grid.RowDefinitions>
+            <!-- ── Row 2: Bottom Viewers Panel (SplitBottom 模式) ── -->
+            <Grid x:Name="BottomViewersPanel" Grid.Row="2" Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="BottomColAlarm"  Width="*"/>
+                    <ColumnDefinition x:Name="BottomColSpacer" Width="0"/>
+                    <ColumnDefinition x:Name="BottomColSensor" Width="0"/>
+                </Grid.ColumnDefinitions>
 
-                <Border Grid.Row="0" Style="{StaticResource PanelCard}" Padding="0"
+                <Border Grid.Column="0" Style="{StaticResource PanelCard}" Padding="0"
                         Visibility="{Binding HasAlarmConfig, Converter={StaticResource BoolToVisibility}}">
                     <core:AlarmViewer ConfigFile="{Binding AlarmConfigFile}"
                                       Title="Alarm Viewer"
@@ -301,10 +302,7 @@
                                       ShowDeviceAddress="False"/>
                 </Border>
 
-                <Border x:Name="SensorSpacer" Grid.Row="1" Height="12"
-                        Visibility="{Binding HasSensorConfig, Converter={StaticResource BoolToVisibility}}"/>
-
-                <Border Grid.Row="2" Style="{StaticResource PanelCard}" Padding="0"
+                <Border Grid.Column="2" Style="{StaticResource PanelCard}" Padding="0"
                         Visibility="{Binding HasSensorConfig, Converter={StaticResource BoolToVisibility}}">
                     <core:SensorViewer ConfigFile="{Binding SensorConfigFile}"
                                        Title="Sensor Viewer"
@@ -315,19 +313,95 @@
                                        RefreshInterval="500"/>
                 </Border>
             </Grid>
+
+            <!-- ── Row 4: System Log + DeviceStatus ─────────────── -->
+            <Grid Grid.Row="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="ColLiveLog"      Width="*"/>
+                    <ColumnDefinition x:Name="ColStatusGap"    Width="0"/>
+                    <ColumnDefinition x:Name="ColDeviceStatus" Width="0"/>
+                </Grid.ColumnDefinitions>
+
+                <core:LiveLogViewer x:Name="MachineLiveLog"
+                                    Grid.Column="0"
+                                    MachineFilter="{Binding MachineId}"/>
+
+                <Border x:Name="DeviceStatusPanel" Grid.Column="2"
+                        Style="{StaticResource PanelCard}" Padding="14,12"
+                        Visibility="Collapsed">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="{Binding DeviceStatusTitle}" Style="{StaticResource PanelTitle}" Margin="0,0,0,8"/>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding StatusLabels}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="2"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="#FF1E2D3D" BorderThickness="0,0,0,1" Padding="8,7">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Text="{Binding Label}"
+                                                           Foreground="#FF78909C" FontSize="10"/>
+                                                <core:PlcLabel Grid.Row="1"
+                                                               Address="{Binding Address}"
+                                                               DefaultValue="{Binding DefaultValue}"
+                                                               FrameShape="{Binding FrameShape}"
+                                                               ValueForeground="{Binding ValueColorTheme}"
+                                                               ShowAddress="False"
+                                                               ValueFontSize="16"
+                                                               Margin="0,3,0,0"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ── Row 5: PLC Device Editor ─────────────────────── -->
+            <Border Grid.Row="5" Style="{StaticResource PanelCard}" Padding="12,10" Margin="0,12,0,0"
+                    Visibility="{Binding ShowPlcEditor, Converter={StaticResource BoolToVisibility}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="PLC Device Editor" Style="{StaticResource PanelTitle}" Margin="0,0,0,8"/>
+                    <core:PlcDeviceEditor Grid.Row="1"
+                                          Label="Device Editor"
+                                          Address="D200"
+                                          Value="0"
+                                          Reason="Manual Operation"
+                                          RequiredLevel="Supervisor"
+                                          EnableAuditTrail="True"
+                                          Height="160"/>
+                </Grid>
+            </Border>
         </Grid>
 
         <!-- ════════════════════════════════════════════════════
-             Row 2: Bottom Viewers Panel (Dashboard 模式)
+             右側 Viewer 欄（SplitRight 模式，由 ApplyLayout 控制）
              ════════════════════════════════════════════════════ -->
-        <Grid x:Name="BottomViewersPanel" Grid.Row="2" Visibility="Collapsed">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="BottomColAlarm"  Width="*"/>
-                <ColumnDefinition x:Name="BottomColSpacer" Width="0"/>
-                <ColumnDefinition x:Name="BottomColSensor" Width="0"/>
-            </Grid.ColumnDefinitions>
+        <Grid x:Name="RightViewersPanel" Grid.Column="2" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition x:Name="RowAlarm"        Height="*"/>
+                <RowDefinition x:Name="RowSensorSpacer" Height="0"/>
+                <RowDefinition x:Name="RowSensor"       Height="0"/>
+            </Grid.RowDefinitions>
 
-            <Border Grid.Column="0" Style="{StaticResource PanelCard}" Padding="0"
+            <Border Grid.Row="0" Style="{StaticResource PanelCard}" Padding="0"
                     Visibility="{Binding HasAlarmConfig, Converter={StaticResource BoolToVisibility}}">
                 <core:AlarmViewer ConfigFile="{Binding AlarmConfigFile}"
                                   Title="Alarm Viewer"
@@ -335,7 +409,10 @@
                                   ShowDeviceAddress="False"/>
             </Border>
 
-            <Border Grid.Column="2" Style="{StaticResource PanelCard}" Padding="0"
+            <Border x:Name="SensorSpacer" Grid.Row="1" Height="12"
+                    Visibility="{Binding HasSensorConfig, Converter={StaticResource BoolToVisibility}}"/>
+
+            <Border Grid.Row="2" Style="{StaticResource PanelCard}" Padding="0"
                     Visibility="{Binding HasSensorConfig, Converter={StaticResource BoolToVisibility}}">
                 <core:SensorViewer ConfigFile="{Binding SensorConfigFile}"
                                    Title="Sensor Viewer"
@@ -346,34 +423,5 @@
                                    RefreshInterval="500"/>
             </Border>
         </Grid>
-
-        <!-- ════════════════════════════════════════════════════
-             Row 4: System Log (LiveLog)
-             ════════════════════════════════════════════════════ -->
-        <core:LiveLogViewer x:Name="MachineLiveLog"
-                            Grid.Row="4"
-                            MachineFilter="{Binding MachineId}"/>
-
-        <!-- ════════════════════════════════════════════════════
-             Row 5: PLC Device Editor
-             ════════════════════════════════════════════════════ -->
-        <Border Grid.Row="5" Style="{StaticResource PanelCard}" Padding="14,12" Margin="0,12,0,0"
-                Visibility="{Binding ShowPlcEditor, Converter={StaticResource BoolToVisibility}}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <TextBlock Text="PLC Device Editor" Style="{StaticResource PanelTitle}" Margin="0,0,0,8"/>
-                <core:PlcDeviceEditor Grid.Row="1"
-                                      Label="Device Editor"
-                                      Address="D200"
-                                      Value="0"
-                                      Reason="Manual Operation"
-                                      RequiredLevel="Supervisor"
-                                      EnableAuditTrail="True"
-                                      Height="200"/>
-            </Grid>
-        </Border>
     </Grid>
 </UserControl>

@@ -1,5 +1,0 @@
-[
-  { "Group": "Temperature", "Device": "D100", "Bit": "",  "Value": ">80",  "Mode": "COMPARE", "OperationDescription": "Temperature high warning" },
-  { "Group": "Temperature", "Device": "D101", "Bit": "",  "Value": "<10",  "Mode": "COMPARE", "OperationDescription": "Temperature low warning" },
-  { "Group": "Safety",      "Device": "M100", "Bit": "0", "Value": "1",    "Mode": "AND",     "OperationDescription": "Emergency stop active" }
-]

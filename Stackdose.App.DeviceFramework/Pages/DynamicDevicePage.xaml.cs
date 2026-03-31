@@ -76,7 +76,10 @@ public partial class DynamicDevicePage : UserControl
         bool hasSensor    = _viewModel.HasSensorConfig;
         bool hasBoth      = hasAlarm && hasSensor;
         bool isSplitRight = _viewModel.LayoutMode == "SplitRight";
-        bool isDashboard  = _viewModel.LayoutMode == "Dashboard";
+        bool isDashboard  = _viewModel.LayoutMode == "SplitBottom";
+
+        // ── Left command column width ─────────────────────────────────────
+        ColCommands.Width = new System.Windows.GridLength(_viewModel.LeftCommandWidthPx);
 
         // ── SplitRight: right column (Alarm + Sensor 右側欄位) ────────────
         bool showRight = hasViewers && isSplitRight;
@@ -105,11 +108,20 @@ public partial class DynamicDevicePage : UserControl
             BottomColSensor.Width = hasSensor ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
         }
 
-        // ── LiveLog row (System Log) ──────────────────────────────────────
-        bool showLiveLog = _viewModel.ShowLiveLog;
-        RowLiveLogSpacer.Height = showLiveLog ? new System.Windows.GridLength(12) : new System.Windows.GridLength(0);
-        RowLiveLog.Height       = showLiveLog ? new System.Windows.GridLength(220) : new System.Windows.GridLength(0);
+        // ── LiveLog + DeviceStatus row ────────────────────────────────────
+        bool showLiveLog      = _viewModel.ShowLiveLog;
+        bool showDeviceStatus = _viewModel.HasDeviceStatus;
+        bool showLogRow       = showLiveLog || showDeviceStatus;
+
+        RowLiveLogSpacer.Height = showLogRow ? new System.Windows.GridLength(12) : new System.Windows.GridLength(0);
+        RowLiveLog.Height       = showLogRow ? new System.Windows.GridLength(160) : new System.Windows.GridLength(0);
+
+        ColLiveLog.Width      = showLiveLog ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
         MachineLiveLog.Visibility = showLiveLog ? Visibility.Visible : Visibility.Collapsed;
+
+        ColStatusGap.Width    = (showLiveLog && showDeviceStatus) ? new System.Windows.GridLength(12) : new System.Windows.GridLength(0);
+        ColDeviceStatus.Width = showDeviceStatus ? new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) : new System.Windows.GridLength(0);
+        DeviceStatusPanel.Visibility = showDeviceStatus ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)

@@ -514,6 +514,7 @@ public sealed class ProjectGenerator
         var machineLabel = BuildMachineFileLabel(machine);
         var commands = _spec.Commands.Where(c => c.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase)).ToList();
         var labels = _spec.Labels.Where(l => l.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase)).ToList();
+        var statusLabels = _spec.StatusLabels.Where(l => l.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase)).ToList();
         var tags = _spec.Tags.Where(t => t.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase)).ToList();
 
         var dataEvents = _spec.DataEvents.Where(e => e.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -612,6 +613,17 @@ public sealed class ProjectGenerator
         if (sensorConfigFile != null) node["sensorConfigFile"] = sensorConfigFile;
         if (printHeadConfigs != null) node["printHeadConfigs"] = JsonSerializer.SerializeToNode(printHeadConfigs, serOpts);
 
+        // Status Labels
+        var statusLabelsDict = new Dictionary<string, string>();
+        foreach (var l in statusLabels) statusLabelsDict[l.LabelName] = l.Address;
+
+        var statusLabelStylesDict = new Dictionary<string, object>();
+        foreach (var l in statusLabels)
+        {
+            if (l.FrameShape != "Rectangle" || l.ValueColorTheme != "NeonBlue")
+                statusLabelStylesDict[l.LabelName] = new { frameShape = l.FrameShape, valueColorTheme = l.ValueColorTheme };
+        }
+
         node["detailLabels"] = JsonSerializer.SerializeToNode(labelsDict, serOpts);
         if (labelStylesDict.Count > 0)
             node["detailLabelStyles"] = JsonSerializer.SerializeToNode(labelStylesDict, serOpts);
@@ -621,7 +633,15 @@ public sealed class ProjectGenerator
         node["modules"]      = JsonSerializer.SerializeToNode(modules, serOpts);
         node["layoutMode"]             = _spec.Project.LayoutMode;
         node["rightColumnWidthStar"]   = _spec.Project.RightColumnWidthStar;
+        node["leftCommandWidthPx"]     = _spec.Project.LeftCommandWidthPx;
         node["liveDataTitle"]          = _spec.Project.LiveDataTitle;
+        if (statusLabelsDict.Count > 0)
+        {
+            node["detailStatusLabels"] = JsonSerializer.SerializeToNode(statusLabelsDict, serOpts);
+            if (statusLabelStylesDict.Count > 0)
+                node["statusLabelStyles"] = JsonSerializer.SerializeToNode(statusLabelStylesDict, serOpts);
+            node["deviceStatusTitle"]  = _spec.Project.DeviceStatusTitle;
+        }
         node["showPlcEditor"]          = showPlcEditor;
         node["showLiveLog"]            = machine.ShowLiveLog;
 

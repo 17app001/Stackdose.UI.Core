@@ -5,6 +5,8 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <!-- UI.Core 語意 Token（Surface.*、Text.*、Accent.* 等），PlcDataGridPanel 需要 -->
+                <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Core;component/Themes/Theme.xaml"/>
                 <ResourceDictionary Source="Themes/GeneratorTheme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

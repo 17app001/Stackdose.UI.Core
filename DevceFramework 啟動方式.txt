@@ -1,5 +1,0 @@
-# 從 Solution 根目錄執行（推薦）
-cd D:\工作區\Project\Stackdose.UI.Core
-
-dotnet run --project Stackdose.Tools.ProjectGenerator `
-  -- --spec "Stackdose.App.DeviceFramework/docs/examples/MyOvenDemo-Spec.csv"

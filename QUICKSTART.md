@@ -84,3 +84,13 @@ powershell -NoProfile -File .\scripts\init-shell-app.ps1 -AppName "Stackdose.App
 - `SensorViewer` / `AlarmViewer` 會依 `Machine1.config.json` 的 `sensorConfigFile` / `alarmConfigFile` 自動綁定。
 
 若你在 `scripts/` 目錄內執行命令，請加上 `-DestinationRoot ..`，讓專案產生在 repo 根目錄。
+
+## 用 CLI 產生器從 CSV Spec 建立專案
+
+若有機台規格 CSV 檔，也可用 `Stackdose.Tools.ProjectGenerator` 從 spec 直接生成：
+
+```powershell
+# 從方案根目錄執行
+dotnet run --project Stackdose.Tools.ProjectGenerator `
+  -- --spec "Stackdose.App.DeviceFramework/docs/examples/MyOvenDemo-Spec.csv"
+```

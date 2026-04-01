@@ -1,10 +1,10 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
 namespace Stackdose.Tools.ProjectGeneratorUI;
 
-/// <summary>bool → Visibility (True=Visible, False=Collapsed)</summary>
+/// <summary>bool ??Visibility (True=Visible, False=Collapsed)</summary>
 public sealed class BooleanToVisibilityConverter : IValueConverter
 {
     public static readonly BooleanToVisibilityConverter Instance = new();
@@ -14,7 +14,7 @@ public sealed class BooleanToVisibilityConverter : IValueConverter
         v is Visibility.Visible;
 }
 
-/// <summary>bool → short text for panel summary (returns empty string when false)</summary>
+/// <summary>bool ??short text for panel summary (returns empty string when false)</summary>
 public sealed class BoolToTextConverter : IValueConverter
 {
     public static readonly BoolToTextConverter Maintenance = new("Maintenance ");
@@ -30,7 +30,7 @@ public sealed class BoolToTextConverter : IValueConverter
         throw new NotImplementedException();
 }
 
-/// <summary>string == parameter → true/false (for RadioButton ↔ string LayoutMode binding)</summary>
+/// <summary>string == parameter ??true/false (for RadioButton ??string LayoutMode binding)</summary>
 public sealed class StringEqualityConverter : IValueConverter
 {
     public static readonly StringEqualityConverter Instance = new();
@@ -40,7 +40,7 @@ public sealed class StringEqualityConverter : IValueConverter
         v is true ? p : Binding.DoNothing;
 }
 
-/// <summary>bool → inverted bool (for IsEnabled binding)</summary>
+/// <summary>bool ??inverted bool (for IsEnabled binding)</summary>
 public sealed class InvertBoolConverter : IValueConverter
 {
     public static readonly InvertBoolConverter Instance = new();

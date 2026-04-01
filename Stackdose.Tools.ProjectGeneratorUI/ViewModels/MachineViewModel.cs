@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -29,7 +29,7 @@ public sealed class CommandRow : INotifyPropertyChanged
 {
     private string _name    = string.Empty;
     private string _address = string.Empty;
-    private string _theme   = string.Empty;   // 空字串 = 自動推斷
+    private string _theme   = string.Empty;   // 蝛箏?銝?= ?芸??冽
 
     public string Name    { get => _name;    set { _name    = value; N(); } }
     public string Address { get => _address; set { _address = value; N(); } }
@@ -55,7 +55,7 @@ public sealed class LabelRow : INotifyPropertyChanged
     public string FrameShape      { get => _frameShape;      set { _frameShape      = value; N(); } }
     public string ValueColorTheme { get => _valueColorTheme; set { _valueColorTheme = value; N(); } }
 
-    /// <summary>PlcDataGridPanel DataTemplate 相容用，對應 Name。</summary>
+    /// <summary>PlcDataGridPanel DataTemplate ?詨捆?剁?撠? Name??/summary>
     public string Label => _name;
 
     public static string[] FrameShapeOptions      { get; } = ["Rectangle", "Circle"];
@@ -103,6 +103,9 @@ public sealed class MachineViewModel : INotifyPropertyChanged
     public bool ModSimulator      { get => _modSimulator;      set { _modSimulator      = value; N(); N(nameof(ModulesSummary)); } }
 
     public bool ShowLiveLog       { get => _showLiveLog;       set { _showLiveLog       = value; N(); } }
+
+    private string _machineDesignFile = string.Empty;
+    public string MachineDesignFile { get => _machineDesignFile; set { _machineDesignFile = value; N(); } }
 
     public ObservableCollection<CommandRow>   Commands     { get; }
     public ObservableCollection<LabelRow>    Labels       { get; }

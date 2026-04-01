@@ -1,0 +1,47 @@
+﻿<UserControl x:Class="Stackdose.Tools.MachinePageDesigner.Views.DesignCanvas"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Stackdose.Tools.MachinePageDesigner.Views"
+             xmlns:vm="clr-namespace:Stackdose.Tools.MachinePageDesigner.ViewModels"
+             Background="{StaticResource BgBrush}">
+
+    <UserControl.Resources>
+        <!-- 版型標籤樣式 -->
+        <Style x:Key="LayoutBadge" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+            <Setter Property="Margin" Value="16,8,16,4"/>
+            <Setter Property="FontStyle" Value="Italic"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                  Padding="16">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 版型指示 -->
+            <TextBlock Grid.Row="0" Style="{StaticResource LayoutBadge}">
+                <Run Text="版型模式："/>
+                <Run Text="{Binding Tag.LayoutMode, RelativeSource={RelativeSource AncestorType=local:DesignCanvas}, FallbackValue=SplitRight}"/>
+            </TextBlock>
+
+            <!-- Zone 列表 -->
+            <ItemsControl Grid.Row="1" ItemsSource="{Binding Zones}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <local:LayoutModePanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:ZoneViewModel}">
+                        <local:ZoneView Tag="{Binding Tag, RelativeSource={RelativeSource AncestorType=local:DesignCanvas}}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

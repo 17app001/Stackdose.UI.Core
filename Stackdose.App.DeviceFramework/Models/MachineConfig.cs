@@ -51,6 +51,12 @@ public sealed class MachineConfig
     /// <summary>左側指令面板固定寬度（px），預設 250</summary>
     public int LeftCommandWidthPx { get; set; } = 250;
 
+    /// <summary>
+    /// MachinePageDesigner 產出的設計檔路徑（相對於 Config 目錄）。
+    /// 若有值，DynamicDevicePage 會優先使用設計檔渲染 LiveData / DeviceStatus Zone。
+    /// </summary>
+    public string MachineDesignFile { get; set; } = string.Empty;
+
     /// <summary>中央面板標題，預設 "Live Data"</summary>
     public string LiveDataTitle { get; set; } = "Live Data";
 

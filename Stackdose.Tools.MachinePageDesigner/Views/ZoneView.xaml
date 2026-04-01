@@ -1,0 +1,88 @@
+﻿<UserControl x:Class="Stackdose.Tools.MachinePageDesigner.Views.ZoneView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Stackdose.Tools.MachinePageDesigner.Views"
+             xmlns:vm="clr-namespace:Stackdose.Tools.MachinePageDesigner.ViewModels">
+
+    <Border Style="{StaticResource ZoneCard}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Zone Header -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource PanelBrush}"
+                    CornerRadius="4"
+                    Padding="8,4"
+                    Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox Grid.Column="0"
+                             Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                             FontSize="13" FontWeight="SemiBold"
+                             Background="Transparent" BorderThickness="0"
+                             Foreground="{StaticResource TextPrimaryBrush}"
+                             VerticalAlignment="Center"/>
+
+                    <TextBlock Grid.Column="1" Text="Col:" Style="{StaticResource FieldLabel}"
+                               Margin="8,0,4,0"/>
+                    <ComboBox Grid.Column="2"
+                              ItemsSource="{Binding ColumnOptions}"
+                              SelectedItem="{Binding Columns}"
+                              Width="50" Height="26"/>
+
+                    <TextBlock Grid.Column="3" Text="Row:" Style="{StaticResource FieldLabel}"
+                               Margin="8,0,4,0"/>
+                    <ComboBox Grid.Column="4"
+                              ItemsSource="{Binding RowOptions}"
+                              SelectedItem="{Binding Rows}"
+                              Width="50" Height="26"/>
+                </Grid>
+            </Border>
+
+            <!-- Content Grid -->
+            <Border Grid.Row="1"
+                    x:Name="DropTarget"
+                    AllowDrop="True"
+                    Drop="OnDrop"
+                    DragOver="OnDragOver"
+                    DragLeave="OnDragLeave"
+                    Background="Transparent"
+                    MinHeight="100">
+                <Grid>
+                    <TextBlock x:Name="EmptyHint"
+                               Text="Drag controls from Toolbox here"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="12"
+                               Foreground="{StaticResource TextMutedBrush}"
+                               Visibility="{Binding Items.Count, Converter={local:ZeroToVisibleConverter}}"/>
+
+                    <ItemsControl ItemsSource="{Binding Items}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid
+                                    Columns="{Binding DataContext.Columns, RelativeSource={RelativeSource AncestorType=local:ZoneView}}"
+                                    Rows="{Binding DataContext.Rows, RelativeSource={RelativeSource AncestorType=local:ZoneView}}"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:DesignerItemViewModel}">
+                                <local:DesignerItemView/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

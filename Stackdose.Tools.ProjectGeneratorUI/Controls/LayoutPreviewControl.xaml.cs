@@ -1,4 +1,4 @@
-using Stackdose.App.DeviceFramework.Controls;
+﻿using Stackdose.App.DeviceFramework.Controls;
 using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,19 +9,14 @@ using System.Windows.Media;
 namespace Stackdose.Tools.ProjectGeneratorUI.Controls;
 
 /// <summary>
-/// 即時版型示意圖：根據 LayoutMode / 模組開關 / 比例設定，
-/// 呈現 DynamicDevicePage 的大致版面配置。
-/// LiveData 與 DeviceStatus 區塊使用真實 PlcDataGridPanel 元件，
-/// 直接綁定產生器中使用者設定的 LabelRow 資料。
-/// 支援拖拉分隔線直接修改欄寬比例（TwoWay binding）。
-/// </summary>
+/// ?單???蝷箸????寞? LayoutMode / 璅∠??? / 瘥?閮剖?嚗?/// ? DynamicDevicePage ?之?渡??ａ?蝵柴?/// LiveData ??DeviceStatus ?憛蝙?函?撖?PlcDataGridPanel ?辣嚗?/// ?湔蝬??Ｙ??其葉雿輻?身摰? LabelRow 鞈???/// ?舀????蝺?乩耨?寞?撖祆?靘?TwoWay binding嚗?/// </summary>
 public partial class LayoutPreviewControl : UserControl
 {
     private const double RefWindowWidth = 1280.0;
 
-    /// <summary>拖拉分隔線時抑制 DP 觸發重建，避免循環</summary>
+    /// <summary>????蝺?? DP 閫貊?遣嚗?儐??/summary>
     private bool _suppressRebuild;
-    /// <summary>SplitRight 模式下右側 Star 欄的 ColumnDefinitions 索引，否則 -1</summary>
+    /// <summary>SplitRight 璅∪?銝??Star 甈? ColumnDefinitions 蝝Ｗ?嚗??-1</summary>
     private int _rightStarColIdx = -1;
 
     #region DependencyProperties
@@ -140,7 +135,7 @@ public partial class LayoutPreviewControl : UserControl
         Loaded += (_, _) => RebuildPreview();
     }
 
-    // ── 比例計算 ─────────────────────────────────────────────────────
+    // ?? 瘥?閮? ?????????????????????????????????????????????????????
     private bool HasAnyViewer => HasAlarm || HasSensor;
     private bool ShowBottomRow => HasLiveLog || HasDeviceStatus;
 
@@ -149,7 +144,7 @@ public partial class LayoutPreviewControl : UserControl
     private double RightStar  => HasAnyViewer ? RemainStar * RightColumnWidthStar / (1.0 + RightColumnWidthStar) : 0;
     private double CenterStar => RemainStar - (LayoutMode == "SplitRight" && HasAnyViewer ? RightStar : 0);
 
-    // ── 入口 ─────────────────────────────────────────────────────────
+    // ?? ?亙 ?????????????????????????????????????????????????????????
     private void RebuildPreview()
     {
         _rightStarColIdx = -1;
@@ -160,9 +155,9 @@ public partial class LayoutPreviewControl : UserControl
 
         HeaderLabel.Text = LayoutMode switch
         {
-            "SplitBottom" => "SplitBottom — 下方 Alarm / Sensor",
-            "Standard"    => "Standard — 無 Viewer 面板",
-            _             => "SplitRight — 右側 Alarm / Sensor",
+            "SplitBottom" => "SplitBottom ??銝 Alarm / Sensor",
+            "Standard"    => "Standard ????Viewer ?Ｘ",
+            _             => "SplitRight ???喳 Alarm / Sensor",
         };
 
         switch (LayoutMode)
@@ -173,16 +168,16 @@ public partial class LayoutPreviewControl : UserControl
         }
     }
 
-    // ── SplitRight ───────────────────────────────────────────────────
+    // ?? SplitRight ???????????????????????????????????????????????????
     private void BuildSplitRight()
     {
         // Cols: Left | gap | Center | (gap | Right)?
         AddCol(LeftStar,   star: true);   // 0
-        AddCol(5);                         // 1 ← left splitter
+        AddCol(5);                         // 1 ??left splitter
         AddCol(CenterStar, star: true);   // 2
         if (HasAnyViewer)
         {
-            AddCol(5);                     // 3 ← right splitter
+            AddCol(5);                     // 3 ??right splitter
             AddCol(RightStar, star: true); // 4
             _rightStarColIdx = 4;
         }
@@ -216,11 +211,11 @@ public partial class LayoutPreviewControl : UserControl
         }
     }
 
-    // ── SplitBottom ──────────────────────────────────────────────────
+    // ?? SplitBottom ??????????????????????????????????????????????????
     private void BuildSplitBottom()
     {
         AddCol(LeftStar,    star: true); // 0
-        AddCol(5);                        // 1 ← left splitter
+        AddCol(5);                        // 1 ??left splitter
         AddCol(RemainStar,  star: true); // 2
 
         int viewerRow = -1, bottomRow = -1;
@@ -260,11 +255,11 @@ public partial class LayoutPreviewControl : UserControl
             AppendBottomRow(bottomRow, startCol: 0, colSpan: 3);
     }
 
-    // ── Standard ────────────────────────────────────────────────────
+    // ?? Standard ????????????????????????????????????????????????????
     private void BuildStandard()
     {
         AddCol(LeftStar,   star: true); // 0
-        AddCol(5);                       // 1 ← left splitter
+        AddCol(5);                       // 1 ??left splitter
         AddCol(RemainStar, star: true); // 2
 
         int bottomRow = -1;
@@ -281,12 +276,12 @@ public partial class LayoutPreviewControl : UserControl
             AppendBottomRow(bottomRow, startCol: 0, colSpan: 3);
     }
 
-    // ── Bottom row（LiveLog + DeviceStatus）──────────────────────────
+    // ?? Bottom row嚗iveLog + DeviceStatus嚗??????????????????????????
     private void AppendBottomRow(int row, int startCol, int colSpan)
     {
         if (HasLiveLog && HasDeviceStatus)
         {
-            // 左 1.5 : 右 1 分割
+            // 撌?1.5 : ??1 ?
             var g = new Grid();
             g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.5, GridUnitType.Star) });
             g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(5) });
@@ -312,7 +307,7 @@ public partial class LayoutPreviewControl : UserControl
         }
     }
 
-    // ── GridSplitter ─────────────────────────────────────────────────
+    // ?? GridSplitter ?????????????????????????????????????????????????
     private void AddSplitter(int col, int rowSpan, bool isLeft)
     {
         var s = new GridSplitter
@@ -324,7 +319,7 @@ public partial class LayoutPreviewControl : UserControl
             ResizeBehavior      = GridResizeBehavior.PreviousAndNext,
             Width               = 5,
             Cursor              = Cursors.SizeWE,
-            ToolTip             = isLeft ? "拖拉調整指令欄寬" : "拖拉調整 Viewer 欄寬",
+            ToolTip             = isLeft ? "??隤踵?誘甈祝" : "??隤踵 Viewer 甈祝",
         };
         s.DragCompleted += isLeft ? OnLeftSplitterDragCompleted : OnRightSplitterDragCompleted;
         SetPos(s, 0, col, rowSpan: rowSpan);
@@ -357,7 +352,7 @@ public partial class LayoutPreviewControl : UserControl
         RebuildPreview();
     }
 
-    // ── 子元件 ──────────────────────────────────────────────────────
+    // ?? 摮?隞???????????????????????????????????????????????????????
     private Grid LeftCommandsBlock()
     {
         var g = new Grid();
@@ -403,7 +398,7 @@ public partial class LayoutPreviewControl : UserControl
         ValueFontSize  = 16,
     };
 
-    // ── Grid 工具 ────────────────────────────────────────────────────
+    // ?? Grid 撌亙 ????????????????????????????????????????????????????
     private int AddRow(double size, bool star = false)
     {
         int idx = PreviewGrid.RowDefinitions.Count;
@@ -436,7 +431,7 @@ public partial class LayoutPreviewControl : UserControl
         if (colSpan > 1) Grid.SetColumnSpan(el, colSpan);
     }
 
-    // ── 色塊工廠（仍用於 Command / Viewer / Log 區塊） ──────────────
+    // ?? ?脣?撌亙?嚗??冽 Command / Viewer / Log ?憛? ??????????????
     private static Border Block(string label, string hex)
     {
         return new Border
@@ -459,7 +454,7 @@ public partial class LayoutPreviewControl : UserControl
         };
     }
 
-    // ── Panel 色盤 ───────────────────────────────────────────────────
+    // ?? Panel ?脩 ???????????????????????????????????????????????????
     private static class PanelColor
     {
         public const string CmdOp  = "#1A237E";

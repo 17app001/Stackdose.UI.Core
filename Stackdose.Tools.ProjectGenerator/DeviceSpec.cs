@@ -1,4 +1,4 @@
-namespace Stackdose.Tools.ProjectGenerator;
+﻿namespace Stackdose.Tools.ProjectGenerator;
 
 /// <summary>
 /// Parsed result from a Device-Spec CSV file.
@@ -39,7 +39,7 @@ public sealed class ProjectInfo
     public string LiveDataTitle { get; set; } = "Live Data";
     public string DeviceStatusTitle { get; set; } = "Device Status";
 
-    /// <summary>Short name derived from ProjectName, e.g. "Stackdose.App.OvenControl" �� "OvenControl"</summary>
+    /// <summary>Short name derived from ProjectName, e.g. "Stackdose.App.OvenControl" -> "OvenControl"</summary>
     public string ShortName => ProjectName.Contains('.')
         ? ProjectName[(ProjectName.LastIndexOf('.') + 1)..]
         : ProjectName;
@@ -58,17 +58,18 @@ public sealed class MachineInfo
 
     /// <summary>
     /// 啟用的 UI 模組，分號分隔。可用值：
-    ///   processControl  — 製程狀態 + 指令按鈕（預設）
-    ///   sensors         — SensorViewer + 自動產生 sensors.json 範本
-    ///   alarm           — AlarmViewer  + 自動產生 alarms.json 範本
-    ///   printHead       — PrintHeadController + 自動產生 printhead1.json 範本
-    ///   recipe          — RecipeLoader 控制項
-    ///   simulator       — SimulatorControlPanel 控制項
+    ///   processControl, sensors, alarm, printHead, recipe, simulator
     /// </summary>
     public string Modules { get; set; } = "processControl";
 
-    /// <summary>是否在機台頁面底部顯示 LiveLog（只顯示此機台的日誌）</summary>
+    /// <summary>是否在機台頁面底部顯示 LiveLog</summary>
     public bool ShowLiveLog { get; set; } = false;
+
+    /// <summary>
+    /// MachinePageDesigner 產出的 .machinedesign.json 檔案路徑（相對於 Config 目錄）。
+    /// 若有值，DynamicDevicePage 會優先使用設計檔渲染 LiveData / DeviceStatus Zone。
+    /// </summary>
+    public string MachineDesignFile { get; set; } = string.Empty;
 }
 
 public sealed class CommandInfo
@@ -85,9 +86,9 @@ public sealed class LabelInfo
     public string MachineId { get; set; } = string.Empty;
     public string LabelName { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
-    /// <summary>底框形狀：Rectangle | Circle</summary>
+    /// <summary>框架形狀：Rectangle | Circle</summary>
     public string FrameShape { get; set; } = "Rectangle";
-    /// <summary>數值顏色主題：NeonBlue | Success | Warning | Error | Info | White | Gray</summary>
+    /// <summary>數值色彩主題：NeonBlue | Success | Warning | Error | Info | White | Gray</summary>
     public string ValueColorTheme { get; set; } = "NeonBlue";
 }
 

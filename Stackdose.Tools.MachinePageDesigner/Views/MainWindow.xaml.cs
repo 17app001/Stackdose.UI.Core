@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace Stackdose.Tools.ProjectGeneratorUI;
+namespace Stackdose.Tools.MachinePageDesigner.Views;
 
 public partial class MainWindow : Window
 {

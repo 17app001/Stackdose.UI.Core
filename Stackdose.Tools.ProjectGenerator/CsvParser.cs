@@ -1,4 +1,4 @@
-namespace Stackdose.Tools.ProjectGenerator;
+ï»¿namespace Stackdose.Tools.ProjectGenerator;
 
 /// <summary>
 /// Parses a Device-Spec CSV file with multiple sheet sections.
@@ -31,7 +31,7 @@ public static class CsvParser
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 
-            // Detect sheet boundary ¡X match "## Sheet:" anywhere in a comment line
+            // Detect sheet boundary â€” match "## Sheet:" anywhere in a comment line
             if (line.StartsWith("##", StringComparison.Ordinal))
             {
                 if (line.Contains("Sheet:", StringComparison.OrdinalIgnoreCase) ||
@@ -183,6 +183,7 @@ public static class CsvParser
         ProcessMonitorIsCompleted = Get(row, "ProcessMonitor.IsCompleted", "M202"),
         ProcessMonitorIsAlarm = Get(row, "ProcessMonitor.IsAlarm", "M201"),
         Modules = Get(row, "Modules", "processControl"),
+        MachineDesignFile = Get(row, "MachineDesignFile"),
     };
 
     private static CommandInfo ParseCommand(Dictionary<string, string> row) => new()
@@ -231,28 +232,28 @@ public static class CsvParser
     private static void Validate(DeviceSpec spec)
     {
         if (string.IsNullOrWhiteSpace(spec.Project.ProjectName))
-            throw new InvalidOperationException("CSV ¯Ê¤Ö Project.ProjectName");
+            throw new InvalidOperationException("CSV ç¼ºå°‘ Project.ProjectName");
 
         if (!spec.Project.ProjectName.StartsWith("Stackdose.App.", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException($"ProjectName ¥²¶·¥H 'Stackdose.App.' ¶}ÀY¡A¥Ø«e¬°: {spec.Project.ProjectName}");
+            throw new InvalidOperationException($"ProjectName å¿…é ˆä»¥ 'Stackdose.App.' é–‹é ­ï¼Œç›®å‰ç‚º: {spec.Project.ProjectName}");
 
         if (spec.Machines.Count == 0)
-            throw new InvalidOperationException("CSV ¦Ü¤Ö»İ­n©w¸q¤@¥x Machine");
+            throw new InvalidOperationException("CSV è‡³å°‘éœ€è¦å®šç¾©ä¸€å° Machine");
 
         var ids = spec.Machines.Select(m => m.MachineId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         if (ids.Count != spec.Machines.Count)
-            throw new InvalidOperationException("Machine ID ¤£¥i­«½Æ");
+            throw new InvalidOperationException("Machine ID ä¸å¯é‡è¤‡");
 
         // Validate command/label references
         foreach (var cmd in spec.Commands)
         {
             if (cmd.MachineId != "*" && !ids.Contains(cmd.MachineId))
-                throw new InvalidOperationException($"Command °Ñ¦Ò¤F¤£¦s¦bªº MachineId: {cmd.MachineId}");
+                throw new InvalidOperationException($"Command åƒè€ƒäº†ä¸å­˜åœ¨çš„ MachineId: {cmd.MachineId}");
         }
         foreach (var lbl in spec.Labels)
         {
             if (lbl.MachineId != "*" && !ids.Contains(lbl.MachineId))
-                throw new InvalidOperationException($"Label °Ñ¦Ò¤F¤£¦s¦bªº MachineId: {lbl.MachineId}");
+                throw new InvalidOperationException($"Label åƒè€ƒäº†ä¸å­˜åœ¨çš„ MachineId: {lbl.MachineId}");
         }
     }
 }

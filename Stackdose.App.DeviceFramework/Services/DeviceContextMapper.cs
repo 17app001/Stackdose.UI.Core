@@ -36,6 +36,7 @@ public static class DeviceContextMapper
             LayoutMode = config.LayoutMode,
             RightColumnWidthStar = config.RightColumnWidthStar,
             LeftCommandWidthPx   = config.LeftCommandWidthPx > 0 ? config.LeftCommandWidthPx : 250,
+            MachineDesignFile = config.MachineDesignFile,
             LiveDataTitle = config.LiveDataTitle,
             DeviceStatusTitle = config.DeviceStatusTitle,
             EnabledModules = [.. config.Modules],
@@ -89,6 +90,14 @@ public static class DeviceContextMapper
         // �o�� App �ݤ��ݭn override RuntimeMapper �N�ள�� batchNo�BrecipeNo ��
         ImportTagsToLabels(context, config.Tags.Status);
         ImportTagsToLabels(context, config.Tags.Process);
+
+        // If MachineDesignFile is specified, override Labels/StatusLabels from design file
+        if (!string.IsNullOrWhiteSpace(config.MachineDesignFile))
+        {
+            var designPath = DesignRenderService.ResolveDesignFilePath(
+                config.MachineDesignFile, AppContext.BaseDirectory);
+            DesignRenderService.ApplyDesignFile(context, designPath);
+        }
 
         return context;
     }

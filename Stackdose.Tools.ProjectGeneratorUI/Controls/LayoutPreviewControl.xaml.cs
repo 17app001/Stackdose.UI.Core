@@ -1,3 +1,5 @@
+using Stackdose.App.DeviceFramework.Controls;
+using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -8,7 +10,9 @@ namespace Stackdose.Tools.ProjectGeneratorUI.Controls;
 
 /// <summary>
 /// 即時版型示意圖：根據 LayoutMode / 模組開關 / 比例設定，
-/// 用色塊呈現 DynamicDevicePage 的大致版面配置。
+/// 呈現 DynamicDevicePage 的大致版面配置。
+/// LiveData 與 DeviceStatus 區塊使用真實 PlcDataGridPanel 元件，
+/// 直接綁定產生器中使用者設定的 LabelRow 資料。
 /// 支援拖拉分隔線直接修改欄寬比例（TwoWay binding）。
 /// </summary>
 public partial class LayoutPreviewControl : UserControl
@@ -58,6 +62,15 @@ public partial class LayoutPreviewControl : UserControl
         set => SetValue(HasLiveLogProperty, value);
     }
 
+    public static readonly DependencyProperty HasDeviceStatusProperty =
+        DependencyProperty.Register(nameof(HasDeviceStatus), typeof(bool), typeof(LayoutPreviewControl),
+            new PropertyMetadata(false, Rebuild));
+    public bool HasDeviceStatus
+    {
+        get => (bool)GetValue(HasDeviceStatusProperty);
+        set => SetValue(HasDeviceStatusProperty, value);
+    }
+
     public static readonly DependencyProperty RightColumnWidthStarProperty =
         DependencyProperty.Register(nameof(RightColumnWidthStar), typeof(double), typeof(LayoutPreviewControl),
             new FrameworkPropertyMetadata(0.85, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, Rebuild));
@@ -85,6 +98,33 @@ public partial class LayoutPreviewControl : UserControl
         set => SetValue(LiveDataTitleProperty, value);
     }
 
+    public static readonly DependencyProperty DeviceStatusTitleProperty =
+        DependencyProperty.Register(nameof(DeviceStatusTitle), typeof(string), typeof(LayoutPreviewControl),
+            new PropertyMetadata("Device Status", Rebuild));
+    public string DeviceStatusTitle
+    {
+        get => (string)GetValue(DeviceStatusTitleProperty);
+        set => SetValue(DeviceStatusTitleProperty, value);
+    }
+
+    public static readonly DependencyProperty LabelsSourceProperty =
+        DependencyProperty.Register(nameof(LabelsSource), typeof(IEnumerable), typeof(LayoutPreviewControl),
+            new PropertyMetadata(null, Rebuild));
+    public IEnumerable? LabelsSource
+    {
+        get => (IEnumerable?)GetValue(LabelsSourceProperty);
+        set => SetValue(LabelsSourceProperty, value);
+    }
+
+    public static readonly DependencyProperty StatusLabelsSourceProperty =
+        DependencyProperty.Register(nameof(StatusLabelsSource), typeof(IEnumerable), typeof(LayoutPreviewControl),
+            new PropertyMetadata(null, Rebuild));
+    public IEnumerable? StatusLabelsSource
+    {
+        get => (IEnumerable?)GetValue(StatusLabelsSourceProperty);
+        set => SetValue(StatusLabelsSourceProperty, value);
+    }
+
     #endregion
 
     private static void Rebuild(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -102,6 +142,7 @@ public partial class LayoutPreviewControl : UserControl
 
     // ── 比例計算 ─────────────────────────────────────────────────────
     private bool HasAnyViewer => HasAlarm || HasSensor;
+    private bool ShowBottomRow => HasLiveLog || HasDeviceStatus;
 
     private double LeftStar   => LeftCommandWidthPx;
     private double RemainStar => RefWindowWidth - LeftCommandWidthPx;
@@ -146,10 +187,10 @@ public partial class LayoutPreviewControl : UserControl
             _rightStarColIdx = 4;
         }
 
-        // Rows: Main | (gap | Log)?
-        int logRow = -1;
+        // Rows: Main | (gap | BottomRow)?
+        int bottomRow = -1;
         AddRow(1, star: true);
-        if (HasLiveLog) { AddRow(5); logRow = AddRow(24); }
+        if (ShowBottomRow) { AddRow(5); bottomRow = AddRow(160); }
 
         int totalRows = PreviewGrid.RowDefinitions.Count;
 
@@ -160,20 +201,18 @@ public partial class LayoutPreviewControl : UserControl
         // Left: Command Op / Actions
         Place(LeftCommandsBlock(), row: 0, col: 0);
 
-        // Center: Live Data
-        Place(Block(LiveDataTitle, PanelColor.Data), row: 0, col: 2);
+        // Center: Live Data panel
+        Place(LiveDataPanelControl(), row: 0, col: 2);
 
         // Right: Alarm / Sensor
         if (HasAnyViewer)
             Place(RightViewersBlock(), row: 0, col: 4);
 
-        // Log
-        if (HasLiveLog)
+        // Bottom row: LiveLog + DeviceStatus
+        if (ShowBottomRow)
         {
             int span = HasAnyViewer ? 5 : 3;
-            var log = Block("System Log", PanelColor.Log);
-            SetPos(log, logRow, 0, colSpan: span);
-            PreviewGrid.Children.Add(log);
+            AppendBottomRow(bottomRow, startCol: 0, colSpan: span);
         }
     }
 
@@ -184,16 +223,16 @@ public partial class LayoutPreviewControl : UserControl
         AddCol(5);                        // 1 ← left splitter
         AddCol(RemainStar,  star: true); // 2
 
-        int viewerRow = -1, logRow = -1;
+        int viewerRow = -1, bottomRow = -1;
         AddRow(1.5, star: true);
         if (HasAnyViewer) { AddRow(5); viewerRow = AddRow(1, star: true); }
-        if (HasLiveLog)   { AddRow(5); logRow    = AddRow(24); }
+        if (ShowBottomRow) { AddRow(5); bottomRow = AddRow(160); }
 
         int totalRows = PreviewGrid.RowDefinitions.Count;
         AddSplitter(col: 1, totalRows, isLeft: true);
 
         Place(LeftCommandsBlock(), row: 0, col: 0);
-        Place(Block(LiveDataTitle, PanelColor.Data), row: 0, col: 2);
+        Place(LiveDataPanelControl(), row: 0, col: 2);
 
         if (HasAnyViewer)
         {
@@ -217,12 +256,8 @@ public partial class LayoutPreviewControl : UserControl
             }
         }
 
-        if (HasLiveLog)
-        {
-            var log = Block("System Log", PanelColor.Log);
-            SetPos(log, logRow, 0, colSpan: 3);
-            PreviewGrid.Children.Add(log);
-        }
+        if (ShowBottomRow)
+            AppendBottomRow(bottomRow, startCol: 0, colSpan: 3);
     }
 
     // ── Standard ────────────────────────────────────────────────────
@@ -232,21 +267,48 @@ public partial class LayoutPreviewControl : UserControl
         AddCol(5);                       // 1 ← left splitter
         AddCol(RemainStar, star: true); // 2
 
-        int logRow = -1;
+        int bottomRow = -1;
         AddRow(1, star: true);
-        if (HasLiveLog) { AddRow(5); logRow = AddRow(24); }
+        if (ShowBottomRow) { AddRow(5); bottomRow = AddRow(160); }
 
         int totalRows = PreviewGrid.RowDefinitions.Count;
         AddSplitter(col: 1, totalRows, isLeft: true);
 
         Place(LeftCommandsBlock(), row: 0, col: 0);
-        Place(Block(LiveDataTitle, PanelColor.Data), row: 0, col: 2);
+        Place(LiveDataPanelControl(), row: 0, col: 2);
 
-        if (HasLiveLog)
+        if (ShowBottomRow)
+            AppendBottomRow(bottomRow, startCol: 0, colSpan: 3);
+    }
+
+    // ── Bottom row（LiveLog + DeviceStatus）──────────────────────────
+    private void AppendBottomRow(int row, int startCol, int colSpan)
+    {
+        if (HasLiveLog && HasDeviceStatus)
+        {
+            // 左 1.5 : 右 1 分割
+            var g = new Grid();
+            g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.5, GridUnitType.Star) });
+            g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(5) });
+            g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            var log    = Block("System Log", PanelColor.Log);
+            var status = DeviceStatusPanelControl();
+            Grid.SetColumn(log, 0);    g.Children.Add(log);
+            Grid.SetColumn(status, 2); g.Children.Add(status);
+            SetPos(g, row, startCol, colSpan: colSpan);
+            PreviewGrid.Children.Add(g);
+        }
+        else if (HasLiveLog)
         {
             var log = Block("System Log", PanelColor.Log);
-            SetPos(log, logRow, 0, colSpan: 3);
+            SetPos(log, row, startCol, colSpan: colSpan);
             PreviewGrid.Children.Add(log);
+        }
+        else
+        {
+            var status = DeviceStatusPanelControl();
+            SetPos(status, row, startCol, colSpan: colSpan);
+            PreviewGrid.Children.Add(status);
         }
     }
 
@@ -325,6 +387,22 @@ public partial class LayoutPreviewControl : UserControl
         return g;
     }
 
+    private PlcDataGridPanel LiveDataPanelControl() => new()
+    {
+        Title          = LiveDataTitle,
+        ItemsSource    = LabelsSource,
+        LabelFontSize  = 11,
+        ValueFontSize  = 18,
+    };
+
+    private PlcDataGridPanel DeviceStatusPanelControl() => new()
+    {
+        Title          = DeviceStatusTitle,
+        ItemsSource    = StatusLabelsSource,
+        LabelFontSize  = 10,
+        ValueFontSize  = 16,
+    };
+
     // ── Grid 工具 ────────────────────────────────────────────────────
     private int AddRow(double size, bool star = false)
     {
@@ -358,7 +436,7 @@ public partial class LayoutPreviewControl : UserControl
         if (colSpan > 1) Grid.SetColumnSpan(el, colSpan);
     }
 
-    // ── 色塊工廠 ────────────────────────────────────────────────────
+    // ── 色塊工廠（仍用於 Command / Viewer / Log 區塊） ──────────────
     private static Border Block(string label, string hex)
     {
         return new Border
@@ -386,7 +464,6 @@ public partial class LayoutPreviewControl : UserControl
     {
         public const string CmdOp  = "#1A237E";
         public const string CmdAct = "#0D47A1";
-        public const string Data   = "#004D40";
         public const string Alarm  = "#6A1B9A";
         public const string Sensor = "#1B5E20";
         public const string Log    = "#263238";

@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Stackdose.Tools.ProjectGenerator\Stackdose.Tools.ProjectGenerator.csproj" />
+    <ProjectReference Include="..\Stackdose.App.DeviceFramework\Stackdose.App.DeviceFramework.csproj" />
   </ItemGroup>
 
 </Project>

@@ -45,13 +45,18 @@ public sealed class LabelRow : INotifyPropertyChanged
 {
     private string _name            = string.Empty;
     private string _address         = string.Empty;
+    private string _defaultValue    = "0";
     private string _frameShape      = "Rectangle";
     private string _valueColorTheme = "NeonBlue";
 
-    public string Name            { get => _name;            set { _name            = value; N(); } }
+    public string Name            { get => _name;            set { _name            = value; N(); N(nameof(Label)); } }
     public string Address         { get => _address;         set { _address         = value; N(); } }
+    public string DefaultValue    { get => _defaultValue;    set { _defaultValue    = value; N(); } }
     public string FrameShape      { get => _frameShape;      set { _frameShape      = value; N(); } }
     public string ValueColorTheme { get => _valueColorTheme; set { _valueColorTheme = value; N(); } }
+
+    /// <summary>PlcDataGridPanel DataTemplate 相容用，對應 Name。</summary>
+    public string Label => _name;
 
     public static string[] FrameShapeOptions      { get; } = ["Rectangle", "Circle"];
     public static string[] ValueColorThemeOptions { get; } = ["NeonBlue", "Success", "Warning", "Error", "Info", "White", "Gray", "NeonGreen", "NeonRed", "Primary"];
@@ -99,10 +104,21 @@ public sealed class MachineViewModel : INotifyPropertyChanged
 
     public bool ShowLiveLog       { get => _showLiveLog;       set { _showLiveLog       = value; N(); } }
 
-    public ObservableCollection<CommandRow>   Commands     { get; } = [];
-    public ObservableCollection<LabelRow>    Labels       { get; } = [];
-    public ObservableCollection<LabelRow>    StatusLabels { get; } = [];
-    public ObservableCollection<DataEventRow> DataEvents  { get; } = [];
+    public ObservableCollection<CommandRow>   Commands     { get; }
+    public ObservableCollection<LabelRow>    Labels       { get; }
+    public ObservableCollection<LabelRow>    StatusLabels { get; }
+    public ObservableCollection<DataEventRow> DataEvents  { get; }
+
+    public bool HasStatusLabels => StatusLabels.Count > 0;
+
+    public MachineViewModel()
+    {
+        Commands     = [];
+        Labels       = [];
+        StatusLabels = [];
+        DataEvents   = [];
+        StatusLabels.CollectionChanged += (_, _) => N(nameof(HasStatusLabels));
+    }
 
     public string DisplayName    => $"[{MachineId}] {MachineName}";
     public string ModulesSummary => string.Join(", ", GetEnabledModules());

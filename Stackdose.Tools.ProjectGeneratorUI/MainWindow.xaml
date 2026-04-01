@@ -320,9 +320,13 @@
                                     HasAlarm="{Binding SelectedMachine.ModAlarm}"
                                     HasSensor="{Binding SelectedMachine.ModSensors}"
                                     HasLiveLog="{Binding SelectedMachine.ShowLiveLog}"
+                                    HasDeviceStatus="{Binding SelectedMachine.HasStatusLabels}"
                                     RightColumnWidthStar="{Binding RightColumnWidthStar, Mode=TwoWay}"
                                     LeftCommandWidthPx="{Binding LeftCommandWidthPx, Mode=TwoWay}"
                                     LiveDataTitle="{Binding LiveDataTitle}"
+                                    DeviceStatusTitle="{Binding DeviceStatusTitle}"
+                                    LabelsSource="{Binding SelectedMachine.Labels}"
+                                    StatusLabelsSource="{Binding SelectedMachine.StatusLabels}"
                                     MinHeight="220" MaxHeight="340"/>
 
                                 <!-- 圖例 -->

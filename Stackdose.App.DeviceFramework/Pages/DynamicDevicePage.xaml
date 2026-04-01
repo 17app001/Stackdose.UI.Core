@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:core="clr-namespace:Stackdose.UI.Core.Controls;assembly=Stackdose.UI.Core"
+             xmlns:dfControls="clr-namespace:Stackdose.App.DeviceFramework.Controls"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1280"
              Background="#FF0D1117">
@@ -242,48 +243,11 @@
                 <!-- ════════════════════════════════
                      CENTER: Live Data (2-col grid)
                      ════════════════════════════════ -->
-                <Border Grid.Column="2" Style="{StaticResource PanelCard}" Padding="14,12">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Text="{Binding LiveDataTitle}" Style="{StaticResource PanelTitle}" Margin="0,0,0,10"/>
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <ItemsControl ItemsSource="{Binding Labels}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <UniformGrid Columns="2"/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border BorderBrush="#FF1E2D3D" BorderThickness="0,0,0,1" Padding="10,9">
-                                            <Grid>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="Auto"/>
-                                                </Grid.RowDefinitions>
-                                                <!-- Label 名稱（左上，灰色小字） -->
-                                                <TextBlock Text="{Binding Label}"
-                                                           Foreground="#FF78909C" FontSize="11"/>
-                                                <!-- PLC 數值（綁定 FrameShape / ValueForeground） -->
-                                                <core:PlcLabel Grid.Row="1"
-                                                               Address="{Binding Address}"
-                                                               DefaultValue="{Binding DefaultValue}"
-                                                               FrameShape="{Binding FrameShape}"
-                                                               ValueForeground="{Binding ValueColorTheme}"
-                                                               ShowAddress="False"
-                                                               ValueFontSize="18"
-                                                               Margin="0,4,0,0"/>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-                    </Grid>
-                </Border>
+                <dfControls:PlcDataGridPanel Grid.Column="2"
+                                             Title="{Binding LiveDataTitle}"
+                                             ItemsSource="{Binding Labels}"
+                                             LabelFontSize="11"
+                                             ValueFontSize="18"/>
             </Grid>
 
             <!-- ── Row 2: Bottom Viewers Panel (SplitBottom 模式) ── -->
@@ -326,48 +290,13 @@
                                     Grid.Column="0"
                                     MachineFilter="{Binding MachineId}"/>
 
-                <Border x:Name="DeviceStatusPanel" Grid.Column="2"
-                        Style="{StaticResource PanelCard}" Padding="14,12"
-                        Visibility="Collapsed">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Text="{Binding DeviceStatusTitle}" Style="{StaticResource PanelTitle}" Margin="0,0,0,8"/>
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <ItemsControl ItemsSource="{Binding StatusLabels}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <UniformGrid Columns="2"/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border BorderBrush="#FF1E2D3D" BorderThickness="0,0,0,1" Padding="8,7">
-                                            <Grid>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="Auto"/>
-                                                </Grid.RowDefinitions>
-                                                <TextBlock Text="{Binding Label}"
-                                                           Foreground="#FF78909C" FontSize="10"/>
-                                                <core:PlcLabel Grid.Row="1"
-                                                               Address="{Binding Address}"
-                                                               DefaultValue="{Binding DefaultValue}"
-                                                               FrameShape="{Binding FrameShape}"
-                                                               ValueForeground="{Binding ValueColorTheme}"
-                                                               ShowAddress="False"
-                                                               ValueFontSize="16"
-                                                               Margin="0,3,0,0"/>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-                    </Grid>
-                </Border>
+                <dfControls:PlcDataGridPanel x:Name="DeviceStatusPanel"
+                                             Grid.Column="2"
+                                             Title="{Binding DeviceStatusTitle}"
+                                             ItemsSource="{Binding StatusLabels}"
+                                             LabelFontSize="10"
+                                             ValueFontSize="16"
+                                             Visibility="Collapsed"/>
             </Grid>
 
             <!-- ── Row 5: PLC Device Editor ─────────────────────── -->

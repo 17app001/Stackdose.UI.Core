@@ -5,10 +5,7 @@ using System.IO;
 
 namespace Stackdose.App.DeviceFramework.Services;
 
-/// <summary>
-/// �q�� RuntimeHost �X ���J Config�B��l�� Overview �����C
-/// �i�z�L�غc�l�`�J�ۭq RuntimeMapper�C
-/// </summary>
+
 public class RuntimeHost
 {
     private readonly RuntimeMapper _runtimeMapper;

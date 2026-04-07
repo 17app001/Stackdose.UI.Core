@@ -93,7 +93,7 @@
                                                   VerticalAlignment="Center"
                                                   HorizontalAlignment="Left"
                                                   IsHitTestVisible="False"/>
-                                <TextBlock Grid.Column="1" Text="??
+                                <TextBlock Grid.Column="1" Text="&#x25BE;"
                                            FontSize="10"
                                            Foreground="{StaticResource TextSecondaryBrush}"
                                            HorizontalAlignment="Center"

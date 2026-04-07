@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using Stackdose.Tools.ProjectGenerator;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -13,7 +13,7 @@ namespace Stackdose.Tools.ProjectGeneratorUI.ViewModels;
 
 public sealed class MainViewModel : INotifyPropertyChanged
 {
-    // ?? Project ???????????????????????????????????????????????????????????
+    // ── Project ───────────────────────────────────────────────────────────
     private string _projectName            = "Stackdose.App.MyDevice";
     private string _headerDeviceName       = "MY DEVICE";
     private string _version                = "v1.0.0";
@@ -39,7 +39,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public string[] PageModes   { get; } = ["DynamicDevicePage", "SinglePage", "CustomPage"];
     public string[] LayoutModes { get; } = ["SplitRight", "Standard", "SplitBottom"];
 
-    // ?? Machines ?????????????????????????????????????????????????????????
+    // ── Machines ─────────────────────────────────────────────────────────
     public ObservableCollection<MachineViewModel> Machines { get; } = [];
 
     private MachineViewModel? _selectedMachine;
@@ -50,7 +50,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     }
     public bool HasSelectedMachine => _selectedMachine != null;
 
-    // ?? Panels ????????????????????????????????????????????????????????????
+    // ── Panels ────────────────────────────────────────────────────────────
     private bool _hasMaintenanceMode;
     private bool _hasSettings;
     private bool _hasPlcDeviceEditor;
@@ -67,10 +67,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public string[] AccessLevels { get; } = ["Operator", "Instructor", "Supervisor", "Admin", "SuperAdmin"];
 
-    // ?? Maintenance items ????????????????????????????????????????????????
+    // ── Maintenance items ────────────────────────────────────────────────
     public ObservableCollection<MaintenanceItemRow> MaintenanceItems { get; } = [];
 
-    // ?? Output ????????????????????????????????????????????????????????????
+    // ── Output ────────────────────────────────────────────────────────────
     private string _outputPath = FindSolutionFile(AppDomain.CurrentDomain.BaseDirectory) is { } slnFile
         ? Path.GetDirectoryName(slnFile)!
         : Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
@@ -81,7 +81,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public string GenerationLog  { get => _generationLog;  set { _generationLog  = value; N(); } }
     public bool   IsGenerating   { get => _isGenerating;   set { _isGenerating   = value; N(); } }
 
-    // ?? Commands ??????????????????????????????????????????????????????????
+    // ── Commands ──────────────────────────────────────────────────────────
     public ICommand AddMachineCmd         { get; }
     public ICommand RemoveMachineCmd      { get; }
     public ICommand AddCommandCmd         { get; }
@@ -191,7 +191,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
     }
 
     /// <summary>
-    /// ???皜??敺?蝑?閫???韌+?詨?敺???+1 ????    /// 靘?["M300","M301"] ??"M302"嚗征皜?瘜圾??? defaultAddress??    /// </summary>
+    /// 取現有地址清單的最後一筆，解析前綴+數字後回傳 +1 的地址。
+    /// 例：["M300","M301"] → "M302"；空清單或無法解析則回傳 defaultAddress。
+    /// </summary>
     private static string NextAddress(IEnumerable<string> existing, string defaultAddress)
     {
         var last = existing.LastOrDefault();
@@ -248,7 +250,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"頛 alarms.json 憭望?嚗ex.Message}", "?航炊", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show($"載入 alarms.json 失敗：{ex.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -274,14 +276,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"頛 sensors.json 憭望?嚗ex.Message}", "?航炊", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show($"載入 sensors.json 失敗：{ex.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
         if (imported == 0)
-            MessageBox.Show($"?曆???Config 瑼??鞈??臬?乓n??頝臬?嚗configDir}", "?臬?內", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show($"找不到 Config 檔案或無資料可匯入。\n預期路徑：{configDir}", "匯入提示", MessageBoxButton.OK, MessageBoxImage.Information);
         else
-            MessageBox.Show($"撌脣??{imported} 蝑?隞嗚?, "?臬摰?", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show($"已匯入 {imported} 筆事件。", "匯入完成", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private static string SanitizeName(string? input)
@@ -328,7 +330,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void BrowseOutput()
     {
-        var dlg = new OpenFolderDialog { Title = "?豢?頛詨鞈?憭?, InitialDirectory = OutputPath };
+        var dlg = new OpenFolderDialog { Title = "選擇輸出資料夾", InitialDirectory = OutputPath };
         if (dlg.ShowDialog() == true)
             OutputPath = dlg.FolderName;
     }
@@ -337,12 +339,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         if (Machines.Count == 0)
         {
-            MessageBox.Show("隢撠憓??啗身??, "?⊥??Ｙ?", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("請至少新增一台設備。", "無法產生", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
         if (string.IsNullOrWhiteSpace(ProjectName))
         {
-            MessageBox.Show("隢‵?亙?獢?蝔晞?, "?⊥??Ｙ?", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("請填入專案名稱。", "無法產生", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -355,33 +357,33 @@ public sealed class MainViewModel : INotifyPropertyChanged
             var generator = new ProjectGenerator.ProjectGenerator(spec, OutputPath);
             generator.Generate();
 
-            // ?芸??遢 spec ?啣?獢??冗
+            // 自動備份 spec 到專案資料夾
             var specBackupPath = Path.Combine(OutputPath, spec.Project.ProjectName, spec.Project.ProjectName + ".spec.json");
             File.WriteAllText(specBackupPath, JsonSerializer.Serialize(BuildSpecDto(), _jsonOpts), System.Text.Encoding.UTF8);
 
-            // ?芸???寞?
+            // 自動加入方案
             var csprojPath = Path.Combine(OutputPath, spec.Project.ProjectName, $"{spec.Project.ProjectName}.csproj");
             var slnPath    = FindSolutionFile(AppDomain.CurrentDomain.BaseDirectory);
             var slnResult  = slnPath != null
                 ? AddProjectToSolution(slnPath, csprojPath)
-                : "?? ?芣??.sln嚗????撠?";
+                : "⚠️ 未找到 .sln，請手動加入專案";
 
             var log = new System.Text.StringBuilder();
-            log.AppendLine($"??撠??Ｙ???嚗?);
-            log.AppendLine($"?? {Path.Combine(OutputPath, spec.Project.ProjectName)}/");
+            log.AppendLine($"✅ 專案產生成功！");
+            log.AppendLine($"📁 {Path.Combine(OutputPath, spec.Project.ProjectName)}/");
             log.AppendLine(slnResult);
             log.AppendLine();
             foreach (var f in generator.GeneratedFiles)
-                log.AppendLine($"   ??{f}");
-            log.AppendLine($"   ??{spec.Project.ProjectName}.spec.json  ??spec ?遢");
+                log.AppendLine($"   • {f}");
+            log.AppendLine($"   • {spec.Project.ProjectName}.spec.json  ← spec 備份");
             log.AppendLine();
-            log.AppendLine("銝?甇伐?F5 ?瑁?");
+            log.AppendLine("下一步：F5 執行");
 
             GenerationLog = log.ToString();
         }
         catch (Exception ex)
         {
-            GenerationLog = $"???航炊嚗ex.Message}\n\n{ex.StackTrace}";
+            GenerationLog = $"❌ 錯誤：{ex.Message}\n\n{ex.StackTrace}";
         }
         finally
         {
@@ -418,12 +420,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
             var stderr = proc.StandardError.ReadToEnd();
             proc.WaitForExit(10_000);
             return proc.ExitCode == 0
-                ? $"?? 撌脣??交獢?{Path.GetFileName(slnPath)}"
-                : $"?? ??寞?憭望?嚗(string.IsNullOrWhiteSpace(stderr) ? stdout : stderr).Trim()}";
+                ? $"🔗 已加入方案：{Path.GetFileName(slnPath)}"
+                : $"⚠️ 加入方案失敗：{(string.IsNullOrWhiteSpace(stderr) ? stdout : stderr).Trim()}";
         }
         catch (Exception ex)
         {
-            return $"?? ??寞?憭望?嚗ex.Message}";
+            return $"⚠️ 加入方案失敗：{ex.Message}";
         }
     }
 
@@ -489,7 +491,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         return spec;
     }
 
-    // ?? Save / Load Spec ?????????????????????????????????????????????????
+    // ── Save / Load Spec ─────────────────────────────────────────────────
 
     private SpecDto BuildSpecDto() => new SpecDto
     {
@@ -536,7 +538,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         var dlg = new SaveFileDialog
         {
-            Title = "?脣? Spec",
+            Title = "儲存 Spec",
             Filter = "JSON Spec (*.spec.json)|*.spec.json",
             FileName = ProjectName + ".spec.json",
         };
@@ -544,14 +546,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         var json = JsonSerializer.Serialize(BuildSpecDto(), _jsonOpts);
         File.WriteAllText(dlg.FileName, json, System.Text.Encoding.UTF8);
-        MessageBox.Show($"撌脣摮嚗dlg.FileName}", "?脣???", MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageBox.Show($"已儲存至：{dlg.FileName}", "儲存成功", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private void LoadSpec()
     {
         var dlg = new OpenFileDialog
         {
-            Title = "頛 Spec",
+            Title = "載入 Spec",
             Filter = "JSON Spec (*.spec.json)|*.spec.json|All files (*.*)|*.*",
         };
         if (dlg.ShowDialog() != true) return;
@@ -617,14 +619,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"頛憭望?嚗ex.Message}", "?航炊", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"載入失敗：{ex.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
     private void N([CallerMemberName] string? n = null) => PropertyChanged?.Invoke(this, new(n));
 
-    // ?? DTO models for JSON serialization ????????????????????????????????
+    // ── DTO models for JSON serialization ────────────────────────────────
     private sealed class SpecDto
     {
         public string ProjectName            { get; set; } = string.Empty;
@@ -705,7 +707,7 @@ public sealed class MaintenanceItemRow : INotifyPropertyChanged
     private void N([CallerMemberName] string? n = null) => PropertyChanged?.Invoke(this, new(n));
 }
 
-// ?? Simple RelayCommand ???????????????????????????????????????????????????
+// ── Simple RelayCommand ───────────────────────────────────────────────────
 
 internal sealed class RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null) : ICommand
 {

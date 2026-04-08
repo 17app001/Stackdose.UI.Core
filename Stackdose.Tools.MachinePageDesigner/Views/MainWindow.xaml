@@ -56,6 +56,14 @@
 
                 <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
 
+                <ToggleButton Content="&#x25A6; Free Canvas"
+                              IsChecked="{Binding IsCanvasMode}"
+                              Style="{StaticResource CanvasModeToggle}"
+                              Margin="0,0,16,0"
+                              ToolTip="切換自由畫布模式"/>
+
+                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
+
                 <TextBlock Text="Layout:" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"/>
                 <ComboBox ItemsSource="{Binding LayoutModes}" SelectedItem="{Binding LayoutMode}" Width="120" Margin="0,0,12,0"/>
 
@@ -79,8 +87,37 @@
 
             <local:ToolboxPanel Grid.Column="0" DataContext="{Binding Toolbox}"/>
             <GridSplitter Grid.Column="1" Width="3" Background="{StaticResource BorderBrush}" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
-            <local:DesignCanvas Grid.Column="2" DataContext="{Binding Canvas}"
-                                Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"/>
+            <!-- Zone 模式 -->
+            <local:DesignCanvas Grid.Column="2"
+                                DataContext="{Binding Canvas}"
+                                Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}">
+                <local:DesignCanvas.Style>
+                    <Style TargetType="local:DesignCanvas">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCanvasMode}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </local:DesignCanvas.Style>
+            </local:DesignCanvas>
+
+            <!-- 自由畫布模式 -->
+            <local:FreeCanvas Grid.Column="2"
+                              DataContext="{Binding Canvas}"
+                              Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}">
+                <local:FreeCanvas.Style>
+                    <Style TargetType="local:FreeCanvas">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCanvasMode}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </local:FreeCanvas.Style>
+            </local:FreeCanvas>
             <GridSplitter Grid.Column="3" Width="3" Background="{StaticResource BorderBrush}" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
             <local:PropertyPanel Grid.Column="4" DataContext="{Binding Canvas.SelectedItem}"
                                  Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"/>

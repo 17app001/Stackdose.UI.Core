@@ -144,8 +144,59 @@
 
         <!-- Content -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="10,6">
-            <ContentControl Content="{Binding}"
-                            ContentTemplateSelector="{StaticResource PropSelector}"/>
+            <StackPanel>
+                <!-- 自由畫布：位置與大小（僅 Canvas Mode 時顯示） -->
+                <StackPanel x:Name="canvasPosSection">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Tag.IsCanvasMode, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <TextBlock Text="位置 / 大小" Style="{StaticResource SectionHeader}" Margin="0,4,0,6"/>
+
+                    <Grid Margin="0,0,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="6"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Grid.Column="0">
+                            <TextBlock Text="X" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                            <TextBox Text="{Binding X, UpdateSourceTrigger=PropertyChanged, StringFormat=F0}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="0" Grid.Column="2">
+                            <TextBlock Text="Y" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                            <TextBox Text="{Binding Y, UpdateSourceTrigger=PropertyChanged, StringFormat=F0}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="0">
+                            <TextBlock Text="寬度 W" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                            <TextBox Text="{Binding Width, UpdateSourceTrigger=PropertyChanged, StringFormat=F0}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="2">
+                            <TextBlock Text="高度 H" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                            <TextBox Text="{Binding Height, UpdateSourceTrigger=PropertyChanged, StringFormat=F0}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Separator Margin="0,4,0,8"/>
+                </StackPanel>
+
+                <!-- 型態專屬屬性 -->
+                <ContentControl Content="{Binding}"
+                                ContentTemplateSelector="{StaticResource PropSelector}"/>
+            </StackPanel>
         </ScrollViewer>
     </Grid>
 </UserControl>

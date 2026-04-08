@@ -61,17 +61,39 @@ public sealed class ToolboxItemDescriptor
         "Spacer" => new DesignerItemDefinition
         {
             Type = "Spacer",
-            Props = []
+            Props = [],
+            Width = 180, Height = 60
+        },
+        "LiveLog" => new DesignerItemDefinition
+        {
+            Type = "LiveLog",
+            Props = [],
+            Width = 420, Height = 200
+        },
+        "AlarmViewer" => new DesignerItemDefinition
+        {
+            Type = "AlarmViewer",
+            Props = [],
+            Width = 420, Height = 280
+        },
+        "SensorViewer" => new DesignerItemDefinition
+        {
+            Type = "SensorViewer",
+            Props = [],
+            Width = 420, Height = 200
         },
         _ => new DesignerItemDefinition { Type = Type }
     };
 
     public static IReadOnlyList<ToolboxItemDescriptor> All { get; } =
     [
-        new() { Type = "PlcLabel",            DisplayName = "PlcLabel",            Category = "PLC",  Icon = "\u25C8" },
-        new() { Type = "PlcText",             DisplayName = "PlcText",             Category = "PLC",  Icon = "\u270E" },
-        new() { Type = "PlcStatusIndicator",  DisplayName = "PlcStatusIndicator",  Category = "PLC",  Icon = "\u25CF" },
-        new() { Type = "SecuredButton",       DisplayName = "SecuredButton",       Category = "Button", Icon = "\u25A3" },
-        new() { Type = "Spacer",              DisplayName = "Spacer",              Category = "Layout", Icon = "\u25A1" },
+        new() { Type = "PlcLabel",           DisplayName = "PlcLabel",           Category = "PLC",    Icon = "\u25C8" },
+        new() { Type = "PlcText",            DisplayName = "PlcText",            Category = "PLC",    Icon = "\u270E" },
+        new() { Type = "PlcStatusIndicator", DisplayName = "PlcStatusIndicator", Category = "PLC",    Icon = "\u25CF" },
+        new() { Type = "SecuredButton",      DisplayName = "SecuredButton",      Category = "Button", Icon = "\u25A3" },
+        new() { Type = "Spacer",             DisplayName = "Spacer",             Category = "Layout", Icon = "\u25A1" },
+        new() { Type = "LiveLog",            DisplayName = "LiveLog",            Category = "Viewer", Icon = "\u2637" },
+        new() { Type = "AlarmViewer",        DisplayName = "AlarmViewer",        Category = "Viewer", Icon = "\u26A0" },
+        new() { Type = "SensorViewer",       DisplayName = "SensorViewer",       Category = "Viewer", Icon = "\u26A1" },
     ];
 }

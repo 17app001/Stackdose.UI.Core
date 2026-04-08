@@ -173,4 +173,41 @@ public sealed class DesignCanvasViewModel : ObservableObject
     }
 
     public bool CanRemoveZone => Zones.Count > 1;
+
+    // ── 自由畫布 ────────────────────────────────────────────────────────────
+
+    public ObservableCollection<DesignerItemViewModel> CanvasItems { get; } = [];
+
+    private double _canvasWidth = 1200;
+    private double _canvasHeight = 750;
+
+    public double CanvasWidth
+    {
+        get => _canvasWidth;
+        set => Set(ref _canvasWidth, value);
+    }
+
+    public double CanvasHeight
+    {
+        get => _canvasHeight;
+        set => Set(ref _canvasHeight, value);
+    }
+
+    /// <summary>
+    /// 從 DesignDocument 載入自由畫布元件
+    /// </summary>
+    public void LoadCanvasFromDocument(DesignDocument doc)
+    {
+        CanvasItems.Clear();
+        CanvasWidth = doc.CanvasWidth;
+        CanvasHeight = doc.CanvasHeight;
+        foreach (var def in doc.CanvasItems)
+            CanvasItems.Add(new DesignerItemViewModel(def));
+    }
+
+    /// <summary>
+    /// 匯出自由畫布元件定義
+    /// </summary>
+    public List<DesignerItemDefinition> ExportCanvasItems()
+        => CanvasItems.Select(vm => vm.ToDefinition()).ToList();
 }

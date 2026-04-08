@@ -76,7 +76,8 @@
                                Foreground="{StaticResource TextMutedBrush}"
                                Visibility="{Binding Items.Count, Converter={local:ZeroToVisibleConverter}}"/>
 
-                    <ItemsControl x:Name="ItemsHost" ItemsSource="{Binding Items}">
+                    <ItemsControl x:Name="ItemsHost" ItemsSource="{Binding Items}"
+                                  VerticalAlignment="Top">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <UniformGrid

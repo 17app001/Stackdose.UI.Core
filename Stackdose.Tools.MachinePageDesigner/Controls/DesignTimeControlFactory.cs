@@ -17,11 +17,14 @@ public static class DesignTimeControlFactory
     {
         return def.Type switch
         {
-            "PlcLabel" => CreatePlcLabel(def),
-            "PlcText" => CreatePlcText(def),
+            "PlcLabel"           => CreatePlcLabel(def),
+            "PlcText"            => CreatePlcText(def),
             "PlcStatusIndicator" => CreatePlcStatusIndicator(def),
-            "SecuredButton" => CreateSecuredButton(def),
-            "Spacer" => CreateSpacer(),
+            "SecuredButton"      => CreateSecuredButton(def),
+            "Spacer"             => CreateSpacer(),
+            "LiveLog"            => CreateViewerPlaceholder("System Log",    "\u2637", Color.FromRgb(0x1A, 0x1A, 0x30)),
+            "AlarmViewer"        => CreateViewerPlaceholder("Alarm Viewer",  "\u26A0", Color.FromRgb(0x30, 0x18, 0x18)),
+            "SensorViewer"       => CreateViewerPlaceholder("Sensor Viewer", "\u26A1", Color.FromRgb(0x18, 0x28, 0x30)),
             _ => new TextBlock
             {
                 Text = $"未知類型: {def.Type}",
@@ -140,5 +143,42 @@ public static class DesignTimeControlFactory
             Background = Brushes.Transparent,
             MinHeight = 40,
         };
+    }
+
+    private static UIElement CreateViewerPlaceholder(string title, string icon, Color bgColor)
+    {
+        var border = new Border
+        {
+            Background = new SolidColorBrush(bgColor),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x5A)),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(6),
+        };
+        var stack = new StackPanel
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(12),
+        };
+        stack.Children.Add(new TextBlock
+        {
+            Text = icon,
+            FontSize = 28,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Foreground = new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xDD)),
+            Margin = new Thickness(0, 0, 0, 6),
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        stack.Children.Add(new TextBlock
+        {
+            Text = title,
+            FontSize = 13,
+            FontWeight = FontWeights.SemiBold,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Foreground = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)),
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        border.Child = stack;
+        return border;
     }
 }

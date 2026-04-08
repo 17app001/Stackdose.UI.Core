@@ -240,6 +240,31 @@ public sealed class DesignerItemViewModel : ObservableObject
         }
     }
 
+    // ── 自由畫布空間屬性 ──────────────────────────────────────────────────
+    public double X
+    {
+        get => _definition.X;
+        set { _definition.X = value; N(); }
+    }
+
+    public double Y
+    {
+        get => _definition.Y;
+        set { _definition.Y = value; N(); }
+    }
+
+    public double Width
+    {
+        get => _definition.Width;
+        set { _definition.Width = Math.Max(40, value); N(); }
+    }
+
+    public double Height
+    {
+        get => _definition.Height;
+        set { _definition.Height = Math.Max(30, value); N(); }
+    }
+
     // 嚙緩嚙緩 嚙踝蕭嚙踐項嚙緩嚙踝蕭 嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩
     public UIElement? Preview
     {

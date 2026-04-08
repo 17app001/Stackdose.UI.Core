@@ -16,6 +16,19 @@ public sealed class DesignerItemDefinition
     [JsonPropertyName("order")]
     public int Order { get; set; }
 
+    // ── 自由畫布空間屬性 ────────────────────────────────────────
+    [JsonPropertyName("x")]
+    public double X { get; set; } = 0;
+
+    [JsonPropertyName("y")]
+    public double Y { get; set; } = 0;
+
+    [JsonPropertyName("width")]
+    public double Width { get; set; } = 180;
+
+    [JsonPropertyName("height")]
+    public double Height { get; set; } = 120;
+
     [JsonPropertyName("props")]
     public Dictionary<string, object?> Props { get; set; } = [];
 }

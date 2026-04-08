@@ -24,6 +24,9 @@ public sealed class MainViewModel : ObservableObject
     private bool _isDirty;
     private string _statusText = "就緒";
 
+    // ── Canvas Mode ──────────────────────────────────────────────────────
+    private bool _isCanvasMode;
+
     // ── Layout settings ──────────────────────────────────────────────
     private string _layoutMode;
     private int _leftCommandWidthPx;
@@ -95,6 +98,7 @@ public sealed class MainViewModel : ObservableObject
 
         // 載入預設文件
         Canvas.LoadFromDocument(_document);
+        Canvas.LoadCanvasFromDocument(_document);
     }
 
     // ── Properties ───────────────────────────────────────────────────
@@ -177,6 +181,12 @@ public sealed class MainViewModel : ObservableObject
         set { if (Set(ref _machineId, value)) MarkDirty(); }
     }
 
+    public bool IsCanvasMode
+    {
+        get => _isCanvasMode;
+        set => Set(ref _isCanvasMode, value);
+    }
+
     public string[] LayoutModes { get; } = ["SplitRight", "Standard", "SplitBottom"];
 
     // ── Commands ─────────────────────────────────────────────────────
@@ -229,6 +239,39 @@ public sealed class MainViewModel : ObservableObject
         var cmd = new CrossZoneMoveCommand(sourceZone, targetZone, item, targetIndex);
         UndoRedo.Execute(cmd);
         StatusText = $"已移動：{item.DisplayName} → {targetZone.Title}";
+    }
+
+    /// <summary>
+    /// 在自由畫布新增元件（透過 UndoRedo）
+    /// </summary>
+    public void ExecuteCanvasAddItem(DesignerItemViewModel vm)
+    {
+        var cmd = new CanvasAddItemCommand(Canvas.CanvasItems, vm);
+        UndoRedo.Execute(cmd);
+        MarkDirty();
+        StatusText = $"已新增：{vm.DisplayName}";
+    }
+
+    /// <summary>
+    /// 記錄畫布移動（UI 已套用，僅記錄以供 Undo）
+    /// </summary>
+    public void RecordCanvasMove(DesignerItemViewModel item, double oldX, double oldY, double newX, double newY)
+    {
+        UndoRedo.Record(new CanvasMoveItemCommand(item, oldX, oldY, newX, newY));
+        MarkDirty();
+        StatusText = $"移動：{item.DisplayName} → ({newX:F0}, {newY:F0})";
+    }
+
+    /// <summary>
+    /// 記錄畫布縮放（UI 已套用，僅記錄以供 Undo）
+    /// </summary>
+    public void RecordCanvasResize(DesignerItemViewModel item,
+        double oldX, double oldY, double oldW, double oldH,
+        double newX, double newY, double newW, double newH)
+    {
+        UndoRedo.Record(new CanvasResizeItemCommand(item, oldX, oldY, oldW, oldH, newX, newY, newW, newH));
+        MarkDirty();
+        StatusText = $"縮放：{item.DisplayName} → {newW:F0}×{newH:F0}";
     }
 
     /// <summary>
@@ -322,6 +365,17 @@ public sealed class MainViewModel : ObservableObject
 
     private void DeleteSelected()
     {
+        if (_isCanvasMode)
+        {
+            var item = Canvas.SelectedItem;
+            if (item == null) return;
+            var cmd = new CanvasRemoveItemCommand(Canvas.CanvasItems, item);
+            UndoRedo.Execute(cmd);
+            Canvas.ClearSelection();
+            StatusText = $"已刪除：{item.DisplayName}";
+            return;
+        }
+
         var items = Canvas.GetAllSelectedItems();
         if (items.Count == 0) return;
 
@@ -396,6 +450,7 @@ public sealed class MainViewModel : ObservableObject
         N(nameof(MachineId));
 
         Canvas.LoadFromDocument(_document);
+        Canvas.LoadCanvasFromDocument(_document);
     }
 
     private void SyncUIToDocument()
@@ -411,6 +466,9 @@ public sealed class MainViewModel : ObservableObject
         _document.Layout.ShowSensorViewer = ShowSensorViewer;
 
         _document.Zones = Canvas.ExportZones();
+        _document.CanvasItems = Canvas.ExportCanvasItems();
+        _document.CanvasWidth = Canvas.CanvasWidth;
+        _document.CanvasHeight = Canvas.CanvasHeight;
     }
 
     private static readonly TimeSpan _propDebounce = TimeSpan.FromMilliseconds(300);
@@ -436,15 +494,16 @@ public sealed class MainViewModel : ObservableObject
     private void UpdateStatusFromSelection()
     {
         var item = Canvas.SelectedItem;
-        if (item == null)
-        {
-            StatusText = "就緒";
-            return;
-        }
+        if (item == null) { StatusText = "就緒"; return; }
 
-        var zone = Canvas.FindZoneOf(item);
-        var zonePart = zone != null ? $" | Zone: {zone.Title}" : "";
-        StatusText = $"已選取：{item.DisplayName}{zonePart}";
+        if (_isCanvasMode)
+            StatusText = $"已選取：{item.DisplayName} [{item.X:F0}, {item.Y:F0}]";
+        else
+        {
+            var zone = Canvas.FindZoneOf(item);
+            var zonePart = zone != null ? $" | Zone: {zone.Title}" : "";
+            StatusText = $"已選取：{item.DisplayName}{zonePart}";
+        }
     }
 
     private void OnItemPropCommitted(string propKey, object? oldValue, object? newValue)

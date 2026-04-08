@@ -150,4 +150,27 @@ public sealed class DesignCanvasViewModel : ObservableObject
         ClearMultiSelection();
         SelectedItem = null;
     }
+
+    /// <summary>
+    /// 新增一個空白 Zone（回傳新建的 ZoneViewModel）
+    /// </summary>
+    public ZoneViewModel AddZone()
+    {
+        var key = $"zone_{Guid.NewGuid():N}";
+        var vm = new ZoneViewModel(key, new Models.ZoneDefinition { Title = "New Zone", Columns = 2 });
+        Zones.Add(vm);
+        return vm;
+    }
+
+    /// <summary>
+    /// 移除指定 Zone
+    /// </summary>
+    public void RemoveZone(ZoneViewModel zone)
+    {
+        if (SelectedItem != null && zone.Items.Contains(SelectedItem))
+            SelectedItem = null;
+        Zones.Remove(zone);
+    }
+
+    public bool CanRemoveZone => Zones.Count > 1;
 }

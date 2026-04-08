@@ -1,9 +1,11 @@
 ﻿using System.IO;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Microsoft.Win32;
 using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.Tools.MachinePageDesigner.Services;
+using System.ComponentModel;
 
 namespace Stackdose.Tools.MachinePageDesigner.ViewModels;
 
@@ -37,6 +39,12 @@ public sealed class MainViewModel : ObservableObject
     // ── Services ─────────────────────────────────────────────────────
     public UndoRedoService UndoRedo { get; } = new();
 
+    private DesignerItemViewModel? _subscribedPropItem;
+
+    // ── 屬性防抖：相同 item+key 在 300ms 內視為同一步 ──────────────
+    private record PropSnapshot(DesignerItemViewModel Item, string PropKey, object? OldValue, DateTime At);
+    private PropSnapshot? _lastPropSnapshot;
+
     public MainViewModel()
     {
         // 初始化 layout 欄位
@@ -57,9 +65,33 @@ public sealed class MainViewModel : ObservableObject
         UndoCmd = new RelayCommand(_ => PerformUndo(), _ => UndoRedo.CanUndo);
         RedoCmd = new RelayCommand(_ => PerformRedo(), _ => UndoRedo.CanRedo);
         DeleteSelectedCmd = new RelayCommand(_ => DeleteSelected(), _ => Canvas.HasSelectedItem);
+        AddZoneCmd = new RelayCommand(_ => ExecuteAddZone());
+        RemoveZoneCmd = new RelayCommand(_ => ExecuteRemoveZone(), _ => Canvas.CanRemoveZone);
 
-        // UndoRedo 狀態變更時更新 dirty
-        UndoRedo.StateChanged += () => MarkDirty();
+        // UndoRedo 狀態變更時更新 dirty 並強制刷新 Command enable 狀態
+        UndoRedo.StateChanged += () =>
+        {
+            MarkDirty();
+            Application.Current?.Dispatcher.InvokeAsync(
+                CommandManager.InvalidateRequerySuggested,
+                DispatcherPriority.Background);
+        };
+
+        // 追蹤 SelectedItem 變更：訂閱 PropCommitted + 更新 StatusBar
+        Canvas.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName != nameof(DesignCanvasViewModel.SelectedItem)) return;
+
+            if (_subscribedPropItem != null)
+                _subscribedPropItem.PropCommitted -= OnItemPropCommitted;
+
+            _subscribedPropItem = Canvas.SelectedItem;
+
+            if (_subscribedPropItem != null)
+                _subscribedPropItem.PropCommitted += OnItemPropCommitted;
+
+            UpdateStatusFromSelection();
+        };
 
         // 載入預設文件
         Canvas.LoadFromDocument(_document);
@@ -156,6 +188,8 @@ public sealed class MainViewModel : ObservableObject
     public ICommand UndoCmd { get; }
     public ICommand RedoCmd { get; }
     public ICommand DeleteSelectedCmd { get; }
+    public ICommand AddZoneCmd { get; }
+    public ICommand RemoveZoneCmd { get; }
 
     // ── UndoRedo 整合方法（供 View 呼叫） ────────────────────────────
 
@@ -185,6 +219,16 @@ public sealed class MainViewModel : ObservableObject
     {
         var cmd = new MoveItemCommand(zone, fromIndex, toIndex);
         UndoRedo.Execute(cmd);
+    }
+
+    /// <summary>
+    /// 透過 UndoRedo 跨 Zone 移動項目
+    /// </summary>
+    public void ExecuteCrossZoneMove(ZoneViewModel sourceZone, ZoneViewModel targetZone, DesignerItemViewModel item, int targetIndex)
+    {
+        var cmd = new CrossZoneMoveCommand(sourceZone, targetZone, item, targetIndex);
+        UndoRedo.Execute(cmd);
+        StatusText = $"已移動：{item.DisplayName} → {targetZone.Title}";
     }
 
     /// <summary>
@@ -367,6 +411,64 @@ public sealed class MainViewModel : ObservableObject
         _document.Layout.ShowSensorViewer = ShowSensorViewer;
 
         _document.Zones = Canvas.ExportZones();
+    }
+
+    private static readonly TimeSpan _propDebounce = TimeSpan.FromMilliseconds(300);
+
+    private void ExecuteAddZone()
+    {
+        var vm = new ZoneViewModel($"zone_{Guid.NewGuid():N}",
+            new Models.ZoneDefinition { Title = "New Zone", Columns = 2 });
+        var cmd = new AddZoneCommand(Canvas.Zones, vm, Canvas.Zones.Count);
+        UndoRedo.Execute(cmd);
+        StatusText = $"已新增 Zone：{vm.Title}";
+    }
+
+    private void ExecuteRemoveZone()
+    {
+        var zone = Canvas.SelectedZone ?? Canvas.Zones.LastOrDefault();
+        if (zone == null || Canvas.Zones.Count <= 1) return;
+        var cmd = new RemoveZoneCommand(Canvas.Zones, zone);
+        UndoRedo.Execute(cmd);
+        StatusText = $"已移除 Zone：{zone.Title}";
+    }
+
+    private void UpdateStatusFromSelection()
+    {
+        var item = Canvas.SelectedItem;
+        if (item == null)
+        {
+            StatusText = "就緒";
+            return;
+        }
+
+        var zone = Canvas.FindZoneOf(item);
+        var zonePart = zone != null ? $" | Zone: {zone.Title}" : "";
+        StatusText = $"已選取：{item.DisplayName}{zonePart}";
+    }
+
+    private void OnItemPropCommitted(string propKey, object? oldValue, object? newValue)
+    {
+        if (_subscribedPropItem == null) return;
+
+        var now = DateTime.UtcNow;
+
+        // 相同 item + propKey 在防抖時間內 → 覆蓋上一步的 newValue，不新增記錄
+        if (_lastPropSnapshot is { } snap &&
+            ReferenceEquals(snap.Item, _subscribedPropItem) &&
+            snap.PropKey == propKey &&
+            (now - snap.At) < _propDebounce)
+        {
+            // 找到 UndoStack 頂端的 PropertyChangeCommand 並更新其 newValue
+            UndoRedo.UpdateTopPropertyCommand(_subscribedPropItem, propKey, newValue);
+            _lastPropSnapshot = snap with { At = now };
+            return;
+        }
+
+        // 新的一步
+        UndoRedo.Record(new PropertyChangeCommand(_subscribedPropItem, propKey, oldValue, newValue));
+        _lastPropSnapshot = new PropSnapshot(_subscribedPropItem, propKey, oldValue, now);
+        UpdateStatusFromSelection();
     }
 
     private static bool ConfirmDiscard()

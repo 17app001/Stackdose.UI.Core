@@ -11,12 +11,21 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Zone Header -->
+            <!-- Zone Header（拖拉把手：整個 Header 可拖移換序） -->
             <Border Grid.Row="0"
+                    x:Name="ZoneHeader"
                     Background="{StaticResource PanelBrush}"
                     CornerRadius="4"
                     Padding="8,4"
-                    Margin="0,0,0,8">
+                    Margin="0,0,0,8"
+                    Cursor="SizeAll"
+                    ToolTip="拖曳以換序 Zone"
+                    AllowDrop="True"
+                    MouseLeftButtonDown="OnZoneHeaderMouseDown"
+                    MouseMove="OnZoneHeaderMouseMove"
+                    DragOver="OnZoneHeaderDragOver"
+                    DragLeave="OnZoneHeaderDragLeave"
+                    Drop="OnZoneHeaderDrop">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -67,7 +76,7 @@
                                Foreground="{StaticResource TextMutedBrush}"
                                Visibility="{Binding Items.Count, Converter={local:ZeroToVisibleConverter}}"/>
 
-                    <ItemsControl ItemsSource="{Binding Items}">
+                    <ItemsControl x:Name="ItemsHost" ItemsSource="{Binding Items}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <UniformGrid
@@ -81,6 +90,16 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+
+                    <!-- 插入位置指示線 -->
+                    <Canvas x:Name="InsertIndicatorCanvas" IsHitTestVisible="False">
+                        <Rectangle x:Name="InsertIndicator"
+                                   Width="3"
+                                   Fill="{StaticResource AccentBrush}"
+                                   Visibility="Collapsed"
+                                   RadiusX="1.5" RadiusY="1.5"
+                                   Opacity="0.9"/>
+                    </Canvas>
                 </Grid>
             </Border>
         </Grid>

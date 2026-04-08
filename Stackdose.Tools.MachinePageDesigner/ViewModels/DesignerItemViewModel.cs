@@ -45,6 +45,12 @@ public sealed class DesignerItemViewModel : ObservableObject
     public double GetPropDouble(string key, double fallback = 0)
         => _definition.Props.GetDouble(key, fallback);
 
+    /// <summary>
+    /// 屬性提交事件：(propKey, oldValue, newValue)
+    /// UI 雙向綁定改值後觸發，供 MainViewModel 記錄至 UndoRedo。
+    /// </summary>
+    public event Action<string, object?, object?>? PropCommitted;
+
     public void SetProp(string key, object? value)
     {
         _definition.Props[key] = value;
@@ -90,73 +96,148 @@ public sealed class DesignerItemViewModel : ObservableObject
     public string Label
     {
         get => GetProp("label", ItemType);
-        set { SetProp("label", value); N(); }
+        set
+        {
+            var old = GetProp("label", ItemType);
+            if (old == value) return;
+            SetPropDirect("label", value);
+            N(nameof(DisplayName));
+            PropCommitted?.Invoke("label", old, value);
+        }
     }
 
     public string Address
     {
         get => GetProp("address");
-        set { SetProp("address", value); N(); }
+        set
+        {
+            var old = GetProp("address");
+            if (old == value) return;
+            SetPropDirect("address", value);
+            N(nameof(DisplayName));
+            PropCommitted?.Invoke("address", old, value);
+        }
     }
 
     public string DefaultValue
     {
         get => GetProp("defaultValue", "0");
-        set { SetProp("defaultValue", value); N(); }
+        set
+        {
+            var old = GetProp("defaultValue", "0");
+            if (old == value) return;
+            SetPropDirect("defaultValue", value);
+            PropCommitted?.Invoke("defaultValue", old, value);
+        }
     }
 
     public double ValueFontSize
     {
         get => GetPropDouble("valueFontSize", 20);
-        set { SetProp("valueFontSize", value); N(); }
+        set
+        {
+            var old = GetPropDouble("valueFontSize", 20);
+            if (old == value) return;
+            SetPropDirect("valueFontSize", value);
+            PropCommitted?.Invoke("valueFontSize", old, value);
+        }
     }
 
     public string FrameShape
     {
         get => GetProp("frameShape", "Rectangle");
-        set { SetProp("frameShape", value); N(); }
+        set
+        {
+            var old = GetProp("frameShape", "Rectangle");
+            if (old == value) return;
+            SetPropDirect("frameShape", value);
+            PropCommitted?.Invoke("frameShape", old, value);
+        }
     }
 
     public string ValueColorTheme
     {
         get => GetProp("valueColorTheme", "NeonBlue");
-        set { SetProp("valueColorTheme", value); N(); }
+        set
+        {
+            var old = GetProp("valueColorTheme", "NeonBlue");
+            if (old == value) return;
+            SetPropDirect("valueColorTheme", value);
+            PropCommitted?.Invoke("valueColorTheme", old, value);
+        }
     }
 
     public double Divisor
     {
         get => GetPropDouble("divisor", 1);
-        set { SetProp("divisor", value); N(); }
+        set
+        {
+            var old = GetPropDouble("divisor", 1);
+            if (old == value) return;
+            SetPropDirect("divisor", value);
+            PropCommitted?.Invoke("divisor", old, value);
+        }
     }
 
     public string StringFormat
     {
         get => GetProp("stringFormat", "F0");
-        set { SetProp("stringFormat", value); N(); }
+        set
+        {
+            var old = GetProp("stringFormat", "F0");
+            if (old == value) return;
+            SetPropDirect("stringFormat", value);
+            PropCommitted?.Invoke("stringFormat", old, value);
+        }
     }
 
     public string DisplayAddress
     {
         get => GetProp("displayAddress");
-        set { SetProp("displayAddress", value); N(); }
+        set
+        {
+            var old = GetProp("displayAddress");
+            if (old == value) return;
+            SetPropDirect("displayAddress", value);
+            N(nameof(DisplayName));
+            PropCommitted?.Invoke("displayAddress", old, value);
+        }
     }
 
     public string CommandAddress
     {
         get => GetProp("commandAddress");
-        set { SetProp("commandAddress", value); N(); }
+        set
+        {
+            var old = GetProp("commandAddress");
+            if (old == value) return;
+            SetPropDirect("commandAddress", value);
+            PropCommitted?.Invoke("commandAddress", old, value);
+        }
     }
 
     public string RequiredLevel
     {
         get => GetProp("requiredLevel", "Operator");
-        set { SetProp("requiredLevel", value); N(); }
+        set
+        {
+            var old = GetProp("requiredLevel", "Operator");
+            if (old == value) return;
+            SetPropDirect("requiredLevel", value);
+            PropCommitted?.Invoke("requiredLevel", old, value);
+        }
     }
 
     public string Theme
     {
         get => GetProp("theme", "Primary");
-        set { SetProp("theme", value); N(); }
+        set
+        {
+            var old = GetProp("theme", "Primary");
+            if (old == value) return;
+            SetPropDirect("theme", value);
+            PropCommitted?.Invoke("theme", old, value);
+        }
     }
 
     // 嚙緩嚙緩 嚙踝蕭嚙踐項嚙緩嚙踝蕭 嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩

@@ -51,6 +51,11 @@
 
                 <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
 
+                <Button Content="&#x229E; Zone" Command="{Binding AddZoneCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,4,0" ToolTip="新增 Zone"/>
+                <Button Content="&#x229F; Zone" Command="{Binding RemoveZoneCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,16,0" ToolTip="移除最後一個 Zone"/>
+
+                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
+
                 <TextBlock Text="Layout:" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"/>
                 <ComboBox ItemsSource="{Binding LayoutModes}" SelectedItem="{Binding LayoutMode}" Width="120" Margin="0,0,12,0"/>
 

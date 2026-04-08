@@ -645,6 +645,25 @@ public sealed class ProjectGenerator
         node["showPlcEditor"]          = showPlcEditor;
         node["showLiveLog"]            = machine.ShowLiveLog;
 
+        // 若指定了 MachineDesignFile，複製至 Config 目錄並寫入相對路徑
+        if (!string.IsNullOrWhiteSpace(machine.MachineDesignFile))
+        {
+            var srcPath = Path.IsPathRooted(machine.MachineDesignFile)
+                ? machine.MachineDesignFile
+                : Path.GetFullPath(machine.MachineDesignFile);
+
+            if (File.Exists(srcPath))
+            {
+                var destFileName = Path.GetFileName(srcPath);
+                var destRelative = $"Config/{destFileName}";
+                var destFull     = Path.Combine(_outputRoot, destRelative);
+                File.Copy(srcPath, destFull, overwrite: true);
+                _generatedFiles.Add(destRelative);
+                node["machineDesignFile"] = destRelative;
+            }
+        }
+
+
         var machineDataEvents = _spec.DataEvents
             .Where(e => e.MachineId.Equals(machine.MachineId, StringComparison.OrdinalIgnoreCase))
             .Select(e => new { name = e.Name, address = e.Address, trigger = e.Trigger, threshold = e.Threshold, dataType = e.DataType })

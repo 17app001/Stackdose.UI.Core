@@ -28,8 +28,8 @@
                         <ColumnDefinition Width="Auto"/> <!-- 刪除鈕 -->
                     </Grid.ColumnDefinitions>
 
-                    <!-- 拖拉把手 ? -->
-                    <TextBlock Grid.Column="0" Text="?" FontSize="12"
+                    <!-- 拖拉把手 ☰ -->
+                    <TextBlock Grid.Column="0" Text="&#x2630;" FontSize="12"
                                Foreground="{StaticResource TextMutedBrush}"
                                VerticalAlignment="Center" Margin="0,0,4,0"
                                Cursor="SizeAll" ToolTip="拖拉排序"
@@ -56,7 +56,7 @@
                                TextTrimming="CharacterEllipsis"/>
 
                     <!-- 刪除按鈕 -->
-                    <Button Grid.Column="3" Content="?"
+                    <Button Grid.Column="3" Content="&#x2715;"
                             FontSize="10" Width="20" Height="20"
                             Padding="0" Margin="4,0,0,0"
                             ToolTip="移除此項目"

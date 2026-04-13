@@ -1,0 +1,71 @@
+## ==============================,,,,,,,,
+## Sheet: Project,,,,,,,,
+## ==============================,,,,,,,,
+ProjectName,HeaderDeviceName,Version,PageMode,AutoConnect
+Stackdose.App.MyOvenDemo,MY OVEN,v1.0.0,DynamicDevicePage,false
+
+## ==============================,,,,,,,,
+## Sheet: Machines,,,,,,,,
+## ==============================,,,,,,,,
+MachineId,MachineName,PlcIp,PlcPort,PollIntervalMs,ProcessMonitor.IsRunning,ProcessMonitor.IsCompleted,ProcessMonitor.IsAlarm,Modules
+OVEN1,Reflow Oven A,192.168.1.100,3000,200,M200,M202,M201,processControl
+OVEN2,Reflow Oven B,192.168.1.101,3000,200,M300,M302,M301,processControl
+
+## ==============================,,,,,,,,
+## Sheet: Commands,,,,,,,,
+## ==============================,,,,,,,,
+MachineId,CommandName,Address
+OVEN1,Start,M400
+OVEN1,Stop,M401
+OVEN1,EmergencyStop,M402
+OVEN1,Reset,M403
+OVEN2,Start,M500
+OVEN2,Stop,M501
+OVEN2,EmergencyStop,M502
+OVEN2,Reset,M503
+
+## ==============================,,,,,,,,
+## Sheet: Labels,,,,,,,,
+## ==============================,,,,,,,,
+MachineId,LabelName,Address
+OVEN1,Oven Temp,D100
+OVEN1,Cooling Temp,D101
+OVEN1,Conveyor Speed,D102
+OVEN1,Product Count,D103
+OVEN2,Oven Temp,D200
+OVEN2,Cooling Temp,D201
+OVEN2,Conveyor Speed,D202
+OVEN2,Product Count,D203
+
+## ==============================,,,,,,,,
+## Sheet: Tags,,,,,,,,
+## ==============================,,,,,,,,
+MachineId,Section,TagName,Address,Type,Access,Length
+OVEN1,status,heartbeat,D300,int16,read,1
+OVEN1,process,batchNo,D400,string,read,8
+OVEN1,process,recipeNo,D410,string,read,8
+OVEN2,status,heartbeat,D350,int16,read,1
+OVEN2,process,batchNo,D450,string,read,8
+OVEN2,process,recipeNo,D460,string,read,8
+
+## ==============================,,,,,,,,
+## Sheet: Panels,,,,,,,,
+## 面板定義 — 選填，不加就只產出基本檔案
+## ==============================,,,,,,,,
+PanelType,MachineId,Position,Title,RequiredLevel
+PlcDeviceEditor,*,DevicePage.Bottom,PLC Device Editor,Supervisor
+MaintenanceMode,*,Separate,Maintenance Mode,Supervisor
+Settings,*,Separate,Settings,Admin
+
+## ==============================,,,,,,,,
+## Sheet: MaintenanceItems,,,,,,,,
+## 維護模式操作項 — 只有 Panels 裡有 MaintenanceMode 才需要填
+## ==============================,,,,,,,,
+MachineId,ItemName,Address,Type,Label
+OVEN1,HeaterOn,M600,toggle,加熱器 ON/OFF
+OVEN1,FanSpeed,D700,editor,風扇轉速
+OVEN1,ConveyorJog,M601,momentary,輸送帶寸動
+OVEN1,OvenTemp,D100,readonly,爐溫監控
+OVEN2,HeaterOn,M700,toggle,加熱器 ON/OFF
+OVEN2,FanSpeed,D800,editor,風扇轉速
+OVEN2,ConveyorJog,M701,momentary,輸送帶寸動

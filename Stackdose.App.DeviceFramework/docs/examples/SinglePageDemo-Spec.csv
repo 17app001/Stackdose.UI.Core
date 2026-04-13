@@ -1,0 +1,39 @@
+## ==============================
+## Sheet: Project
+## ==============================
+ProjectName,HeaderDeviceName,Version,PageMode,AutoConnect
+Stackdose.App.SinglePageDemo,DEVICE MONITOR,v1.0.0,SinglePage,false
+
+## ==============================
+## Sheet: Machines
+## ==============================
+MachineId,MachineName,PlcIp,PlcPort,PollIntervalMs,ProcessMonitor.IsRunning,ProcessMonitor.IsCompleted,ProcessMonitor.IsAlarm,Modules
+DEV1,Device Station 1,192.168.1.100,3000,200,M100,M102,M101,processControl
+
+## ==============================
+## Sheet: Commands
+## ==============================
+MachineId,CommandName,Address
+DEV1,Start,M200
+DEV1,Stop,M201
+DEV1,Reset,M202
+DEV1,EmergencyStop,M203
+
+## ==============================
+## Sheet: Labels
+## ==============================
+MachineId,LabelName,Address
+DEV1,Speed,D100
+DEV1,Temperature,D101
+DEV1,Pressure,D102
+DEV1,Current,D103
+DEV1,Cycle Count,D104
+DEV1,Elapsed Time,D105
+
+## ==============================
+## Sheet: Tags
+## ==============================
+MachineId,Section,TagName,Address,Type,Access,Length
+DEV1,status,heartbeat,D300,int16,read,1
+DEV1,process,batchNo,D400,string,read,8
+DEV1,process,recipeNo,D410,string,read,8

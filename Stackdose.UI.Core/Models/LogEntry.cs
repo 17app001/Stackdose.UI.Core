@@ -14,6 +14,7 @@ namespace Stackdose.UI.Core.Models
         public DateTime Timestamp { get; set; }
         public string Message { get; set; } = string.Empty;
         public LogLevel Level { get; set; }
+        public string? MachineId { get; set; }
 
         // 方便 UI 顯示顏色的屬性
         public SolidColorBrush Color

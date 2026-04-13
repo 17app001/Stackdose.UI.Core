@@ -1,0 +1,62 @@
+## ==============================
+## Sheet: Project
+## 專案層級設定（只有一行資料）
+## PageMode: DynamicDevicePage | SinglePage | CustomPage
+## ==============================
+ProjectName,HeaderDeviceName,Version,PageMode,AutoConnect
+
+
+## ==============================
+## Sheet: Machines
+## 設備定義（每台設備一行）
+## ==============================
+MachineId,MachineName,PlcIp,PlcPort,PollIntervalMs,ProcessMonitor.IsRunning,ProcessMonitor.IsCompleted,ProcessMonitor.IsAlarm,Modules
+## Modules 以分號分隔，可選值：
+##   processControl  — 製程狀態 + 指令按鈕（預設，必填）
+##   sensors         — SensorViewer + 自動產生 sensors.json 範本
+##   alarm           — AlarmViewer  + 自動產生 alarms.json 範本
+##   printHead       — PrintHeadController + 自動產生 printhead1.json 範本
+##   recipe          — RecipeLoader 控制項
+##   simulator       — SimulatorControlPanel 控制項
+## 範例：processControl;sensors;alarm
+
+
+## ==============================
+## Sheet: Commands
+## 指令定義（每個指令一行，以 MachineId 關聯）
+## ==============================
+MachineId,CommandName,Address
+
+
+## ==============================
+## Sheet: Labels
+## 數值標籤定義（每個標籤一行，以 MachineId 關聯）
+## ==============================
+MachineId,LabelName,Address
+
+
+## ==============================
+## Sheet: Tags（進階，一般使用者才需要填）
+## 進階 Tag 定義
+## ==============================
+MachineId,Section,TagName,Address,Type,Access,Length
+
+
+## ==============================
+## Sheet: Panels（選填）
+## 面板定義 — 每個面板產生對應頁面或嵌入元件
+##   PanelType: MaintenanceMode | Settings | PlcDeviceEditor
+##   MachineId: * = 所有設備共用
+##   Position:  Separate = 獨立導覽頁  |  DevicePage.Bottom = 嵌入設備頁底部
+##   RequiredLevel: Guest | Operator | Instructor | Supervisor | Admin | SuperAdmin
+## ==============================
+PanelType,MachineId,Position,Title,RequiredLevel
+
+
+## ==============================
+## Sheet: MaintenanceItems（選填）
+## 維護項目定義 — 只有 Panels 含 MaintenanceMode 才需要填
+##   Type: toggle | momentary | editor | readonly
+## ==============================
+MachineId,ItemName,Address,Type,Label
+

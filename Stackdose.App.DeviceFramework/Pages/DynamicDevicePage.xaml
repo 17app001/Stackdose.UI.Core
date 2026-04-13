@@ -1,0 +1,356 @@
+<UserControl x:Class="Stackdose.App.DeviceFramework.Pages.DynamicDevicePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:core="clr-namespace:Stackdose.UI.Core.Controls;assembly=Stackdose.UI.Core"
+             xmlns:dfControls="clr-namespace:Stackdose.App.DeviceFramework.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="800" d:DesignWidth="1280"
+             Background="#FF0D1117">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+
+        <!-- 面板卡片樣式 -->
+        <Style x:Key="PanelCard" TargetType="Border">
+            <Setter Property="Background" Value="#FF1B2634"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BorderBrush" Value="#FF253040"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <!-- 面板標題樣式 -->
+        <Style x:Key="PanelTitle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#FFD0D8E0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- 命令按鈕底板 ControlTemplate（供兩區共用） -->
+        <ControlTemplate x:Key="CommandButtonTemplate" TargetType="Button">
+            <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                    CornerRadius="6" Padding="12,0">
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Bd" Property="Opacity" Value="0.82"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter TargetName="Bd" Property="Opacity" Value="0.65"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter TargetName="Bd" Property="Opacity" Value="0.4"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+        <!-- Theme 顏色對應：Success/Error/Warning/Primary/Info -->
+        <Style x:Key="ThemedCommandButton" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="#FF0F3460"/>
+            <Setter Property="Template" Value="{StaticResource CommandButtonTemplate}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Theme}" Value="Success">
+                    <Setter Property="Background" Value="#FF27AE60"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Theme}" Value="Error">
+                    <Setter Property="Background" Value="#FFE53935"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Theme}" Value="Warning">
+                    <Setter Property="Background" Value="#FFFF9800"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Theme}" Value="Primary">
+                    <Setter Property="Background" Value="#FF1565C0"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- 狀態圓點樣式 -->
+        <Style x:Key="StateDot" TargetType="Ellipse">
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Height" Value="10"/>
+            <Setter Property="Fill" Value="#FF546E7A"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentProcessState}" Value="Starting">
+                    <Setter Property="Fill" Value="#FFFF9800"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CurrentProcessState}" Value="Running">
+                    <Setter Property="Fill" Value="#FF28A745"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CurrentProcessState}" Value="Completed">
+                    <Setter Property="Fill" Value="#FF4FC3F7"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CurrentProcessState}" Value="Faulted">
+                    <Setter Property="Fill" Value="#FFE53935"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CurrentProcessState}" Value="Stopped">
+                    <Setter Property="Fill" Value="#FF546E7A"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <!--
+        外層 RootGrid：3 欄（左中內容 | 間距 | 右側 Viewer）
+        LiveLog / PlcEditor 放在左中欄位內，不橫跨右側 Viewer
+    -->
+    <Grid x:Name="RootGrid" Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>                                        <!-- 0: 左中內容區 -->
+            <ColumnDefinition x:Name="ColSpacer" Width="0"/>                    <!-- 1: 右側間距 -->
+            <ColumnDefinition x:Name="ColRight"  Width="0"/>                    <!-- 2: 右側 Viewer -->
+        </Grid.ColumnDefinitions>
+
+        <!-- ════════════════════════════════════════════════════
+             左中內容欄（Commands + LiveData + Viewers + Log + Editor）
+             ════════════════════════════════════════════════════ -->
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>                                      <!-- 0: Main content -->
+                <RowDefinition x:Name="RowBottomSpacer"  Height="0"/>           <!-- 1: SplitBottom spacer -->
+                <RowDefinition x:Name="RowBottomViewers" Height="0"/>           <!-- 2: SplitBottom viewers -->
+                <RowDefinition x:Name="RowLiveLogSpacer" Height="0"/>           <!-- 3: LiveLog spacer -->
+                <RowDefinition x:Name="RowLiveLog"       Height="0"/>           <!-- 4: LiveLog -->
+                <RowDefinition Height="Auto"/>                                   <!-- 5: PlcEditor -->
+            </Grid.RowDefinitions>
+
+            <!-- ── Row 0: Commands + Live Data ─────────────────── -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="ColCommands" Width="250"/>        <!-- Command panels -->
+                    <ColumnDefinition Width="12"/>                               <!-- gap -->
+                    <ColumnDefinition Width="*"/>                                <!-- Live Data -->
+                </Grid.ColumnDefinitions>
+
+                <!-- ════════════════════════════════
+                     LEFT: Command Operation + Actions
+                     ════════════════════════════════ -->
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>                          <!-- Command Operation -->
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="Auto"/>                          <!-- Command Actions -->
+                        <RowDefinition Height="*"/>                             <!-- fill -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Command Operation 面板 -->
+                    <Border Grid.Row="0" Style="{StaticResource PanelCard}" Padding="14,12">
+                        <StackPanel>
+                            <TextBlock Text="Command Operation" Style="{StaticResource PanelTitle}" Margin="0,0,0,10"/>
+
+                            <!-- Process State Indicator -->
+                            <Border Background="#FF0D1929" CornerRadius="6" Padding="10,9" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                        <Grid Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,6,0">
+                                            <!-- glow ring -->
+                                            <Ellipse Width="14" Height="14" Opacity="0.3">
+                                                <Ellipse.Style>
+                                                    <Style TargetType="Ellipse">
+                                                        <Setter Property="Fill" Value="#FF546E7A"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding CurrentProcessState}" Value="Running">
+                                                                <Setter Property="Fill" Value="#FF28A745"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding CurrentProcessState}" Value="Starting">
+                                                                <Setter Property="Fill" Value="#FFFF9800"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding CurrentProcessState}" Value="Faulted">
+                                                                <Setter Property="Fill" Value="#FFE53935"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding CurrentProcessState}" Value="Completed">
+                                                                <Setter Property="Fill" Value="#FF4FC3F7"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Ellipse.Style>
+                                            </Ellipse>
+                                            <!-- core dot -->
+                                            <Ellipse Width="8" Height="8" Style="{StaticResource StateDot}"/>
+                                        </Grid>
+                                        <TextBlock Text="PROCESS STATE" Foreground="#FF78909C"
+                                                   FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding CurrentProcessStateText}"
+                                               Foreground="#FFD0D8E0" FontSize="13" FontWeight="SemiBold"
+                                               Margin="22,0,0,0"/>
+                                    <!-- Operation Duration (only if ElapsedTime label exists) -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
+                                                Visibility="{Binding HasElapsedTime, Converter={StaticResource BoolToVisibility}}">
+                                        <TextBlock Text="Operation Duration" Foreground="#FF546E7A"
+                                                   FontSize="10" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <core:PlcLabel Address="{Binding ElapsedTimeAddress}"
+                                                       DefaultValue="00:00:00"
+                                                       FontSize="12" Foreground="#FF4FC3F7"
+                                                       FontFamily="Consolas"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Process 命令按鈕（2-column UniformGrid） -->
+                            <ItemsControl ItemsSource="{Binding ProcessCommands}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="2"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Content="{Binding DisplayName}"
+                                                Command="{Binding DataContext.ExecuteCommandCommand,
+                                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding Name}"
+                                                Margin="3,3"
+                                                Style="{StaticResource ThemedCommandButton}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Command Actions 面板（維護/工具命令，垂直堆疊） -->
+                    <Border Grid.Row="2" Style="{StaticResource PanelCard}" Padding="14,12"
+                            Visibility="{Binding HasActionCommands, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel>
+                            <TextBlock Text="Command Actions" Style="{StaticResource PanelTitle}" Margin="0,0,0,10"/>
+                            <ItemsControl ItemsSource="{Binding ActionCommands}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Content="{Binding DisplayName}"
+                                                Command="{Binding DataContext.ExecuteCommandCommand,
+                                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding Name}"
+                                                HorizontalAlignment="Stretch"
+                                                Margin="0,3"
+                                                Style="{StaticResource ThemedCommandButton}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- ════════════════════════════════
+                     CENTER: Live Data (2-col grid)
+                     ════════════════════════════════ -->
+                <dfControls:PlcDataGridPanel Grid.Column="2"
+                                             Title="{Binding LiveDataTitle}"
+                                             ItemsSource="{Binding Labels}"
+                                             LabelFontSize="11"
+                                             ValueFontSize="18"/>
+            </Grid>
+
+            <!-- ── Row 2: Bottom Viewers Panel (SplitBottom 模式) ── -->
+            <Grid x:Name="BottomViewersPanel" Grid.Row="2" Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="BottomColAlarm"  Width="*"/>
+                    <ColumnDefinition x:Name="BottomColSpacer" Width="0"/>
+                    <ColumnDefinition x:Name="BottomColSensor" Width="0"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource PanelCard}" Padding="0"
+                        Visibility="{Binding HasAlarmConfig, Converter={StaticResource BoolToVisibility}}">
+                    <core:AlarmViewer ConfigFile="{Binding AlarmConfigFile}"
+                                      Title="Alarm Viewer"
+                                      ItemFontSize="12"
+                                      ShowDeviceAddress="False"/>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource PanelCard}" Padding="0"
+                        Visibility="{Binding HasSensorConfig, Converter={StaticResource BoolToVisibility}}">
+                    <core:SensorViewer ConfigFile="{Binding SensorConfigFile}"
+                                       Title="Sensor Viewer"
+                                       ItemFontSize="12"
+                                       ShowDeviceAddress="False"
+                                       EnableGrouping="True"
+                                       AutoStart="True"
+                                       RefreshInterval="500"/>
+                </Border>
+            </Grid>
+
+            <!-- ── Row 4: System Log + DeviceStatus ─────────────── -->
+            <Grid Grid.Row="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="ColLiveLog"      Width="*"/>
+                    <ColumnDefinition x:Name="ColStatusGap"    Width="0"/>
+                    <ColumnDefinition x:Name="ColDeviceStatus" Width="0"/>
+                </Grid.ColumnDefinitions>
+
+                <core:LiveLogViewer x:Name="MachineLiveLog"
+                                    Grid.Column="0"
+                                    MachineFilter="{Binding MachineId}"/>
+
+                <dfControls:PlcDataGridPanel x:Name="DeviceStatusPanel"
+                                             Grid.Column="2"
+                                             Title="{Binding DeviceStatusTitle}"
+                                             ItemsSource="{Binding StatusLabels}"
+                                             LabelFontSize="10"
+                                             ValueFontSize="16"
+                                             Visibility="Collapsed"/>
+            </Grid>
+
+            <!-- ── Row 5: PLC Device Editor ─────────────────────── -->
+            <Border Grid.Row="5" Style="{StaticResource PanelCard}" Padding="12,10" Margin="0,12,0,0"
+                    Visibility="{Binding ShowPlcEditor, Converter={StaticResource BoolToVisibility}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="PLC Device Editor" Style="{StaticResource PanelTitle}" Margin="0,0,0,8"/>
+                    <core:PlcDeviceEditor Grid.Row="1"
+                                          Label="Device Editor"
+                                          Address="D200"
+                                          Value="0"
+                                          Reason="Manual Operation"
+                                          RequiredLevel="Supervisor"
+                                          EnableAuditTrail="True"
+                                          Height="160"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ════════════════════════════════════════════════════
+             右側 Viewer 欄（SplitRight 模式，由 ApplyLayout 控制）
+             ════════════════════════════════════════════════════ -->
+        <Grid x:Name="RightViewersPanel" Grid.Column="2" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition x:Name="RowAlarm"        Height="*"/>
+                <RowDefinition x:Name="RowSensorSpacer" Height="0"/>
+                <RowDefinition x:Name="RowSensor"       Height="0"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Style="{StaticResource PanelCard}" Padding="0"
+                    Visibility="{Binding HasAlarmConfig, Converter={StaticResource BoolToVisibility}}">
+                <core:AlarmViewer ConfigFile="{Binding AlarmConfigFile}"
+                                  Title="Alarm Viewer"
+                                  ItemFontSize="12"
+                                  ShowDeviceAddress="False"/>
+            </Border>
+
+            <Border x:Name="SensorSpacer" Grid.Row="1" Height="12"
+                    Visibility="{Binding HasSensorConfig, Converter={StaticResource BoolToVisibility}}"/>
+
+            <Border Grid.Row="2" Style="{StaticResource PanelCard}" Padding="0"
+                    Visibility="{Binding HasSensorConfig, Converter={StaticResource BoolToVisibility}}">
+                <core:SensorViewer ConfigFile="{Binding SensorConfigFile}"
+                                   Title="Sensor Viewer"
+                                   ItemFontSize="12"
+                                   ShowDeviceAddress="False"
+                                   EnableGrouping="True"
+                                   AutoStart="True"
+                                   RefreshInterval="500"/>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

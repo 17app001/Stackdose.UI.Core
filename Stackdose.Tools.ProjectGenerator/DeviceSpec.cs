@@ -1,0 +1,123 @@
+﻿namespace Stackdose.Tools.ProjectGenerator;
+
+/// <summary>
+/// Parsed result from a Device-Spec CSV file.
+/// </summary>
+public sealed class DeviceSpec
+{
+    public ProjectInfo Project { get; set; } = new();
+    public List<MachineInfo> Machines { get; set; } = [];
+    public List<CommandInfo> Commands { get; set; } = [];
+    public List<LabelInfo> Labels { get; set; } = [];
+    public List<LabelInfo> StatusLabels { get; set; } = [];
+    public List<TagInfo> Tags { get; set; } = [];
+    public List<PanelInfo> Panels { get; set; } = [];
+    public List<MaintenanceItemInfo> MaintenanceItems { get; set; } = [];
+    public List<DataEventInfo> DataEvents { get; set; } = [];
+}
+
+public sealed class DataEventInfo
+{
+    public string MachineId  { get; set; } = string.Empty;
+    public string Name       { get; set; } = string.Empty;
+    public string Address    { get; set; } = string.Empty;
+    public string Trigger    { get; set; } = "changed";
+    public int    Threshold  { get; set; } = 0;
+    public string DataType   { get; set; } = string.Empty;
+}
+
+public sealed class ProjectInfo
+{
+    public string ProjectName { get; set; } = string.Empty;
+    public string HeaderDeviceName { get; set; } = string.Empty;
+    public string Version { get; set; } = "v1.0.0";
+    public string PageMode { get; set; } = "DynamicDevicePage";
+    public string LayoutMode { get; set; } = "SplitRight";
+    public bool AutoConnect { get; set; } = false;
+    public double RightColumnWidthStar { get; set; } = 0.85;
+    public int    LeftCommandWidthPx   { get; set; } = 250;
+    public string LiveDataTitle { get; set; } = "Live Data";
+    public string DeviceStatusTitle { get; set; } = "Device Status";
+
+    /// <summary>Short name derived from ProjectName, e.g. "Stackdose.App.OvenControl" -> "OvenControl"</summary>
+    public string ShortName => ProjectName.Contains('.')
+        ? ProjectName[(ProjectName.LastIndexOf('.') + 1)..]
+        : ProjectName;
+}
+
+public sealed class MachineInfo
+{
+    public string MachineId { get; set; } = string.Empty;
+    public string MachineName { get; set; } = string.Empty;
+    public string PlcIp { get; set; } = "127.0.0.1";
+    public int PlcPort { get; set; } = 3000;
+    public int PollIntervalMs { get; set; } = 200;
+    public string ProcessMonitorIsRunning { get; set; } = "M200";
+    public string ProcessMonitorIsCompleted { get; set; } = "M202";
+    public string ProcessMonitorIsAlarm { get; set; } = "M201";
+
+    /// <summary>
+    /// 啟用的 UI 模組，分號分隔。可用值：
+    ///   processControl, sensors, alarm, printHead, recipe, simulator
+    /// </summary>
+    public string Modules { get; set; } = "processControl";
+
+    /// <summary>是否在機台頁面底部顯示 LiveLog</summary>
+    public bool ShowLiveLog { get; set; } = false;
+
+    /// <summary>
+    /// MachinePageDesigner 產出的 .machinedesign.json 檔案路徑（相對於 Config 目錄）。
+    /// 若有值，DynamicDevicePage 會優先使用設計檔渲染 LiveData / DeviceStatus Zone。
+    /// </summary>
+    public string MachineDesignFile { get; set; } = string.Empty;
+}
+
+public sealed class CommandInfo
+{
+    public string MachineId { get; set; } = string.Empty;
+    public string CommandName { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
+    /// <summary>按鈕主題：Primary | Success | Error | Warning | Info。空字串表示由 ViewModel 自動推斷。</summary>
+    public string Theme { get; set; } = string.Empty;
+}
+
+public sealed class LabelInfo
+{
+    public string MachineId { get; set; } = string.Empty;
+    public string LabelName { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
+    /// <summary>框架形狀：Rectangle | Circle</summary>
+    public string FrameShape { get; set; } = "Rectangle";
+    /// <summary>數值色彩主題：NeonBlue | Success | Warning | Error | Info | White | Gray</summary>
+    public string ValueColorTheme { get; set; } = "NeonBlue";
+}
+
+public sealed class TagInfo
+{
+    public string MachineId { get; set; } = string.Empty;
+    public string Section { get; set; } = string.Empty;
+    public string TagName { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
+    public string Type { get; set; } = "int16";
+    public string Access { get; set; } = "read";
+    public int Length { get; set; } = 1;
+}
+
+public sealed class PanelInfo
+{
+    public string PanelType { get; set; } = string.Empty;
+    public string MachineId { get; set; } = "*";
+    public string Position { get; set; } = "Separate";
+    public string Title { get; set; } = string.Empty;
+    public string RequiredLevel { get; set; } = "Supervisor";
+}
+
+public sealed class MaintenanceItemInfo
+{
+    public string MachineId { get; set; } = string.Empty;
+    public string ItemName { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
+    /// <summary>toggle | momentary | editor | readonly</summary>
+    public string Type { get; set; } = "editor";
+    public string Label { get; set; } = string.Empty;
+}

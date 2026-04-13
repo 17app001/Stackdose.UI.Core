@@ -1,0 +1,23 @@
+﻿<UserControl x:Class="Stackdose.Tools.ProjectGeneratorUI.Controls.LayoutPreviewControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             MinHeight="160" MinWidth="280">
+    <Border Background="#FF0D1117" CornerRadius="8"
+            BorderBrush="#FF2A3A4A" BorderThickness="1"
+            Padding="6">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header bar -->
+            <TextBlock Grid.Row="0" x:Name="HeaderLabel"
+                       Foreground="#FF78909C" FontSize="10" FontWeight="SemiBold"
+                       Margin="2,0,0,5" Text="SplitRight"/>
+
+            <!-- Schematic Grid (rebuilt in code-behind) -->
+            <Grid Grid.Row="1" x:Name="PreviewGrid" ClipToBounds="True"/>
+        </Grid>
+    </Border>
+</UserControl>

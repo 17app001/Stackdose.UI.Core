@@ -1,7 +1,8 @@
 using System;
 using System.Linq;
 using System.Collections.ObjectModel;
-using Stackdose.App.UbiDemo.Models;
+using Stackdose.App.DeviceFramework.Models;
+using Stackdose.App.DeviceFramework.ViewModels;
 
 namespace Stackdose.App.UbiDemo.ViewModels;
 
@@ -24,7 +25,7 @@ public sealed class SettingsPageViewModel : ViewModelBase
     private string _machineIpAddress = string.Empty;
 
     private string? _selectedMachineId;
-    private Dictionary<string, UbiMachineConfig> _machineConfigs = new(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, MachineConfig> _machineConfigs = new(StringComparer.OrdinalIgnoreCase);
 
     // ── Global collections ──
     public ObservableCollection<string> RegisteredMonitorDeviceItems { get; } = [];
@@ -179,7 +180,7 @@ public sealed class SettingsPageViewModel : ViewModelBase
     /// <summary>
     /// 設定全域 PLC 連線參數（只在初始化時呼叫一次）
     /// </summary>
-    public void ApplyGlobalPlcSettings(UbiMachineConfig config, string configRootPath)
+    public void ApplyGlobalPlcSettings(MachineConfig config, string configRootPath)
     {
         ConfigRootPath = string.IsNullOrWhiteSpace(configRootPath) ? @"Config" : configRootPath;
         PlcIpAddress = config.Plc.Ip;
@@ -194,9 +195,9 @@ public sealed class SettingsPageViewModel : ViewModelBase
     /// <summary>
     /// 載入所有機台清單，建立選擇器選項
     /// </summary>
-    public void ApplyMachines(IReadOnlyDictionary<string, UbiMachineConfig> machines, string configRootPath, string? defaultMachineId)
+    public void ApplyMachines(IReadOnlyDictionary<string, MachineConfig> machines, string configRootPath, string? defaultMachineId)
     {
-        _machineConfigs = new Dictionary<string, UbiMachineConfig>(machines, StringComparer.OrdinalIgnoreCase);
+        _machineConfigs = new Dictionary<string, MachineConfig>(machines, StringComparer.OrdinalIgnoreCase);
         ConfigRootPath = string.IsNullOrWhiteSpace(configRootPath) ? @"Config" : configRootPath;
 
         MachineOptions.Clear();
@@ -205,7 +206,6 @@ public sealed class SettingsPageViewModel : ViewModelBase
             MachineOptions.Add(new MachineOption(kvp.Key, kvp.Value.Machine.Name));
         }
 
-        // 第一次載入時也初始化全域 PLC 設定（取第一台或指定的那台）
         var initialId = !string.IsNullOrWhiteSpace(defaultMachineId) && machines.ContainsKey(defaultMachineId)
             ? defaultMachineId
             : machines.Keys.FirstOrDefault();
@@ -215,14 +215,13 @@ public sealed class SettingsPageViewModel : ViewModelBase
             ApplyGlobalPlcSettings(initialConfig, configRootPath);
         }
 
-        // 設定預選項目（會觸發 OnSelectedMachineChanged）
         SelectedMachineId = initialId;
     }
 
     /// <summary>
-    /// 套用單台機台的 Per-Machine 設定
+    /// 套用單機 Per-Machine 設定
     /// </summary>
-    private void ApplyMachineSpecificConfig(UbiMachineConfig config)
+    private void ApplyMachineSpecificConfig(MachineConfig config)
     {
         MachineConfigPath = @"Config\Machine*.config.json";
         AlarmConfigPath = config.AlarmConfigFile ?? string.Empty;
@@ -244,9 +243,9 @@ public sealed class SettingsPageViewModel : ViewModelBase
     #region Backward Compatibility
 
     /// <summary>
-    /// 保留向下相容（外部如果仍直接呼叫此方法）
+    /// 保留向下相容（外部如果還有呼叫此方法）
     /// </summary>
-    public void ApplyMachineConfig(UbiMachineConfig config, string configRootPath)
+    public void ApplyMachineConfig(MachineConfig config, string configRootPath)
     {
         ApplyGlobalPlcSettings(config, configRootPath);
         ApplyMachineSpecificConfig(config);

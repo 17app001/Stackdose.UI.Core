@@ -1,0 +1,60 @@
+## ==============================
+## Sheet: Project
+## 專案層級設定（只有一列資料）
+## ==============================
+ProjectName,HeaderDeviceName,Version,PageMode,AutoConnect
+Stackdose.App.SimpleDemo,SIMPLE DEMO,v1.0.0,DynamicDevicePage,false
+
+## ==============================
+## Sheet: Machines
+## 機台定義（每台一列）
+## ==============================
+MachineId,MachineName,PlcIp,PlcPort,PollIntervalMs,ProcessMonitor.IsRunning,ProcessMonitor.IsCompleted,ProcessMonitor.IsAlarm,Modules
+CVR1,Conveyor Line A,192.168.22.39,3000,200,M200,M202,M201,processControl
+DSP1,Dispenser Unit B,192.168.22.39,3000,150,M400,M402,M401,processControl
+
+## ==============================
+## Sheet: Commands
+## 命令定義（每個命令一列，用 MachineId 關聯）
+## ==============================
+MachineId,CommandName,Address
+CVR1,Start,M300
+CVR1,Stop,M301
+CVR1,EmergencyStop,M302
+CVR1,Reset,M303
+DSP1,Start,M400
+DSP1,Pause,M401
+DSP1,Stop,M402
+DSP1,Prime,M403
+DSP1,Purge,M404
+
+## ==============================
+## Sheet: Labels
+## 監控標籤定義（每個標籤一列，用 MachineId 關聯）
+## ==============================
+MachineId,LabelName,Address
+CVR1,Belt Speed,D100
+CVR1,Motor Current,D101
+CVR1,Temperature,D102
+CVR1,Product Count,D103
+CVR1,Elapsed Time,D200
+DSP1,Fluid Pressure,D500
+DSP1,Needle Height,D501
+DSP1,Dispense Volume,D502
+DSP1,Dot Count,D503
+DSP1,Fluid Level,D504
+DSP1,Nozzle Temp,D505
+DSP1,Elapsed Time,D600
+
+## ==============================
+## Sheet: Tags （選填，有進階需求才填）
+## 額外 Tag 定義（超出 ProcessMonitor 標準 3 個以外的 Tag）
+## ==============================
+MachineId,Section,TagName,Address,Type,Access,Length
+CVR1,status,heartbeat,D300,int16,read,1
+CVR1,process,batchNo,D400,string,read,8
+CVR1,process,recipeNo,D410,string,read,8
+DSP1,status,heartbeat,D700,int16,read,1
+DSP1,process,batchNo,D800,string,read,8
+DSP1,process,recipeNo,D810,string,read,8
+DSP1,process,viscosity,D820,int16,read,1

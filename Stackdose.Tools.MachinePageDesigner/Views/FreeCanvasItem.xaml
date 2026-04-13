@@ -1,0 +1,94 @@
+<UserControl x:Class="Stackdose.Tools.MachinePageDesigner.Views.FreeCanvasItem"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Stackdose.Tools.MachinePageDesigner.Views"
+             Cursor="SizeAll"
+             MouseLeftButtonDown="OnMouseDown"
+             MouseLeftButtonUp="OnMouseUp"
+             MouseMove="OnMouseMove">
+
+    <Grid ClipToBounds="False" Background="Transparent">
+
+        <!-- Control preview -->
+        <ContentPresenter Content="{Binding Preview}"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"/>
+
+        <!-- Selection border overlay -->
+        <Border x:Name="selectionBorder"
+                BorderThickness="2"
+                Background="Transparent"
+                IsHitTestVisible="False">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="BorderBrush" Value="Transparent"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                            <Setter Property="BorderBrush" Value="#FF6C8EEF"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+        </Border>
+
+        <!-- Lock indicator -->
+        <Border HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Width="18" Height="18"
+                CornerRadius="3"
+                Background="#CC1A1A2A"
+                Margin="0,2,2,0"
+                IsHitTestVisible="False">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsLocked}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <TextBlock Text="&#x1F512;" FontSize="9"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+        </Border>
+
+        <!-- Resize handles (visible when selected and not locked) -->
+        <Canvas x:Name="handleLayer" ClipToBounds="False" IsHitTestVisible="True">
+            <Canvas.Style>
+                <Style TargetType="Canvas">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsSelected}" Value="True"/>
+                                <Condition Binding="{Binding IsLocked}" Value="False"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </MultiDataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Canvas.Style>
+
+            <!-- 8 resize thumbs -->
+            <Thumb x:Name="thumbNW" Style="{StaticResource ResizeThumb}" Cursor="SizeNWSE"
+                   DragStarted="OnResizeStarted" DragDelta="OnNWDrag" DragCompleted="OnResizeCompleted"/>
+            <Thumb x:Name="thumbN"  Style="{StaticResource ResizeThumb}" Cursor="SizeNS"
+                   DragStarted="OnResizeStarted" DragDelta="OnNDrag"  DragCompleted="OnResizeCompleted"/>
+            <Thumb x:Name="thumbNE" Style="{StaticResource ResizeThumb}" Cursor="SizeNESW"
+                   DragStarted="OnResizeStarted" DragDelta="OnNEDrag" DragCompleted="OnResizeCompleted"/>
+            <Thumb x:Name="thumbW"  Style="{StaticResource ResizeThumb}" Cursor="SizeWE"
+                   DragStarted="OnResizeStarted" DragDelta="OnWDrag"  DragCompleted="OnResizeCompleted"/>
+            <Thumb x:Name="thumbE"  Style="{StaticResource ResizeThumb}" Cursor="SizeWE"
+                   DragStarted="OnResizeStarted" DragDelta="OnEDrag"  DragCompleted="OnResizeCompleted"/>
+            <Thumb x:Name="thumbSW" Style="{StaticResource ResizeThumb}" Cursor="SizeNESW"
+                   DragStarted="OnResizeStarted" DragDelta="OnSWDrag" DragCompleted="OnResizeCompleted"/>
+            <Thumb x:Name="thumbS"  Style="{StaticResource ResizeThumb}" Cursor="SizeNS"
+                   DragStarted="OnResizeStarted" DragDelta="OnSDrag"  DragCompleted="OnResizeCompleted"/>
+            <Thumb x:Name="thumbSE" Style="{StaticResource ResizeThumb}" Cursor="SizeNWSE"
+                   DragStarted="OnResizeStarted" DragDelta="OnSEDrag" DragCompleted="OnResizeCompleted"/>
+        </Canvas>
+
+    </Grid>
+</UserControl>

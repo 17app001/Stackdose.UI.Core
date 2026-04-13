@@ -1,5 +1,5 @@
+using Stackdose.App.DeviceFramework.Services;
 using Stackdose.App.UbiDemo.Models;
-using Stackdose.App.UbiDemo.Services;
 using Stackdose.App.UbiDemo.ViewModels;
 using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Helpers;
@@ -20,7 +20,7 @@ public partial class UbiDevicePage : UserControl
         Unloaded += UbiDevicePage_Unloaded;
     }
 
-    public void SetDeviceContext(DeviceContext context)
+    public void SetDeviceContext(UbiDeviceContext context)
     {
         _viewModel.ApplyDeviceContext(context);
     }
@@ -46,11 +46,11 @@ public partial class UbiDevicePage : UserControl
 
         switch (e.EventName)
         {
-            case UbiProcessMonitorService.RunningEventName:
+            case ProcessEventNames.Running:
                 _viewModel.MarkProcessRunning();
                 break;
 
-            case UbiProcessMonitorService.CompletedEventName:
+            case ProcessEventNames.Completed:
                 _viewModel.MarkProcessCompleted();
                 CyberMessageBox.Show(
                     $"製程完成\n\nMachine: {_viewModel.MachineName}\nAddress: {e.Address}",
@@ -59,7 +59,7 @@ public partial class UbiDevicePage : UserControl
                     MessageBoxImage.Information);
                 break;
 
-            case UbiProcessMonitorService.AlarmEventName:
+            case ProcessEventNames.Alarm:
                 _viewModel.MarkProcessFaulted();
                 CyberMessageBox.Show(
                     $"製程警報\n\nMachine: {_viewModel.MachineName}\nAddress: {e.Address}",

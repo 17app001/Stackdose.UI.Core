@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.4.11626.88 stable
+VisualStudioVersion = 18.4.11626.88
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.UI.Core", "Stackdose.UI.Core\Stackdose.UI.Core.csproj", "{45B8429F-B530-4B17-9477-BBE36E386E09}"
 EndProject
@@ -30,6 +30,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Tools.MachinePageDesigner", "Stackdose.Tools.MachinePageDesigner\Stackdose.Tools.MachinePageDesigner.csproj", "{282E6333-E3C7-4AA4-8929-BA69C92C67FD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.App.ShellShared", "Stackdose.App.ShellShared\Stackdose.App.ShellShared.csproj", "{0B6441EE-4C8D-4083-1236-3BFE7AF39E7A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Tools.DesignViewer", "Stackdose.Tools.DesignViewer\Stackdose.Tools.DesignViewer.csproj", "{656757FC-966E-490D-8A76-C177DFC1652C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -209,6 +211,18 @@ Global
 		{0B6441EE-4C8D-4083-1236-3BFE7AF39E7A}.Release|x64.Build.0 = Release|Any CPU
 		{0B6441EE-4C8D-4083-1236-3BFE7AF39E7A}.Release|x86.ActiveCfg = Release|Any CPU
 		{0B6441EE-4C8D-4083-1236-3BFE7AF39E7A}.Release|x86.Build.0 = Release|Any CPU
+		{656757FC-966E-490D-8A76-C177DFC1652C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{656757FC-966E-490D-8A76-C177DFC1652C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{656757FC-966E-490D-8A76-C177DFC1652C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{656757FC-966E-490D-8A76-C177DFC1652C}.Debug|x64.Build.0 = Debug|Any CPU
+		{656757FC-966E-490D-8A76-C177DFC1652C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{656757FC-966E-490D-8A76-C177DFC1652C}.Debug|x86.Build.0 = Debug|Any CPU
+		{656757FC-966E-490D-8A76-C177DFC1652C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{656757FC-966E-490D-8A76-C177DFC1652C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{656757FC-966E-490D-8A76-C177DFC1652C}.Release|x64.ActiveCfg = Release|Any CPU
+		{656757FC-966E-490D-8A76-C177DFC1652C}.Release|x64.Build.0 = Release|Any CPU
+		{656757FC-966E-490D-8A76-C177DFC1652C}.Release|x86.ActiveCfg = Release|Any CPU
+		{656757FC-966E-490D-8A76-C177DFC1652C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

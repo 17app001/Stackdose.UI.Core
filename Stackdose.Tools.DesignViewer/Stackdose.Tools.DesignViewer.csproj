@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <PlatformTarget>x64</PlatformTarget>
+    <RootNamespace>Stackdose.Tools.DesignViewer</RootNamespace>
+    <AssemblyName>Stackdose.Tools.DesignViewer</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      直接參考 MachinePageDesigner：取用 DesignFileService、DesignTimeControlFactory、Models
+      ReferenceOutputAssembly=true → 編譯時可存取其型別（兩個 WinExe 各有自己的進入點，不衝突）
+    -->
+    <ProjectReference Include="..\Stackdose.Tools.MachinePageDesigner\Stackdose.Tools.MachinePageDesigner.csproj">
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>

@@ -19,6 +19,9 @@
         <KeyBinding Key="Z" Modifiers="Ctrl"       Command="{Binding UndoCmd}"/>
         <KeyBinding Key="Y" Modifiers="Ctrl"       Command="{Binding RedoCmd}"/>
         <KeyBinding Key="Delete"                    Command="{Binding DeleteSelectedCmd}"/>
+        <KeyBinding Key="C" Modifiers="Ctrl"       Command="{Binding CopyCmd}"/>
+        <KeyBinding Key="V" Modifiers="Ctrl"       Command="{Binding PasteCmd}"/>
+        <KeyBinding Key="A" Modifiers="Ctrl"       Command="{Binding SelectAllCmd}"/>
     </Window.InputBindings>
 
     <Grid>
@@ -47,7 +50,10 @@
 
                 <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
 
-                <Button Content="&#x2716; Delete"  Command="{Binding DeleteSelectedCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,16,0"/>
+                <Button Content="&#x2716; Delete"  Command="{Binding DeleteSelectedCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,4,0"/>
+                <Button Content="&#x2398; Copy"    Command="{Binding CopyCmd}"          Style="{StaticResource ToolbarButton}" Margin="0,0,4,0" ToolTip="複製選取元件（Ctrl+C）"/>
+                <Button Content="&#x2399; Paste"   Command="{Binding PasteCmd}"         Style="{StaticResource ToolbarButton}" Margin="0,0,4,0" ToolTip="貼上（Ctrl+V）"/>
+                <Button Content="&#x2630; All"     Command="{Binding SelectAllCmd}"     Style="{StaticResource ToolbarButton}" Margin="0,0,16,0" ToolTip="全選（Ctrl+A）"/>
 
                 <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
 
@@ -60,7 +66,23 @@
                 <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
 
                 <!-- Lock -->
-                <Button Content="&#x1F512; Lock" Command="{Binding LockToggleCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,16,0" ToolTip="鎖定/解鎖選取元件"/>
+                <Button Content="&#x1F512; Lock" Command="{Binding LockToggleCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,4,0" ToolTip="鎖定/解鎖選取元件"/>
+
+                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="4,2,4,2"/>
+
+                <!-- Align -->
+                <Button Content="&#x2594;&#x258C;" Command="{Binding AlignLeftCmd}"    Style="{StaticResource ToolbarButton}" Margin="0,0,2,0" ToolTip="靠左對齊 (Align Left)"/>
+                <Button Content="&#x2506;"         Command="{Binding AlignCenterHCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,2,0" ToolTip="水平置中 (Center Horizontally)"/>
+                <Button Content="&#x2590;&#x2594;" Command="{Binding AlignRightCmd}"   Style="{StaticResource ToolbarButton}" Margin="0,0,2,0" ToolTip="靠右對齊 (Align Right)"/>
+                <Button Content="&#x2594;&#x2015;" Command="{Binding AlignTopCmd}"     Style="{StaticResource ToolbarButton}" Margin="0,0,2,0" ToolTip="靠上對齊 (Align Top)"/>
+                <Button Content="&#x2550;"         Command="{Binding AlignCenterVCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,2,0" ToolTip="垂直置中 (Center Vertically)"/>
+                <Button Content="&#x2015;&#x2581;" Command="{Binding AlignBottomCmd}"  Style="{StaticResource ToolbarButton}" Margin="0,0,4,0" ToolTip="靠下對齊 (Align Bottom)"/>
+
+                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="4,2,4,2"/>
+
+                <!-- Distribute -->
+                <Button Content="&#x2194; =" Command="{Binding DistributeHorizCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,2,0" ToolTip="水平平均間距 (Distribute Horizontally，需 3 個以上)"/>
+                <Button Content="&#x2195; =" Command="{Binding DistributeVertCmd}"  Style="{StaticResource ToolbarButton}" Margin="0,0,16,0" ToolTip="垂直平均間距 (Distribute Vertically，需 3 個以上)"/>
 
                 <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
 

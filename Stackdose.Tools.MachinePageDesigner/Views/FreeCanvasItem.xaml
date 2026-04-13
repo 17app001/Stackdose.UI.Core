@@ -7,7 +7,20 @@
              MouseLeftButtonUp="OnMouseUp"
              MouseMove="OnMouseMove">
 
-    <Grid ClipToBounds="False" Background="Transparent">
+    <Grid ClipToBounds="False">
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <!-- 預設：有背景 = 整個元件 hit-testable（可在任意位置點選/拖曳） -->
+                <Setter Property="Background" Value="Transparent"/>
+                <Style.Triggers>
+                    <!-- Spacer/GroupBox：背景 null = 自身不攔截，只靠 Header 接收事件；
+                         Body 內部點擊穿透到 designCanvas，允許框選 -->
+                    <DataTrigger Binding="{Binding ItemType}" Value="Spacer">
+                        <Setter Property="Background" Value="{x:Null}"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
 
         <!-- Control preview -->
         <ContentPresenter Content="{Binding Preview}"

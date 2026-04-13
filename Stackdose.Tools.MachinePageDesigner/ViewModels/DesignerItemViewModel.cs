@@ -121,6 +121,7 @@ public sealed class DesignerItemViewModel : ObservableObject
             "requiredLevel" => nameof(RequiredLevel),
             "theme" => nameof(Theme),
             "isLocked" => nameof(IsLocked),
+            "title" => nameof(GroupTitle),
             _ => null
         };
         if (propName != null) N(propName);
@@ -271,6 +272,18 @@ public sealed class DesignerItemViewModel : ObservableObject
             if (old == value) return;
             SetPropDirect("theme", value);
             PropCommitted?.Invoke("theme", old, value);
+        }
+    }
+
+    public string GroupTitle
+    {
+        get => GetProp("title", "Group");
+        set
+        {
+            var old = GetProp("title", "Group");
+            if (old == value) return;
+            SetPropDirect("title", value);
+            PropCommitted?.Invoke("title", old, value);
         }
     }
 

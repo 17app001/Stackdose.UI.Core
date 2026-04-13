@@ -100,12 +100,16 @@
         </DataTemplate>
 
         <!-- ════════════════════════════════════════════════════════
-             Spacer（無屬性）
+             Spacer / GroupBox 屬性面板
              ════════════════════════════════════════════════════════ -->
         <DataTemplate x:Key="SpacerTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
-            <TextBlock Text="Spacer 沒有可設定的屬性"
-                       Foreground="{StaticResource TextMutedBrush}"
-                       FontStyle="Italic" Margin="0,8"/>
+            <StackPanel Margin="0,4">
+                <TextBlock Text="群組標題 (Title)" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding GroupTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"/>
+                <TextBlock Text="拖曳此 GroupBox 時，中心點在框內的元件會一起移動"
+                           Foreground="{StaticResource TextMutedBrush}"
+                           FontSize="10" TextWrapping="Wrap" Margin="0,0,0,4"/>
+            </StackPanel>
         </DataTemplate>
 
         <!-- ════════════════════════════════════════════════════════
@@ -170,19 +174,23 @@
 
                         <StackPanel Grid.Row="0" Grid.Column="0">
                             <TextBlock Text="X" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                            <TextBox Text="{Binding X, UpdateSourceTrigger=PropertyChanged, StringFormat=F0}"/>
+                            <TextBox Text="{Binding X, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
+                                     PreviewKeyDown="OnNumericKeyDown"/>
                         </StackPanel>
                         <StackPanel Grid.Row="0" Grid.Column="2">
                             <TextBlock Text="Y" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                            <TextBox Text="{Binding Y, UpdateSourceTrigger=PropertyChanged, StringFormat=F0}"/>
+                            <TextBox Text="{Binding Y, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
+                                     PreviewKeyDown="OnNumericKeyDown"/>
                         </StackPanel>
                         <StackPanel Grid.Row="2" Grid.Column="0">
                             <TextBlock Text="寬度 W" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                            <TextBox Text="{Binding Width, UpdateSourceTrigger=PropertyChanged, StringFormat=F0}"/>
+                            <TextBox Text="{Binding Width, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
+                                     PreviewKeyDown="OnNumericKeyDown"/>
                         </StackPanel>
                         <StackPanel Grid.Row="2" Grid.Column="2">
                             <TextBlock Text="高度 H" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                            <TextBox Text="{Binding Height, UpdateSourceTrigger=PropertyChanged, StringFormat=F0}"/>
+                            <TextBox Text="{Binding Height, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
+                                     PreviewKeyDown="OnNumericKeyDown"/>
                         </StackPanel>
                     </Grid>
 

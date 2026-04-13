@@ -39,6 +39,10 @@ public sealed class MainViewModel : ObservableObject
     private string _docTitle;
     private string _machineId;
 
+    // ── Clipboard ────────────────────────────────────────────────────
+    private List<DesignerItemDefinition> _clipboard = [];
+    private int _pasteCount;
+
     // ── Services ─────────────────────────────────────────────────────
     public UndoRedoService UndoRedo { get; } = new();
 
@@ -73,6 +77,19 @@ public sealed class MainViewModel : ObservableObject
         MoveUpCmd          = new RelayCommand(_ => MoveUp(),         _ => Canvas.HasSelectedItem);
         MoveDownCmd        = new RelayCommand(_ => MoveDown(),       _ => Canvas.HasSelectedItem);
         LockToggleCmd      = new RelayCommand(_ => ToggleLock(),     _ => Canvas.HasSelectedItem);
+        CopyCmd            = new RelayCommand(_ => CopySelected(),   _ => Canvas.HasSelectedItem);
+        PasteCmd           = new RelayCommand(_ => PasteClipboard(), _ => _clipboard.Count > 0);
+        SelectAllCmd       = new RelayCommand(_ => SelectAll());
+
+        AlignLeftCmd    = new RelayCommand(_ => AlignItems("left"),    _ => Canvas.HasSelectedItem);
+        AlignRightCmd   = new RelayCommand(_ => AlignItems("right"),   _ => Canvas.HasSelectedItem);
+        AlignTopCmd     = new RelayCommand(_ => AlignItems("top"),     _ => Canvas.HasSelectedItem);
+        AlignBottomCmd  = new RelayCommand(_ => AlignItems("bottom"),  _ => Canvas.HasSelectedItem);
+        AlignCenterHCmd = new RelayCommand(_ => AlignItems("centerH"), _ => Canvas.HasSelectedItem);
+        AlignCenterVCmd = new RelayCommand(_ => AlignItems("centerV"), _ => Canvas.HasSelectedItem);
+
+        DistributeHorizCmd = new RelayCommand(_ => DistributeItems(horizontal: true),  _ => Canvas.HasSelectedItem);
+        DistributeVertCmd  = new RelayCommand(_ => DistributeItems(horizontal: false), _ => Canvas.HasSelectedItem);
 
         // UndoRedo 狀態變更時更新 dirty 並強制刷新 Command enable 狀態
         UndoRedo.StateChanged += () =>
@@ -234,15 +251,34 @@ public sealed class MainViewModel : ObservableObject
     public ICommand MoveUpCmd { get; }
     public ICommand MoveDownCmd { get; }
     public ICommand LockToggleCmd { get; }
+    public ICommand CopyCmd { get; }
+    public ICommand PasteCmd { get; }
+    public ICommand SelectAllCmd { get; }
+
+    // Align
+    public ICommand AlignLeftCmd    { get; }
+    public ICommand AlignRightCmd   { get; }
+    public ICommand AlignTopCmd     { get; }
+    public ICommand AlignBottomCmd  { get; }
+    public ICommand AlignCenterHCmd { get; }
+    public ICommand AlignCenterVCmd { get; }
+
+    // Distribute
+    public ICommand DistributeHorizCmd { get; }
+    public ICommand DistributeVertCmd  { get; }
 
     // ── UndoRedo 整合方法（供 View 呼叫） ────────────────────────────
 
     /// <summary>
-    /// 在自由畫布新增元件（透過 UndoRedo）
+    /// 在自由畫布新增元件（透過 UndoRedo）。
+    /// Spacer/GroupBox 自動插入 Z-order 0（最底層），確保其他元件可在其上方互動。
     /// </summary>
     public void ExecuteCanvasAddItem(DesignerItemViewModel vm)
     {
-        var cmd = new CanvasAddItemCommand(Canvas.CanvasItems, vm);
+        IDesignCommand cmd = vm.ItemType == "Spacer"
+            ? new CanvasInsertItemCommand(Canvas.CanvasItems, vm, 0)
+            : new CanvasAddItemCommand(Canvas.CanvasItems, vm);
+
         UndoRedo.Execute(cmd);
         MarkDirty();
         StatusText = $"已新增：{vm.DisplayName}";
@@ -256,6 +292,30 @@ public sealed class MainViewModel : ObservableObject
         UndoRedo.Record(new CanvasMoveItemCommand(item, oldX, oldY, newX, newY));
         MarkDirty();
         StatusText = $"移動：{item.DisplayName} → ({newX:F0}, {newY:F0})";
+    }
+
+    /// <summary>
+    /// 記錄多元件同步移動（UI 已套用，僅記錄以供 Undo）
+    /// </summary>
+    public void RecordCanvasMultiMove(
+        List<(DesignerItemViewModel item, double oldX, double oldY, double newX, double newY)> moves)
+    {
+        UndoRedo.Record(new CanvasMoveMultipleItemsCommand(moves));
+        MarkDirty();
+        StatusText = $"移動 {moves.Count} 個元件";
+    }
+
+    /// <summary>
+    /// 記錄多元件同步縮放（UI 已套用，僅記錄以供 Undo）
+    /// </summary>
+    public void RecordCanvasMultiResize(
+        List<(DesignerItemViewModel item,
+              double oldX, double oldY, double oldW, double oldH,
+              double newX, double newY, double newW, double newH)> resizes)
+    {
+        UndoRedo.Record(new CanvasResizeMultipleItemsCommand(resizes));
+        MarkDirty();
+        StatusText = $"縮放 {resizes.Count} 個元件";
     }
 
     /// <summary>
@@ -350,6 +410,49 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
+    private void CopySelected()
+    {
+        var items = Canvas.GetAllSelectedItems();
+        if (items.Count == 0) return;
+        _clipboard = items.Select(i => i.ToDefinition().Clone()).ToList();
+        _pasteCount = 0;
+        Application.Current?.Dispatcher.InvokeAsync(
+            CommandManager.InvalidateRequerySuggested,
+            DispatcherPriority.Background);
+        StatusText = $"已複製 {_clipboard.Count} 個元件";
+    }
+
+    private void PasteClipboard()
+    {
+        if (_clipboard.Count == 0) return;
+        _pasteCount++;
+        double offset = _pasteCount * 20;
+
+        var newVms = _clipboard
+            .Select(def => new DesignerItemViewModel(def.Clone(offset, offset)))
+            .ToList();
+
+        UndoRedo.Execute(new CanvasAddMultipleItemsCommand(Canvas.CanvasItems, newVms));
+
+        Canvas.ClearSelection();
+        foreach (var vm in newVms)
+            Canvas.ToggleMultiSelect(vm);
+
+        MarkDirty();
+        StatusText = $"已貼上 {newVms.Count} 個元件";
+    }
+
+    private void SelectAll()
+    {
+        Canvas.ClearSelection();
+        foreach (var item in Canvas.CanvasItems)
+        {
+            if (item.ItemType == "Spacer") continue; // GroupBox 不納入全選
+            Canvas.ToggleMultiSelect(item);
+        }
+        StatusText = $"已全選 {Canvas.SelectedItems.Count} 個元件";
+    }
+
     private void DeleteSelected()
     {
         var item = Canvas.SelectedItem;
@@ -405,6 +508,112 @@ public sealed class MainViewModel : ObservableObject
         item.IsLocked = !item.IsLocked;
         MarkDirty();
         StatusText = item.IsLocked ? $"已鎖定：{item.DisplayName}" : $"已解鎖：{item.DisplayName}";
+    }
+
+    /// <summary>
+    /// 對齊選取元件（靠左/右/上/下/水平置中/垂直置中）
+    /// </summary>
+    private void AlignItems(string mode)
+    {
+        var items = Canvas.GetAllSelectedItems()
+            .Where(i => !i.IsLocked && i.ItemType != "Spacer")
+            .ToList();
+        if (items.Count == 0) return;
+
+        double anchor = mode switch
+        {
+            "left"    => items.Min(i => i.X),
+            "right"   => items.Max(i => i.X + i.Width),
+            "top"     => items.Min(i => i.Y),
+            "bottom"  => items.Max(i => i.Y + i.Height),
+            "centerH" => items.Average(i => i.X + i.Width  / 2),
+            "centerV" => items.Average(i => i.Y + i.Height / 2),
+            _ => 0
+        };
+
+        var moves = new List<(DesignerItemViewModel, double, double, double, double)>();
+        foreach (var item in items)
+        {
+            double newX = item.X, newY = item.Y;
+            switch (mode)
+            {
+                case "left":    newX = anchor; break;
+                case "right":   newX = anchor - item.Width; break;
+                case "top":     newY = anchor; break;
+                case "bottom":  newY = anchor - item.Height; break;
+                case "centerH": newX = anchor - item.Width  / 2; break;
+                case "centerV": newY = anchor - item.Height / 2; break;
+            }
+            if (Math.Abs(newX - item.X) < 0.01 && Math.Abs(newY - item.Y) < 0.01) continue;
+            moves.Add((item, item.X, item.Y, newX, newY));
+            item.X = newX;
+            item.Y = newY;
+        }
+
+        if (moves.Count == 0) return;
+        UndoRedo.Record(new CanvasMoveMultipleItemsCommand(moves));
+        MarkDirty();
+        string label = mode switch
+        {
+            "left"    => "靠左對齊",  "right"   => "靠右對齊",
+            "top"     => "靠上對齊",  "bottom"  => "靠下對齊",
+            "centerH" => "水平置中",  "centerV" => "垂直置中",
+            _ => "對齊"
+        };
+        StatusText = $"{label} {items.Count} 個元件";
+    }
+
+    /// <summary>
+    /// 平均分配間距（水平或垂直）
+    /// 排序後：最左/最上元件位置固定，中間元件均等間距分配。
+    /// </summary>
+    private void DistributeItems(bool horizontal)
+    {
+        var items = Canvas.GetAllSelectedItems()
+            .Where(i => !i.IsLocked && i.ItemType != "Spacer")
+            .ToList();
+        if (items.Count < 3) { StatusText = "平均分配需至少選取 3 個元件"; return; }
+
+        // 排序
+        if (horizontal)
+            items = [.. items.OrderBy(i => i.X)];
+        else
+            items = [.. items.OrderBy(i => i.Y)];
+
+        // 計算總跨度 與 各元件尺寸總和
+        double totalSpan = horizontal
+            ? (items[^1].X + items[^1].Width)  - items[0].X
+            : (items[^1].Y + items[^1].Height) - items[0].Y;
+
+        double totalSize = horizontal
+            ? items.Sum(i => i.Width)
+            : items.Sum(i => i.Height);
+
+        double gap = (totalSpan - totalSize) / (items.Count - 1);
+
+        var moves = new List<(DesignerItemViewModel, double, double, double, double)>();
+        double cursor = horizontal ? items[0].X : items[0].Y;
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            var item = items[i];
+            double newX = horizontal ? cursor : item.X;
+            double newY = horizontal ? item.Y  : cursor;
+
+            if (Math.Abs(newX - item.X) > 0.01 || Math.Abs(newY - item.Y) > 0.01)
+            {
+                moves.Add((item, item.X, item.Y, newX, newY));
+                item.X = newX;
+                item.Y = newY;
+            }
+
+            cursor += (horizontal ? item.Width : item.Height) + gap;
+        }
+
+        if (moves.Count == 0) return;
+        UndoRedo.Record(new CanvasMoveMultipleItemsCommand(moves));
+        MarkDirty();
+        StatusText = $"{(horizontal ? "水平" : "垂直")}均分 {items.Count} 個元件，間距 {gap:F1}px";
     }
 
     private void PerformUndo()
@@ -484,6 +693,47 @@ public sealed class MainViewModel : ObservableObject
 
         var now = DateTime.UtcNow;
 
+        // ── 多選同步：X/Y/W/H 套用至所有已選元件 ──────────────────────
+        bool isSpatialProp = propKey is "x" or "y" or "width" or "height";
+        if (isSpatialProp)
+        {
+            var allSelected = Canvas.GetAllSelectedItems();
+            if (allSelected.Count > 1)
+            {
+                double newDouble = Convert.ToDouble(newValue);
+                double delta     = newDouble - Convert.ToDouble(oldValue);
+
+                var changes = new List<(DesignerItemViewModel, string, object?, object?)>
+                {
+                    (_subscribedPropItem, propKey, oldValue, newValue)
+                };
+
+                foreach (var item in allSelected)
+                {
+                    if (ReferenceEquals(item, _subscribedPropItem)) continue;
+                    double itemOld = propKey switch
+                    {
+                        "x"      => item.X,      "y"      => item.Y,
+                        "width"  => item.Width,  "height" => item.Height,
+                        _ => 0
+                    };
+                    // W/H：套用絕對值（全部同寬/高）；X/Y：套用相同位移
+                    double itemNew = propKey is "width" or "height"
+                        ? newDouble
+                        : Math.Max(0, itemOld + delta);
+
+                    item.SetPropDirect(propKey, itemNew);
+                    changes.Add((item, propKey, (object)itemOld, (object)itemNew));
+                }
+
+                UndoRedo.Record(new MultiItemPropertyChangeCommand(changes));
+                _lastPropSnapshot = null;
+                UpdateStatusFromSelection();
+                return;
+            }
+        }
+
+        // ── 單選防抖邏輯（原有）─────────────────────────────────────────
         if (_lastPropSnapshot is { } snap &&
             ReferenceEquals(snap.Item, _subscribedPropItem) &&
             snap.PropKey == propKey &&

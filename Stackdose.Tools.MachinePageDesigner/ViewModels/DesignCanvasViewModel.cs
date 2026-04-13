@@ -42,10 +42,19 @@ public sealed class DesignCanvasViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 多選模式（Shift+Click）
+    /// 多選模式（Shift+Click / rubber-band）。
+    /// 第一次呼叫時若有既有的單選項目，自動將其也加入多選清單，
+    /// 確保 GetAllSelectedItems() 能一起回傳所有選取元件。
     /// </summary>
     public void ToggleMultiSelect(DesignerItemViewModel item)
     {
+        // 首次切換到多選：把目前的單選元件也收進 SelectedItems
+        if (SelectedItems.Count == 0 && _selectedItem != null && !ReferenceEquals(_selectedItem, item))
+        {
+            SelectedItems.Add(_selectedItem);
+            _selectedItem.IsSelected = true;
+        }
+
         if (SelectedItems.Contains(item))
         {
             SelectedItems.Remove(item);

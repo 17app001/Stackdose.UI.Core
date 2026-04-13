@@ -100,6 +100,7 @@ public partial class FreeCanvas : UserControl
 
         foreach (var item in vm.Canvas.CanvasItems)
         {
+            if (item.ItemType == "Spacer") continue; // GroupBox 不納入框選，只能點 Header 單選
             var itemRect = new Rect(item.X, item.Y, item.Width, item.Height);
             if (selRect.IntersectsWith(itemRect))
                 vm.Canvas.ToggleMultiSelect(item);

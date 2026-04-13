@@ -61,8 +61,8 @@ public sealed class ToolboxItemDescriptor
         "Spacer" => new DesignerItemDefinition
         {
             Type = "Spacer",
-            Props = [],
-            Width = 180, Height = 60
+            Props = new() { ["title"] = "Group" },
+            Width = 300, Height = 200
         },
         "LiveLog" => new DesignerItemDefinition
         {

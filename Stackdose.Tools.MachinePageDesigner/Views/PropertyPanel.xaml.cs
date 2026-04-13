@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Markup;
 using Stackdose.Tools.MachinePageDesigner.ViewModels;
 
@@ -27,6 +28,24 @@ public partial class PropertyPanel : UserControl
     public PropertyPanel()
     {
         InitializeComponent();
+    }
+
+    /// <summary>
+    /// Enter 鍵立即提交 LostFocus 綁定；Escape 鍵放棄並還原顯示值
+    /// </summary>
+    private void OnNumericKeyDown(object sender, KeyEventArgs e)
+    {
+        if (sender is not TextBox tb) return;
+        if (e.Key == Key.Enter)
+        {
+            tb.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape)
+        {
+            tb.GetBindingExpression(TextBox.TextProperty)?.UpdateTarget();
+            e.Handled = true;
+        }
     }
 }
 

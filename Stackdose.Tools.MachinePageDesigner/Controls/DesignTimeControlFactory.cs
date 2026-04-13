@@ -21,7 +21,7 @@ public static class DesignTimeControlFactory
             "PlcText"            => CreatePlcText(def),
             "PlcStatusIndicator" => CreatePlcStatusIndicator(def),
             "SecuredButton"      => CreateSecuredButton(def),
-            "Spacer"             => CreateSpacer(),
+            "Spacer"             => CreateGroupBox(def),
             "LiveLog"            => CreateViewerPlaceholder("System Log",    "\u2637", Color.FromRgb(0x1A, 0x1A, 0x30)),
             "AlarmViewer"        => CreateViewerPlaceholder("Alarm Viewer",  "\u26A0", Color.FromRgb(0x30, 0x18, 0x18)),
             "SensorViewer"       => CreateViewerPlaceholder("Sensor Viewer", "\u26A1", Color.FromRgb(0x18, 0x28, 0x30)),
@@ -136,13 +136,47 @@ public static class DesignTimeControlFactory
         return btn;
     }
 
-    private static UIElement CreateSpacer()
+    private static UIElement CreateGroupBox(DesignerItemDefinition def)
     {
-        return new Border
+        var title = def.Props.GetString("title", "Group");
+
+        // 根容器（無背景 → 不攔截 hit-test，讓 Body 區點擊穿透到 Canvas）
+        var root = new Grid();
+
+        // ── 第一層：純視覺（邊框 + 半透明底）IsHitTestVisible=false ──────
+        root.Children.Add(new Border
         {
-            Background = Brushes.Transparent,
-            MinHeight = 40,
+            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x6C, 0x8E, 0xEF)),
+            BorderThickness  = new Thickness(1.5),
+            Background      = new SolidColorBrush(Color.FromArgb(0x18, 0x6C, 0x8E, 0xEF)),
+            CornerRadius    = new CornerRadius(4),
+            IsHitTestVisible = false,   // 只是外觀，不攔截滑鼠
+        });
+
+        // ── 第二層：互動（只有 Header 有背景 → 只有 Header 可 hit-test）─
+        var headerBorder = new Border
+        {
+            Background   = new SolidColorBrush(Color.FromArgb(0xCC, 0x3A, 0x56, 0xA8)),
+            CornerRadius = new CornerRadius(2, 2, 0, 0),
+            Padding      = new Thickness(10, 4, 10, 4),
+            // Background 非 null → 該區域 hit-testable，點 Header 可選取/拖曳 GroupBox
         };
+        headerBorder.Child = new TextBlock
+        {
+            Text       = string.IsNullOrWhiteSpace(title) ? "Group" : title,
+            Foreground = Brushes.White,
+            FontSize   = 12,
+            FontWeight = FontWeights.SemiBold,
+        };
+
+        var dock = new DockPanel { LastChildFill = true, Background = null };
+        DockPanel.SetDock(headerBorder, Dock.Top);
+        dock.Children.Add(headerBorder);
+        // Body：Background=null → 不 hit-testable → 點擊穿透到 designCanvas → 框選可啟動
+        dock.Children.Add(new Border { Background = null });
+
+        root.Children.Add(dock);
+        return root;
     }
 
     private static UIElement CreateViewerPlaceholder(string title, string icon, Color bgColor)

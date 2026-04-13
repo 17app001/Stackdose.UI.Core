@@ -34,6 +34,22 @@ public sealed class DesignerItemDefinition
 
     [JsonPropertyName("props")]
     public Dictionary<string, object?> Props { get; set; } = [];
+
+    /// <summary>
+    /// 深複製，產生新 Id，可指定位移
+    /// </summary>
+    public DesignerItemDefinition Clone(double offsetX = 0, double offsetY = 0) => new()
+    {
+        Id       = Guid.NewGuid().ToString("N")[..8],
+        Type     = Type,
+        Order    = Order,
+        X        = X + offsetX,
+        Y        = Y + offsetY,
+        Width    = Width,
+        Height   = Height,
+        IsLocked = false,
+        Props    = new Dictionary<string, object?>(Props),
+    };
 }
 
 /// <summary>

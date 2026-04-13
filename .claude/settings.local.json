@@ -39,7 +39,8 @@
       "Bash(find /d/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls -type f -name *.xaml)",
       "Bash(grep -r \"FrameShape\\\\|PlcLabelFrameShape\" /d/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core --include=*.cs -l)",
       "Bash(grep -n \"MachineDesignFile\\\\|machineDesignFile\\\\|designFile\\\\|CopyDesign\" Stackdose.Tools.ProjectGenerator/*.cs Stackdose.Tools.ProjectGenerator/**/*.cs)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(powershell:*)"
     ]
   }
 }

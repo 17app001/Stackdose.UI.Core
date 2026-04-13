@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.App.ShellShared",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Tools.DesignViewer", "Stackdose.Tools.DesignViewer\Stackdose.Tools.DesignViewer.csproj", "{656757FC-966E-490D-8A76-C177DFC1652C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.App.DesignRuntime", "Stackdose.App.DesignRuntime\Stackdose.App.DesignRuntime.csproj", "{A311CD92-ECF2-4CC2-80B3-9882D309924D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -223,6 +225,18 @@ Global
 		{656757FC-966E-490D-8A76-C177DFC1652C}.Release|x64.Build.0 = Release|Any CPU
 		{656757FC-966E-490D-8A76-C177DFC1652C}.Release|x86.ActiveCfg = Release|Any CPU
 		{656757FC-966E-490D-8A76-C177DFC1652C}.Release|x86.Build.0 = Release|Any CPU
+		{A311CD92-ECF2-4CC2-80B3-9882D309924D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A311CD92-ECF2-4CC2-80B3-9882D309924D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A311CD92-ECF2-4CC2-80B3-9882D309924D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A311CD92-ECF2-4CC2-80B3-9882D309924D}.Debug|x64.Build.0 = Debug|Any CPU
+		{A311CD92-ECF2-4CC2-80B3-9882D309924D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A311CD92-ECF2-4CC2-80B3-9882D309924D}.Debug|x86.Build.0 = Debug|Any CPU
+		{A311CD92-ECF2-4CC2-80B3-9882D309924D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A311CD92-ECF2-4CC2-80B3-9882D309924D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A311CD92-ECF2-4CC2-80B3-9882D309924D}.Release|x64.ActiveCfg = Release|Any CPU
+		{A311CD92-ECF2-4CC2-80B3-9882D309924D}.Release|x64.Build.0 = Release|Any CPU
+		{A311CD92-ECF2-4CC2-80B3-9882D309924D}.Release|x86.ActiveCfg = Release|Any CPU
+		{A311CD92-ECF2-4CC2-80B3-9882D309924D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <PlatformTarget>x64</PlatformTarget>
+    <RootNamespace>Stackdose.App.DesignRuntime</RootNamespace>
+    <AssemblyName>Stackdose.App.DesignRuntime</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- UI 控制項（PlcLabel / PlcText / SecuredButton / PlcStatus 等） -->
+    <ProjectReference Include="..\Stackdose.UI.Core\Stackdose.UI.Core.csproj" />
+    <!-- DeviceFramework（ProcessCommandService / PlcContext 等） -->
+    <ProjectReference Include="..\Stackdose.App.DeviceFramework\Stackdose.App.DeviceFramework.csproj" />
+    <!-- MachinePageDesigner（DesignFileService / DesignerItemDefinition 等模型） -->
+    <ProjectReference Include="..\Stackdose.Tools.MachinePageDesigner\Stackdose.Tools.MachinePageDesigner.csproj">
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 設定檔、JSON 自動輸出到執行目錄 -->
+    <None Update="Config\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

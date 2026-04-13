@@ -1,8 +1,26 @@
-﻿using System.Windows;
+﻿using System.Globalization;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Markup;
 using Stackdose.Tools.MachinePageDesigner.ViewModels;
 
 namespace Stackdose.Tools.MachinePageDesigner.Views;
+
+/// <summary>
+/// 比較字串是否等於 ConverterParameter，用於 RadioButton IsChecked 雙向綁定
+/// </summary>
+[ValueConversion(typeof(string), typeof(bool))]
+public sealed class StringEqualityConverter : MarkupExtension, IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value?.ToString() == parameter?.ToString();
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is true ? parameter?.ToString() : Binding.DoNothing;
+
+    public override object ProvideValue(IServiceProvider serviceProvider) => this;
+}
 
 public partial class PropertyPanel : UserControl
 {

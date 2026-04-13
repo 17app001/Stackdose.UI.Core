@@ -1,17 +1,14 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using Stackdose.Tools.MachinePageDesigner.Models;
 
 namespace Stackdose.Tools.MachinePageDesigner.ViewModels;
 
 /// <summary>
-/// 畫布狀態 ViewModel（選取、Zone 管理）
+/// 自由畫布狀態 ViewModel（選取、元件管理）
 /// </summary>
 public sealed class DesignCanvasViewModel : ObservableObject
 {
     private DesignerItemViewModel? _selectedItem;
-    private ZoneViewModel? _selectedZone;
-
-    public ObservableCollection<ZoneViewModel> Zones { get; } = [];
 
     /// <summary>多選清單</summary>
     public ObservableCollection<DesignerItemViewModel> SelectedItems { get; } = [];
@@ -21,13 +18,11 @@ public sealed class DesignCanvasViewModel : ObservableObject
         get => _selectedItem;
         set
         {
-            // 清除舊選取
             if (_selectedItem != null)
                 _selectedItem.IsSelected = false;
 
             Set(ref _selectedItem, value);
 
-            // 設定新選取
             if (_selectedItem != null)
                 _selectedItem.IsSelected = true;
 
@@ -36,12 +31,6 @@ public sealed class DesignCanvasViewModel : ObservableObject
     }
 
     public bool HasSelectedItem => _selectedItem != null || SelectedItems.Count > 0;
-
-    public ZoneViewModel? SelectedZone
-    {
-        get => _selectedZone;
-        set => Set(ref _selectedZone, value);
-    }
 
     /// <summary>
     /// 單選模式（清除多選）
@@ -68,7 +57,6 @@ public sealed class DesignCanvasViewModel : ObservableObject
             item.IsSelected = true;
         }
 
-        // 同步 SelectedItem 為最後選取的
         if (SelectedItems.Count > 0)
         {
             _selectedItem = SelectedItems[^1];
@@ -81,9 +69,6 @@ public sealed class DesignCanvasViewModel : ObservableObject
         N(nameof(HasSelectedItem));
     }
 
-    /// <summary>
-    /// 清除多選狀態
-    /// </summary>
     private void ClearMultiSelection()
     {
         foreach (var item in SelectedItems)
@@ -104,45 +89,6 @@ public sealed class DesignCanvasViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 從 DesignDocument 載入 Zones
-    /// </summary>
-    public void LoadFromDocument(DesignDocument doc)
-    {
-        Zones.Clear();
-        SelectedItem = null;
-        ClearMultiSelection();
-        foreach (var (key, def) in doc.Zones)
-            Zones.Add(new ZoneViewModel(key, def));
-    }
-
-    /// <summary>
-    /// 匯出回 DesignDocument 的 Zones
-    /// </summary>
-    public Dictionary<string, ZoneDefinition> ExportZones()
-        => Zones.ToDictionary(z => z.ZoneKey, z => z.ToDefinition());
-
-    /// <summary>
-    /// 刪除目前選取的項目（單選）
-    /// </summary>
-    public void DeleteSelectedItem()
-    {
-        if (_selectedItem == null) return;
-
-        var zone = Zones.FirstOrDefault(z => z.Items.Contains(_selectedItem));
-        if (zone != null)
-        {
-            zone.RemoveItem(_selectedItem);
-            SelectedItem = null;
-        }
-    }
-
-    /// <summary>
-    /// 尋找項目所屬的 Zone
-    /// </summary>
-    public ZoneViewModel? FindZoneOf(DesignerItemViewModel item)
-        => Zones.FirstOrDefault(z => z.Items.Contains(item));
-
-    /// <summary>
     /// 清除選取
     /// </summary>
     public void ClearSelection()
@@ -151,30 +97,7 @@ public sealed class DesignCanvasViewModel : ObservableObject
         SelectedItem = null;
     }
 
-    /// <summary>
-    /// 新增一個空白 Zone（回傳新建的 ZoneViewModel）
-    /// </summary>
-    public ZoneViewModel AddZone()
-    {
-        var key = $"zone_{Guid.NewGuid():N}";
-        var vm = new ZoneViewModel(key, new Models.ZoneDefinition { Title = "New Zone", Columns = 2 });
-        Zones.Add(vm);
-        return vm;
-    }
-
-    /// <summary>
-    /// 移除指定 Zone
-    /// </summary>
-    public void RemoveZone(ZoneViewModel zone)
-    {
-        if (SelectedItem != null && zone.Items.Contains(SelectedItem))
-            SelectedItem = null;
-        Zones.Remove(zone);
-    }
-
-    public bool CanRemoveZone => Zones.Count > 1;
-
-    // ── 自由畫布 ────────────────────────────────────────────────────────────
+    // ── 自由畫布 ──────────────────────────────────────────────────────────
 
     public ObservableCollection<DesignerItemViewModel> CanvasItems { get; } = [];
 
@@ -194,11 +117,12 @@ public sealed class DesignCanvasViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 從 DesignDocument 載入自由畫布元件
+    /// 從 DesignDocument 載入畫布元件
     /// </summary>
-    public void LoadCanvasFromDocument(DesignDocument doc)
+    public void LoadFromDocument(DesignDocument doc)
     {
         CanvasItems.Clear();
+        ClearSelection();
         CanvasWidth = doc.CanvasWidth;
         CanvasHeight = doc.CanvasHeight;
         foreach (var def in doc.CanvasItems)
@@ -206,7 +130,7 @@ public sealed class DesignCanvasViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 匯出自由畫布元件定義
+    /// 匯出畫布元件定義
     /// </summary>
     public List<DesignerItemDefinition> ExportCanvasItems()
         => CanvasItems.Select(vm => vm.ToDefinition()).ToList();

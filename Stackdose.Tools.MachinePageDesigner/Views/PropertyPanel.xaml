@@ -145,18 +145,8 @@
         <!-- Content -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="10,6">
             <StackPanel>
-                <!-- 自由畫布：位置與大小（僅 Canvas Mode 時顯示） -->
+                <!-- 位置與大小 -->
                 <StackPanel x:Name="canvasPosSection">
-                    <StackPanel.Style>
-                        <Style TargetType="StackPanel">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Tag.IsCanvasMode, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </StackPanel.Style>
 
                     <TextBlock Text="位置 / 大小" Style="{StaticResource SectionHeader}" Margin="0,4,0,6"/>
 

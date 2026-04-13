@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -23,9 +23,6 @@ public sealed class MainViewModel : ObservableObject
     private string? _currentFilePath;
     private bool _isDirty;
     private string _statusText = "就緒";
-
-    // ── Canvas Mode ──────────────────────────────────────────────────────
-    private bool _isCanvasMode;
 
     // ── Layout settings ──────────────────────────────────────────────
     private string _layoutMode;
@@ -68,8 +65,6 @@ public sealed class MainViewModel : ObservableObject
         UndoCmd = new RelayCommand(_ => PerformUndo(), _ => UndoRedo.CanUndo);
         RedoCmd = new RelayCommand(_ => PerformRedo(), _ => UndoRedo.CanRedo);
         DeleteSelectedCmd = new RelayCommand(_ => DeleteSelected(), _ => Canvas.HasSelectedItem);
-        AddZoneCmd = new RelayCommand(_ => ExecuteAddZone());
-        RemoveZoneCmd = new RelayCommand(_ => ExecuteRemoveZone(), _ => Canvas.CanRemoveZone);
 
         // UndoRedo 狀態變更時更新 dirty 並強制刷新 Command enable 狀態
         UndoRedo.StateChanged += () =>
@@ -96,9 +91,7 @@ public sealed class MainViewModel : ObservableObject
             UpdateStatusFromSelection();
         };
 
-        // 載入預設文件
         Canvas.LoadFromDocument(_document);
-        Canvas.LoadCanvasFromDocument(_document);
     }
 
     // ── Properties ───────────────────────────────────────────────────
@@ -181,12 +174,6 @@ public sealed class MainViewModel : ObservableObject
         set { if (Set(ref _machineId, value)) MarkDirty(); }
     }
 
-    public bool IsCanvasMode
-    {
-        get => _isCanvasMode;
-        set => Set(ref _isCanvasMode, value);
-    }
-
     public string[] LayoutModes { get; } = ["SplitRight", "Standard", "SplitBottom"];
 
     // ── Commands ─────────────────────────────────────────────────────
@@ -198,48 +185,8 @@ public sealed class MainViewModel : ObservableObject
     public ICommand UndoCmd { get; }
     public ICommand RedoCmd { get; }
     public ICommand DeleteSelectedCmd { get; }
-    public ICommand AddZoneCmd { get; }
-    public ICommand RemoveZoneCmd { get; }
 
     // ── UndoRedo 整合方法（供 View 呼叫） ────────────────────────────
-
-    /// <summary>
-    /// 透過 UndoRedo 新增項目至 Zone
-    /// </summary>
-    public void ExecuteAddItem(ZoneViewModel zone, DesignerItemViewModel item, int index = -1)
-    {
-        var actualIndex = index >= 0 ? index : zone.Items.Count;
-        var cmd = new AddItemCommand(zone, item, actualIndex);
-        UndoRedo.Execute(cmd);
-    }
-
-    /// <summary>
-    /// 透過 UndoRedo 移除項目
-    /// </summary>
-    public void ExecuteRemoveItem(ZoneViewModel zone, DesignerItemViewModel item)
-    {
-        var cmd = new RemoveItemCommand(zone, item);
-        UndoRedo.Execute(cmd);
-    }
-
-    /// <summary>
-    /// 透過 UndoRedo 移動項目
-    /// </summary>
-    public void ExecuteMoveItem(ZoneViewModel zone, int fromIndex, int toIndex)
-    {
-        var cmd = new MoveItemCommand(zone, fromIndex, toIndex);
-        UndoRedo.Execute(cmd);
-    }
-
-    /// <summary>
-    /// 透過 UndoRedo 跨 Zone 移動項目
-    /// </summary>
-    public void ExecuteCrossZoneMove(ZoneViewModel sourceZone, ZoneViewModel targetZone, DesignerItemViewModel item, int targetIndex)
-    {
-        var cmd = new CrossZoneMoveCommand(sourceZone, targetZone, item, targetIndex);
-        UndoRedo.Execute(cmd);
-        StatusText = $"已移動：{item.DisplayName} → {targetZone.Title}";
-    }
 
     /// <summary>
     /// 在自由畫布新增元件（透過 UndoRedo）
@@ -272,15 +219,6 @@ public sealed class MainViewModel : ObservableObject
         UndoRedo.Record(new CanvasResizeItemCommand(item, oldX, oldY, oldW, oldH, newX, newY, newW, newH));
         MarkDirty();
         StatusText = $"縮放：{item.DisplayName} → {newW:F0}×{newH:F0}";
-    }
-
-    /// <summary>
-    /// 透過 UndoRedo 變更屬性
-    /// </summary>
-    public void ExecutePropertyChange(DesignerItemViewModel item, string propKey, object? oldValue, object? newValue)
-    {
-        var cmd = new PropertyChangeCommand(item, propKey, oldValue, newValue);
-        UndoRedo.Execute(cmd);
     }
 
     // ── Command Implementations ──────────────────────────────────────
@@ -365,48 +303,12 @@ public sealed class MainViewModel : ObservableObject
 
     private void DeleteSelected()
     {
-        if (_isCanvasMode)
-        {
-            var item = Canvas.SelectedItem;
-            if (item == null) return;
-            var cmd = new CanvasRemoveItemCommand(Canvas.CanvasItems, item);
-            UndoRedo.Execute(cmd);
-            Canvas.ClearSelection();
-            StatusText = $"已刪除：{item.DisplayName}";
-            return;
-        }
-
-        var items = Canvas.GetAllSelectedItems();
-        if (items.Count == 0) return;
-
-        if (items.Count == 1)
-        {
-            // 單選刪除
-            var item = items[0];
-            var zone = Canvas.FindZoneOf(item);
-            if (zone != null)
-            {
-                ExecuteRemoveItem(zone, item);
-                Canvas.ClearSelection();
-            }
-        }
-        else
-        {
-            // 多選批次刪除
-            var entries = new List<(ZoneViewModel zone, DesignerItemViewModel item, int index)>();
-            foreach (var item in items)
-            {
-                var zone = Canvas.FindZoneOf(item);
-                if (zone != null)
-                    entries.Add((zone, item, zone.Items.IndexOf(item)));
-            }
-            if (entries.Count > 0)
-            {
-                var cmd = new BatchDeleteCommand(entries);
-                UndoRedo.Execute(cmd);
-                Canvas.ClearSelection();
-            }
-        }
+        var item = Canvas.SelectedItem;
+        if (item == null) return;
+        var cmd = new CanvasRemoveItemCommand(Canvas.CanvasItems, item);
+        UndoRedo.Execute(cmd);
+        Canvas.ClearSelection();
+        StatusText = $"已刪除：{item.DisplayName}";
     }
 
     private void PerformUndo()
@@ -439,7 +341,6 @@ public sealed class MainViewModel : ObservableObject
         _docTitle = _document.Meta.Title;
         _machineId = _document.Meta.MachineId;
 
-        // Raise all property changed
         N(nameof(LayoutMode));
         N(nameof(LeftCommandWidthPx));
         N(nameof(RightColumnWidthStar));
@@ -450,7 +351,6 @@ public sealed class MainViewModel : ObservableObject
         N(nameof(MachineId));
 
         Canvas.LoadFromDocument(_document);
-        Canvas.LoadCanvasFromDocument(_document);
     }
 
     private void SyncUIToDocument()
@@ -465,7 +365,6 @@ public sealed class MainViewModel : ObservableObject
         _document.Layout.ShowAlarmViewer = ShowAlarmViewer;
         _document.Layout.ShowSensorViewer = ShowSensorViewer;
 
-        _document.Zones = Canvas.ExportZones();
         _document.CanvasItems = Canvas.ExportCanvasItems();
         _document.CanvasWidth = Canvas.CanvasWidth;
         _document.CanvasHeight = Canvas.CanvasHeight;
@@ -473,37 +372,11 @@ public sealed class MainViewModel : ObservableObject
 
     private static readonly TimeSpan _propDebounce = TimeSpan.FromMilliseconds(300);
 
-    private void ExecuteAddZone()
-    {
-        var vm = new ZoneViewModel($"zone_{Guid.NewGuid():N}",
-            new Models.ZoneDefinition { Title = "New Zone", Columns = 2 });
-        var cmd = new AddZoneCommand(Canvas.Zones, vm, Canvas.Zones.Count);
-        UndoRedo.Execute(cmd);
-        StatusText = $"已新增 Zone：{vm.Title}";
-    }
-
-    private void ExecuteRemoveZone()
-    {
-        var zone = Canvas.SelectedZone ?? Canvas.Zones.LastOrDefault();
-        if (zone == null || Canvas.Zones.Count <= 1) return;
-        var cmd = new RemoveZoneCommand(Canvas.Zones, zone);
-        UndoRedo.Execute(cmd);
-        StatusText = $"已移除 Zone：{zone.Title}";
-    }
-
     private void UpdateStatusFromSelection()
     {
         var item = Canvas.SelectedItem;
         if (item == null) { StatusText = "就緒"; return; }
-
-        if (_isCanvasMode)
-            StatusText = $"已選取：{item.DisplayName} [{item.X:F0}, {item.Y:F0}]";
-        else
-        {
-            var zone = Canvas.FindZoneOf(item);
-            var zonePart = zone != null ? $" | Zone: {zone.Title}" : "";
-            StatusText = $"已選取：{item.DisplayName}{zonePart}";
-        }
+        StatusText = $"已選取：{item.DisplayName} [{item.X:F0}, {item.Y:F0}]";
     }
 
     private void OnItemPropCommitted(string propKey, object? oldValue, object? newValue)
@@ -512,19 +385,16 @@ public sealed class MainViewModel : ObservableObject
 
         var now = DateTime.UtcNow;
 
-        // 相同 item + propKey 在防抖時間內 → 覆蓋上一步的 newValue，不新增記錄
         if (_lastPropSnapshot is { } snap &&
             ReferenceEquals(snap.Item, _subscribedPropItem) &&
             snap.PropKey == propKey &&
             (now - snap.At) < _propDebounce)
         {
-            // 找到 UndoStack 頂端的 PropertyChangeCommand 並更新其 newValue
             UndoRedo.UpdateTopPropertyCommand(_subscribedPropItem, propKey, newValue);
             _lastPropSnapshot = snap with { At = now };
             return;
         }
 
-        // 新的一步
         UndoRedo.Record(new PropertyChangeCommand(_subscribedPropItem, propKey, oldValue, newValue));
         _lastPropSnapshot = new PropSnapshot(_subscribedPropItem, propKey, oldValue, now);
         UpdateStatusFromSelection();

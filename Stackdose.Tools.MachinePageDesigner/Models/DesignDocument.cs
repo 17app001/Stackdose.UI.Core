@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Stackdose.Tools.MachinePageDesigner.Models;
 
@@ -16,16 +16,8 @@ public sealed class DesignDocument
     [JsonPropertyName("layout")]
     public PageLayoutConfig Layout { get; set; } = new();
 
-    [JsonPropertyName("zones")]
-    public Dictionary<string, ZoneDefinition> Zones { get; set; } = new()
-    {
-        ["liveData"] = new ZoneDefinition { Title = "Live Data", Columns = 2 },
-        ["deviceStatus"] = new ZoneDefinition { Title = "Device Status", Columns = 2 }
-    };
-
     /// <summary>
-    /// 自由畫布模式：扁平元件清單（含 x/y/width/height）。
-    /// 新建文件預設空畫布；舊格式（只有 zones）載入時此清單為空。
+    /// 自由畫布元件清單（含 x/y/width/height）
     /// </summary>
     [JsonPropertyName("canvasItems")]
     public List<DesignerItemDefinition> CanvasItems { get; set; } = [];

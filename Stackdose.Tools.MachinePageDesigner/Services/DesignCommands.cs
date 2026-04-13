@@ -88,6 +88,23 @@ public sealed class CanvasMoveItemCommand : IDesignCommand
 }
 
 /// <summary>
+/// 自由畫布元件 Z 順序調整
+/// </summary>
+public sealed class ReorderCanvasItemCommand : IDesignCommand
+{
+    private readonly ObservableCollection<DesignerItemViewModel> _items;
+    private readonly int _fromIndex;
+    private readonly int _toIndex;
+
+    public ReorderCanvasItemCommand(ObservableCollection<DesignerItemViewModel> items, int fromIndex, int toIndex)
+    { _items = items; _fromIndex = fromIndex; _toIndex = toIndex; }
+
+    public string Description => $"Reorder item {_fromIndex} → {_toIndex}";
+    public void Execute() => _items.Move(_fromIndex, _toIndex);
+    public void Undo() => _items.Move(_toIndex, _fromIndex);
+}
+
+/// <summary>
 /// 自由畫布元件大小調整
 /// </summary>
 public sealed class CanvasResizeItemCommand : IDesignCommand

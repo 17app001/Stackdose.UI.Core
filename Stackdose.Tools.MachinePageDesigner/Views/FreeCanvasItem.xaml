@@ -31,20 +31,47 @@
             </Border.Style>
         </Border>
 
-        <!-- Resize handles (visible when selected) -->
+        <!-- Lock indicator -->
+        <Border HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Width="18" Height="18"
+                CornerRadius="3"
+                Background="#CC1A1A2A"
+                Margin="0,2,2,0"
+                IsHitTestVisible="False">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsLocked}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <TextBlock Text="&#x1F512;" FontSize="9"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+        </Border>
+
+        <!-- Resize handles (visible when selected and not locked) -->
         <Canvas x:Name="handleLayer" ClipToBounds="False" IsHitTestVisible="True">
             <Canvas.Style>
                 <Style TargetType="Canvas">
                     <Setter Property="Visibility" Value="Collapsed"/>
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsSelected}" Value="True"/>
+                                <Condition Binding="{Binding IsLocked}" Value="False"/>
+                            </MultiDataTrigger.Conditions>
                             <Setter Property="Visibility" Value="Visible"/>
-                        </DataTrigger>
+                        </MultiDataTrigger>
                     </Style.Triggers>
                 </Style>
             </Canvas.Style>
 
-            <!-- 8 resize thumbs — positioned in code-behind via PositionThumbs() -->
+            <!-- 8 resize thumbs -->
             <Thumb x:Name="thumbNW" Style="{StaticResource ResizeThumb}" Cursor="SizeNWSE"
                    DragStarted="OnResizeStarted" DragDelta="OnNWDrag" DragCompleted="OnResizeCompleted"/>
             <Thumb x:Name="thumbN"  Style="{StaticResource ResizeThumb}" Cursor="SizeNS"

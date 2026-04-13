@@ -145,6 +145,12 @@
         <!-- Content -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="10,6">
             <StackPanel>
+                <!-- 鎖定 -->
+                <CheckBox Content="鎖定（防止移動/縮放）"
+                          IsChecked="{Binding IsLocked}"
+                          Foreground="{StaticResource TextPrimaryBrush}"
+                          Margin="0,4,0,10"/>
+
                 <!-- 位置與大小 -->
                 <StackPanel x:Name="canvasPosSection">
 

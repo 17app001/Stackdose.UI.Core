@@ -36,6 +36,19 @@ public sealed class DesignerItemViewModel : ObservableObject
         set => Set(ref _isSelected, value);
     }
 
+    public bool IsLocked
+    {
+        get => _definition.IsLocked;
+        set
+        {
+            if (_definition.IsLocked == value) return;
+            var old = _definition.IsLocked;
+            _definition.IsLocked = value;
+            N();
+            PropCommitted?.Invoke("isLocked", old, value);
+        }
+    }
+
     // 嚙緩嚙緩 Props 嚙編嚙踝蕭 嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩
     public Dictionary<string, object?> Props => _definition.Props;
 
@@ -63,6 +76,13 @@ public sealed class DesignerItemViewModel : ObservableObject
     /// </summary>
     public void SetPropDirect(string key, object? value)
     {
+        if (key == "isLocked")
+        {
+            _definition.IsLocked = value is bool b ? b :
+                bool.TryParse(value?.ToString(), out var b2) && b2;
+            N(nameof(IsLocked));
+            return;
+        }
         _definition.Props[key] = value;
         N(nameof(Props));
         // ????惇?批?蝔曹誑?湔 UI 蝬?
@@ -87,6 +107,7 @@ public sealed class DesignerItemViewModel : ObservableObject
             "commandAddress" => nameof(CommandAddress),
             "requiredLevel" => nameof(RequiredLevel),
             "theme" => nameof(Theme),
+            "isLocked" => nameof(IsLocked),
             _ => null
         };
         if (propName != null) N(propName);

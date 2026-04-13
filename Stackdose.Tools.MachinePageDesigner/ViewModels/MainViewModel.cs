@@ -24,6 +24,9 @@ public sealed class MainViewModel : ObservableObject
     private bool _isDirty;
     private string _statusText = "就緒";
 
+    // ── Snap to Grid ─────────────────────────────────────────────────────────
+    private bool _snapToGrid = true;
+
     // ── Layout settings ──────────────────────────────────────────────
     private string _layoutMode;
     private int _leftCommandWidthPx;
@@ -64,7 +67,12 @@ public sealed class MainViewModel : ObservableObject
         SaveAsCmd = new RelayCommand(_ => SaveDocumentAs());
         UndoCmd = new RelayCommand(_ => PerformUndo(), _ => UndoRedo.CanUndo);
         RedoCmd = new RelayCommand(_ => PerformRedo(), _ => UndoRedo.CanRedo);
-        DeleteSelectedCmd = new RelayCommand(_ => DeleteSelected(), _ => Canvas.HasSelectedItem);
+        DeleteSelectedCmd  = new RelayCommand(_ => DeleteSelected(),  _ => Canvas.HasSelectedItem);
+        BringToFrontCmd    = new RelayCommand(_ => BringToFront(),   _ => Canvas.HasSelectedItem);
+        SendToBackCmd      = new RelayCommand(_ => SendToBack(),     _ => Canvas.HasSelectedItem);
+        MoveUpCmd          = new RelayCommand(_ => MoveUp(),         _ => Canvas.HasSelectedItem);
+        MoveDownCmd        = new RelayCommand(_ => MoveDown(),       _ => Canvas.HasSelectedItem);
+        LockToggleCmd      = new RelayCommand(_ => ToggleLock(),     _ => Canvas.HasSelectedItem);
 
         // UndoRedo 狀態變更時更新 dirty 並強制刷新 Command enable 狀態
         UndoRedo.StateChanged += () =>
@@ -176,6 +184,14 @@ public sealed class MainViewModel : ObservableObject
 
     public string[] LayoutModes { get; } = ["SplitRight", "Standard", "SplitBottom"];
 
+    public bool SnapToGrid
+    {
+        get => _snapToGrid;
+        set => Set(ref _snapToGrid, value);
+    }
+
+    public double SnapGridSize => 10;
+
     // ── Commands ─────────────────────────────────────────────────────
 
     public ICommand NewCmd { get; }
@@ -185,6 +201,11 @@ public sealed class MainViewModel : ObservableObject
     public ICommand UndoCmd { get; }
     public ICommand RedoCmd { get; }
     public ICommand DeleteSelectedCmd { get; }
+    public ICommand BringToFrontCmd { get; }
+    public ICommand SendToBackCmd { get; }
+    public ICommand MoveUpCmd { get; }
+    public ICommand MoveDownCmd { get; }
+    public ICommand LockToggleCmd { get; }
 
     // ── UndoRedo 整合方法（供 View 呼叫） ────────────────────────────
 
@@ -309,6 +330,53 @@ public sealed class MainViewModel : ObservableObject
         UndoRedo.Execute(cmd);
         Canvas.ClearSelection();
         StatusText = $"已刪除：{item.DisplayName}";
+    }
+
+    private void BringToFront()
+    {
+        var item = Canvas.SelectedItem; if (item == null) return;
+        var from = Canvas.CanvasItems.IndexOf(item);
+        var to = Canvas.CanvasItems.Count - 1;
+        if (from == to) return;
+        UndoRedo.Execute(new ReorderCanvasItemCommand(Canvas.CanvasItems, from, to));
+        MarkDirty(); StatusText = $"移至最前：{item.DisplayName}";
+    }
+
+    private void SendToBack()
+    {
+        var item = Canvas.SelectedItem; if (item == null) return;
+        var from = Canvas.CanvasItems.IndexOf(item);
+        if (from == 0) return;
+        UndoRedo.Execute(new ReorderCanvasItemCommand(Canvas.CanvasItems, from, 0));
+        MarkDirty(); StatusText = $"移至最後：{item.DisplayName}";
+    }
+
+    private void MoveUp()
+    {
+        var item = Canvas.SelectedItem; if (item == null) return;
+        var from = Canvas.CanvasItems.IndexOf(item);
+        var to = Math.Min(from + 1, Canvas.CanvasItems.Count - 1);
+        if (from == to) return;
+        UndoRedo.Execute(new ReorderCanvasItemCommand(Canvas.CanvasItems, from, to));
+        MarkDirty();
+    }
+
+    private void MoveDown()
+    {
+        var item = Canvas.SelectedItem; if (item == null) return;
+        var from = Canvas.CanvasItems.IndexOf(item);
+        var to = Math.Max(from - 1, 0);
+        if (from == to) return;
+        UndoRedo.Execute(new ReorderCanvasItemCommand(Canvas.CanvasItems, from, to));
+        MarkDirty();
+    }
+
+    private void ToggleLock()
+    {
+        var item = Canvas.SelectedItem; if (item == null) return;
+        item.IsLocked = !item.IsLocked;
+        MarkDirty();
+        StatusText = item.IsLocked ? $"已鎖定：{item.DisplayName}" : $"已解鎖：{item.DisplayName}";
     }
 
     private void PerformUndo()

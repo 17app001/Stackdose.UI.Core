@@ -3,14 +3,13 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-using Stackdose.Tools.MachinePageDesigner.Services;
 using Stackdose.Tools.MachinePageDesigner.ViewModels;
 
 namespace Stackdose.Tools.MachinePageDesigner.Views;
 
 public partial class FreeCanvasItem : UserControl
 {
-    private const double HalfThumb = 4.0; // ThumbSize=8 / 2
+    private const double HalfThumb = 4.0;
 
     // ── Move state ───────────────────────────────────────────────────────
     private bool _isDragging;
@@ -29,6 +28,15 @@ public partial class FreeCanvasItem : UserControl
     private MainViewModel? MainVm => Tag as MainViewModel;
     private DesignerItemViewModel? Item => DataContext as DesignerItemViewModel;
 
+    // ── Snap helper ───────────────────────────────────────────────────────
+
+    private double Snap(double value)
+    {
+        var vm = MainVm;
+        if (vm == null || !vm.SnapToGrid) return value;
+        return Math.Round(value / vm.SnapGridSize) * vm.SnapGridSize;
+    }
+
     // ── Thumb positioning ─────────────────────────────────────────────────
 
     private void PositionThumbs()
@@ -36,14 +44,14 @@ public partial class FreeCanvasItem : UserControl
         var w = ActualWidth;
         var h = ActualHeight;
 
-        SetThumb(thumbNW, -HalfThumb,          -HalfThumb);
-        SetThumb(thumbN,  w / 2 - HalfThumb,   -HalfThumb);
-        SetThumb(thumbNE, w - HalfThumb,        -HalfThumb);
-        SetThumb(thumbW,  -HalfThumb,           h / 2 - HalfThumb);
-        SetThumb(thumbE,  w - HalfThumb,        h / 2 - HalfThumb);
-        SetThumb(thumbSW, -HalfThumb,           h - HalfThumb);
-        SetThumb(thumbS,  w / 2 - HalfThumb,   h - HalfThumb);
-        SetThumb(thumbSE, w - HalfThumb,        h - HalfThumb);
+        SetThumb(thumbNW, -HalfThumb,         -HalfThumb);
+        SetThumb(thumbN,  w / 2 - HalfThumb,  -HalfThumb);
+        SetThumb(thumbNE, w - HalfThumb,       -HalfThumb);
+        SetThumb(thumbW,  -HalfThumb,          h / 2 - HalfThumb);
+        SetThumb(thumbE,  w - HalfThumb,       h / 2 - HalfThumb);
+        SetThumb(thumbSW, -HalfThumb,          h - HalfThumb);
+        SetThumb(thumbS,  w / 2 - HalfThumb,  h - HalfThumb);
+        SetThumb(thumbSE, w - HalfThumb,       h - HalfThumb);
     }
 
     private static void SetThumb(Thumb t, double left, double top)
@@ -56,14 +64,12 @@ public partial class FreeCanvasItem : UserControl
 
     private void OnMouseDown(object sender, MouseButtonEventArgs e)
     {
-        // Let Thumb handles handle their own events
         if (e.OriginalSource is Thumb) return;
         if (Item == null) return;
+        if (Item.IsLocked) { MainVm?.Canvas.SelectSingle(Item); e.Handled = true; return; }
 
-        // Select the item
         MainVm?.Canvas.SelectSingle(Item);
 
-        // Start drag-to-move
         var parentCanvas = FindParentCanvas();
         if (parentCanvas == null) return;
 
@@ -84,8 +90,8 @@ public partial class FreeCanvasItem : UserControl
         if (parentCanvas == null) return;
 
         var pos = e.GetPosition(parentCanvas);
-        Item.X = Math.Max(0, _dragStartX + (pos.X - _dragOrigin.X));
-        Item.Y = Math.Max(0, _dragStartY + (pos.Y - _dragOrigin.Y));
+        Item.X = Math.Max(0, Snap(_dragStartX + (pos.X - _dragOrigin.X)));
+        Item.Y = Math.Max(0, Snap(_dragStartY + (pos.Y - _dragOrigin.Y)));
     }
 
     private void OnMouseUp(object sender, MouseButtonEventArgs e)
@@ -115,13 +121,11 @@ public partial class FreeCanvasItem : UserControl
 
     private void OnResizeStarted(object sender, DragStartedEventArgs e)
     {
-        if (Item == null) return;
+        if (Item == null || Item.IsLocked) return;
         _resizeStartX = Item.X;
         _resizeStartY = Item.Y;
         _resizeStartW = Item.Width;
         _resizeStartH = Item.Height;
-
-        // Ensure the item is selected
         MainVm?.Canvas.SelectSingle(Item);
     }
 

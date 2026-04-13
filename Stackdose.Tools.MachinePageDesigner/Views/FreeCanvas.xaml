@@ -55,6 +55,8 @@
                     Width="{Binding CanvasWidth}"
                     Height="{Binding CanvasHeight}"
                     MouseLeftButtonDown="OnCanvasMouseDown"
+                    MouseMove="OnCanvasMouseMove"
+                    MouseLeftButtonUp="OnCanvasMouseUp"
                     ClipToBounds="True">
 
                 <!-- 元件層 -->
@@ -81,6 +83,14 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+
+                <!-- 框選矩形 -->
+                <Rectangle x:Name="selectionRect"
+                           Stroke="#FF6C8EEF"
+                           StrokeThickness="1"
+                           Fill="#226C8EEF"
+                           Visibility="Collapsed"
+                           IsHitTestVisible="False"/>
 
             </Canvas>
         </Border>

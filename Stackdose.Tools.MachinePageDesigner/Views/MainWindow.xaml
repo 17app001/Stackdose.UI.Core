@@ -51,6 +51,28 @@
 
                 <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
 
+                <!-- Z-Order -->
+                <Button Content="&#x25B3;&#x25B3;" Command="{Binding BringToFrontCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,2,0" ToolTip="移至最前（Bring to Front）"/>
+                <Button Content="&#x25B3;"  Command="{Binding MoveUpCmd}"       Style="{StaticResource ToolbarButton}" Margin="0,0,2,0" ToolTip="上移一層（Move Up）"/>
+                <Button Content="&#x25BD;"  Command="{Binding MoveDownCmd}"     Style="{StaticResource ToolbarButton}" Margin="0,0,2,0" ToolTip="下移一層（Move Down）"/>
+                <Button Content="&#x25BD;&#x25BD;" Command="{Binding SendToBackCmd}"  Style="{StaticResource ToolbarButton}" Margin="0,0,16,0" ToolTip="移至最後（Send to Back）"/>
+
+                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
+
+                <!-- Lock -->
+                <Button Content="&#x1F512; Lock" Command="{Binding LockToggleCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,16,0" ToolTip="鎖定/解鎖選取元件"/>
+
+                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
+
+                <!-- Snap to Grid -->
+                <ToggleButton Content="&#x22EF; Snap"
+                              IsChecked="{Binding SnapToGrid}"
+                              Style="{StaticResource CanvasModeToggle}"
+                              Margin="0,0,16,0"
+                              ToolTip="Snap to Grid（吸附格線，10px）"/>
+
+                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
+
                 <TextBlock Text="Layout:" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"/>
                 <ComboBox ItemsSource="{Binding LayoutModes}" SelectedItem="{Binding LayoutMode}" Width="120" Margin="0,0,12,0"/>
 

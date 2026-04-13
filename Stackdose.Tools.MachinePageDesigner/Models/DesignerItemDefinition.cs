@@ -29,6 +29,9 @@ public sealed class DesignerItemDefinition
     [JsonPropertyName("height")]
     public double Height { get; set; } = 120;
 
+    [JsonPropertyName("locked")]
+    public bool IsLocked { get; set; } = false;
+
     [JsonPropertyName("props")]
     public Dictionary<string, object?> Props { get; set; } = [];
 }

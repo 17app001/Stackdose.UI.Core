@@ -54,6 +54,7 @@
             <Canvas x:Name="designCanvas"
                     Width="{Binding CanvasWidth}"
                     Height="{Binding CanvasHeight}"
+                    Background="Transparent"
                     MouseLeftButtonDown="OnCanvasMouseDown"
                     MouseMove="OnCanvasMouseMove"
                     MouseLeftButtonUp="OnCanvasMouseUp"

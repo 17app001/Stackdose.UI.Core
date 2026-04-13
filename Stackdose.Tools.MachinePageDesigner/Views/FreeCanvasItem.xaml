@@ -7,7 +7,7 @@
              MouseLeftButtonUp="OnMouseUp"
              MouseMove="OnMouseMove">
 
-    <Grid ClipToBounds="False">
+    <Grid ClipToBounds="False" Background="Transparent">
 
         <!-- Control preview -->
         <ContentPresenter Content="{Binding Preview}"

@@ -64,9 +64,13 @@ public partial class FreeCanvasItem : UserControl
 
     private void OnMouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.OriginalSource is Thumb) return;
+        if (e.OriginalSource is Thumb) { e.Handled = true; return; }
         if (Item == null) return;
-        if (Item.IsLocked) { MainVm?.Canvas.SelectSingle(Item); e.Handled = true; return; }
+
+        // 統一先標記 handled，防止事件冒泡到 Canvas 觸發框選
+        e.Handled = true;
+
+        if (Item.IsLocked) { MainVm?.Canvas.SelectSingle(Item); return; }
 
         MainVm?.Canvas.SelectSingle(Item);
 
@@ -78,7 +82,6 @@ public partial class FreeCanvasItem : UserControl
         _dragStartX = Item.X;
         _dragStartY = Item.Y;
         CaptureMouse();
-        e.Handled = true;
     }
 
     private void OnMouseMove(object sender, MouseEventArgs e)

@@ -73,6 +73,15 @@
 
                 <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
 
+                <TextBlock Text="Canvas:" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"/>
+                <TextBox Text="{Binding CanvasWidth, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
+                         Width="56" Margin="0,0,2,0" ToolTip="畫布寬度（px，400–4000）"/>
+                <TextBlock Text="×" Style="{StaticResource FieldLabel}" Margin="0,0,2,0"/>
+                <TextBox Text="{Binding CanvasHeight, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
+                         Width="56" Margin="0,0,16,0" ToolTip="畫布高度（px，300–3000）"/>
+
+                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
+
                 <TextBlock Text="Layout:" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"/>
                 <ComboBox ItemsSource="{Binding LayoutModes}" SelectedItem="{Binding LayoutMode}" Width="120" Margin="0,0,12,0"/>
 

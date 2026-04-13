@@ -132,6 +132,34 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
+    // ── Canvas Size（代理至 Canvas VM，並標記 Dirty）──────────────────
+
+    public double CanvasWidth
+    {
+        get => Canvas.CanvasWidth;
+        set
+        {
+            var v = Math.Max(400, Math.Min(value, 4000));
+            if (Canvas.CanvasWidth == v) return;
+            Canvas.CanvasWidth = v;
+            N();
+            MarkDirty();
+        }
+    }
+
+    public double CanvasHeight
+    {
+        get => Canvas.CanvasHeight;
+        set
+        {
+            var v = Math.Max(300, Math.Min(value, 3000));
+            if (Canvas.CanvasHeight == v) return;
+            Canvas.CanvasHeight = v;
+            N();
+            MarkDirty();
+        }
+    }
+
     // ── Layout Properties ────────────────────────────────────────────
 
     public string LayoutMode
@@ -419,6 +447,9 @@ public sealed class MainViewModel : ObservableObject
         N(nameof(MachineId));
 
         Canvas.LoadFromDocument(_document);
+        // 通知代理屬性更新（Canvas.LoadFromDocument 直接設值，MainVM 需手動通知）
+        N(nameof(CanvasWidth));
+        N(nameof(CanvasHeight));
     }
 
     private void SyncUIToDocument()

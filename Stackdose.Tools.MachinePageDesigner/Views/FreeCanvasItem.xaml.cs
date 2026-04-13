@@ -93,8 +93,8 @@ public partial class FreeCanvasItem : UserControl
         if (parentCanvas == null) return;
 
         var pos = e.GetPosition(parentCanvas);
-        Item.X = Math.Max(0, Snap(_dragStartX + (pos.X - _dragOrigin.X)));
-        Item.Y = Math.Max(0, Snap(_dragStartY + (pos.Y - _dragOrigin.Y)));
+        Item.SetPropDirect("x", Math.Max(0, Snap(_dragStartX + (pos.X - _dragOrigin.X))));
+        Item.SetPropDirect("y", Math.Max(0, Snap(_dragStartY + (pos.Y - _dragOrigin.Y))));
     }
 
     private void OnMouseUp(object sender, MouseButtonEventArgs e)
@@ -113,8 +113,8 @@ public partial class FreeCanvasItem : UserControl
     {
         if (cancelled && _isDragging && Item != null)
         {
-            Item.X = _dragStartX;
-            Item.Y = _dragStartY;
+            Item.SetPropDirect("x", _dragStartX);
+            Item.SetPropDirect("y", _dragStartY);
         }
         _isDragging = false;
         ReleaseMouseCapture();
@@ -138,10 +138,10 @@ public partial class FreeCanvasItem : UserControl
         var oldW = Item.Width; var oldH = Item.Height;
         var newW = Math.Max(40, oldW - e.HorizontalChange);
         var newH = Math.Max(30, oldH - e.VerticalChange);
-        Item.X += oldW - newW;
-        Item.Y += oldH - newH;
-        Item.Width = newW;
-        Item.Height = newH;
+        Item.SetPropDirect("x", Item.X + oldW - newW);
+        Item.SetPropDirect("y", Item.Y + oldH - newH);
+        Item.SetPropDirect("width",  newW);
+        Item.SetPropDirect("height", newH);
     }
 
     private void OnNDrag(object sender, DragDeltaEventArgs e)
@@ -149,8 +149,8 @@ public partial class FreeCanvasItem : UserControl
         if (Item == null) return;
         var oldH = Item.Height;
         var newH = Math.Max(30, oldH - e.VerticalChange);
-        Item.Y += oldH - newH;
-        Item.Height = newH;
+        Item.SetPropDirect("y",      Item.Y + oldH - newH);
+        Item.SetPropDirect("height", newH);
     }
 
     private void OnNEDrag(object sender, DragDeltaEventArgs e)
@@ -158,9 +158,9 @@ public partial class FreeCanvasItem : UserControl
         if (Item == null) return;
         var oldH = Item.Height;
         var newH = Math.Max(30, oldH - e.VerticalChange);
-        Item.Y += oldH - newH;
-        Item.Width = Math.Max(40, Item.Width + e.HorizontalChange);
-        Item.Height = newH;
+        Item.SetPropDirect("y",      Item.Y + oldH - newH);
+        Item.SetPropDirect("width",  Math.Max(40, Item.Width + e.HorizontalChange));
+        Item.SetPropDirect("height", newH);
     }
 
     private void OnWDrag(object sender, DragDeltaEventArgs e)
@@ -168,14 +168,14 @@ public partial class FreeCanvasItem : UserControl
         if (Item == null) return;
         var oldW = Item.Width;
         var newW = Math.Max(40, oldW - e.HorizontalChange);
-        Item.X += oldW - newW;
-        Item.Width = newW;
+        Item.SetPropDirect("x",     Item.X + oldW - newW);
+        Item.SetPropDirect("width", newW);
     }
 
     private void OnEDrag(object sender, DragDeltaEventArgs e)
     {
         if (Item == null) return;
-        Item.Width = Math.Max(40, Item.Width + e.HorizontalChange);
+        Item.SetPropDirect("width", Math.Max(40, Item.Width + e.HorizontalChange));
     }
 
     private void OnSWDrag(object sender, DragDeltaEventArgs e)
@@ -183,22 +183,22 @@ public partial class FreeCanvasItem : UserControl
         if (Item == null) return;
         var oldW = Item.Width;
         var newW = Math.Max(40, oldW - e.HorizontalChange);
-        Item.X += oldW - newW;
-        Item.Width = newW;
-        Item.Height = Math.Max(30, Item.Height + e.VerticalChange);
+        Item.SetPropDirect("x",      Item.X + oldW - newW);
+        Item.SetPropDirect("width",  newW);
+        Item.SetPropDirect("height", Math.Max(30, Item.Height + e.VerticalChange));
     }
 
     private void OnSDrag(object sender, DragDeltaEventArgs e)
     {
         if (Item == null) return;
-        Item.Height = Math.Max(30, Item.Height + e.VerticalChange);
+        Item.SetPropDirect("height", Math.Max(30, Item.Height + e.VerticalChange));
     }
 
     private void OnSEDrag(object sender, DragDeltaEventArgs e)
     {
         if (Item == null) return;
-        Item.Width = Math.Max(40, Item.Width + e.HorizontalChange);
-        Item.Height = Math.Max(30, Item.Height + e.VerticalChange);
+        Item.SetPropDirect("width",  Math.Max(40, Item.Width  + e.HorizontalChange));
+        Item.SetPropDirect("height", Math.Max(30, Item.Height + e.VerticalChange));
     }
 
     private void OnResizeCompleted(object sender, DragCompletedEventArgs e)

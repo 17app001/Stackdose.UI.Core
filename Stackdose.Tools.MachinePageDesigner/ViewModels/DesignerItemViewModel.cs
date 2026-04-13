@@ -76,19 +76,32 @@ public sealed class DesignerItemViewModel : ObservableObject
     /// </summary>
     public void SetPropDirect(string key, object? value)
     {
-        if (key == "isLocked")
+        var d = ToDouble(value);
+        switch (key)
         {
-            _definition.IsLocked = value is bool b ? b :
-                bool.TryParse(value?.ToString(), out var b2) && b2;
-            N(nameof(IsLocked));
-            return;
+            case "isLocked":
+                _definition.IsLocked = value is bool b ? b :
+                    bool.TryParse(value?.ToString(), out var b2) && b2;
+                N(nameof(IsLocked));
+                return;
+            case "x":      _definition.X = Math.Max(0, d);        N(nameof(X));      return;
+            case "y":      _definition.Y = Math.Max(0, d);        N(nameof(Y));      return;
+            case "width":  _definition.Width = Math.Max(40, d);   N(nameof(Width));  return;
+            case "height": _definition.Height = Math.Max(30, d);  N(nameof(Height)); return;
         }
         _definition.Props[key] = value;
         N(nameof(Props));
-        // ????惇?批?蝔曹誑?湔 UI 蝬?
         NotifyPropKey(key);
         RefreshPreview();
     }
+
+    private static double ToDouble(object? value) => value switch
+    {
+        double d => d,
+        int i => i,
+        string s when double.TryParse(s, out var r) => r,
+        _ => 0
+    };
 
     private void NotifyPropKey(string key)
     {
@@ -265,25 +278,53 @@ public sealed class DesignerItemViewModel : ObservableObject
     public double X
     {
         get => _definition.X;
-        set { _definition.X = value; N(); }
+        set
+        {
+            var v = Math.Max(0, value);
+            if (_definition.X == v) return;
+            var old = _definition.X;
+            _definition.X = v; N();
+            PropCommitted?.Invoke("x", old, v);
+        }
     }
 
     public double Y
     {
         get => _definition.Y;
-        set { _definition.Y = value; N(); }
+        set
+        {
+            var v = Math.Max(0, value);
+            if (_definition.Y == v) return;
+            var old = _definition.Y;
+            _definition.Y = v; N();
+            PropCommitted?.Invoke("y", old, v);
+        }
     }
 
     public double Width
     {
         get => _definition.Width;
-        set { _definition.Width = Math.Max(40, value); N(); }
+        set
+        {
+            var v = Math.Max(40, value);
+            if (_definition.Width == v) return;
+            var old = _definition.Width;
+            _definition.Width = v; N();
+            PropCommitted?.Invoke("width", old, v);
+        }
     }
 
     public double Height
     {
         get => _definition.Height;
-        set { _definition.Height = Math.Max(30, value); N(); }
+        set
+        {
+            var v = Math.Max(30, value);
+            if (_definition.Height == v) return;
+            var old = _definition.Height;
+            _definition.Height = v; N();
+            PropCommitted?.Invoke("height", old, v);
+        }
     }
 
     // 嚙緩嚙緩 嚙踝蕭嚙踐項嚙緩嚙踝蕭 嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩

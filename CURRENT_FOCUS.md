@@ -16,9 +16,13 @@
 
 - [x] DesignPlayer：建立量產 Shell App（完整 Shell UI + JSON 設定 + PLC 連線 + 登入管控）
 - [x] DesignRuntime + DesignPlayer：JSON 熱更新（FileSystemWatcher，儲存後自動重載畫布）
+- [x] MachinePageDesigner：補全所有控制項屬性面板（LiveLog / AlarmViewer / SensorViewer / StaticLabel）
+- [x] MachinePageDesigner：新增右鍵 ContextMenu（複製/貼上/刪除/鎖定/Z-Order）
+- [x] MachinePageDesigner：新增 StaticLabel 靜態文字控制項（9 種控制項完整支援）
+- [x] DesignPlayer：Settings 頁面（免 JSON 修改 PLC 設定）
 - [ ] DesignPlayer：驗證在真實環境部署（需配合 PLC 測試）
 - [ ] DesignRuntime：PLC 連線斷線重連穩定性
-- [ ] MachinePageDesigner：下一個功能待確認（候選：多頁面支援、控制項屬性面板改善）
+- [ ] MachinePageDesigner：多頁面支援（候選下一功能）
 
 ---
 

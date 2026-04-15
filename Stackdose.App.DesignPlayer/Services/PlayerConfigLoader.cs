@@ -1,6 +1,7 @@
 using Stackdose.App.DesignPlayer.Models;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Stackdose.App.DesignPlayer.Services;
 
@@ -10,6 +11,13 @@ public static class PlayerConfigLoader
     {
         PropertyNameCaseInsensitive = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
+    };
+
+    private static readonly JsonSerializerOptions s_writeOpts = new()
+    {
+        WriteIndented          = true,
+        PropertyNamingPolicy   = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.Never,
     };
 
     /// <summary>
@@ -31,5 +39,18 @@ public static class PlayerConfigLoader
         {
             return new PlayerAppConfig();
         }
+    }
+
+    /// <summary>
+    /// 將 config 序列化並寫回檔案（目錄不存在時自動建立）。
+    /// </summary>
+    public static void Save(string configPath, PlayerAppConfig config)
+    {
+        var dir = Path.GetDirectoryName(configPath);
+        if (!string.IsNullOrEmpty(dir))
+            Directory.CreateDirectory(dir);
+
+        var json = JsonSerializer.Serialize(config, s_writeOpts);
+        File.WriteAllText(configPath, json);
     }
 }

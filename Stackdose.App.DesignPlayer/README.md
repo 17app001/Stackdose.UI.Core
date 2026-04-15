@@ -86,19 +86,30 @@ DesignPlayer（量產交付）← 本專案
 | `PlcText` | PlcText | 文字顯示 |
 | `PlcStatusIndicator` | PlcStatusIndicator | 位元狀態燈 |
 | `SecuredButton` | SecuredButton | 需授權的 PLC 寫入按鈕 |
+| `StaticLabel` | TextBlock | 靜態文字（標題、說明，可設字體大小/粗細/對齊/顏色） |
 | `Spacer` | GroupBox | 標題分組框 |
 | `LiveLog` | LiveLog | 即時 PLC 事件日誌 |
-| `AlarmViewer` | AlarmViewer | 警報記錄查閱 |
-| `SensorViewer` | SensorViewer | 感測器歷史記錄 |
+| `AlarmViewer` | AlarmViewer | 警報記錄查閱（configFile 設定） |
+| `SensorViewer` | SensorViewer | 感測器歷史記錄（configFile 設定） |
 
 ## Shell 導航
 
-應用程式預設包含兩個頁面，以左側導航欄切換：
+應用程式預設包含三個頁面，以左側導航欄切換：
 
 | 頁面 | NavigationTarget | 所需權限 |
 |---|---|---|
 | Main View | `monitor` | Guest（任何人） |
+| Settings | `settings` | Operator 以上 |
 | User Management | `users` | Operator 以上 |
+
+### Settings 頁面
+
+`Settings` 頁面讓現場操作員不需手動編輯 JSON 即可修改：
+- PLC IP 位址、埠號、輪詢間隔、自動連線
+- 設計稿（.machinedesign.json）路徑
+- App 標題與設備標籤
+
+按「套用並儲存」後寫回 `Config/app-config.json`，下次啟動即生效。
 
 ## 專案結構
 
@@ -110,11 +121,13 @@ Stackdose.App.DesignPlayer/
 ├── Models/
 │   └── PlayerAppConfig.cs        ← 設定 Model
 ├── Services/
-│   └── PlayerConfigLoader.cs     ← JSON 載入服務
+│   └── PlayerConfigLoader.cs     ← JSON 載入/儲存服務
 ├── Pages/
 │   ├── MonitorPage.xaml          ← 主監控頁（Canvas 渲染）
-│   └── MonitorPage.xaml.cs
-├── RuntimeControlFactory.cs      ← 依 type 建立 live 控制項
+│   ├── MonitorPage.xaml.cs
+│   ├── SettingsPage.xaml         ← PLC 設定頁（GUI 修改 config）
+│   └── SettingsPage.xaml.cs
+├── RuntimeControlFactory.cs      ← 依 type 建立 live 控制項（9種）
 ├── App.xaml / App.xaml.cs        ← 啟動 + 主題初始化
 └── MainWindow.xaml / .xaml.cs    ← Shell 組裝 + 導航
 ```
@@ -125,6 +138,7 @@ Stackdose.App.DesignPlayer/
 |---|---|---|
 | 目標 | 開發驗證 | 量產部署 |
 | Shell UI | 無（裸視窗） | 完整（導航 + 頁首 + 頁尾） |
+| PLC 設定 | 工具列手動輸入 | JSON 設定或 Settings 頁面（GUI） |
 | 登入管控 | 無 | 可選（JSON 設定） |
 | 用途 | 設計時快速測試 PLC | 交付給設備廠商使用 |
 | 使用者管理 | 無 | 有 |

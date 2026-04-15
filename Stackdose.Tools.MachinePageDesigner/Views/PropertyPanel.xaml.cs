@@ -59,6 +59,10 @@ public class PropertyPanelTemplateSelector : DataTemplateSelector
     public DataTemplate? PlcStatusIndicatorTemplate { get; set; }
     public DataTemplate? SecuredButtonTemplate { get; set; }
     public DataTemplate? SpacerTemplate { get; set; }
+    public DataTemplate? LiveLogTemplate { get; set; }
+    public DataTemplate? AlarmViewerTemplate { get; set; }
+    public DataTemplate? SensorViewerTemplate { get; set; }
+    public DataTemplate? StaticLabelTemplate { get; set; }
     public DataTemplate? EmptyTemplate { get; set; }
 
     public override DataTemplate? SelectTemplate(object? item, DependencyObject container)
@@ -68,11 +72,15 @@ public class PropertyPanelTemplateSelector : DataTemplateSelector
 
         return vm.ItemType switch
         {
-            "PlcLabel" => PlcLabelTemplate,
-            "PlcText" => PlcTextTemplate,
+            "PlcLabel"           => PlcLabelTemplate,
+            "PlcText"            => PlcTextTemplate,
             "PlcStatusIndicator" => PlcStatusIndicatorTemplate,
-            "SecuredButton" => SecuredButtonTemplate,
-            "Spacer" => SpacerTemplate,
+            "SecuredButton"      => SecuredButtonTemplate,
+            "Spacer"             => SpacerTemplate,
+            "LiveLog"            => LiveLogTemplate,
+            "AlarmViewer"        => AlarmViewerTemplate,
+            "SensorViewer"       => SensorViewerTemplate,
+            "StaticLabel"        => StaticLabelTemplate,
             _ => EmptyTemplate,
         };
     }

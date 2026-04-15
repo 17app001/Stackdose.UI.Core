@@ -1,22 +1,27 @@
 using Stackdose.App.DesignPlayer.Models;
 using Stackdose.App.DesignPlayer.Pages;
+using Stackdose.App.DesignPlayer.Services;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Templates.Controls;
 using Stackdose.UI.Templates.Pages;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 
 namespace Stackdose.App.DesignPlayer;
 
 public partial class MainWindow : Window
 {
-    private readonly PlayerAppConfig _config;
+    private readonly string          _configPath;
+    private PlayerAppConfig          _config;
     private readonly MonitorPage     _monitorPage;
     private readonly UserManagementPage _userPage = new();
+    private readonly SettingsPage    _settingsPage;
 
-    public MainWindow(PlayerAppConfig config)
+    public MainWindow(string configPath, PlayerAppConfig config)
     {
-        _config = config;
+        _configPath = configPath;
+        _config     = config;
         InitializeComponent();
 
         // ── Shell 設定 ──────────────────────────────────────────────
@@ -28,11 +33,15 @@ public partial class MainWindow : Window
         _monitorPage = new MonitorPage(config);
         MainShell.ShellContent = _monitorPage;
 
+        // ── 設定頁面 ────────────────────────────────────────────────
+        _settingsPage = new SettingsPage(configPath, config);
+        _settingsPage.ApplyRequested += OnSettingsApplied;
+
         // ── 導航項目 ────────────────────────────────────────────────
-        // Title = 左側選單顯示文字，NavigationTarget = 路由 key
         MainShell.NavigationItems = new ObservableCollection<NavigationItem>
         {
             new() { Title = "Main View",        NavigationTarget = "monitor",  IsSelected = true,  RequiredLevel = Stackdose.UI.Core.Models.AccessLevel.Guest },
+            new() { Title = "Settings",         NavigationTarget = "settings",                     RequiredLevel = Stackdose.UI.Core.Models.AccessLevel.Operator },
             new() { Title = "User Management",  NavigationTarget = "users",                        RequiredLevel = Stackdose.UI.Core.Models.AccessLevel.Operator },
         };
 
@@ -57,10 +66,25 @@ public partial class MainWindow : Window
                 MainShell.PageTitle    = _config.AppTitle;
                 break;
 
+            case "settings":
+                MainShell.ShellContent = _settingsPage;
+                MainShell.PageTitle    = "Settings";
+                break;
+
             case "users":
                 MainShell.ShellContent = _userPage;
                 MainShell.PageTitle    = "User Management";
                 break;
         }
+    }
+
+    // ── 設定套用 ──────────────────────────────────────────────────────────
+
+    private void OnSettingsApplied(object? sender, PlayerAppConfig newConfig)
+    {
+        _config = newConfig;
+        MainShell.HeaderDeviceName = newConfig.HeaderDeviceName;
+        Title = newConfig.AppTitle;
+        // MonitorPage 下次重連或熱更新時即會使用新路徑；PLC 重連需重啟
     }
 }

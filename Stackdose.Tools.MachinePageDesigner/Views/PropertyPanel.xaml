@@ -73,7 +73,10 @@
              ════════════════════════════════════════════════════════ -->
         <DataTemplate x:Key="PlcStatusIndicatorTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
             <StackPanel Margin="0,4">
-                <TextBlock Text="顯示位址" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBlock Text="顯示名稱" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <TextBlock Text="PLC 位址 (M/D)" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding DisplayAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
             </StackPanel>
         </DataTemplate>
@@ -113,6 +116,76 @@
         </DataTemplate>
 
         <!-- ════════════════════════════════════════════════════════
+             LiveLog 屬性面板
+             ════════════════════════════════════════════════════════ -->
+        <DataTemplate x:Key="LiveLogTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
+            <StackPanel Margin="0,4">
+                <TextBlock Text="即時日誌檢視器" Style="{StaticResource SectionHeader}" Margin="0,0,0,4"/>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap"
+                           Text="LiveLog 自動訂閱系統日誌，無需額外設定。&#x0A;調整元件尺寸即可控制顯示區域大小。"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- ════════════════════════════════════════════════════════
+             AlarmViewer 屬性面板
+             ════════════════════════════════════════════════════════ -->
+        <DataTemplate x:Key="AlarmViewerTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
+            <StackPanel Margin="0,4">
+                <TextBlock Text="設定檔路徑" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding ConfigFile, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"/>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap"
+                           Text="相對於 App 根目錄的 alarms.json 路徑。留空則使用預設設定。"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- ════════════════════════════════════════════════════════
+             SensorViewer 屬性面板
+             ════════════════════════════════════════════════════════ -->
+        <DataTemplate x:Key="SensorViewerTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
+            <StackPanel Margin="0,4">
+                <TextBlock Text="設定檔路徑" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding ConfigFile, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"/>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap"
+                           Text="相對於 App 根目錄的 sensors.json 路徑。留空則使用預設設定。"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- ════════════════════════════════════════════════════════
+             StaticLabel 屬性面板
+             ════════════════════════════════════════════════════════ -->
+        <DataTemplate x:Key="StaticLabelTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
+            <StackPanel Margin="0,4">
+                <!-- StaticText -->
+                <TextBlock Text="顯示文字" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding StaticText, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <!-- StaticFontSize -->
+                <TextBlock Style="{StaticResource FieldLabel}" Margin="0,0,0,2">
+                    <Run Text="字體大小："/><Run Text="{Binding StaticFontSize, StringFormat=F0, Mode=OneWay}"/>
+                </TextBlock>
+                <Slider Value="{Binding StaticFontSize}" Minimum="8" Maximum="72" TickFrequency="1"
+                        IsSnapToTickEnabled="True" Margin="0,0,0,8"/>
+
+                <!-- StaticFontWeight -->
+                <TextBlock Text="字體粗細" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.FontWeightOptions}"
+                          SelectedItem="{Binding StaticFontWeight}" Margin="0,0,0,8"/>
+
+                <!-- StaticTextAlign -->
+                <TextBlock Text="對齊方式" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.TextAlignOptions}"
+                          SelectedItem="{Binding StaticTextAlign}" Margin="0,0,0,8"/>
+
+                <!-- StaticForeground -->
+                <TextBlock Text="文字顏色" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.ForegroundOptions}"
+                          SelectedItem="{Binding StaticForeground}" Margin="0,0,0,4"/>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10"
+                           Text="也可直接輸入顏色代碼（如 #FF6C8EEF）"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- ════════════════════════════════════════════════════════
              空白（未選取任何項目）
              ════════════════════════════════════════════════════════ -->
         <DataTemplate x:Key="EmptyTemplate">
@@ -129,6 +202,10 @@
             PlcStatusIndicatorTemplate="{StaticResource PlcStatusIndicatorTemplate}"
             SecuredButtonTemplate="{StaticResource SecuredButtonTemplate}"
             SpacerTemplate="{StaticResource SpacerTemplate}"
+            LiveLogTemplate="{StaticResource LiveLogTemplate}"
+            AlarmViewerTemplate="{StaticResource AlarmViewerTemplate}"
+            SensorViewerTemplate="{StaticResource SensorViewerTemplate}"
+            StaticLabelTemplate="{StaticResource StaticLabelTemplate}"
             EmptyTemplate="{StaticResource EmptyTemplate}"/>
     </UserControl.Resources>
 

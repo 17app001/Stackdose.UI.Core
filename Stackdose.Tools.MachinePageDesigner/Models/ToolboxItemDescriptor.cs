@@ -82,6 +82,19 @@ public sealed class ToolboxItemDescriptor
             Props = [],
             Width = 420, Height = 200
         },
+        "StaticLabel" => new DesignerItemDefinition
+        {
+            Type = "StaticLabel",
+            Props = new()
+            {
+                ["staticText"]       = "標題文字",
+                ["staticFontSize"]   = 16.0,
+                ["staticFontWeight"] = "Normal",
+                ["staticTextAlign"]  = "Left",
+                ["staticForeground"] = "#E2E2F0"
+            },
+            Width = 200, Height = 40
+        },
         _ => new DesignerItemDefinition { Type = Type }
     };
 
@@ -95,5 +108,6 @@ public sealed class ToolboxItemDescriptor
         new() { Type = "LiveLog",            DisplayName = "LiveLog",            Category = "Viewer", Icon = "\u2637" },
         new() { Type = "AlarmViewer",        DisplayName = "AlarmViewer",        Category = "Viewer", Icon = "\u26A0" },
         new() { Type = "SensorViewer",       DisplayName = "SensorViewer",       Category = "Viewer", Icon = "\u26A1" },
+        new() { Type = "StaticLabel",        DisplayName = "StaticLabel",        Category = "Layout", Icon = "T" },
     ];
 }

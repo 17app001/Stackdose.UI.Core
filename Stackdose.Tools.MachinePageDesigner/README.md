@@ -14,18 +14,34 @@
 
 | 類別 | 功能 |
 |---|---|
-| 自由畫布 | 控制項可拖曳至任意位置，支援縮放檢視 |
-| 工具箱 | 左側 Toolbox 列出所有可用控制項類型 |
-| 屬性面板 | 右側 PropertyPanel 即時編輯選中控制項的 Address、Label 等屬性 |
-| 多選操作 | 框選多個控制項，同步移動 |
-| 對齊分配 | 左對齊、右對齊、水平均等分配等 |
-| GroupBox | 將控制項群組化，方便整體移動 |
+| 自由畫布 | 控制項可拖曳至任意位置 |
+| 右鍵 ContextMenu | 複製/貼上/刪除/鎖定/Z-Order 快速操作 |
+| 工具箱 | 左側 Toolbox 含 9 種控制項類型 |
+| 屬性面板 | 右側 PropertyPanel 每種控制項均有專屬屬性表單 |
+| 多選操作 | Shift+Click 或框選，同步移動/縮放 |
+| Smart Snap | 拖曳時磁吸對齊其他控制項邊緣/中心 |
+| 對齊分配 | 左/右/上/下對齊，水平/垂直均等分配 |
+| GroupBox | 將控制項群組化，整體移動 |
 | 複製貼上 | Ctrl+C / Ctrl+V |
-| Snap 格線 | 拖曳時自動吸附至格線 |
+| Snap 格線 | 拖曳時自動吸附格線 |
 | Z-Order | 調整控制項前置/後置層級 |
-| 鎖定 | 鎖定已完成控制項防止誤移 |
-| Undo/Redo | 支援多步還原重做 |
+| 鎖定 | 鎖定完成控制項防止誤移 |
+| Undo/Redo | 支援多步還原重做（Ctrl+Z / Ctrl+Y） |
 | 畫布尺寸 | 可設定畫布寬高（px） |
+
+## 支援控制項（9 種）
+
+| 控制項 | 分類 | 說明 |
+|---|---|---|
+| `PlcLabel` | PLC | 數值顯示，色彩主題 / 框形 / 除數換算 |
+| `PlcText` | PLC | 文字顯示 |
+| `PlcStatusIndicator` | PLC | 位元狀態燈 |
+| `SecuredButton` | Button | 需授權操作按鈕 |
+| `StaticLabel` | Layout | 靜態文字（標題/說明），可設字體大小/粗細/對齊/顏色 |
+| `Spacer` | Layout | GroupBox 群組框 |
+| `LiveLog` | Viewer | 即時日誌面板（無需設定） |
+| `AlarmViewer` | Viewer | 警報列表（configFile 指向 alarms.json） |
+| `SensorViewer` | Viewer | 感測器列表（configFile 指向 sensors.json） |
 
 ## 核心類別
 

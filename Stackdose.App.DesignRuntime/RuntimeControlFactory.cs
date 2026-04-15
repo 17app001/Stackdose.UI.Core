@@ -31,6 +31,7 @@ public static class RuntimeControlFactory
             "LiveLog"            => CreateLiveLog(),
             "AlarmViewer"        => CreateAlarmViewer(def),
             "SensorViewer"       => CreateSensorViewer(def),
+            "StaticLabel"        => CreateStaticLabel(def),
             _ => MakeUnknownPlaceholder(def.Type),
         };
     }
@@ -236,6 +237,43 @@ public static class RuntimeControlFactory
         if (!string.IsNullOrWhiteSpace(configFile))
             viewer.ConfigFile = configFile;
         return viewer;
+    }
+
+    // ── StaticLabel ───────────────────────────────────────────────────────
+
+    private static UIElement CreateStaticLabel(DesignerItemDefinition def)
+    {
+        var p = def.Props;
+        var text      = p.GetString("staticText",       "Text");
+        var fontSize  = p.GetDouble("staticFontSize",   16);
+        var weightStr = p.GetString("staticFontWeight", "Normal");
+        var alignStr  = p.GetString("staticTextAlign",  "Left");
+        var fgStr     = p.GetString("staticForeground", "#E2E2F0");
+
+        var weight = weightStr.Equals("Bold", StringComparison.OrdinalIgnoreCase)
+            ? FontWeights.Bold : FontWeights.Normal;
+
+        var align = alignStr switch
+        {
+            "Center" => TextAlignment.Center,
+            "Right"  => TextAlignment.Right,
+            _        => TextAlignment.Left,
+        };
+
+        Brush fg;
+        try { fg = new SolidColorBrush((Color)ColorConverter.ConvertFromString(fgStr)); }
+        catch { fg = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)); }
+
+        return new TextBlock
+        {
+            Text              = text,
+            FontSize          = fontSize,
+            FontWeight        = weight,
+            TextAlignment     = align,
+            Foreground        = fg,
+            TextWrapping      = TextWrapping.Wrap,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
     }
 
     // ── 未知類型佔位符 ────────────────────────────────────────────────────

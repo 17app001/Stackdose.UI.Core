@@ -5,7 +5,39 @@
              Cursor="SizeAll"
              MouseLeftButtonDown="OnMouseDown"
              MouseLeftButtonUp="OnMouseUp"
-             MouseMove="OnMouseMove">
+             MouseMove="OnMouseMove"
+             MouseRightButtonDown="OnRightButtonDown">
+
+    <UserControl.ContextMenu>
+        <ContextMenu>
+            <MenuItem Header="複製 (Ctrl+C)"
+                      Command="{Binding PlacementTarget.Tag.CopyCmd,
+                               RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <MenuItem Header="貼上 (Ctrl+V)"
+                      Command="{Binding PlacementTarget.Tag.PasteCmd,
+                               RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <MenuItem Header="刪除 (Del)"
+                      Command="{Binding PlacementTarget.Tag.DeleteSelectedCmd,
+                               RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <Separator/>
+            <MenuItem Header="鎖定 / 解鎖"
+                      Command="{Binding PlacementTarget.Tag.LockToggleCmd,
+                               RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <Separator/>
+            <MenuItem Header="移到最前"
+                      Command="{Binding PlacementTarget.Tag.BringToFrontCmd,
+                               RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <MenuItem Header="上移一層"
+                      Command="{Binding PlacementTarget.Tag.MoveUpCmd,
+                               RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <MenuItem Header="下移一層"
+                      Command="{Binding PlacementTarget.Tag.MoveDownCmd,
+                               RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <MenuItem Header="移到最後"
+                      Command="{Binding PlacementTarget.Tag.SendToBackCmd,
+                               RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+        </ContextMenu>
+    </UserControl.ContextMenu>
 
     <Grid ClipToBounds="False">
         <Grid.Style>

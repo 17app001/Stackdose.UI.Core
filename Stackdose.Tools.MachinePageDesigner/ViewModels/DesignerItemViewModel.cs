@@ -122,6 +122,12 @@ public sealed class DesignerItemViewModel : ObservableObject
             "theme" => nameof(Theme),
             "isLocked" => nameof(IsLocked),
             "title" => nameof(GroupTitle),
+            "configFile" => nameof(ConfigFile),
+            "staticText" => nameof(StaticText),
+            "staticFontSize" => nameof(StaticFontSize),
+            "staticFontWeight" => nameof(StaticFontWeight),
+            "staticTextAlign" => nameof(StaticTextAlign),
+            "staticForeground" => nameof(StaticForeground),
             _ => null
         };
         if (propName != null) N(propName);
@@ -287,6 +293,79 @@ public sealed class DesignerItemViewModel : ObservableObject
         }
     }
 
+    public string ConfigFile
+    {
+        get => GetProp("configFile");
+        set
+        {
+            var old = GetProp("configFile");
+            if (old == value) return;
+            SetPropDirect("configFile", value);
+            PropCommitted?.Invoke("configFile", old, value);
+        }
+    }
+
+    public string StaticText
+    {
+        get => GetProp("staticText", "Text");
+        set
+        {
+            var old = GetProp("staticText", "Text");
+            if (old == value) return;
+            SetPropDirect("staticText", value);
+            N(nameof(DisplayName));
+            PropCommitted?.Invoke("staticText", old, value);
+        }
+    }
+
+    public double StaticFontSize
+    {
+        get => GetPropDouble("staticFontSize", 16);
+        set
+        {
+            var old = GetPropDouble("staticFontSize", 16);
+            if (old == value) return;
+            SetPropDirect("staticFontSize", value);
+            PropCommitted?.Invoke("staticFontSize", old, value);
+        }
+    }
+
+    public string StaticFontWeight
+    {
+        get => GetProp("staticFontWeight", "Normal");
+        set
+        {
+            var old = GetProp("staticFontWeight", "Normal");
+            if (old == value) return;
+            SetPropDirect("staticFontWeight", value);
+            PropCommitted?.Invoke("staticFontWeight", old, value);
+        }
+    }
+
+    public string StaticTextAlign
+    {
+        get => GetProp("staticTextAlign", "Left");
+        set
+        {
+            var old = GetProp("staticTextAlign", "Left");
+            if (old == value) return;
+            SetPropDirect("staticTextAlign", value);
+            PropCommitted?.Invoke("staticTextAlign", old, value);
+        }
+    }
+
+    public string StaticForeground
+    {
+        get => GetProp("staticForeground", "#E2E2F0");
+        set
+        {
+            var old = GetProp("staticForeground", "#E2E2F0");
+            if (old == value) return;
+            SetPropDirect("staticForeground", value);
+            PropCommitted?.Invoke("staticForeground", old, value);
+        }
+    }
+
     // ── 自由畫布空間屬性 ──────────────────────────────────────────────────
     public double X
     {
@@ -358,11 +437,15 @@ public sealed class DesignerItemViewModel : ObservableObject
     // 嚙緩嚙緩 嚙踝蕭雃W嚙踝蕭 嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩
     public string DisplayName => ItemType switch
     {
-        "PlcLabel" => $"PlcLabel [{Address}]",
-        "PlcText" => $"PlcText [{Address}]",
+        "PlcLabel"           => $"PlcLabel [{Address}]",
+        "PlcText"            => $"PlcText [{Address}]",
         "PlcStatusIndicator" => $"StatusIndicator [{DisplayAddress}]",
-        "SecuredButton" => $"Button [{Label}]",
-        "Spacer" => "Spacer",
+        "SecuredButton"      => $"Button [{Label}]",
+        "Spacer"             => "Spacer",
+        "LiveLog"            => "LiveLog",
+        "AlarmViewer"        => $"AlarmViewer [{ConfigFile}]",
+        "SensorViewer"       => $"SensorViewer [{ConfigFile}]",
+        "StaticLabel"        => $"Text [{StaticText}]",
         _ => ItemType
     };
 
@@ -374,4 +457,8 @@ public sealed class DesignerItemViewModel : ObservableObject
     public static readonly string[] StringFormats = ["F0", "F1", "F2", "F3"];
     public static readonly string[] ButtonThemes = ["Primary", "Success", "Danger", "Warning"];
     public static readonly string[] AccessLevels = ["Operator", "Instructor", "Supervisor", "Admin", "SuperAdmin"];
+    public static readonly string[] FontWeightOptions = ["Normal", "Bold"];
+    public static readonly string[] TextAlignOptions  = ["Left", "Center", "Right"];
+    public static readonly string[] ForegroundOptions =
+        ["#E2E2F0", "#FFFFFF", "#6C8EEF", "#4EC994", "#EF5350", "#FFB74D", "#90CAF9", "#AAAAAA", "#000000"];
 }

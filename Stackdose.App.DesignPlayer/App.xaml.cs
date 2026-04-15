@@ -27,7 +27,7 @@ public partial class App : Application
             ShutdownMode = ShutdownMode.OnMainWindowClose;
         }
 
-        var window = new MainWindow(config);
+        var window = new MainWindow(configPath, config);
         MainWindow = window;
         window.Show();
     }

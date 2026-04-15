@@ -387,7 +387,7 @@
         <div class="stat"><div class="stat-num">26</div><div class="stat-label">自訂控制項</div></div>
         <div class="stat"><div class="stat-num">5</div><div class="stat-label">Context 服務</div></div>
         <div class="stat"><div class="stat-num">50+</div><div class="stat-label">Commits</div></div>
-        <div class="stat"><div class="stat-num">3</div><div class="stat-label">設計器工具</div></div>
+        <div class="stat"><div class="stat-num">4</div><div class="stat-label">設計器工具</div></div>
       </div>
 
       <p style="color:var(--text-secondary); font-size:13px; max-width:680px;">
@@ -809,12 +809,12 @@
             <div class="prog-row"><span class="prog-check">✓</span><span>真實 PLC 連線（DesignRuntime）</span></div>
             <div class="prog-row"><span class="prog-check">✓</span><span>模擬器模式（免 PLC）</span></div>
             <div class="prog-row"><span class="prog-check">✓</span><span>亂數測試注入（D100~D102）</span></div>
-            <div class="prog-row prog-pending"><span class="prog-dot-pending">○</span><span>JSON Hot-Reload</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>JSON Hot-Reload（FileSystemWatcher，存檔自動重載）</span></div>
             <div class="prog-row prog-pending"><span class="prog-dot-pending">○</span><span>PLC 斷線自動重連穩定化</span></div>
           </div>
           <div style="margin-top:14px;">
-            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;"><span>完成度</span><span>6 / 8</span></div>
-            <div style="background:var(--border); border-radius:4px; height:4px;"><div style="background:var(--orange); width:75%; height:4px; border-radius:4px;"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;"><span>完成度</span><span>7 / 8</span></div>
+            <div style="background:var(--border); border-radius:4px; height:4px;"><div style="background:var(--orange); width:87.5%; height:4px; border-radius:4px;"></div></div>
           </div>
         </div>
 
@@ -846,8 +846,8 @@
           <div class="tl-item"><span class="tl-date">4月01日</span><span class="tl-dot"></span><span class="tl-text">PlcDataGridPanel 通用元件抽出；MachinePageDesigner 初始化</span></div>
           <div class="tl-item"><span class="tl-date">4月08日</span><span class="tl-dot"></span><span class="tl-text">切換為自由畫布（FreeCanvas）模式，完成拖曳基礎功能</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月13日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 自由畫布全功能整合；DesignViewer + DesignRuntime 新增</span></div>
-          <div class="tl-item tl-highlight"><span class="tl-date">4月15日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 模擬器模式 + 亂數測試注入；文件知識庫建立（含本頁）；DesignPlayer 量產 Shell App 新增</span></div>
-          <div class="tl-item tl-future"><span class="tl-date">近期</span><span class="tl-dot tl-dot-future"></span><span class="tl-text">JSON Hot-Reload；PLC 斷線穩定化；更多控制項支援</span></div>
+          <div class="tl-item tl-highlight"><span class="tl-date">4月15日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ JSON Hot-Reload；DesignPlayer 量產 Shell App；StaticLabel + ContextMenu；設定頁面；文件知識庫</span></div>
+          <div class="tl-item tl-future"><span class="tl-date">近期</span><span class="tl-dot tl-dot-future"></span><span class="tl-text">PLC 斷線自動重連穩定化；DesignPlayer 真實環境部署驗證；多頁面支援候選</span></div>
         </div>
       </div>
     </div>
@@ -887,6 +887,123 @@
             <div style="font-size:12px; color:var(--text-secondary);">量產部署，完整 Shell UI</div>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ GETTING STARTED ══════════════ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-title">快速上手 — 設計師工作流程</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px;">
+
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
+          <div style="font-size:11px; font-weight:600; color:var(--blue); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Step 1 — 開啟設計器</div>
+          <ol style="padding-left:18px; font-size:13px; color:var(--text-secondary); line-height:1.8;">
+            <li>開啟方案 <code>Stackdose.Designer.sln</code></li>
+            <li>啟動 <strong>MachinePageDesigner</strong>（預設 Startup Project）</li>
+            <li>Ctrl+N 新建，或 Ctrl+O 開啟現有 .machinedesign.json</li>
+          </ol>
+        </div>
+
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
+          <div style="font-size:11px; font-weight:600; color:var(--blue); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Step 2 — 拖放設計</div>
+          <ol style="padding-left:18px; font-size:13px; color:var(--text-secondary); line-height:1.8;">
+            <li>從左側 Toolbox 拖曳控制項至畫布</li>
+            <li>右側 Properties 面板設定 PLC 位址、標籤等屬性</li>
+            <li>右鍵選單：複製、刪除、Z-Order、鎖定</li>
+            <li>Ctrl+S 儲存為 .machinedesign.json</li>
+          </ol>
+        </div>
+
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
+          <div style="font-size:11px; font-weight:600; color:var(--blue); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Step 3 — 預覽與驗證</div>
+          <ol style="padding-left:18px; font-size:13px; color:var(--text-secondary); line-height:1.8;">
+            <li><strong>DesignViewer</strong>：拖入 JSON 靜態預覽外觀</li>
+            <li><strong>DesignRuntime</strong>：輸入 PLC IP → 連線 → 載入 JSON → 觀察即時數值</li>
+            <li>儲存後畫面自動熱更新（400ms 延遲）</li>
+          </ol>
+        </div>
+
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
+          <div style="font-size:11px; font-weight:600; color:var(--green); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Step 4 — 量產部署</div>
+          <ol style="padding-left:18px; font-size:13px; color:var(--text-secondary); line-height:1.8;">
+            <li>將 <strong>DesignPlayer</strong> Release 發布到現場機台</li>
+            <li>編輯 <code>Config/app-config.json</code>（PLC IP、畫布路徑）</li>
+            <li>或啟動後到 Settings 頁面直接修改，不需重新部署</li>
+          </ol>
+        </div>
+
+      </div>
+
+      <!-- 支援控制項速查 -->
+      <div style="margin-top:24px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
+        <div style="font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">Toolbox 控制項速查（9 種）</div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          <span style="background:var(--bg-card2); border:1px solid var(--border); border-radius:6px; padding:4px 12px; font-size:12px;"><strong>PlcLabel</strong> — PLC 數值顯示，色彩主題 + 框形</span>
+          <span style="background:var(--bg-card2); border:1px solid var(--border); border-radius:6px; padding:4px 12px; font-size:12px;"><strong>PlcText</strong> — PLC 文字顯示</span>
+          <span style="background:var(--bg-card2); border:1px solid var(--border); border-radius:6px; padding:4px 12px; font-size:12px;"><strong>PlcStatusIndicator</strong> — 位元狀態燈</span>
+          <span style="background:var(--bg-card2); border:1px solid var(--border); border-radius:6px; padding:4px 12px; font-size:12px;"><strong>SecuredButton</strong> — 需權限的操作按鈕</span>
+          <span style="background:var(--bg-card2); border:1px solid var(--border); border-radius:6px; padding:4px 12px; font-size:12px;"><strong>StaticLabel</strong> — 靜態文字（標題、說明）</span>
+          <span style="background:var(--bg-card2); border:1px solid var(--border); border-radius:6px; padding:4px 12px; font-size:12px;"><strong>Spacer / GroupBox</strong> — 群組化區域</span>
+          <span style="background:var(--bg-card2); border:1px solid var(--border); border-radius:6px; padding:4px 12px; font-size:12px;"><strong>LiveLog</strong> — 即時日誌面板</span>
+          <span style="background:var(--bg-card2); border:1px solid var(--border); border-radius:6px; padding:4px 12px; font-size:12px;"><strong>AlarmViewer</strong> — 警報列表（configFile 設定）</span>
+          <span style="background:var(--bg-card2); border:1px solid var(--border); border-radius:6px; padding:4px 12px; font-size:12px;"><strong>SensorViewer</strong> — 感測器列表（configFile 設定）</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ ROADMAP ══════════════ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-title">開發藍圖</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px;">
+
+        <div style="background:var(--bg-card); border:1px solid #3fb95033; border-radius:10px; padding:20px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span style="background:#3fb95018; color:var(--green); font-size:11px; font-weight:600; padding:2px 8px; border-radius:4px; border:1px solid #3fb95033;">已完成</span>
+            <span style="font-weight:600;">設計器核心</span>
+          </div>
+          <ul style="padding-left:18px; font-size:13px; color:var(--text-secondary); line-height:1.9;">
+            <li>自由畫布拖曳 + Snap + Z-Order</li>
+            <li>框選多選 + 對齊分配</li>
+            <li>Undo/Redo + 複製貼上</li>
+            <li>GroupBox 群組化</li>
+            <li>右鍵 ContextMenu</li>
+            <li>StaticLabel 靜態文字控制項</li>
+            <li>所有控制項屬性面板</li>
+          </ul>
+        </div>
+
+        <div style="background:var(--bg-card); border:1px solid #f0883e33; border-radius:10px; padding:20px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span style="background:#f0883e18; color:var(--orange); font-size:11px; font-weight:600; padding:2px 8px; border-radius:4px; border:1px solid #f0883e33;">進行中</span>
+            <span style="font-weight:600;">量產部署</span>
+          </div>
+          <ul style="padding-left:18px; font-size:13px; color:var(--text-secondary); line-height:1.9;">
+            <li>DesignPlayer Shell App（8 控制項）</li>
+            <li>Settings 頁面 — 免 JSON 修改 PLC</li>
+            <li>JSON Hot-Reload（DesignRuntime + DesignPlayer）</li>
+            <li><em style="color:var(--orange);">☐ PLC 斷線自動重連穩定化</em></li>
+            <li><em style="color:var(--orange);">☐ 真實環境部署驗證</em></li>
+          </ul>
+        </div>
+
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span style="background:var(--bg-card2); color:var(--text-muted); font-size:11px; font-weight:600; padding:2px 8px; border-radius:4px; border:1px solid var(--border);">計畫中</span>
+            <span style="font-weight:600;">下一階段候選</span>
+          </div>
+          <ul style="padding-left:18px; font-size:13px; color:var(--text-secondary); line-height:1.9;">
+            <li>多頁面支援（ Tab / 導航頁面切換）</li>
+            <li>控制項模板庫（Template Gallery）</li>
+            <li>畫布縮放（Zoom in/out）</li>
+            <li>從 DesignPlayer 直接觸發設計器開啟</li>
+            <li>AlarmViewer / SensorViewer 內嵌設定 UI</li>
+          </ul>
+        </div>
+
       </div>
     </div>
   </section>

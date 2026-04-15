@@ -1,0 +1,135 @@
+<UserControl x:Class="Stackdose.App.DesignPlayer.Pages.SettingsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="900" d:DesignHeight="700">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  Background="{DynamicResource Surface.Bg.Page}">
+        <StackPanel MaxWidth="600" Margin="40,32,40,32" HorizontalAlignment="Left">
+
+            <!-- ── PLC 連線設定 ── -->
+            <TextBlock Text="PLC 連線設定"
+                       Foreground="{DynamicResource Text.Primary}"
+                       FontSize="16" FontWeight="SemiBold"
+                       Margin="0,0,0,16"/>
+
+            <Grid Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="PLC IP 位址"
+                           Foreground="{DynamicResource Text.Secondary}"
+                           VerticalAlignment="Center"/>
+                <TextBox  Grid.Column="1" x:Name="txtPlcIp"/>
+            </Grid>
+
+            <Grid Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160"/>
+                    <ColumnDefinition Width="120"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="PLC 埠號"
+                           Foreground="{DynamicResource Text.Secondary}"
+                           VerticalAlignment="Center"/>
+                <TextBox  Grid.Column="1" x:Name="txtPlcPort"/>
+            </Grid>
+
+            <Grid Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160"/>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="輪詢間隔 (ms)"
+                           Foreground="{DynamicResource Text.Secondary}"
+                           VerticalAlignment="Center"/>
+                <TextBox  Grid.Column="1" x:Name="txtPollInterval"/>
+                <TextBlock Grid.Column="2" Text=" ms"
+                           Foreground="{DynamicResource Text.Muted}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+
+            <Grid Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="自動連線"
+                           Foreground="{DynamicResource Text.Secondary}"
+                           VerticalAlignment="Center"/>
+                <CheckBox  Grid.Column="1" x:Name="chkAutoConnect"
+                           Foreground="{DynamicResource Text.Primary}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+
+            <Separator Margin="0,0,0,24"/>
+
+            <!-- ── 設計稿路徑 ── -->
+            <TextBlock Text="設計稿路徑"
+                       Foreground="{DynamicResource Text.Primary}"
+                       FontSize="16" FontWeight="SemiBold"
+                       Margin="0,0,0,16"/>
+
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text=".machinedesign.json"
+                           Foreground="{DynamicResource Text.Secondary}"
+                           VerticalAlignment="Center"/>
+                <TextBox  Grid.Column="1" x:Name="txtDesignFile" Margin="0,0,6,0"/>
+                <Button   Grid.Column="2" Content="瀏覽..." Width="64"
+                          Click="OnBrowseDesignFile"/>
+            </Grid>
+            <TextBlock Text="路徑可為相對路徑（相對於 App 執行目錄）或絕對路徑。"
+                       Foreground="{DynamicResource Text.Muted}"
+                       FontSize="10" Margin="160,0,0,24"/>
+
+            <Separator Margin="0,0,0,24"/>
+
+            <!-- ── App 標題 ── -->
+            <TextBlock Text="介面顯示"
+                       Foreground="{DynamicResource Text.Primary}"
+                       FontSize="16" FontWeight="SemiBold"
+                       Margin="0,0,0,16"/>
+
+            <Grid Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="App 標題"
+                           Foreground="{DynamicResource Text.Secondary}"
+                           VerticalAlignment="Center"/>
+                <TextBox  Grid.Column="1" x:Name="txtAppTitle"/>
+            </Grid>
+
+            <Grid Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="設備標籤"
+                           Foreground="{DynamicResource Text.Secondary}"
+                           VerticalAlignment="Center"/>
+                <TextBox  Grid.Column="1" x:Name="txtDeviceName"/>
+            </Grid>
+
+            <!-- ── Apply ── -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock x:Name="lblStatus"
+                           Foreground="{DynamicResource Text.Muted}"
+                           VerticalAlignment="Center" Margin="0,0,16,0"/>
+                <Button Content="套用並儲存" Width="120" Height="36"
+                        Click="OnApply"/>
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

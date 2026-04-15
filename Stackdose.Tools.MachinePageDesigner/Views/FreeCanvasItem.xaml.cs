@@ -117,6 +117,15 @@ public partial class FreeCanvasItem : UserControl
 
     // ── Move (drag whole item) ────────────────────────────────────────────
 
+    private void OnRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (Item == null) return;
+        // 右鍵選取此元件（若未在多選中則改為單選），以確保 ContextMenu 命令作用在正確的目標
+        if (!Item.IsSelected)
+            MainVm?.Canvas.SelectSingle(Item);
+        // 不 Handled：讓 ContextMenu 正常彈出
+    }
+
     private void OnMouseDown(object sender, MouseButtonEventArgs e)
     {
         if (e.OriginalSource is Thumb) { e.Handled = true; return; }

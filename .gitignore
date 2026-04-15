@@ -12,6 +12,9 @@ nupkg/
 # Rider
 .idea/
 
+# Sisyphus（個人規劃工具，非專案程式碼）
+.sisyphus/
+
 
 # Sdk
 FeiyangSDK-2.3.1/

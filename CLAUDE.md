@@ -94,4 +94,5 @@
 | `docs/kb/designer-system.md` | MachinePageDesigner + DesignViewer + DesignRuntime |
 | `docs/kb/platform-contracts.md` | Platform 跨 Repo 契約文件（危險介面清單） |
 | `docs/kb/controls-reference.md` | 控制項快速參考 |
+| `docs/kb/quickstart.md` | 新 App 快速建立指南（CLI 指令說明） |
 | `docs/devlog/2026-04.md` | 2026年4月開發日誌 |

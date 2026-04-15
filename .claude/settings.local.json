@@ -47,7 +47,9 @@
       "Bash(git -C \"D:/工作區/Project/Stackdose.UI.Core\" log --oneline --since=\"2026-01-01\")",
       "Bash(git -C \"D:/工作區/Project/Stackdose.UI.Core\" log --oneline --format=\"%ad %h %s\" --date=short)",
       "Bash(git -C \"D:/工作區/Project/Stackdose.Platform\" log --oneline --format=\"%ad %h %s\" --date=short)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(grep -v \"^obj$\")",
+      "Bash(grep -v \"^bin$\")"
     ]
   }
 }

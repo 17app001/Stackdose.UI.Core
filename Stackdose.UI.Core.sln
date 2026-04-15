@@ -31,6 +31,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.App.DeviceFramewo
 EndProject
 
 # ═══════════════════════════════════════════════════════
+#  🧪  測試
+# ═══════════════════════════════════════════════════════
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "🧪 測試", "🧪 測試", "{A0000006-0000-0000-0000-000000000006}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.UI.Core.Tests", "Stackdose.UI.Core.Tests\Stackdose.UI.Core.Tests.csproj", "{C9000001-0000-0000-0000-000000000001}"
+EndProject
+
+# ═══════════════════════════════════════════════════════
 #  🔧  工具（穩定，少動）
 # ═══════════════════════════════════════════════════════
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "🔧 工具（穩定）", "🔧 工具（穩定）", "{A0000003-0000-0000-0000-000000000003}"
@@ -256,6 +264,18 @@ Global
 		{656757FC-966E-490D-8A76-C177DFC1652C}.Release|x64.Build.0 = Release|Any CPU
 		{656757FC-966E-490D-8A76-C177DFC1652C}.Release|x86.ActiveCfg = Release|Any CPU
 		{656757FC-966E-490D-8A76-C177DFC1652C}.Release|x86.Build.0 = Release|Any CPU
+		{C9000001-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9000001-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9000001-0000-0000-0000-000000000001}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C9000001-0000-0000-0000-000000000001}.Debug|x64.Build.0 = Debug|Any CPU
+		{C9000001-0000-0000-0000-000000000001}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C9000001-0000-0000-0000-000000000001}.Debug|x86.Build.0 = Debug|Any CPU
+		{C9000001-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9000001-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9000001-0000-0000-0000-000000000001}.Release|x64.ActiveCfg = Release|Any CPU
+		{C9000001-0000-0000-0000-000000000001}.Release|x64.Build.0 = Release|Any CPU
+		{C9000001-0000-0000-0000-000000000001}.Release|x86.ActiveCfg = Release|Any CPU
+		{C9000001-0000-0000-0000-000000000001}.Release|x86.Build.0 = Release|Any CPU
 		{A311CD92-ECF2-4CC2-80B3-9882D309924D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A311CD92-ECF2-4CC2-80B3-9882D309924D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A311CD92-ECF2-4CC2-80B3-9882D309924D}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -273,6 +293,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		# 🧪 測試
+		{C9000001-0000-0000-0000-000000000001} = {A0000006-0000-0000-0000-000000000006}
 		# 🚀 開發中
 		{282E6333-E3C7-4AA4-8929-BA69C92C67FD} = {A0000001-0000-0000-0000-000000000001}
 		{A311CD92-ECF2-4CC2-80B3-9882D309924D} = {A0000001-0000-0000-0000-000000000001}

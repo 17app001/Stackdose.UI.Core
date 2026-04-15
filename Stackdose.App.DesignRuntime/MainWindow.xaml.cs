@@ -15,6 +15,9 @@ public partial class MainWindow : Window
 {
     private PlcStatus? _plcStatus;
     private CancellationTokenSource? _simCts;
+    private FileSystemWatcher? _fileWatcher;
+    private string? _loadedFilePath;
+    private DateTime _lastHotReload = DateTime.MinValue;
 
     public MainWindow()
     {
@@ -138,12 +141,57 @@ public partial class MainWindow : Window
             RenderDocument(doc, path);
             lblFilePath.Text = path;
             lblFilePath.Foreground = System.Windows.Media.Brushes.LightGray;
+            _loadedFilePath = path;
+            SetupFileWatcher(path);
         }
         catch (Exception ex)
         {
             MessageBox.Show($"載入失敗：{ex.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
             ShowStatus($"載入失敗：{ex.Message}", error: true);
         }
+    }
+
+    // ── Hot-Reload ────────────────────────────────────────────────────────
+
+    private void SetupFileWatcher(string path)
+    {
+        _fileWatcher?.Dispose();
+
+        var dir  = Path.GetDirectoryName(path);
+        var file = Path.GetFileName(path);
+        if (string.IsNullOrEmpty(dir) || string.IsNullOrEmpty(file)) return;
+
+        _fileWatcher = new FileSystemWatcher(dir, file)
+        {
+            NotifyFilter        = NotifyFilters.LastWrite | NotifyFilters.Size,
+            EnableRaisingEvents = true,
+        };
+        _fileWatcher.Changed += OnDesignFileChanged;
+    }
+
+    private void OnDesignFileChanged(object sender, FileSystemEventArgs e)
+    {
+        // 防抖：800ms 內同一路徑只觸發一次
+        var now = DateTime.UtcNow;
+        if ((now - _lastHotReload).TotalMilliseconds < 800) return;
+        _lastHotReload = now;
+
+        // 延遲讀取：等待寫入完成
+        Task.Delay(400).ContinueWith(_ =>
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                try
+                {
+                    var doc = DesignFileService.Load(e.FullPath);
+                    RenderDocument(doc, e.FullPath);
+                    lblFilePath.Text       = $"↺ {e.FullPath}";
+                    lblFilePath.Foreground = System.Windows.Media.Brushes.Cyan;
+                    ShowStatus($"↺ 偵測到檔案變更，已自動重新載入：{Path.GetFileName(e.FullPath)}");
+                }
+                catch { /* 靜默失敗，等下次更新觸發 */ }
+            });
+        });
     }
 
     private void RenderDocument(DesignDocument doc, string filePath)
@@ -304,6 +352,18 @@ public partial class MainWindow : Window
             catch (TaskCanceledException) { break; }
             catch { break; }   // 連線中斷等意外，跳出
         }
+    }
+
+    // ── 視窗關閉 ──────────────────────────────────────────────────────────
+
+    private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        _simCts?.Cancel();
+        _fileWatcher?.Dispose();
+        _fileWatcher = null;
+        PlcContext.GlobalStatus = null;
+        _plcStatus?.Dispose();
+        ComplianceContext.Shutdown();
     }
 
     // ── 狀態列 ────────────────────────────────────────────────────────

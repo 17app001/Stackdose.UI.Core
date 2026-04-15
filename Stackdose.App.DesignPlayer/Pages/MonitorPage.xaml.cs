@@ -13,6 +13,9 @@ public partial class MonitorPage : UserControl
 {
     private readonly PlayerAppConfig _config;
     private PlcStatus? _plcStatus;
+    private FileSystemWatcher? _fileWatcher;
+    private string? _loadedDesignPath;
+    private DateTime _lastHotReload = DateTime.MinValue;
 
     public MonitorPage(PlayerAppConfig config)
     {
@@ -63,10 +66,13 @@ public partial class MonitorPage : UserControl
     public void RefreshMonitors() => _plcStatus?.RefreshMonitors();
 
     /// <summary>
-    /// 應用程式關閉前呼叫，釋放 PLC 資源。
+    /// 應用程式關閉前呼叫，釋放 PLC 資源與檔案監聽器。
     /// </summary>
     public void DisposePlc()
     {
+        _fileWatcher?.Dispose();
+        _fileWatcher = null;
+
         PlcContext.GlobalStatus = null;
         _plcStatus?.Dispose();
         PlcStatusHost.Child = null;
@@ -78,6 +84,7 @@ public partial class MonitorPage : UserControl
     public void LoadDesign()
     {
         var path = ResolvePath(_config.DesignFile);
+        _loadedDesignPath = path;
 
         lblDesignFile.Text = Path.GetFileName(path);
 
@@ -93,12 +100,55 @@ public partial class MonitorPage : UserControl
             var doc = DesignFileService.Load(path);
             RenderDocument(doc);
             EmptyHint.Visibility = Visibility.Collapsed;
+            SetupFileWatcher(path);
         }
         catch (Exception ex)
         {
             EmptyHint.Visibility = Visibility.Visible;
             EmptyHintSub.Text = $"載入失敗：{ex.Message}";
         }
+    }
+
+    // ── Hot-Reload ────────────────────────────────────────────────────────
+
+    private void SetupFileWatcher(string path)
+    {
+        _fileWatcher?.Dispose();
+
+        var dir  = Path.GetDirectoryName(path);
+        var file = Path.GetFileName(path);
+        if (string.IsNullOrEmpty(dir) || string.IsNullOrEmpty(file)) return;
+
+        _fileWatcher = new FileSystemWatcher(dir, file)
+        {
+            NotifyFilter       = NotifyFilters.LastWrite | NotifyFilters.Size,
+            EnableRaisingEvents = true,
+        };
+        _fileWatcher.Changed += OnDesignFileChanged;
+    }
+
+    private void OnDesignFileChanged(object sender, FileSystemEventArgs e)
+    {
+        // 防抖：800ms 內同一路徑只觸發一次
+        var now = DateTime.UtcNow;
+        if ((now - _lastHotReload).TotalMilliseconds < 800) return;
+        _lastHotReload = now;
+
+        // 延遲讀取：等待寫入完成（設計器存檔時可能多次觸發 Changed）
+        Task.Delay(400).ContinueWith(_ =>
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                try
+                {
+                    var doc = DesignFileService.Load(e.FullPath);
+                    RenderDocument(doc);
+                    EmptyHint.Visibility = Visibility.Collapsed;
+                    lblDesignFile.Text   = $"↺ {Path.GetFileName(e.FullPath)}";
+                }
+                catch { /* 靜默失敗，等下次更新觸發 */ }
+            });
+        });
     }
 
     private void RenderDocument(DesignDocument doc)

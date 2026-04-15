@@ -1,17 +1,17 @@
 # 設計器系統知識庫
 
-> 涵蓋 MachinePageDesigner、DesignViewer、DesignRuntime 三個工具的架構與使用方式。
+> 涵蓋 MachinePageDesigner、DesignViewer、DesignRuntime、DesignPlayer 四個工具的架構與使用方式。
 
 ---
 
 ## 1. 設計器系統概覽
 
-三個專案構成完整的「設計 → 預覽 → 執行」工作流程：
+四個專案構成完整的「設計 → 預覽 → 驗證 → 量產」工作流程：
 
 ```
-MachinePageDesigner        DesignViewer              DesignRuntime
-（拖曳設計畫布）    →→→   （JSON即時預覽）   →→→   （真實PLC連線執行）
-輸出 .machinedesign.json   拖入JSON即時渲染         載入JSON + 連線PLC
+MachinePageDesigner   →→→  DesignViewer    →→→  DesignRuntime  →→→  DesignPlayer
+（拖曳設計畫布）            （JSON靜態預覽）       （開發者驗證用）       （量產部署）
+輸出 .machinedesign.json   拖入JSON即時渲染      載入JSON + 連線PLC   完整Shell UI + 登入管控
 ```
 
 ---
@@ -51,31 +51,32 @@ MachinePageDesigner        DesignViewer              DesignRuntime
 
 ```json
 {
-  "version": "2.0",
+  "version": "1.0",
+  "canvasWidth": 1280,
+  "canvasHeight": 720,
   "meta": {
     "title": "頁面標題",
     "machineId": "M1",
-    "canvasWidth": 1280,
-    "canvasHeight": 720
+    "createdAt": "2026-04-15T00:00:00Z",
+    "modifiedAt": "2026-04-15T00:00:00Z"
   },
-  "items": [
+  "canvasItems": [
     {
       "type": "PlcLabel",
       "x": 100, "y": 200,
       "width": 120, "height": 80,
-      "zIndex": 0,
-      "locked": false,
       "properties": {
         "label": "溫度",
         "address": "D100",
-        "colorTheme": "NeonBlue",
-        "shape": "Rectangle"
+        "valueColorTheme": "NeonBlue",
+        "frameShape": "Rectangle"
       }
     }
-  ],
-  "groups": [...]
+  ]
 }
 ```
+
+> **注意：** 頂層鍵是 `canvasItems`（非 `items`），畫布尺寸也在頂層（非在 `meta` 下）。這是 `DesignDocument` Model 的實際欄位名稱。
 
 ### 2.4 支援控制項
 
@@ -135,37 +136,100 @@ Stackdose.Tools.DesignViewer
 ## 4. DesignRuntime
 
 **專案：** `Stackdose.App.DesignRuntime`
-**狀態：** 開發中（有未提交變更）
+**狀態：** 開發中
 
 ### 4.1 用途
-真實執行環境：連線 PLC，載入 `.machinedesign.json`，控制項顯示實際 PLC 數值。
+開發者驗證工具：手動輸入 PLC IP、開啟 JSON，確認控制項顯示正確的實際 PLC 數值。適合設計完成後上線前的最終驗證，不適合量產部署。
 
-### 4.2 與其他工具的差異
-| | MachinePageDesigner | DesignViewer | DesignRuntime |
-|---|---|---|---|
-| PLC連線 | ❌ | ❌ | ✅ |
-| 即時數值 | ❌（預設值） | ❌（模擬值） | ✅ |
-| 編輯功能 | ✅ | ❌ | ❌ |
-| 用途 | 設計 | 預覽 | 執行 |
+### 4.2 主要功能
+
+| 功能 | 說明 |
+|---|---|
+| 手動輸入 PLC IP / Port / Scan | 工具列直接輸入，無需設定檔 |
+| 模擬器模式 | 勾選後無需真實 PLC 即可連線 |
+| 亂數測試注入 | 自動寫入 D100~D102 隨機值，驗證數值更新 |
+| JSON 熱更新 | 偵測到 .machinedesign.json 變更後自動重載畫布 |
+| 縮放 | 0.25x ~ 2.0x 滑桿縮放 |
 
 ### 4.3 專案依賴
 ```
 Stackdose.App.DesignRuntime
 ├── → Stackdose.UI.Core
-├── → Stackdose.UI.Templates
-├── → Stackdose.App.DeviceFramework
-└── → Stackdose.Tools.MachinePageDesigner（載入 JSON 渲染）
+├── → Stackdose.App.DeviceFramework（ProcessCommandService）
+└── → Stackdose.Tools.MachinePageDesigner（DesignFileService、DesignDocument）
 ```
 
 ---
 
-## 5. 常見問題
+## 5. DesignPlayer
+
+**專案：** `Stackdose.App.DesignPlayer`
+**狀態：** 開發中
+
+### 5.1 用途
+可交付量產的 Shell App。設備廠商直接部署到現場，不需修改程式碼，只需編輯 `Config/` 下的 JSON 設定。
+
+### 5.2 與 DesignRuntime 的差異
+
+| 特性 | DesignRuntime | DesignPlayer |
+|---|---|---|
+| 目標 | 開發者驗證 | 量產部署 |
+| Shell UI | 無（裸視窗） | 完整（左側導航 + 頁首 + 頁尾） |
+| PLC 設定方式 | 工具列手動輸入 | `app-config.json` 外部設定 |
+| 登入管控 | 無 | 可選（`loginRequired`） |
+| 使用者管理 | 無 | 內建（Operator 以上） |
+| 開啟 JSON | 手動選擇或拖曳 | 啟動時自動載入 `designFile` 路徑 |
+| JSON 熱更新 | ✅ | ✅ |
+
+### 5.3 設定檔
+
+**`Config/app-config.json`**
+
+```json
+{
+  "appTitle": "Stackdose Monitor",
+  "headerDeviceName": "MONITOR",
+  "loginRequired": false,
+  "plc": {
+    "ip": "192.168.1.100",
+    "port": 3000,
+    "pollIntervalMs": 500,
+    "autoConnect": true
+  },
+  "designFile": "Config/monitor.machinedesign.json"
+}
+```
+
+### 5.4 完整比較表
+
+| | MachinePageDesigner | DesignViewer | DesignRuntime | DesignPlayer |
+|---|---|---|---|---|
+| PLC連線 | ❌ | ❌ | ✅ | ✅ |
+| 即時數值 | ❌ | ❌ | ✅ | ✅ |
+| 編輯功能 | ✅ | ❌ | ❌ | ❌ |
+| Shell UI | ❌ | ❌ | ❌ | ✅ |
+| 登入管控 | ❌ | ❌ | ❌ | 可選 |
+| JSON 熱更新 | — | — | ✅ | ✅ |
+| 用途 | 設計 | 預覽 | 開發驗證 | 量產交付 |
+
+### 5.5 專案依賴
+```
+Stackdose.App.DesignPlayer
+├── → Stackdose.UI.Core（控制項 + Context）
+├── → Stackdose.UI.Templates（MainContainer Shell）
+├── → Stackdose.App.DeviceFramework（DesignFileService、ProcessCommandService）
+└── → Stackdose.Tools.MachinePageDesigner（DesignDocument、DesignerItemDefinition）
+```
+
+---
+
+## 6. 常見問題
 
 **Q: 設計時控制項不顯示數值？**
 A: 正常，MachinePageDesigner 和 DesignViewer 不連 PLC，顯示 DefaultValue。
 
-**Q: 儲存後在 DesignRuntime 看不到更新？**
-A: 確認 DesignRuntime 的 Config 路徑指向正確的 .machinedesign.json。
+**Q: 儲存後在 DesignRuntime / DesignPlayer 看不到更新？**
+A: 兩者均支援 JSON 熱更新（FileSystemWatcher）。儲存後約 400~800ms 內會自動重載。若未觸發，確認 DesignPlayer 的 `Config/app-config.json` 中 `designFile` 路徑正確，且 DesignRuntime 已手動開啟過同一個檔案。
 
 **Q: 拖曳時控制項跳到奇怪位置？**
 A: 確認 Snap 設定，Snap 啟用時會吸附格線（可在工具列關閉）。

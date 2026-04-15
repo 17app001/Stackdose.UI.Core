@@ -1,0 +1,171 @@
+# 設計器系統知識庫
+
+> 涵蓋 MachinePageDesigner、DesignViewer、DesignRuntime 三個工具的架構與使用方式。
+
+---
+
+## 1. 設計器系統概覽
+
+三個專案構成完整的「設計 → 預覽 → 執行」工作流程：
+
+```
+MachinePageDesigner        DesignViewer              DesignRuntime
+（拖曳設計畫布）    →→→   （JSON即時預覽）   →→→   （真實PLC連線執行）
+輸出 .machinedesign.json   拖入JSON即時渲染         載入JSON + 連線PLC
+```
+
+---
+
+## 2. MachinePageDesigner
+
+**專案：** `Stackdose.Tools.MachinePageDesigner`
+**狀態：** 主力開發（自由畫布模式已完成）
+
+### 2.1 設計哲學演進
+
+| 版本 | 模式 | 說明 |
+|---|---|---|
+| v1.0（2026-04-01） | Zone 制（Grid排列） | 固定功能區塊，UniformGrid 自動排列 |
+| v2.0（2026-04-08+） | **自由畫布（FreeCanvas）** | 拖曳任意位置，完全自由定位 |
+
+目前為 v2.0 自由畫布模式。
+
+### 2.2 自由畫布（FreeCanvas）功能清單
+
+| 功能 | 狀態 | 說明 |
+|---|---|---|
+| 拖曳任意放置 | ✅ | 控制項可拖到畫布任意位置 |
+| Snap 對齊 | ✅ | 拖曳時自動吸附格線 |
+| Z-Order 控制 | ✅ | 前置/後置層級調整 |
+| 框選（多選） | ✅ | 拖曳框選多個控制項 |
+| 鎖定 | ✅ | 鎖定控制項防止誤移 |
+| 複製貼上 | ✅ | Ctrl+C / Ctrl+V |
+| 多選同步 | ✅ | 多選同步移動 |
+| GroupBox | ✅ | 將多個控制項組合成群組 |
+| 對齊分配 | ✅ | 左對齊、水平均等分配等 |
+| 畫布尺寸設定 | ✅ | 可自訂畫布寬高 |
+| Undo/Redo | ✅ | Ctrl+Z / Ctrl+Y |
+| 儲存/載入 | ✅ | .machinedesign.json |
+
+### 2.3 輸出格式（.machinedesign.json）
+
+```json
+{
+  "version": "2.0",
+  "meta": {
+    "title": "頁面標題",
+    "machineId": "M1",
+    "canvasWidth": 1280,
+    "canvasHeight": 720
+  },
+  "items": [
+    {
+      "type": "PlcLabel",
+      "x": 100, "y": 200,
+      "width": 120, "height": 80,
+      "zIndex": 0,
+      "locked": false,
+      "properties": {
+        "label": "溫度",
+        "address": "D100",
+        "colorTheme": "NeonBlue",
+        "shape": "Rectangle"
+      }
+    }
+  ],
+  "groups": [...]
+}
+```
+
+### 2.4 支援控制項
+
+| 控制項 | 說明 |
+|---|---|
+| `PlcLabel` | PLC數值顯示，支援色彩主題、外框形狀、除數換算 |
+| `PlcText` | PLC文字顯示 |
+| `PlcStatusIndicator` | 狀態指示燈 |
+| `SecuredButton` | 需權限驗證的操作按鈕 |
+| `Spacer` | 空白佔位元素 |
+
+### 2.5 快捷鍵
+
+| 快捷鍵 | 功能 |
+|---|---|
+| `Ctrl+N` | 新建 |
+| `Ctrl+O` | 開啟 |
+| `Ctrl+S` | 儲存 |
+| `Ctrl+Shift+S` | 另存新檔 |
+| `Ctrl+Z` | 復原 |
+| `Ctrl+Y` | 重做 |
+| `Ctrl+C` / `Ctrl+V` | 複製/貼上 |
+| `Delete` | 刪除選取 |
+| `Shift+Click` | 多選 |
+
+### 2.6 專案依賴
+```
+Stackdose.Tools.MachinePageDesigner
+├── → Stackdose.UI.Core（PlcLabel 等真實控制項，WYSIWYG）
+└── → Stackdose.App.DeviceFramework（DeviceLabelViewModel、PlcDataGridPanel）
+```
+
+---
+
+## 3. DesignViewer
+
+**專案：** `Stackdose.Tools.DesignViewer`
+**狀態：** 開發中
+
+### 3.1 用途
+純預覽工具，不連 PLC，不需安裝完整執行環境。使用者拖入 `.machinedesign.json` 即可即時渲染頁面外觀。
+
+### 3.2 使用方式
+1. 執行 `Stackdose.Tools.DesignViewer.exe`
+2. 將 `.machinedesign.json` 拖入視窗
+3. 畫布即時渲染（控制項顯示預設值/模擬值）
+
+### 3.3 專案依賴
+```
+Stackdose.Tools.DesignViewer
+├── → Stackdose.UI.Core
+└── → Stackdose.Tools.MachinePageDesigner（共用渲染邏輯）
+```
+
+---
+
+## 4. DesignRuntime
+
+**專案：** `Stackdose.App.DesignRuntime`
+**狀態：** 開發中（有未提交變更）
+
+### 4.1 用途
+真實執行環境：連線 PLC，載入 `.machinedesign.json`，控制項顯示實際 PLC 數值。
+
+### 4.2 與其他工具的差異
+| | MachinePageDesigner | DesignViewer | DesignRuntime |
+|---|---|---|---|
+| PLC連線 | ❌ | ❌ | ✅ |
+| 即時數值 | ❌（預設值） | ❌（模擬值） | ✅ |
+| 編輯功能 | ✅ | ❌ | ❌ |
+| 用途 | 設計 | 預覽 | 執行 |
+
+### 4.3 專案依賴
+```
+Stackdose.App.DesignRuntime
+├── → Stackdose.UI.Core
+├── → Stackdose.UI.Templates
+├── → Stackdose.App.DeviceFramework
+└── → Stackdose.Tools.MachinePageDesigner（載入 JSON 渲染）
+```
+
+---
+
+## 5. 常見問題
+
+**Q: 設計時控制項不顯示數值？**
+A: 正常，MachinePageDesigner 和 DesignViewer 不連 PLC，顯示 DefaultValue。
+
+**Q: 儲存後在 DesignRuntime 看不到更新？**
+A: 確認 DesignRuntime 的 Config 路徑指向正確的 .machinedesign.json。
+
+**Q: 拖曳時控制項跳到奇怪位置？**
+A: 確認 Snap 設定，Snap 啟用時會吸附格線（可在工具列關閉）。

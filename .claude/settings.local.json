@@ -40,7 +40,14 @@
       "Bash(grep -r \"FrameShape\\\\|PlcLabelFrameShape\" /d/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core --include=*.cs -l)",
       "Bash(grep -n \"MachineDesignFile\\\\|machineDesignFile\\\\|designFile\\\\|CopyDesign\" Stackdose.Tools.ProjectGenerator/*.cs Stackdose.Tools.ProjectGenerator/**/*.cs)",
       "Bash(rm:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Read(//d/工作區/Project/Stackdose.Platform/**)",
+      "Read(//d/工作區/Project/Sdk/**)",
+      "Read(//d/工作區/**)",
+      "Bash(git -C \"D:/工作區/Project/Stackdose.UI.Core\" log --oneline --since=\"2026-01-01\")",
+      "Bash(git -C \"D:/工作區/Project/Stackdose.UI.Core\" log --oneline --format=\"%ad %h %s\" --date=short)",
+      "Bash(git -C \"D:/工作區/Project/Stackdose.Platform\" log --oneline --format=\"%ad %h %s\" --date=short)",
+      "Bash(git:*)"
     ]
   }
 }

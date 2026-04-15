@@ -19,9 +19,12 @@
 |---|---|---|
 | `PlcLabel` | PLC 數值顯示標籤，支援色彩主題、外框形狀、除數換算 | `Address`, `Label`, `ColorTheme`, `Shape`, `Divisor`, `DefaultValue` |
 | `PlcText` | PLC 文字顯示（字串型數值） | `Address`, `Label` |
-| `PlcStatus` | PLC 連線狀態顯示元件 | `IsConnected`, `ScanInterval` |
-| `PlcStatusIndicator` | 狀態指示燈（位元） | `Address`, `TrueColor`, `FalseColor` |
+| `PlcStatus` | PLC 連線狀態顯示元件（含自動連線能力） | `IpAddress`, `Port`, `AutoConnect`, `IsGlobal`, `ScanInterval` |
+| `PlcStatusIndicator` | 狀態指示燈（位元 ON/OFF） | `Address`, `TrueColor`, `FalseColor` |
+| `PlcEventTrigger` | PLC 位元觸發事件（監聽地址變化觸發 C# 事件） | `Address`, `EventName`, `EventTriggered` |
+| `PlcDeviceEditor` | PLC 裝置位址編輯器（讀寫測試用） | — |
 | `PlcDataGridPanel` | 多筆 Labels 批次顯示面板（抽出自 DynamicDevicePage） | `Labels`（`DeviceLabelViewModel` 集合） |
+| `ProcessStatusIndicator` | 製程狀態指示燈（多狀態顯示） | `State`, `StateColors` |
 
 ---
 
@@ -43,6 +46,8 @@
 | `SecuredButton` | 需權限驗證的按鈕，點擊前呼叫 `SecurityContext.CheckAccess()` |
 | `LoginDialog` | 登入對話框（支援 AD 與本機帳號） |
 | `UserEditorDialog` | 使用者帳號編輯對話框 |
+| `UserManagementPanel` | 使用者帳號管理面板（新增/編輯/刪除） |
+| `GroupManagementDialog` | 使用者群組管理對話框 |
 
 ---
 
@@ -64,6 +69,13 @@
 | `InputDialog` | 單一輸入對話框 |
 | `BatchInputDialog` | 多欄位批次輸入對話框 |
 | `InfoLabel` | 非PLC資訊顯示標籤（靜態文字，非即時更新） |
+
+## 進階功能控制項
+
+| 控制項 | 說明 |
+|---|---|
+| `RecipeLoader` | 配方載入控制項（`Controls/Feature/Recipe/`） |
+| `SimulatorControlPanel` | PLC 模擬器控制面板（`Controls/Feature/Simulator/`，開發測試用） |
 
 ---
 

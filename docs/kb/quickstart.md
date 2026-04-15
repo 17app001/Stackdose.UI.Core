@@ -45,9 +45,9 @@ dotnet build .\Stackdose.App.YourMachine\Stackdose.App.YourMachine.csproj -c Deb
 - 機台卡片與監控數值正常載入
 - 沒有異常 PLC 輪詢尖峰
 
-進階整合請參考 `Stackdose.UI.Core/Shell/SECOND_APP_QUICKSTART.md`。
+進階整合請參考 `docs/kb/second-app-quickstart.md`。
 
-單頁監控（Designer 為主）請參考 `Stackdose.App.SingleDetailLab/README_SINGLE_PAGE_QUICKSTART.md`。
+單頁監控（Designer 為主）請參考 `docs/kb/designer-system.md`。
 
 ## 單頁樣板產生方式
 

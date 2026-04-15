@@ -16,7 +16,7 @@
 ### 核心庫（穩定）
 | 專案 | 路徑 | 說明 |
 |---|---|---|
-| `Stackdose.UI.Core` | `./Stackdose.UI.Core/` | 26+ 自定義WPF控制項、Context管理、SQLiteLogger |
+| `Stackdose.UI.Core` | `./Stackdose.UI.Core/` | 26個自定義WPF控制項、Context管理、SQLiteLogger |
 | `Stackdose.UI.Templates` | `./Stackdose.UI.Templates/` | Shell布局：AppHeader、LeftNavigation、AppBottomBar |
 | `Stackdose.App.ShellShared` | `./Stackdose.App.ShellShared/` | 多App共用Shell服務層 |
 
@@ -93,6 +93,9 @@
 | `docs/kb/architecture.md` | 架構設計、Context 系統、資料流 |
 | `docs/kb/designer-system.md` | MachinePageDesigner + DesignViewer + DesignRuntime |
 | `docs/kb/platform-contracts.md` | Platform 跨 Repo 契約文件（危險介面清單） |
-| `docs/kb/controls-reference.md` | 控制項快速參考 |
+| `docs/kb/controls-reference.md` | 控制項快速參考（26個，含 PLC/安全/日誌/通用/進階） |
 | `docs/kb/quickstart.md` | 新 App 快速建立指南（CLI 指令說明） |
+| `docs/kb/second-app-quickstart.md` | 第二個 App 整合進 Shell 的步驟 |
+| `docs/kb/design-standard.md` | Core UI 設計標準 |
+| `docs/kb/theme-token-standard.md` | 主題 Token 收斂規範（控制項色碼規則） |
 | `docs/devlog/2026-04.md` | 2026年4月開發日誌 |

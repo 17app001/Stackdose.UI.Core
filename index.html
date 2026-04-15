@@ -200,6 +200,36 @@
       display: flex; align-items: center; justify-content: space-between;
     }
 
+    /* ── Progress rows ── */
+    .prog-row { display:flex; align-items:center; gap:7px; font-size:12px; color:var(--text-secondary); }
+    .prog-check { color:var(--green); font-size:12px; flex-shrink:0; }
+    .prog-pending { color:var(--text-muted); }
+    .prog-dot-pending { color:var(--text-muted); flex-shrink:0; }
+
+    /* ── Timeline ── */
+    .tl-item {
+      display:grid; grid-template-columns: 72px 16px 1fr;
+      align-items:flex-start; gap:0 10px;
+      padding:8px 0;
+      position:relative;
+    }
+    .tl-item:not(:last-child)::after {
+      content:''; position:absolute;
+      left:79px; top:22px; bottom:-8px;
+      width:1px; background:var(--border);
+    }
+    .tl-date { font-size:11px; color:var(--text-muted); padding-top:1px; text-align:right; }
+    .tl-dot {
+      width:10px; height:10px; border-radius:50%;
+      background:var(--border); border:2px solid var(--bg-card2);
+      margin-top:3px; flex-shrink:0;
+    }
+    .tl-dot-hi { background:var(--blue); }
+    .tl-dot-future { background:var(--bg-card2); border:2px dashed var(--text-muted); }
+    .tl-text { font-size:12px; color:var(--text-secondary); padding-top:1px; }
+    .tl-highlight .tl-text { color:var(--text-primary); }
+    .tl-future .tl-text { color:var(--text-muted); font-style:italic; }
+
     @media (max-width: 640px) {
       .site-header .container { flex-direction: column; gap: 16px; }
       .arch-layer-label { writing-mode: horizontal-tb; transform: none; width: auto; }
@@ -578,6 +608,110 @@
           </div>
         </div>
 
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ PROGRESS ══════════════ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-title">開發進度</div>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap:16px;">
+
+        <!-- 核心框架 -->
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
+          <div style="font-weight:600; margin-bottom:4px;">核心框架</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">UI.Core / Templates / ShellShared / DeviceFramework</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div class="prog-row"><span class="prog-check">✓</span><span>PLC 通訊（Mitsubishi FX3U）</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>FDA 21 CFR Part 11 合規日誌</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>6 等級使用者權限 + AD 驗證</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>JSON 驅動 UI（零程式碼上線）</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>Dark / Light 主題系統</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>Shell 導航（5 頁標準結構）</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>PrintHead 列印頭控制整合</span></div>
+          </div>
+          <div style="margin-top:14px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;"><span>完成度</span><span>7 / 7</span></div>
+            <div style="background:var(--border); border-radius:4px; height:4px;"><div style="background:var(--green); width:100%; height:4px; border-radius:4px;"></div></div>
+          </div>
+        </div>
+
+        <!-- MachinePageDesigner -->
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
+          <div style="font-weight:600; margin-bottom:4px;">MachinePageDesigner</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">自由畫布設計器功能</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px 12px;">
+            <div class="prog-row"><span class="prog-check">✓</span><span>自由畫布拖曳定位</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>Snap 格線對齊</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>Z-Order 層級調整</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>框選多選</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>控制項鎖定</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>複製 / 貼上</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>GroupBox 群組化</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>對齊 / 均等分配</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>畫布尺寸設定</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>Undo / Redo</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>儲存 / 載入 JSON</span></div>
+          </div>
+          <div style="margin-top:14px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;"><span>完成度</span><span>11 / 11</span></div>
+            <div style="background:var(--border); border-radius:4px; height:4px;"><div style="background:var(--green); width:100%; height:4px; border-radius:4px;"></div></div>
+          </div>
+        </div>
+
+        <!-- DesignRuntime / Viewer -->
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
+          <div style="font-weight:600; margin-bottom:4px;">DesignRuntime + DesignViewer</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">執行期驗證環境</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div class="prog-row"><span class="prog-check">✓</span><span>JSON 載入 + 畫布渲染</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>拖曳開啟 / 開啟按鈕</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>縮放控制</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>真實 PLC 連線（DesignRuntime）</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>模擬器模式（免 PLC）</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>亂數測試注入（D100~D102）</span></div>
+            <div class="prog-row prog-pending"><span class="prog-dot-pending">○</span><span>JSON Hot-Reload</span></div>
+            <div class="prog-row prog-pending"><span class="prog-dot-pending">○</span><span>PLC 斷線自動重連穩定化</span></div>
+          </div>
+          <div style="margin-top:14px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;"><span>完成度</span><span>6 / 8</span></div>
+            <div style="background:var(--border); border-radius:4px; height:4px;"><div style="background:var(--orange); width:75%; height:4px; border-radius:4px;"></div></div>
+          </div>
+        </div>
+
+        <!-- 工具 -->
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
+          <div style="font-weight:600; margin-bottom:4px;">開發工具</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">ProjectGenerator / ProjectGeneratorUI</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div class="prog-row"><span class="prog-check">✓</span><span>CSV Spec → WPF 專案產生</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>GUI 版表單 + 版面預覽</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>多種 PageMode / LayoutMode</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>單頁設計器樣板（3種版型）</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>產生後自動 dotnet build 驗證</span></div>
+          </div>
+          <div style="margin-top:14px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;"><span>完成度</span><span>5 / 5</span></div>
+            <div style="background:var(--border); border-radius:4px; height:4px;"><div style="background:var(--green); width:100%; height:4px; border-radius:4px;"></div></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Timeline -->
+      <div style="margin-top:28px;">
+        <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-muted); margin-bottom:14px;">開發時間軸（2026）</div>
+        <div style="display:flex; flex-direction:column; gap:0;">
+          <div class="tl-item"><span class="tl-date">3月上旬</span><span class="tl-dot"></span><span class="tl-text">DeviceFramework 建立；UbiDemo 遷移至框架架構</span></div>
+          <div class="tl-item"><span class="tl-date">3月下旬</span><span class="tl-dot"></span><span class="tl-text">ProjectGeneratorUI；Module 系統；LiveLog 過濾</span></div>
+          <div class="tl-item"><span class="tl-date">4月01日</span><span class="tl-dot"></span><span class="tl-text">PlcDataGridPanel 通用元件抽出；MachinePageDesigner 初始化</span></div>
+          <div class="tl-item"><span class="tl-date">4月08日</span><span class="tl-dot"></span><span class="tl-text">切換為自由畫布（FreeCanvas）模式，完成拖曳基礎功能</span></div>
+          <div class="tl-item tl-highlight"><span class="tl-date">4月13日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 自由畫布全功能整合；DesignViewer + DesignRuntime 新增</span></div>
+          <div class="tl-item tl-highlight"><span class="tl-date">4月15日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 模擬器模式 + 亂數測試注入；文件知識庫建立（含本頁）</span></div>
+          <div class="tl-item tl-future"><span class="tl-date">近期</span><span class="tl-dot tl-dot-future"></span><span class="tl-text">JSON Hot-Reload；PLC 斷線穩定化；更多控制項支援</span></div>
+        </div>
       </div>
     </div>
   </section>

@@ -59,6 +59,18 @@
                 <!-- PlcStatus 控制項：放在此處，Loaded 後自動連線 -->
                 <Border x:Name="plcStatusHost" VerticalAlignment="Center" Margin="0,0,16,0"/>
 
+                <Separator Width="1" Background="#3A3A6A" Margin="0,2,16,2" Style="{x:Null}"/>
+
+                <CheckBox x:Name="chkSimMode"
+                          Content="🤖 模擬器模式"
+                          Foreground="#FFB74D"
+                          VerticalAlignment="Center"
+                          FontSize="12"
+                          Margin="0,0,0,0"
+                          Checked="OnSimModeChanged"
+                          Unchecked="OnSimModeChanged"
+                          ToolTip="啟用後，下次連線將使用內建模擬器（不需真實 PLC）"/>
+
             </WrapPanel>
         </Border>
 
@@ -98,6 +110,16 @@
 
                 <TextBlock x:Name="lblCanvasInfo" Text="畫布：—"
                            Foreground="#9090B0" VerticalAlignment="Center" FontSize="12"/>
+
+                <Separator Width="1" Background="#3A3A5A" Margin="16,2,16,2" Style="{x:Null}"/>
+
+                <Button x:Name="btnRandomSim"
+                        Content="🎲 亂數 D100~D102"
+                        Click="OnRandomSimClick"
+                        Padding="12,5"
+                        Background="#5C6BC0" Foreground="White"
+                        BorderThickness="0" Cursor="Hand" FontWeight="SemiBold"
+                        ToolTip="每 100~300ms 隨機寫入 0~32767 至 D100、D101、D102（需先連線）"/>
 
             </WrapPanel>
         </Border>

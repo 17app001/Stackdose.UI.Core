@@ -8,21 +8,21 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:          #0d1117;
-      --bg-card:     #161b22;
-      --bg-card2:    #1c2128;
-      --border:      #30363d;
-      --border-hi:   #58a6ff44;
-      --text-primary:   #e6edf3;
-      --text-secondary: #8b949e;
-      --text-muted:     #484f58;
-      --blue:        #58a6ff;
-      --green:       #3fb950;
-      --orange:      #f0883e;
-      --purple:      #a371f7;
-      --cyan:        #39d353;
-      --yellow:      #d29922;
-      --red:         #f85149;
+      --bg:          #f6f8fa;
+      --bg-card:     #ffffff;
+      --bg-card2:    #f6f8fa;
+      --border:      #d0d7de;
+      --border-hi:   #0969da55;
+      --text-primary:   #1f2328;
+      --text-secondary: #636c76;
+      --text-muted:     #9198a1;
+      --blue:        #0969da;
+      --green:       #1a7f37;
+      --orange:      #bc4c00;
+      --purple:      #8250df;
+      --cyan:        #1a7f37;
+      --yellow:      #9a6700;
+      --red:         #cf222e;
     }
 
     body {
@@ -120,8 +120,10 @@
       background: var(--bg-card); border: 1px solid var(--border);
       border-radius: 10px; padding: 20px;
       display: flex; flex-direction: column; gap: 10px;
-      transition: border-color 0.15s, background 0.15s;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+      cursor: pointer;
     }
+    .project-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
     .project-card:hover { border-color: var(--border-hi); background: var(--bg-card2); }
     .project-card-header { display: flex; align-items: flex-start; gap: 10px; }
     .project-icon {
@@ -165,9 +167,10 @@
       background: var(--bg-card); border: 1px solid var(--border);
       border-radius: 8px; padding: 14px 16px;
       display: flex; align-items: flex-start; gap: 10px;
-      transition: border-color 0.15s;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      cursor: pointer; text-decoration: none; color: inherit;
     }
-    .doc-card:hover { border-color: var(--border-hi); }
+    .doc-card:hover { border-color: var(--border-hi); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     .doc-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
     .doc-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
     .doc-title a { color: var(--text-primary); }
@@ -229,6 +232,42 @@
     .tl-text { font-size:12px; color:var(--text-secondary); padding-top:1px; }
     .tl-highlight .tl-text { color:var(--text-primary); }
     .tl-future .tl-text { color:var(--text-muted); font-style:italic; }
+
+    /* ── Modal ── */
+    #modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 1000;
+      align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    #modal-panel {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; width: 100%; max-width: 560px;
+      max-height: 82vh; overflow-y: auto;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+      animation: modal-in 0.18s ease;
+    }
+    @keyframes modal-in {
+      from { opacity:0; transform: translateY(12px) scale(0.98); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+    #modal-header {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 22px 22px 16px; border-bottom: 1px solid var(--border);
+    }
+    .modal-doc-link {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border: 1px solid var(--border);
+      border-radius: 20px; font-size: 12px; color: var(--blue);
+      text-decoration: none; background: var(--bg-card2);
+      transition: border-color 0.1s;
+    }
+    .modal-doc-link:hover { border-color: var(--blue); text-decoration: none; }
+    .modal-prog-item {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; padding: 3px 0;
+    }
 
     @media (max-width: 640px) {
       .site-header .container { flex-direction: column; gap: 16px; }
@@ -335,7 +374,7 @@
       <div class="group-title">核心庫（穩定）</div>
       <div class="project-grid">
 
-        <div class="project-card">
+        <div class="project-card" onclick="openModal('ui-core')">
           <div class="project-card-header">
             <div class="project-icon icon-green">🧩</div>
             <div>
@@ -353,7 +392,7 @@
           </div>
         </div>
 
-        <div class="project-card">
+        <div class="project-card" onclick="openModal('ui-templates')">
           <div class="project-card-header">
             <div class="project-icon icon-green">🖼️</div>
             <div>
@@ -367,7 +406,7 @@
           </div>
         </div>
 
-        <div class="project-card">
+        <div class="project-card" onclick="openModal('shell-shared')">
           <div class="project-card-header">
             <div class="project-icon icon-green">🔗</div>
             <div>
@@ -387,7 +426,7 @@
       <div class="group-title">框架與應用</div>
       <div class="project-grid">
 
-        <div class="project-card">
+        <div class="project-card" onclick="openModal('device-framework')">
           <div class="project-card-header">
             <div class="project-icon icon-blue">⚙️</div>
             <div>
@@ -405,7 +444,7 @@
           </div>
         </div>
 
-        <div class="project-card">
+        <div class="project-card" onclick="openModal('ubi-demo')">
           <div class="project-card-header">
             <div class="project-icon icon-blue">🏭</div>
             <div>
@@ -419,7 +458,7 @@
           </div>
         </div>
 
-        <div class="project-card">
+        <div class="project-card" onclick="openModal('design-runtime')">
           <div class="project-card-header">
             <div class="project-icon icon-orange">▶️</div>
             <div>
@@ -439,7 +478,7 @@
       <div class="group-title">工具</div>
       <div class="project-grid">
 
-        <div class="project-card">
+        <div class="project-card" onclick="openModal('mpd')">
           <div class="project-card-header">
             <div class="project-icon icon-purple">🎨</div>
             <div>
@@ -456,7 +495,7 @@
           </div>
         </div>
 
-        <div class="project-card">
+        <div class="project-card" onclick="openModal('design-viewer')">
           <div class="project-card-header">
             <div class="project-icon icon-purple">👁️</div>
             <div>
@@ -470,7 +509,7 @@
           </div>
         </div>
 
-        <div class="project-card">
+        <div class="project-card" onclick="openModal('proj-gen-ui')">
           <div class="project-card-header">
             <div class="project-icon icon-purple">⚡</div>
             <div>
@@ -487,7 +526,7 @@
           </div>
         </div>
 
-        <div class="project-card">
+        <div class="project-card" onclick="openModal('proj-gen')">
           <div class="project-card-header">
             <div class="project-icon icon-purple">💻</div>
             <div>
@@ -512,101 +551,101 @@
       <div class="section-title">文件知識庫</div>
       <div class="docs-grid">
 
-        <div class="doc-card">
+        <a class="doc-card" href="docs/PROJECT_MAP.md" target="_blank">
           <div class="doc-icon">🗺️</div>
           <div>
-            <div class="doc-title"><a href="docs/PROJECT_MAP.md">專案依賴圖</a></div>
+            <div class="doc-title">專案依賴圖</div>
             <div class="doc-desc">所有專案的完整依賴關係、NuGet 套件版本、外部 Repo 路徑</div>
           </div>
-        </div>
+        </a>
 
-        <div class="doc-card">
+        <a class="doc-card" href="docs/kb/architecture.md" target="_blank">
           <div class="doc-icon">🏗️</div>
           <div>
-            <div class="doc-title"><a href="docs/kb/architecture.md">架構設計</a></div>
+            <div class="doc-title">架構設計</div>
             <div class="doc-desc">Context 系統、JSON 驅動流程、Shell 導航、資料流圖解</div>
           </div>
-        </div>
+        </a>
 
-        <div class="doc-card">
+        <a class="doc-card" href="docs/kb/deviceframework-guide.md" target="_blank">
           <div class="doc-icon">🚀</div>
           <div>
-            <div class="doc-title"><a href="docs/kb/deviceframework-guide.md">DeviceFramework 新人指南</a></div>
+            <div class="doc-title">DeviceFramework 新人指南</div>
             <div class="doc-desc">設定格式、最小欄位、擴充決策表、常見問題，新人必讀</div>
           </div>
-        </div>
+        </a>
 
-        <div class="doc-card">
+        <a class="doc-card" href="docs/kb/quickstart.md" target="_blank">
           <div class="doc-icon">⚡</div>
           <div>
-            <div class="doc-title"><a href="docs/kb/quickstart.md">快速上手（3步驟）</a></div>
+            <div class="doc-title">快速上手（3步驟）</div>
             <div class="doc-desc">用腳本一行命令建立新設備 App，含各種版型選項說明</div>
           </div>
-        </div>
+        </a>
 
-        <div class="doc-card">
+        <a class="doc-card" href="docs/kb/designer-system.md" target="_blank">
           <div class="doc-icon">🎨</div>
           <div>
-            <div class="doc-title"><a href="docs/kb/designer-system.md">設計器系統</a></div>
+            <div class="doc-title">設計器系統</div>
             <div class="doc-desc">MachinePageDesigner + DesignViewer + DesignRuntime 完整說明</div>
           </div>
-        </div>
+        </a>
 
-        <div class="doc-card">
+        <a class="doc-card" href="docs/kb/controls-reference.md" target="_blank">
           <div class="doc-icon">🧩</div>
           <div>
-            <div class="doc-title"><a href="docs/kb/controls-reference.md">控制項快速參考</a></div>
+            <div class="doc-title">控制項快速參考</div>
             <div class="doc-desc">26 個控制項的職責、主要屬性一覽（PLC / 安全 / 日誌 / 通用）</div>
           </div>
-        </div>
+        </a>
 
-        <div class="doc-card">
+        <a class="doc-card" href="docs/kb/platform-contracts.md" target="_blank">
           <div class="doc-icon">⚠️</div>
           <div>
-            <div class="doc-title"><a href="docs/kb/platform-contracts.md">Platform 契約文件</a></div>
+            <div class="doc-title">Platform 契約文件</div>
             <div class="doc-desc">跨 Repo 危險介面清單（IPlcManager、IPlcMonitor 完整簽名）</div>
           </div>
-        </div>
+        </a>
 
-        <div class="doc-card">
+        <a class="doc-card" href="docs/kb/second-app-quickstart.md" target="_blank">
           <div class="doc-icon">🔗</div>
           <div>
-            <div class="doc-title"><a href="docs/kb/second-app-quickstart.md">第二個 App 整合</a></div>
+            <div class="doc-title">第二個 App 整合</div>
             <div class="doc-desc">將新設備 App 整合進既有 Shell 環境的步驟說明</div>
           </div>
-        </div>
+        </a>
 
-        <div class="doc-card">
+        <a class="doc-card" href="docs/kb/design-standard.md" target="_blank">
           <div class="doc-icon">🎨</div>
           <div>
-            <div class="doc-title"><a href="docs/kb/design-standard.md">Core UI 設計標準</a></div>
+            <div class="doc-title">Core UI 設計標準</div>
             <div class="doc-desc">Token 層次、命名規則、樣式規則，控制項開發必讀</div>
           </div>
-        </div>
+        </a>
 
-        <div class="doc-card">
+        <a class="doc-card" href="docs/kb/theme-token-standard.md" target="_blank">
           <div class="doc-icon">🌗</div>
           <div>
-            <div class="doc-title"><a href="docs/kb/theme-token-standard.md">主題 Token 收斂規範</a></div>
+            <div class="doc-title">主題 Token 收斂規範</div>
             <div class="doc-desc">硬編碼色碼替換計畫、建議新增 Token 清單，三階段改善路線</div>
           </div>
-        </div>
+        </a>
 
-        <div class="doc-card">
+        <a class="doc-card" href="docs/MANAGER_BRIEF.md" target="_blank">
           <div class="doc-icon">📋</div>
           <div>
-            <div class="doc-title"><a href="docs/MANAGER_BRIEF.md">主管進度簡報</a></div>
+            <div class="doc-title">主管進度簡報</div>
             <div class="doc-desc">非技術摘要：架構圖、功能完成表、開發時間軸、現況數字</div>
           </div>
-        </div>
+        </a>
 
-        <div class="doc-card">
+        <a class="doc-card" href="docs/devlog/2026-04.md" target="_blank">
           <div class="doc-icon">📝</div>
           <div>
-            <div class="doc-title"><a href="docs/devlog/2026-04.md">開發日誌 2026-04</a></div>
+            <div class="doc-title">開發日誌 2026-04</div>
             <div class="doc-desc">每日 commit 記錄（feat / fix / refactor / chore），主管呈報用</div>
           </div>
-        </div>
+        </a>
 
       </div>
     </div>
@@ -763,6 +802,256 @@
     <span>更新：2026-04-15</span>
   </div>
 </footer>
+
+<!-- ══════════════ MODAL ══════════════ -->
+<div id="modal-overlay" onclick="closeModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:1000; align-items:center; justify-content:center; padding:20px;">
+  <div id="modal-panel" onclick="event.stopPropagation()">
+    <div id="modal-header">
+      <div id="modal-icon" style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;"></div>
+      <div style="flex:1;min-width:0;">
+        <div id="modal-title" style="font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:2px;"></div>
+        <div id="modal-ns" style="font-size:11px;color:var(--text-muted);font-family:monospace;"></div>
+      </div>
+      <div id="modal-status" style="font-size:12px;display:flex;align-items:center;gap:5px;font-weight:500;"></div>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;color:var(--text-secondary);font-size:20px;padding:2px 6px;line-height:1;border-radius:6px;margin-left:8px;">✕</button>
+    </div>
+    <div style="padding:20px 22px;display:flex;flex-direction:column;gap:18px;">
+      <div id="modal-desc" style="font-size:13px;color:var(--text-secondary);line-height:1.65;"></div>
+      <div id="modal-docs-section" style="display:none;">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);margin-bottom:10px;">相關文件</div>
+        <div id="modal-docs" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+      <div id="modal-progress-section">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);margin-bottom:10px;">功能進度</div>
+        <div id="modal-progress" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PROJECTS = {
+  'ui-core': {
+    title: 'UI.Core', ns: 'Stackdose.UI.Core', icon: '🧩', iconBg: '#1a7f3715',
+    status: '穩定', statusColor: 'var(--blue)',
+    desc: '26 個自定義 WPF 控制項、Context 管理（PLC / 安全 / 合規日誌）、SQLite 稽核軌跡。所有專案的基礎依賴。',
+    docs: [
+      { label: '控制項快速參考', href: 'docs/kb/controls-reference.md' },
+      { label: '架構設計', href: 'docs/kb/architecture.md' },
+      { label: 'README', href: 'Stackdose.UI.Core/README.md' },
+    ],
+    progress: [
+      [true,  'CyberControlBase / PlcControlBase 控制項基類'],
+      [true,  '26 個自定義 WPF 控制項（PLC / 安全 / 日誌 / 通用）'],
+      [true,  'PlcContext — 全域 PLC 狀態管理'],
+      [true,  'SecurityContext — 6 等級權限 + AD 驗證'],
+      [true,  'ComplianceContext — FDA 21 CFR Part 11 稽核軌跡'],
+      [true,  'SensorContext — 感測器 / 警報狀態追蹤'],
+      [true,  'ThemeManager — Dark / Light 動態主題切換'],
+      [true,  'SqliteLogger — 非同步批次寫入（5s flush）'],
+    ]
+  },
+  'ui-templates': {
+    title: 'UI.Templates', ns: 'Stackdose.UI.Templates', icon: '🖼️', iconBg: '#1a7f3715',
+    status: '穩定', statusColor: 'var(--blue)',
+    desc: 'Shell 布局模板：AppHeader、LeftNavigation、AppBottomBar。提供標準 Overview / Detail / Log / User / Settings 五頁導航結構。',
+    docs: [
+      { label: 'QUICKSTART', href: 'Stackdose.UI.Templates/QUICKSTART.md' },
+      { label: 'README', href: 'Stackdose.UI.Templates/README.md' },
+    ],
+    progress: [
+      [true, 'AppHeader 頂部導航列'],
+      [true, 'LeftNavigation 側邊導航'],
+      [true, 'AppBottomBar 底部狀態列'],
+      [true, '5 頁標準導航結構（Overview / Detail / Log / User / Settings）'],
+      [true, 'ShellRouteCatalog + NavigationOrchestrator'],
+    ]
+  },
+  'shell-shared': {
+    title: 'ShellShared', ns: 'Stackdose.App.ShellShared', icon: '🔗', iconBg: '#1a7f3715',
+    status: '穩定', statusColor: 'var(--blue)',
+    desc: 'Shell App 共用底層服務。ShellRuntimeHost 讀取 Config/ 目錄，解析 app-meta.json 與 Machine*.config.json，供各 App 引用。',
+    docs: [],
+    progress: [
+      [true, 'ShellRuntimeHost — 設定檔掃描與載入'],
+      [true, 'app-meta.json 解析（標題、導航、Hot Reload 策略）'],
+      [true, 'Machine*.config.json 解析（PLC、Tags、Commands）'],
+      [true, 'IShellAppProfile — App metadata 介面'],
+      [true, 'ShellNavigationService — 跨 App 導航契約'],
+    ]
+  },
+  'device-framework': {
+    title: 'DeviceFramework', ns: 'Stackdose.App.DeviceFramework', icon: '⚙️', iconBg: '#0969da12',
+    status: '穩定', statusColor: 'var(--blue)',
+    desc: 'JSON 驅動的設備 App 組裝框架。AppController、RuntimeHost、DeviceContextMapper、DynamicDevicePage，零程式碼即可運作。',
+    docs: [
+      { label: '快速上手（3步驟）', href: 'docs/kb/quickstart.md' },
+      { label: '架構設計', href: 'docs/kb/architecture.md' },
+      { label: 'README', href: 'Stackdose.App.DeviceFramework/README.md' },
+    ],
+    progress: [
+      [true, 'AppController — 啟動 / 關閉流程'],
+      [true, 'BootstrapService + RuntimeHost — 設定載入'],
+      [true, 'DeviceContextMapper — JSON → DeviceContext'],
+      [true, 'DynamicDevicePage — 零程式碼自動生成頁面'],
+      [true, 'DefaultRuntimeMappingAdapter — 可覆寫映射邏輯'],
+      [true, 'ProcessCommandService — SecuredButton → PLC 寫入 + 稽核日誌'],
+    ]
+  },
+  'ubi-demo': {
+    title: 'UbiDemo', ns: 'Stackdose.App.UbiDemo', icon: '🏭', iconBg: '#0969da12',
+    status: '維護', statusColor: 'var(--yellow)',
+    desc: 'UBI 工業烤箱完整參考實作。示範客製 DeviceContext、Mapper、Adapter、Page 的完整擴充模式，是新設備開發的最佳範本。',
+    docs: [
+      { label: 'README', href: 'Stackdose.App.UbiDemo/README.md' },
+    ],
+    progress: [
+      [true, '完整 DeviceFramework 架構參考實作'],
+      [true, '客製 UbiDeviceContext'],
+      [true, '客製 UbiRuntimeMappingAdapter'],
+      [true, '客製 UbiDetailPage'],
+      [true, 'PLC 配方讀寫（RecipeLoader）'],
+    ]
+  },
+  'design-runtime': {
+    title: 'DesignRuntime', ns: 'Stackdose.App.DesignRuntime', icon: '▶️', iconBg: '#bc4c0012',
+    status: '開發中', statusColor: 'var(--green)',
+    desc: '設計器執行時期驗證 App。載入 .machinedesign.json 並連線真實（或模擬）PLC，顯示即時數值，上線前最終驗證用。',
+    docs: [
+      { label: '設計器系統文件', href: 'docs/kb/designer-system.md' },
+    ],
+    progress: [
+      [true,  'JSON 載入 + 畫布渲染'],
+      [true,  '拖曳開啟 / 開啟按鈕'],
+      [true,  '縮放控制'],
+      [true,  '真實 PLC 連線'],
+      [true,  '模擬器模式（免 PLC）'],
+      [true,  '亂數測試注入（D100~D102）'],
+      [false, 'JSON Hot-Reload（修改後自動重載畫布）'],
+      [false, 'PLC 斷線自動重連穩定化'],
+    ]
+  },
+  'mpd': {
+    title: 'MachinePageDesigner', ns: 'Stackdose.Tools.MachinePageDesigner', icon: '🎨', iconBg: '#8250df12',
+    status: '主力開發', statusColor: 'var(--green)',
+    desc: '視覺化機台頁面設計器。自由畫布拖曳 PLC 控制項，支援完整編輯功能，輸出 .machinedesign.json。',
+    docs: [
+      { label: '設計器系統文件', href: 'docs/kb/designer-system.md' },
+    ],
+    progress: [
+      [true, '自由畫布拖曳定位（FreeCanvas）'],
+      [true, 'Snap 格線對齊'],
+      [true, 'Z-Order 層級調整（前置 / 後置）'],
+      [true, '框選多選'],
+      [true, '控制項鎖定（防誤移）'],
+      [true, '複製 / 貼上（Ctrl+C / V）'],
+      [true, 'GroupBox 群組化'],
+      [true, '對齊 / 均等分配'],
+      [true, '畫布尺寸設定'],
+      [true, 'Undo / Redo（Ctrl+Z / Y）'],
+      [true, '儲存 / 載入 .machinedesign.json'],
+    ]
+  },
+  'design-viewer': {
+    title: 'DesignViewer', ns: 'Stackdose.Tools.DesignViewer', icon: '👁️', iconBg: '#8250df12',
+    status: '開發中', statusColor: 'var(--green)',
+    desc: '設計稿靜態預覽工具。拖曳 .machinedesign.json 即時渲染畫布，不需連線 PLC，快速確認版面與樣式。',
+    docs: [
+      { label: '設計器系統文件', href: 'docs/kb/designer-system.md' },
+    ],
+    progress: [
+      [true,  'JSON 載入 + 即時渲染'],
+      [true,  '拖曳開啟 .machinedesign.json'],
+      [true,  '縮放控制'],
+      [false, '多頁面切換預覽'],
+    ]
+  },
+  'proj-gen-ui': {
+    title: 'ProjectGeneratorUI', ns: 'Stackdose.Tools.ProjectGeneratorUI', icon: '⚡', iconBg: '#8250df12',
+    status: '工具（穩定）', statusColor: 'var(--purple)',
+    desc: 'GUI 版專案產生器。填入機台規格，一鍵輸出完整可編譯的 DeviceFramework App 骨架。',
+    docs: [
+      { label: '快速上手（3步驟）', href: 'docs/kb/quickstart.md' },
+    ],
+    progress: [
+      [true, 'GUI 表單介面'],
+      [true, '版面預覽（PageMode / LayoutMode）'],
+      [true, '多種版型（ThreeColumn / TwoColumn / TwoByTwo）'],
+      [true, '單頁設計器樣板整合（含本地可編輯模式）'],
+      [true, '產生後自動 dotnet build 驗證'],
+    ]
+  },
+  'proj-gen': {
+    title: 'ProjectGenerator', ns: 'Stackdose.Tools.ProjectGenerator', icon: '💻', iconBg: '#8250df12',
+    status: '工具（穩定）', statusColor: 'var(--purple)',
+    desc: 'CLI 版專案產生器（ProjectGeneratorUI 的核心 lib）。讀取機台規格 CSV，自動產生完整專案骨架。',
+    docs: [
+      { label: '快速上手（3步驟）', href: 'docs/kb/quickstart.md' },
+    ],
+    progress: [
+      [true, 'CSV Spec → 完整 WPF 專案產生'],
+      [true, 'csproj / App.xaml / MainWindow 產生'],
+      [true, 'Config/*.json 設定檔產生'],
+      [true, 'CommandHandlers.cs 自動生成'],
+      [true, 'init-shell-app.ps1 腳本整合'],
+    ]
+  },
+};
+
+function openModal(id) {
+  const p = PROJECTS[id];
+  if (!p) return;
+
+  const iconEl = document.getElementById('modal-icon');
+  iconEl.textContent = p.icon;
+  iconEl.style.background = p.iconBg;
+
+  document.getElementById('modal-title').textContent = p.title;
+  document.getElementById('modal-ns').textContent = p.ns;
+  document.getElementById('modal-desc').textContent = p.desc;
+  document.getElementById('modal-status').innerHTML =
+    `<span style="width:7px;height:7px;border-radius:50%;background:${p.statusColor};display:inline-block;"></span>${p.status}`;
+
+  const docsEl = document.getElementById('modal-docs');
+  const docsSec = document.getElementById('modal-docs-section');
+  if (p.docs.length > 0) {
+    docsEl.innerHTML = p.docs.map(d =>
+      `<a class="modal-doc-link" href="${d.href}" target="_blank">📄 ${d.label}</a>`
+    ).join('');
+    docsSec.style.display = 'block';
+  } else {
+    docsSec.style.display = 'none';
+  }
+
+  const done = p.progress.filter(x => x[0]).length;
+  const total = p.progress.length;
+  const pct = Math.round(done / total * 100);
+  const barColor = pct === 100 ? 'var(--green)' : pct >= 60 ? 'var(--orange)' : 'var(--blue)';
+
+  document.getElementById('modal-progress').innerHTML =
+    p.progress.map(([ok, text]) =>
+      `<div class="modal-prog-item">
+        <span style="color:${ok ? 'var(--green)' : 'var(--text-muted)'};flex-shrink:0;font-size:13px;">${ok ? '✓' : '○'}</span>
+        <span style="color:${ok ? 'var(--text-secondary)' : 'var(--text-muted)'};">${text}</span>
+      </div>`
+    ).join('') +
+    `<div style="margin-top:12px;">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:5px;"><span>完成度</span><span>${done} / ${total}</span></div>
+      <div style="background:var(--border);border-radius:4px;height:4px;"><div style="background:${barColor};width:${pct}%;height:4px;border-radius:4px;transition:width 0.3s;"></div></div>
+    </div>`;
+
+  const overlay = document.getElementById('modal-overlay');
+  overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
 
 </body>
 </html>

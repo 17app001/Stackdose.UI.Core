@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stackdose.UI.Core — 工業設備 UI 框架</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0d1117;
+      --bg-card:     #161b22;
+      --bg-card2:    #1c2128;
+      --border:      #30363d;
+      --border-hi:   #58a6ff44;
+      --text-primary:   #e6edf3;
+      --text-secondary: #8b949e;
+      --text-muted:     #484f58;
+      --blue:        #58a6ff;
+      --green:       #3fb950;
+      --orange:      #f0883e;
+      --purple:      #a371f7;
+      --cyan:        #39d353;
+      --yellow:      #d29922;
+      --red:         #f85149;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── Header ── */
+    .site-header {
+      border-bottom: 1px solid var(--border);
+      padding: 40px 0 32px;
+    }
+    .site-header .container { display: flex; align-items: flex-start; gap: 32px; }
+    .logo-block { flex-shrink: 0; }
+    .logo-icon {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, #1f6feb 0%, #a371f7 100%);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; font-weight: 700; color: #fff;
+      letter-spacing: -1px;
+    }
+    .header-text h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+    .header-text .subtitle { color: var(--text-secondary); font-size: 13px; margin-bottom: 12px; }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 500;
+      border: 1px solid;
+    }
+    .badge-blue   { color: var(--blue);   border-color: #1f6feb55; background: #1f6feb18; }
+    .badge-green  { color: var(--green);  border-color: #3fb95055; background: #3fb95018; }
+    .badge-purple { color: var(--purple); border-color: #a371f755; background: #a371f718; }
+    .badge-orange { color: var(--orange); border-color: #f0883e55; background: #f0883e18; }
+
+    /* ── Sections ── */
+    .section { padding: 40px 0; border-bottom: 1px solid var(--border); }
+    .section:last-child { border-bottom: none; }
+    .section-title {
+      font-size: 13px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+
+    /* ── Architecture ── */
+    .arch-diagram {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 24px 28px;
+      display: grid; grid-template-rows: auto auto auto;
+      gap: 0;
+    }
+    .arch-layer {
+      padding: 14px 0;
+      border-bottom: 1px dashed var(--border);
+      display: flex; align-items: center; gap: 16px;
+    }
+    .arch-layer:last-child { border-bottom: none; }
+    .arch-layer-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-muted);
+      writing-mode: vertical-rl; transform: rotate(180deg);
+      width: 40px; flex-shrink: 0; text-align: center;
+    }
+    .arch-layer-content { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .arch-chip {
+      padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;
+      border: 1px solid;
+    }
+    .chip-blue   { color: var(--blue);   border-color: #1f6feb44; background: #1f6feb12; }
+    .chip-green  { color: var(--green);  border-color: #3fb95044; background: #3fb95012; }
+    .chip-purple { color: var(--purple); border-color: #a371f744; background: #a371f712; }
+    .chip-orange { color: var(--orange); border-color: #f0883e44; background: #f0883e12; }
+    .chip-gray   { color: var(--text-secondary); border-color: var(--border); background: var(--bg-card2); }
+    .arch-arrow {
+      font-size: 11px; color: var(--text-muted); align-self: center;
+      padding: 0 4px;
+    }
+
+    /* ── Project Cards Grid ── */
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .project-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px;
+      display: flex; flex-direction: column; gap: 10px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .project-card:hover { border-color: var(--border-hi); background: var(--bg-card2); }
+    .project-card-header { display: flex; align-items: flex-start; gap: 10px; }
+    .project-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .icon-blue   { background: #1f6feb18; }
+    .icon-green  { background: #3fb95018; }
+    .icon-purple { background: #a371f718; }
+    .icon-orange { background: #f0883e18; }
+    .icon-gray   { background: #30363d55; }
+    .project-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .project-name a { color: var(--text-primary); }
+    .project-name a:hover { color: var(--blue); text-decoration: none; }
+    .project-namespace { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+    .project-desc { font-size: 13px; color: var(--text-secondary); flex: 1; }
+    .project-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+    .status-dot {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 500;
+    }
+    .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+    }
+    .dot-active  { background: var(--green);  box-shadow: 0 0 6px var(--green); }
+    .dot-stable  { background: var(--blue); }
+    .dot-maint   { background: var(--yellow); }
+    .dot-tool    { background: var(--purple); }
+    .project-links { display: flex; gap: 10px; }
+    .project-links a { font-size: 11px; color: var(--text-secondary); }
+    .project-links a:hover { color: var(--blue); }
+
+    /* ── Docs Grid ── */
+    .docs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    .doc-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 16px;
+      display: flex; align-items: flex-start; gap: 10px;
+      transition: border-color 0.15s;
+    }
+    .doc-card:hover { border-color: var(--border-hi); }
+    .doc-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .doc-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+    .doc-title a { color: var(--text-primary); }
+    .doc-title a:hover { color: var(--blue); text-decoration: none; }
+    .doc-desc { font-size: 12px; color: var(--text-muted); }
+
+    /* ── Stats Bar ── */
+    .stats-bar {
+      display: flex; flex-wrap: wrap; gap: 32px;
+      padding: 24px 0;
+    }
+    .stat { text-align: center; }
+    .stat-num { font-size: 28px; font-weight: 700; color: var(--text-primary); line-height: 1.1; }
+    .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* ── Group Title ── */
+    .group-title {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-muted);
+      margin: 24px 0 12px; padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .group-title:first-child { margin-top: 0; }
+
+    /* ── Footer ── */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 0;
+      color: var(--text-muted); font-size: 12px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    @media (max-width: 640px) {
+      .site-header .container { flex-direction: column; gap: 16px; }
+      .arch-layer-label { writing-mode: horizontal-tb; transform: none; width: auto; }
+      .stats-bar { gap: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header class="site-header">
+  <div class="container">
+    <div class="logo-block">
+      <div class="logo-icon">SD</div>
+    </div>
+    <div class="header-text">
+      <h1>Stackdose.UI.Core</h1>
+      <p class="subtitle">企業級 WPF 工業設備 UI 框架 · .NET 8 · Windows-only · x64</p>
+      <div class="badge-row">
+        <span class="badge badge-blue">WPF / .NET 8</span>
+        <span class="badge badge-green">FDA 21 CFR Part 11</span>
+        <span class="badge badge-purple">Mitsubishi FX3U PLC</span>
+        <span class="badge badge-orange">視覺化設計器</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══════════════ STATS ══════════════ -->
+  <section class="section">
+    <div class="container">
+      <div class="stats-bar">
+        <div class="stat"><div class="stat-num">11</div><div class="stat-label">專案</div></div>
+        <div class="stat"><div class="stat-num">26</div><div class="stat-label">自訂控制項</div></div>
+        <div class="stat"><div class="stat-num">5</div><div class="stat-label">Context 服務</div></div>
+        <div class="stat"><div class="stat-num">50+</div><div class="stat-label">Commits</div></div>
+        <div class="stat"><div class="stat-num">3</div><div class="stat-label">設計器工具</div></div>
+      </div>
+
+      <p style="color:var(--text-secondary); font-size:13px; max-width:680px;">
+        讓設備廠商不用從零開始寫 UI。設定 JSON 設定檔即可快速上線符合 FDA 合規要求的設備監控介面；
+        搭配視覺化設計器，拖曳控制項即可產出畫面，整合流程從數月縮短至數天。
+      </p>
+    </div>
+  </section>
+
+  <!-- ══════════════ ARCHITECTURE ══════════════ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-title">系統架構</div>
+      <div class="arch-diagram">
+        <div class="arch-layer">
+          <div class="arch-layer-label">工具層</div>
+          <div class="arch-layer-content">
+            <span class="arch-chip chip-purple">ProjectGeneratorUI</span>
+            <span class="arch-chip chip-purple">ProjectGenerator</span>
+            <span class="arch-arrow">→</span>
+            <span class="arch-chip chip-orange">MachinePageDesigner</span>
+            <span class="arch-arrow">→</span>
+            <span class="arch-chip chip-orange">DesignViewer</span>
+            <span class="arch-chip chip-orange">DesignRuntime</span>
+          </div>
+        </div>
+        <div class="arch-layer">
+          <div class="arch-layer-label">框架層</div>
+          <div class="arch-layer-content">
+            <span class="arch-chip chip-blue">DeviceFramework</span>
+            <span class="arch-arrow">←</span>
+            <span class="arch-chip chip-gray">JSON 設定檔</span>
+            <span class="arch-arrow">→</span>
+            <span class="arch-chip chip-blue">UbiDemo（參考實作）</span>
+          </div>
+        </div>
+        <div class="arch-layer">
+          <div class="arch-layer-label">核心層</div>
+          <div class="arch-layer-content">
+            <span class="arch-chip chip-green">UI.Core（26 控制項）</span>
+            <span class="arch-chip chip-green">UI.Templates（Shell）</span>
+            <span class="arch-chip chip-green">ShellShared</span>
+          </div>
+        </div>
+        <div class="arch-layer">
+          <div class="arch-layer-label">硬體層</div>
+          <div class="arch-layer-content">
+            <span class="arch-chip chip-gray">Stackdose.Platform</span>
+            <span class="arch-arrow">·</span>
+            <span class="arch-chip chip-gray">IPlcManager（Mitsubishi FX3U）</span>
+            <span class="arch-chip chip-gray">IPrintHead（Feiyang）</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ PROJECTS ══════════════ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-title">專案總覽</div>
+
+      <!-- 核心庫 -->
+      <div class="group-title">核心庫（穩定）</div>
+      <div class="project-grid">
+
+        <div class="project-card">
+          <div class="project-card-header">
+            <div class="project-icon icon-green">🧩</div>
+            <div>
+              <div class="project-name"><a href="Stackdose.UI.Core/README.md">UI.Core</a></div>
+              <div class="project-namespace">Stackdose.UI.Core</div>
+            </div>
+          </div>
+          <div class="project-desc">26 個自定義 WPF 控制項、Context 管理（PLC / 安全 / 合規日誌）、SQLite 稽核軌跡。所有專案的基礎依賴。</div>
+          <div class="project-footer">
+            <span class="status-dot"><span class="dot dot-stable"></span>穩定</span>
+            <div class="project-links">
+              <a href="docs/kb/controls-reference.md">控制項參考</a>
+              <a href="docs/kb/architecture.md">架構設計</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-card-header">
+            <div class="project-icon icon-green">🖼️</div>
+            <div>
+              <div class="project-name"><a href="Stackdose.UI.Templates/">UI.Templates</a></div>
+              <div class="project-namespace">Stackdose.UI.Templates</div>
+            </div>
+          </div>
+          <div class="project-desc">Shell 布局模板：AppHeader、LeftNavigation、AppBottomBar。提供標準 Overview / Detail / Log / User / Settings 五頁導航結構。</div>
+          <div class="project-footer">
+            <span class="status-dot"><span class="dot dot-stable"></span>穩定</span>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-card-header">
+            <div class="project-icon icon-green">🔗</div>
+            <div>
+              <div class="project-name"><a href="Stackdose.App.ShellShared/README.md">ShellShared</a></div>
+              <div class="project-namespace">Stackdose.App.ShellShared</div>
+            </div>
+          </div>
+          <div class="project-desc">Shell App 共用底層服務。ShellRuntimeHost 讀取 Config/ 目錄，解析 app-meta.json 與 Machine*.config.json，供各 App 引用。</div>
+          <div class="project-footer">
+            <span class="status-dot"><span class="dot dot-stable"></span>穩定</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 框架與應用 -->
+      <div class="group-title">框架與應用</div>
+      <div class="project-grid">
+
+        <div class="project-card">
+          <div class="project-card-header">
+            <div class="project-icon icon-blue">⚙️</div>
+            <div>
+              <div class="project-name"><a href="Stackdose.App.DeviceFramework/README.md">DeviceFramework</a></div>
+              <div class="project-namespace">Stackdose.App.DeviceFramework</div>
+            </div>
+          </div>
+          <div class="project-desc">JSON 驅動的設備 App 組裝框架。AppController、RuntimeHost、DeviceContextMapper、DynamicDevicePage，零程式碼即可運作。</div>
+          <div class="project-footer">
+            <span class="status-dot"><span class="dot dot-stable"></span>穩定</span>
+            <div class="project-links">
+              <a href="docs/kb/deviceframework-guide.md">新人指南</a>
+              <a href="docs/kb/quickstart.md">快速上手</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-card-header">
+            <div class="project-icon icon-blue">🏭</div>
+            <div>
+              <div class="project-name"><a href="Stackdose.App.UbiDemo/README.md">UbiDemo</a></div>
+              <div class="project-namespace">Stackdose.App.UbiDemo</div>
+            </div>
+          </div>
+          <div class="project-desc">UBI 工業烤箱完整參考實作。示範客製 DeviceContext、Mapper、Adapter、Page 的完整擴充模式，是新設備開發的最佳範本。</div>
+          <div class="project-footer">
+            <span class="status-dot"><span class="dot dot-maint"></span>維護</span>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-card-header">
+            <div class="project-icon icon-orange">▶️</div>
+            <div>
+              <div class="project-name"><a href="Stackdose.App.DesignRuntime/README.md">DesignRuntime</a></div>
+              <div class="project-namespace">Stackdose.App.DesignRuntime</div>
+            </div>
+          </div>
+          <div class="project-desc">設計器執行時期驗證 App。載入 .machinedesign.json 並連線真實（或模擬）PLC，顯示即時數值，上線前最終驗證用。</div>
+          <div class="project-footer">
+            <span class="status-dot"><span class="dot dot-active"></span>開發中</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 工具 -->
+      <div class="group-title">工具</div>
+      <div class="project-grid">
+
+        <div class="project-card">
+          <div class="project-card-header">
+            <div class="project-icon icon-purple">🎨</div>
+            <div>
+              <div class="project-name"><a href="Stackdose.Tools.MachinePageDesigner/README.md">MachinePageDesigner</a></div>
+              <div class="project-namespace">Stackdose.Tools.MachinePageDesigner</div>
+            </div>
+          </div>
+          <div class="project-desc">視覺化機台頁面設計器。自由畫布拖曳 PLC 控制項，支援 Snap、Z-Order、框選、鎖定、複製貼上、GroupBox、對齊分配，輸出 .machinedesign.json。</div>
+          <div class="project-footer">
+            <span class="status-dot"><span class="dot dot-active"></span>主力開發</span>
+            <div class="project-links">
+              <a href="docs/kb/designer-system.md">設計器文件</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-card-header">
+            <div class="project-icon icon-purple">👁️</div>
+            <div>
+              <div class="project-name"><a href="Stackdose.Tools.DesignViewer/README.md">DesignViewer</a></div>
+              <div class="project-namespace">Stackdose.Tools.DesignViewer</div>
+            </div>
+          </div>
+          <div class="project-desc">設計稿靜態預覽工具。拖曳 .machinedesign.json 即時渲染畫布，不需連線 PLC，快速確認版面與樣式。</div>
+          <div class="project-footer">
+            <span class="status-dot"><span class="dot dot-active"></span>開發中</span>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-card-header">
+            <div class="project-icon icon-purple">⚡</div>
+            <div>
+              <div class="project-name"><a href="Stackdose.Tools.ProjectGeneratorUI/README.md">ProjectGeneratorUI</a></div>
+              <div class="project-namespace">Stackdose.Tools.ProjectGeneratorUI</div>
+            </div>
+          </div>
+          <div class="project-desc">GUI 版專案產生器。填入機台規格（名稱、PLC IP、Tags、Commands），即可一鍵輸出完整可編譯的 DeviceFramework App 骨架。</div>
+          <div class="project-footer">
+            <span class="status-dot"><span class="dot dot-tool"></span>工具（穩定）</span>
+            <div class="project-links">
+              <a href="docs/kb/quickstart.md">使用指南</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-card-header">
+            <div class="project-icon icon-purple">💻</div>
+            <div>
+              <div class="project-name"><a href="Stackdose.Tools.ProjectGenerator/README.md">ProjectGenerator</a></div>
+              <div class="project-namespace">Stackdose.Tools.ProjectGenerator</div>
+            </div>
+          </div>
+          <div class="project-desc">CLI 版專案產生器。讀取機台規格 CSV，自動產生完整專案骨架（含 csproj、Config/*.json、CommandHandlers.cs）。</div>
+          <div class="project-footer">
+            <span class="status-dot"><span class="dot dot-tool"></span>工具（穩定）</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════ DOCS ══════════════ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-title">文件知識庫</div>
+      <div class="docs-grid">
+
+        <div class="doc-card">
+          <div class="doc-icon">🗺️</div>
+          <div>
+            <div class="doc-title"><a href="docs/PROJECT_MAP.md">專案依賴圖</a></div>
+            <div class="doc-desc">所有專案的完整依賴關係、NuGet 套件版本、外部 Repo 路徑</div>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <div class="doc-icon">🏗️</div>
+          <div>
+            <div class="doc-title"><a href="docs/kb/architecture.md">架構設計</a></div>
+            <div class="doc-desc">Context 系統、JSON 驅動流程、Shell 導航、資料流圖解</div>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <div class="doc-icon">🚀</div>
+          <div>
+            <div class="doc-title"><a href="docs/kb/deviceframework-guide.md">DeviceFramework 新人指南</a></div>
+            <div class="doc-desc">設定格式、最小欄位、擴充決策表、常見問題，新人必讀</div>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <div class="doc-icon">⚡</div>
+          <div>
+            <div class="doc-title"><a href="docs/kb/quickstart.md">快速上手（3步驟）</a></div>
+            <div class="doc-desc">用腳本一行命令建立新設備 App，含各種版型選項說明</div>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <div class="doc-icon">🎨</div>
+          <div>
+            <div class="doc-title"><a href="docs/kb/designer-system.md">設計器系統</a></div>
+            <div class="doc-desc">MachinePageDesigner + DesignViewer + DesignRuntime 完整說明</div>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <div class="doc-icon">🧩</div>
+          <div>
+            <div class="doc-title"><a href="docs/kb/controls-reference.md">控制項快速參考</a></div>
+            <div class="doc-desc">26 個控制項的職責、主要屬性一覽（PLC / 安全 / 日誌 / 通用）</div>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <div class="doc-icon">⚠️</div>
+          <div>
+            <div class="doc-title"><a href="docs/kb/platform-contracts.md">Platform 契約文件</a></div>
+            <div class="doc-desc">跨 Repo 危險介面清單（IPlcManager、IPlcMonitor 完整簽名）</div>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <div class="doc-icon">🔗</div>
+          <div>
+            <div class="doc-title"><a href="docs/kb/second-app-quickstart.md">第二個 App 整合</a></div>
+            <div class="doc-desc">將新設備 App 整合進既有 Shell 環境的步驟說明</div>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <div class="doc-icon">🎨</div>
+          <div>
+            <div class="doc-title"><a href="docs/kb/design-standard.md">Core UI 設計標準</a></div>
+            <div class="doc-desc">Token 層次、命名規則、樣式規則，控制項開發必讀</div>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <div class="doc-icon">🌗</div>
+          <div>
+            <div class="doc-title"><a href="docs/kb/theme-token-standard.md">主題 Token 收斂規範</a></div>
+            <div class="doc-desc">硬編碼色碼替換計畫、建議新增 Token 清單，三階段改善路線</div>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <div class="doc-icon">📋</div>
+          <div>
+            <div class="doc-title"><a href="docs/MANAGER_BRIEF.md">主管進度簡報</a></div>
+            <div class="doc-desc">非技術摘要：架構圖、功能完成表、開發時間軸、現況數字</div>
+          </div>
+        </div>
+
+        <div class="doc-card">
+          <div class="doc-icon">📝</div>
+          <div>
+            <div class="doc-title"><a href="docs/devlog/2026-04.md">開發日誌 2026-04</a></div>
+            <div class="doc-desc">每日 commit 記錄（feat / fix / refactor / chore），主管呈報用</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ DESIGNER FLOW ══════════════ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-title">設計器工作流程</div>
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:16px 20px; min-width:180px;">
+          <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">STEP 1</div>
+          <div style="font-size:20px; margin-bottom:6px;">🎨</div>
+          <div style="font-weight:600; margin-bottom:4px;">MachinePageDesigner</div>
+          <div style="font-size:12px; color:var(--text-secondary);">拖曳控制項、設定 PLC 位址、調整版面</div>
+        </div>
+        <div style="color:var(--text-muted); font-size:20px; padding:0 4px;">→</div>
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:16px 20px; min-width:180px;">
+          <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">OUTPUT</div>
+          <div style="font-size:20px; margin-bottom:6px;">📄</div>
+          <div style="font-weight:600; margin-bottom:4px;">.machinedesign.json</div>
+          <div style="font-size:12px; color:var(--text-secondary);">畫布尺寸 + 控制項定義清單</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="color:var(--text-muted); font-size:16px; padding:0 4px;">↗</div>
+          <div style="color:var(--text-muted); font-size:16px; padding:0 4px;">↘</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="background:var(--bg-card); border:1px solid #3fb95033; border-radius:10px; padding:12px 18px;">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">PREVIEW</div>
+            <div style="font-weight:600; margin-bottom:2px;">👁️ DesignViewer</div>
+            <div style="font-size:12px; color:var(--text-secondary);">靜態預覽，無需 PLC</div>
+          </div>
+          <div style="background:var(--bg-card); border:1px solid #f0883e33; border-radius:10px; padding:12px 18px;">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">VALIDATE</div>
+            <div style="font-weight:600; margin-bottom:2px;">▶️ DesignRuntime</div>
+            <div style="font-size:12px; color:var(--text-secondary);">連線 PLC，顯示即時數值</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer class="site-footer">
+  <div class="container" style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+    <span>Stackdose.UI.Core · .NET 8 WPF · Windows x64</span>
+    <span>更新：2026-04-15</span>
+  </div>
+</footer>
+
+</body>
+</html>

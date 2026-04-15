@@ -145,5 +145,5 @@ CyberControlBase
 | 問題 | 位置 | 影響 |
 |---|---|---|
 | `DynamicDevicePage.xaml` 硬編碼色碼 | DeviceFramework/Pages/ | 不符主題 Token 規範 |
-| `DeviceFramework/docs/DeviceFramework-Guide.md` 亂碼 | DeviceFramework/docs/ | 教學文件不可用，以程式碼為準 |
+| ~~`DeviceFramework-Guide.md` 亂碼~~ | —— | 已由 `docs/kb/deviceframework-guide.md` 取代，新人請讀該文件 |
 | UbiDemo 部分架構文件亂碼 | App.UbiDemo/ | 已遷移至 DeviceFramework，影響有限 |

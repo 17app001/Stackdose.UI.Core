@@ -94,6 +94,7 @@
 | `docs/kb/designer-system.md` | MachinePageDesigner + DesignViewer + DesignRuntime |
 | `docs/kb/platform-contracts.md` | Platform 跨 Repo 契約文件（危險介面清單） |
 | `docs/kb/controls-reference.md` | 控制項快速參考（26個，含 PLC/安全/日誌/通用/進階） |
+| `docs/kb/deviceframework-guide.md` | DeviceFramework 新人指南（設定格式、擴充順序、常見問題） |
 | `docs/kb/quickstart.md` | 新 App 快速建立指南（CLI 指令說明） |
 | `docs/kb/second-app-quickstart.md` | 第二個 App 整合進 Shell 的步驟 |
 | `docs/kb/design-standard.md` | Core UI 設計標準 |

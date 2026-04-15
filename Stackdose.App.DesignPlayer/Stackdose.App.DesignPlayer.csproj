@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <PlatformTarget>x64</PlatformTarget>
+    <AssemblyName>Stackdose.App.DesignPlayer</AssemblyName>
+    <RootNamespace>Stackdose.App.DesignPlayer</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- FeiyangWrapper：有 DLL 就引用，沒有不報錯 -->
+    <ProjectReference Condition="Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\FeiyangWrapper.vcxproj')"
+                      Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\FeiyangWrapper.vcxproj" />
+    <ProjectReference Include="..\Stackdose.App.DeviceFramework\Stackdose.App.DeviceFramework.csproj" />
+    <ProjectReference Include="..\Stackdose.Tools.MachinePageDesigner\Stackdose.Tools.MachinePageDesigner.csproj" />
+    <ProjectReference Include="..\Stackdose.UI.Core\Stackdose.UI.Core.csproj" />
+    <ProjectReference Include="..\Stackdose.UI.Templates\Stackdose.UI.Templates.csproj" />
+  </ItemGroup>
+
+  <!-- Config 目錄整個複製到輸出 -->
+  <ItemGroup>
+    <None Update="Config\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- Feiyang SDK Libs（與 UbiDemo 同邏輯） -->
+  <Target Name="CopyFeiyangSdkLibs" AfterTargets="Build"
+          Condition="Exists('$(MSBuildProjectDirectory)\..\..\Sdk\FeiyangSDK-2.3.1\lib') and '$(TargetDir)' != ''">
+    <ItemGroup>
+      <FeiyangSdkLibs Include="$(MSBuildProjectDirectory)\..\..\Sdk\FeiyangSDK-2.3.1\lib\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(FeiyangSdkLibs)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

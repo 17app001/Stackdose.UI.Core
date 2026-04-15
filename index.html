@@ -383,7 +383,7 @@
   <section class="section">
     <div class="container">
       <div class="stats-bar">
-        <div class="stat"><div class="stat-num">11</div><div class="stat-label">專案</div></div>
+        <div class="stat"><div class="stat-num">12</div><div class="stat-label">專案</div></div>
         <div class="stat"><div class="stat-num">26</div><div class="stat-label">自訂控制項</div></div>
         <div class="stat"><div class="stat-num">5</div><div class="stat-label">Context 服務</div></div>
         <div class="stat"><div class="stat-num">50+</div><div class="stat-label">Commits</div></div>
@@ -412,6 +412,7 @@
             <span class="arch-arrow">→</span>
             <span class="arch-chip chip-orange">DesignViewer</span>
             <span class="arch-chip chip-orange">DesignRuntime</span>
+            <span class="arch-chip chip-orange">DesignPlayer</span>
           </div>
         </div>
         <div class="arch-layer">
@@ -549,6 +550,23 @@
           <div class="project-desc">設計器執行時期驗證 App。載入 .machinedesign.json 並連線真實（或模擬）PLC，顯示即時數值，上線前最終驗證用。</div>
           <div class="project-footer">
             <span class="status-dot"><span class="dot dot-active"></span>開發中</span>
+          </div>
+        </div>
+
+        <div class="project-card" onclick="openModal('design-player')">
+          <div class="project-card-header">
+            <div class="project-icon icon-orange">🚀</div>
+            <div>
+              <div class="project-name"><a href="Stackdose.App.DesignPlayer/README.md">DesignPlayer</a></div>
+              <div class="project-namespace">Stackdose.App.DesignPlayer</div>
+            </div>
+          </div>
+          <div class="project-desc">可交付量產的 Shell App。讀取 .machinedesign.json + 連線 PLC，完整 Shell UI（導航/頁首/頁尾）+ 可選登入管控，適合直接部署到設備現場。</div>
+          <div class="project-footer">
+            <span class="status-dot"><span class="dot dot-active"></span>開發中</span>
+            <div class="project-links">
+              <a href="Stackdose.App.DesignPlayer/README.md">README</a>
+            </div>
           </div>
         </div>
 
@@ -828,7 +846,7 @@
           <div class="tl-item"><span class="tl-date">4月01日</span><span class="tl-dot"></span><span class="tl-text">PlcDataGridPanel 通用元件抽出；MachinePageDesigner 初始化</span></div>
           <div class="tl-item"><span class="tl-date">4月08日</span><span class="tl-dot"></span><span class="tl-text">切換為自由畫布（FreeCanvas）模式，完成拖曳基礎功能</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月13日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 自由畫布全功能整合；DesignViewer + DesignRuntime 新增</span></div>
-          <div class="tl-item tl-highlight"><span class="tl-date">4月15日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 模擬器模式 + 亂數測試注入；文件知識庫建立（含本頁）</span></div>
+          <div class="tl-item tl-highlight"><span class="tl-date">4月15日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 模擬器模式 + 亂數測試注入；文件知識庫建立（含本頁）；DesignPlayer 量產 Shell App 新增</span></div>
           <div class="tl-item tl-future"><span class="tl-date">近期</span><span class="tl-dot tl-dot-future"></span><span class="tl-text">JSON Hot-Reload；PLC 斷線穩定化；更多控制項支援</span></div>
         </div>
       </div>
@@ -865,8 +883,8 @@
           </div>
           <div style="background:var(--bg-card); border:1px solid #f0883e33; border-radius:10px; padding:12px 18px;">
             <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">VALIDATE</div>
-            <div style="font-weight:600; margin-bottom:2px;">▶️ DesignRuntime</div>
-            <div style="font-size:12px; color:var(--text-secondary);">連線 PLC，顯示即時數值</div>
+            <div style="font-weight:600; margin-bottom:2px;">🚀 DesignPlayer</div>
+            <div style="font-size:12px; color:var(--text-secondary);">量產部署，完整 Shell UI</div>
           </div>
         </div>
       </div>
@@ -1021,6 +1039,25 @@ const PROJECTS = {
       [true,  '亂數測試注入（D100~D102）'],
       [false, 'JSON Hot-Reload（修改後自動重載畫布）'],
       [false, 'PLC 斷線自動重連穩定化'],
+    ]
+  },
+  'design-player': {
+    title: 'DesignPlayer', ns: 'Stackdose.App.DesignPlayer', icon: '🚀', iconBg: '#1a7f3712',
+    status: '開發中', statusColor: 'var(--green)',
+    desc: '可交付量產的 Shell App。讀取 .machinedesign.json + 連線 PLC，具備完整 Shell UI（左側導航、頁首、頁尾）+ 可選登入管控，適合直接部署到設備現場。',
+    docs: [
+      { label: 'README', href: 'Stackdose.App.DesignPlayer/README.md' },
+      { label: '設計器系統文件', href: 'docs/kb/designer-system.md' },
+    ],
+    progress: [
+      [true,  '完整 Shell UI（MainContainer + 左側導航）'],
+      [true,  'JSON 設定載入（app-config.json）'],
+      [true,  'PLC 自動連線（PlcStatus）'],
+      [true,  '畫布渲染（.machinedesign.json）'],
+      [true,  '可選登入對話框（loginRequired）'],
+      [true,  '使用者管理頁面（Operator 以上）'],
+      [true,  'RuntimeControlFactory（8 種控制項）'],
+      [false, 'JSON Hot-Reload（修改設定後自動重載）'],
     ]
   },
   'mpd': {

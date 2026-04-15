@@ -1,0 +1,51 @@
+{
+  "version": "1.0",
+  "canvasWidth": 1100,
+  "canvasHeight": 200,
+  "canvasItems": [
+    {
+      "type": "PlcLabel",
+      "x": 10, "y": 10,
+      "width": 200, "height": 160,
+      "properties": {
+        "label": "壓差",
+        "address": "D103",
+        "valueColorTheme": "NeonBlue",
+        "frameShape": "Rectangle"
+      }
+    },
+    {
+      "type": "PlcLabel",
+      "x": 230, "y": 10,
+      "width": 200, "height": 160,
+      "properties": {
+        "label": "流量",
+        "address": "D104",
+        "valueColorTheme": "NeonBlue",
+        "frameShape": "Rectangle"
+      }
+    },
+    {
+      "type": "PlcLabel",
+      "x": 450, "y": 10,
+      "width": 200, "height": 160,
+      "properties": {
+        "label": "供壓壓力",
+        "address": "D105",
+        "valueColorTheme": "NeonBlue",
+        "frameShape": "Rectangle"
+      }
+    },
+    {
+      "type": "PlcLabel",
+      "x": 670, "y": 10,
+      "width": 200, "height": 160,
+      "properties": {
+        "label": "回壓壓力",
+        "address": "D106",
+        "valueColorTheme": "NeonBlue",
+        "frameShape": "Rectangle"
+      }
+    }
+  ]
+}

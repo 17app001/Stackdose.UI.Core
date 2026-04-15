@@ -26,6 +26,7 @@
 | `Stackdose.App.DeviceFramework` | `./Stackdose.App.DeviceFramework/` | JSON驅動設備App組裝框架 | 穩定 |
 | `Stackdose.App.UbiDemo` | `./Stackdose.App.UbiDemo/` | UBI工業烤箱參考實作（已遷移至DeviceFramework架構） | 維護 |
 | `Stackdose.App.DesignRuntime` | `./Stackdose.App.DesignRuntime/` | 真實PLC連線 + JSON載入執行專案 | **開發中** |
+| `Stackdose.App.DesignPlayer` | `./Stackdose.App.DesignPlayer/` | 可交付量產 Shell App，JSON 驅動 + PLC 連線 + 登入管控 | **開發中** |
 
 ### 工具
 | 專案 | 路徑 | 說明 | 狀態 |
@@ -71,8 +72,9 @@
 ## 目前主力開發方向
 
 1. **MachinePageDesigner（自由畫布設計器）** — 已完成 FreeCanvas 模式、Snap、Z-Order、框選、鎖定、複製貼上、GroupBox、對齊分配
-2. **DesignRuntime** — 真實 PLC 連線執行環境，有未提交變更（`MainWindow.xaml` / `MainWindow.xaml.cs`）
-3. **DesignViewer** — 拖入 JSON 即時預覽工具
+2. **DesignPlayer** — 可交付量產 Shell App，JSON 驅動 + PLC 連線 + 登入管控 + 全 Shell 導航
+3. **DesignRuntime** — 真實 PLC 連線執行環境（開發測試用）
+4. **DesignViewer** — 拖入 JSON 即時預覽工具
 
 ---
 

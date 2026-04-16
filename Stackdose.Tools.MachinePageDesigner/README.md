@@ -17,6 +17,7 @@
 | 自由畫布 | 控制項可拖曳至任意位置 |
 | 右鍵 ContextMenu | 複製/貼上/刪除/鎖定/Z-Order 快速操作 |
 | 工具箱 | 左側 Toolbox 含 9 種控制項類型 |
+| 多頁面 | 頁籤列切換頁面，每頁獨立畫布尺寸與 Undo/Redo |
 | 屬性面板 | 右側 PropertyPanel 每種控制項均有專屬屬性表單 |
 | 多選操作 | Shift+Click 或框選，同步移動/縮放 |
 | Smart Snap | 拖曳時磁吸對齊其他控制項邊緣/中心 |
@@ -47,31 +48,47 @@
 
 | 類別 | 職責 |
 |---|---|
-| `DesignDocument` | 畫布文件資料模型（CanvasWidth/Height + CanvasItems） |
-| `DesignerItemDefinition` | 單一控制項定義（Type, X, Y, Width, Height, Properties） |
-| `DesignFileService` | `.machinedesign.json` 的儲存與載入 |
-| `UndoRedoService` | 操作歷史管理 |
-| `DesignerItemViewModel` | 單一控制項的 ViewModel（包含選取、鎖定狀態） |
+| `DesignDocument` | 畫布文件根模型（v2.0：`pages` 陣列 + Legacy compat 欄位） |
+| `DesignPage` | 單頁資料（pageId / name / canvasWidth / canvasHeight / canvasItems） |
+| `DesignerItemDefinition` | 單一控制項定義（Type, X, Y, Width, Height, Props） |
+| `DesignFileService` | `.machinedesign.json` 的儲存與載入（含 v1.0→v2.0 自動正規化） |
+| `UndoRedoService` | 操作歷史管理（每個 PageTabViewModel 有獨立實例） |
+| `DesignerItemViewModel` | 單一控制項的 ViewModel（含選取、鎖定狀態） |
+| `PageTabViewModel` | 頁籤 ViewModel（Name / IsActive / IsEditing / Canvas / UndoRedo） |
 | `FreeCanvasItem` | 畫布上可拖曳的控制項容器 |
 
 ## 輸出格式
 
-儲存的 `.machinedesign.json` 範例：
+儲存的 `.machinedesign.json` 範例（**v2.0 格式**）：
 
 ```json
 {
+  "version": "2.0",
+  "meta": { "title": "機台監控", "machineId": "M1" },
+  "pages": [
+    {
+      "pageId": "a1b2c3d4",
+      "name": "Main",
+      "canvasWidth": 1200,
+      "canvasHeight": 800,
+      "canvasItems": [
+        {
+          "type": "PlcLabel",
+          "x": 100, "y": 80,
+          "width": 160, "height": 60,
+          "props": { "label": "溫度", "address": "D100" }
+        }
+      ]
+    }
+  ],
   "canvasWidth": 1200,
   "canvasHeight": 800,
-  "canvasItems": [
-    {
-      "type": "PlcLabel",
-      "x": 100, "y": 80,
-      "width": 160, "height": 60,
-      "properties": { "Address": "D100", "Label": "溫度" }
-    }
-  ]
+  "canvasItems": [...]
 }
 ```
+
+> v1.0 舊格式（無 `pages` 鍵）在載入時由 `DesignFileService` 自動轉為單頁，不需手動遷移。
+> 頂層 `canvasItems` 與 `canvasWidth/Height` 保留供 DesignRuntime / DesignPlayer 相容讀取。
 
 ## 使用流程
 

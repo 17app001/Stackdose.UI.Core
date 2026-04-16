@@ -142,7 +142,7 @@ Stackdose.Tools.MachinePageDesigner
 ## 3. DesignViewer
 
 **專案：** `Stackdose.Tools.DesignViewer`
-**狀態：** 開發中
+**狀態：** ✅ 功能完整
 
 ### 3.1 用途
 純預覽工具，不連 PLC，不需安裝完整執行環境。使用者拖入 `.machinedesign.json` 即可即時渲染頁面外觀。
@@ -246,7 +246,7 @@ Stackdose.App.DesignRuntime
 | Shell UI | ❌ | ❌ | ❌ | ✅ |
 | 登入管控 | ❌ | ❌ | ❌ | 可選 |
 | JSON 熱更新 | — | — | ✅ | ✅ |
-| 多頁面 | ✅ | — | ✅ | 🔧 進行中 |
+| 多頁面 | ✅ | ✅ | ✅ | ✅ |
 | 用途 | 設計 | 預覽 | 開發驗證 | 量產交付 |
 
 ### 5.5 專案依賴

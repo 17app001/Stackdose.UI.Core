@@ -5,11 +5,15 @@ using Microsoft.Win32;
 using Stackdose.Tools.MachinePageDesigner.Controls;
 using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.Tools.MachinePageDesigner.Services;
+using System.Windows.Media;
 
 namespace Stackdose.Tools.DesignViewer;
 
 public partial class MainWindow : Window
 {
+    private DesignDocument? _currentDocument;
+    private int _currentPageIndex = 0;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -65,15 +69,16 @@ public partial class MainWindow : Window
         try
         {
             var doc = DesignFileService.Load(path);
-            RenderDocument(doc);
+            _currentDocument = doc;
+            _currentPageIndex = 0;
 
             var fileName = Path.GetFileName(path);
             lblFilePath.Text = path;
             lblFilePath.Foreground = System.Windows.Media.Brushes.LightGray;
-            lblCanvasSize.Text = $"畫布：{doc.CanvasWidth:F0} × {doc.CanvasHeight:F0} px";
-            lblStatus.Text = $"已載入：{fileName}　共 {doc.CanvasItems.Count} 個元件";
-            lblStatus.Foreground = System.Windows.Media.Brushes.LightGreen;
             Title = $"DesignViewer — {fileName}";
+
+            BuildPageTabs(doc);
+            SwitchPage(0);
         }
         catch (Exception ex)
         {
@@ -83,44 +88,101 @@ public partial class MainWindow : Window
         }
     }
 
-    private void RenderDocument(DesignDocument doc)
+    private void BuildPageTabs(DesignDocument doc)
     {
-        // 清除舊有元件
+        pageTabs.Children.Clear();
+
+        var pages = doc.Pages;
+        if (pages == null || pages.Count <= 1)
+        {
+            pageTabsBar.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        pageTabsBar.Visibility = Visibility.Visible;
+
+        for (int i = 0; i < pages.Count; i++)
+        {
+            var idx = i;
+            var btn = new Button
+            {
+                Content         = pages[i].Name,
+                Padding         = new Thickness(14, 5, 14, 5),
+                Margin          = new Thickness(0, 0, 2, 0),
+                Cursor          = System.Windows.Input.Cursors.Hand,
+                FontSize        = 12,
+                BorderThickness = new Thickness(1),
+                Foreground      = System.Windows.Media.Brushes.White,
+            };
+            SetTabStyle(btn, active: i == 0);
+            btn.Click += (_, _) => SwitchPage(idx);
+            pageTabs.Children.Add(btn);
+        }
+    }
+
+    private void SwitchPage(int index)
+    {
+        var pages = _currentDocument?.Pages;
+        if (pages == null || index < 0 || index >= pages.Count) return;
+
+        _currentPageIndex = index;
+
+        for (int i = 0; i < pageTabs.Children.Count; i++)
+        {
+            if (pageTabs.Children[i] is Button btn)
+                SetTabStyle(btn, active: i == index);
+        }
+
+        RenderPage(pages[index]);
+    }
+
+    private static void SetTabStyle(Button btn, bool active)
+    {
+        if (active)
+        {
+            btn.Background  = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4A, 0x6E, 0xBF));
+            btn.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6A, 0x8E, 0xDF));
+            btn.FontWeight  = FontWeights.SemiBold;
+        }
+        else
+        {
+            btn.Background  = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2A, 0x2A, 0x48));
+            btn.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4A, 0x4A, 0x6A));
+            btn.FontWeight  = FontWeights.Normal;
+        }
+    }
+
+    private void RenderPage(DesignPage page)
+    {
         designCanvas.Children.Clear();
+        designCanvas.Width  = page.CanvasWidth;
+        designCanvas.Height = page.CanvasHeight;
+        canvasBorder.Width  = page.CanvasWidth;
+        canvasBorder.Height = page.CanvasHeight;
 
-        // 設定畫布尺寸
-        designCanvas.Width  = doc.CanvasWidth;
-        designCanvas.Height = doc.CanvasHeight;
-        canvasBorder.Width  = doc.CanvasWidth;
-        canvasBorder.Height = doc.CanvasHeight;
-
-        // 依 Z-order（canvasItems 順序：index 0 = 最底層）逐一建立控制項
-        foreach (var def in doc.CanvasItems)
+        int ok = 0, err = 0;
+        foreach (var def in page.CanvasItems)
         {
             UIElement control;
-            try
-            {
-                control = DesignTimeControlFactory.Create(def);
-            }
-            catch (Exception ex)
-            {
-                // 若某元件建立失敗，以錯誤占位符替代，不中斷其他元件
-                control = MakeErrorPlaceholder(def, ex.Message);
-            }
+            try   { control = DesignTimeControlFactory.Create(def); ok++; }
+            catch (Exception ex) { control = MakeErrorPlaceholder(def, ex.Message); err++; }
 
-            // 設定尺寸
             if (control is FrameworkElement fe)
             {
                 fe.Width  = def.Width;
                 fe.Height = def.Height;
             }
 
-            // 定位
             Canvas.SetLeft(control, def.X);
             Canvas.SetTop(control,  def.Y);
-
             designCanvas.Children.Add(control);
         }
+
+        lblCanvasSize.Text = $"畫布：{page.CanvasWidth:F0} × {page.CanvasHeight:F0} px";
+        lblStatus.Text = $"頁面：{page.Name}　共 {ok} 個元件" + (err > 0 ? $"（{err} 個錯誤）" : "");
+        lblStatus.Foreground = err > 0
+            ? System.Windows.Media.Brushes.OrangeRed
+            : System.Windows.Media.Brushes.LightGreen;
     }
 
     private static UIElement MakeErrorPlaceholder(DesignerItemDefinition def, string message)

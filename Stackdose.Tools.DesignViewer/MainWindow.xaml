@@ -12,6 +12,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -60,8 +61,23 @@
             </WrapPanel>
         </Border>
 
+        <!-- ── 頁籤列（多頁文件才顯示） ── -->
+        <Border Grid.Row="1"
+                x:Name="pageTabsBar"
+                Background="#1E2040"
+                BorderBrush="#3A3A6A"
+                BorderThickness="0,0,0,1"
+                Padding="8,4"
+                Visibility="Collapsed">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled"
+                          HorizontalAlignment="Left">
+                <StackPanel x:Name="pageTabs" Orientation="Horizontal" VerticalAlignment="Center"/>
+            </ScrollViewer>
+        </Border>
+
         <!-- ── Canvas Area ── -->
-        <ScrollViewer Grid.Row="1"
+        <ScrollViewer Grid.Row="2"
                       HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto"
                       Background="#12121E"
@@ -94,7 +110,7 @@
         </ScrollViewer>
 
         <!-- ── Status Bar ── -->
-        <Border Grid.Row="2"
+        <Border Grid.Row="3"
                 Background="#252540"
                 BorderBrush="#3A3A5A"
                 BorderThickness="0,1,0,0"

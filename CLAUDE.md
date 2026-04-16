@@ -6,8 +6,33 @@
 
 ## 專案定位
 
-企業級 WPF 工業設備 UI 框架（.NET 8 Windows-only，x64），目標讓設備廠商快速建立符合 **FDA 21 CFR Part 11** 稽核要求的操作介面。
-這是**框架產品**，不是單一應用。Core / Templates 是基礎庫，DeviceFramework 是組裝框架，App.* 是範例，Tools.* 是開發工具。
+**一句話：讓不懂 XAML 的工程師或設計師，也能為 PLC 工業機台做出符合 FDA 稽核要求的監控介面。**
+
+### 核心主旨
+
+工業設備廠商的 UI 開發痛點有三：
+1. **PLC 整合複雜** — 每個設備的 Modbus / FX3U 地址不同，用程式碼寫很慢
+2. **FDA 合規負擔重** — 21 CFR Part 11 要求完整的操作日誌、使用者驗證、稽核追蹤
+3. **介面維護成本高** — 設計師改版型需要找工程師，工程師不懂設計工具
+
+Stackdose.UI.Core 的解法：
+- **MachinePageDesigner**：類 Unity 的拖曳設計工具，設計師直接擺控制項、綁 PLC 地址，輸出 `.machinedesign.json`
+- **DesignPlayer**：量產 Shell App，讀取 JSON 後直接部署，無需寫程式碼
+- **DeviceFramework**：更進一步的 JSON 驅動框架，適合複雜設備邏輯
+- **全架構內建** FDA 21 CFR Part 11（日誌、稽核、使用者權限）
+
+### 使用場景
+
+| 需求 | 解法 |
+|---|---|
+| 設計師快速做單頁機台監控介面 | MachinePageDesigner → DesignPlayer（單頁模式） |
+| 複雜設備需要多頁面導航 | MachinePageDesigner（多頁面） → DesignPlayer（頁籤/頁面切換） |
+| 工程師需要客製化設備邏輯 | DeviceFramework + JSON 設定 |
+| 上線前驗證 PLC 地址正確性 | DesignRuntime（即時 PLC 連線 + 熱更新） |
+
+### 技術定位
+企業級 WPF 框架（.NET 8 Windows-only，x64）。**框架產品**，非單一應用。
+Core / Templates 是基礎庫，DeviceFramework 是組裝框架，App.* 是範例，Tools.* 是開發工具。
 
 ---
 

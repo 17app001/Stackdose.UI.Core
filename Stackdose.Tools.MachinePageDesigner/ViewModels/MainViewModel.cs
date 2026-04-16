@@ -7,6 +7,7 @@ using System.Windows.Threading;
 using Microsoft.Win32;
 using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.Tools.MachinePageDesigner.Services;
+using Stackdose.Tools.MachinePageDesigner.Views;
 
 namespace Stackdose.Tools.MachinePageDesigner.ViewModels;
 
@@ -58,6 +59,9 @@ public sealed class MainViewModel : ObservableObject
     // ── Meta ─────────────────────────────────────────────────────────
     private string _docTitle;
     private string _machineId;
+
+    // ── PLC Tags ─────────────────────────────────────────────────────
+    public ObservableCollection<PlcTag> Tags { get; } = [];
 
     // ── Clipboard ────────────────────────────────────────────────────
     private List<DesignerItemDefinition> _clipboard = [];
@@ -116,6 +120,7 @@ public sealed class MainViewModel : ObservableObject
         DistributeVertCmd  = new RelayCommand(_ => DistributeItems(horizontal: false), _ => Canvas.HasSelectedItem);
 
         SaveAsTemplateCmd  = new RelayCommand(_ => SaveSelectionAsTemplate(), _ => Canvas.HasSelectedItem);
+        OpenTagEditorCmd   = new RelayCommand(_ => OpenTagEditor());
 
         // 初始化時建立第一個頁面（LoadDocumentIntoUI 會設定 CurrentPage → 觸發事件訂閱）
         LoadDocumentIntoUI();
@@ -271,6 +276,9 @@ public sealed class MainViewModel : ObservableObject
 
     // Template
     public ICommand SaveAsTemplateCmd { get; }
+
+    // PLC Tags
+    public ICommand OpenTagEditorCmd { get; }
 
     // Page Management
     public ICommand AddPageCmd    { get; }
@@ -816,6 +824,11 @@ public sealed class MainViewModel : ObservableObject
         N(nameof(DocTitle));
         N(nameof(MachineId));
 
+        // 載入 PLC Tags
+        Tags.Clear();
+        foreach (var tag in _document.Tags)
+            Tags.Add(tag);
+
         // 建立頁面 ViewModels
         Pages.Clear();
         foreach (var page in _document.Pages ?? [])
@@ -842,6 +855,9 @@ public sealed class MainViewModel : ObservableObject
 
         // 匯出所有頁面（DesignFileService.Save 會同步 Legacy 欄位）
         _document.Pages = Pages.Select(p => p.Export()).ToList();
+
+        // 同步 PLC Tags
+        _document.Tags = [..Tags];
     }
 
     private static readonly TimeSpan _propDebounce = TimeSpan.FromMilliseconds(300);
@@ -913,6 +929,21 @@ public sealed class MainViewModel : ObservableObject
         UndoRedo.Record(new PropertyChangeCommand(_subscribedPropItem, propKey, oldValue, newValue));
         _lastPropSnapshot = new PropSnapshot(_subscribedPropItem, propKey, oldValue, now);
         UpdateStatusFromSelection();
+    }
+
+    // ── PLC Tag Editor ───────────────────────────────────────────────
+
+    private void OpenTagEditor()
+    {
+        var win = new TagEditorWindow(Tags)
+        {
+            Owner = Application.Current?.MainWindow,
+        };
+        win.ShowDialog();
+        // Tags 已在視窗內直接修改，標記 Dirty 即可
+        _document.Tags = [..Tags];
+        MarkDirty();
+        StatusText = $"PLC Tags：{Tags.Count} 筆";
     }
 
     private static bool ConfirmDiscard()

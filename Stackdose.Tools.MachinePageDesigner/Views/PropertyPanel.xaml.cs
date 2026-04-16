@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -32,6 +33,24 @@ public static class SensorModes
 
 public partial class PropertyPanel : UserControl
 {
+    // ── PLC Tags DependencyProperty ──────────────────────────────────────
+    public static readonly DependencyProperty TagsProperty =
+        DependencyProperty.Register(
+            nameof(Tags),
+            typeof(ObservableCollection<PlcTag>),
+            typeof(PropertyPanel),
+            new PropertyMetadata(null));
+
+    /// <summary>
+    /// 來自 MainViewModel 的 PLC 標籤清單，供 PropertyPanel 地址欄下拉選取。
+    /// 由 MainWindow.xaml 的 PropertyPanel.Tags 繫結傳入。
+    /// </summary>
+    public ObservableCollection<PlcTag>? Tags
+    {
+        get => (ObservableCollection<PlcTag>?)GetValue(TagsProperty);
+        set => SetValue(TagsProperty, value);
+    }
+
     public PropertyPanel()
     {
         InitializeComponent();

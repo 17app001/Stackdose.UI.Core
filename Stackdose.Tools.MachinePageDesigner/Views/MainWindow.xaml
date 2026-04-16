@@ -96,8 +96,15 @@
                 <ToggleButton Content="&#x22EF; Snap"
                               IsChecked="{Binding SnapToGrid}"
                               Style="{StaticResource CanvasModeToggle}"
-                              Margin="0,0,16,0"
+                              Margin="0,0,4,0"
                               ToolTip="Snap to Grid（吸附格線，10px）"/>
+
+                <!-- PLC Tags -->
+                <Button Content="&#x1F4CC; Tags"
+                        Command="{Binding OpenTagEditorCmd}"
+                        Style="{StaticResource ToolbarButton}"
+                        Margin="0,0,16,0"
+                        ToolTip="編輯 PLC Tags（地址 → 名稱對照表）"/>
 
                 <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
 
@@ -246,7 +253,8 @@
 
             <GridSplitter Grid.Column="3" Width="3" Background="{StaticResource BorderBrush}" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
             <local:PropertyPanel Grid.Column="4" DataContext="{Binding Canvas.SelectedItem}"
-                                 Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                 Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
+                                 Tags="{Binding DataContext.Tags, RelativeSource={RelativeSource AncestorType=Window}}"/>
         </Grid>
 
         <!-- StatusBar -->

@@ -15,9 +15,25 @@
                 <TextBlock Text="標籤名稱" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
-                <!-- Address -->
+                <!-- Address (tag-aware) -->
                 <TextBlock Text="PLC 位址" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+                <ComboBox IsEditable="True"
+                          Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}"
+                          ItemsSource="{Binding Tags, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                          Margin="0,0,0,2"
+                          ToolTip="輸入 PLC 地址，或從已定義的 Tags 中選取">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Address}" FontWeight="SemiBold" MinWidth="70"/>
+                                <TextBlock Text="{Binding Name}" Opacity="0.65" Margin="8,0,0,0" FontSize="11"/>
+                                <TextBlock Text="{Binding Unit}" Opacity="0.5" Margin="4,0,0,0" FontSize="11"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10"
+                           Text="可直接輸入，或點選下拉從 PLC Tags 清單選取" Margin="0,0,0,8"/>
 
                 <!-- DefaultValue -->
                 <TextBlock Text="預設值" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
@@ -64,7 +80,23 @@
                 <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
                 <TextBlock Text="PLC 位址" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+                <ComboBox IsEditable="True"
+                          Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}"
+                          ItemsSource="{Binding Tags, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                          Margin="0,0,0,2"
+                          ToolTip="輸入 PLC 地址，或從已定義的 Tags 中選取">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Address}" FontWeight="SemiBold" MinWidth="70"/>
+                                <TextBlock Text="{Binding Name}" Opacity="0.65" Margin="8,0,0,0" FontSize="11"/>
+                                <TextBlock Text="{Binding Unit}" Opacity="0.5" Margin="4,0,0,0" FontSize="11"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10"
+                           Text="可直接輸入，或點選下拉從 PLC Tags 清單選取" Margin="0,0,0,8"/>
             </StackPanel>
         </DataTemplate>
 
@@ -77,7 +109,23 @@
                 <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
                 <TextBlock Text="PLC 位址 (M/D)" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                <TextBox Text="{Binding DisplayAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+                <ComboBox IsEditable="True"
+                          Text="{Binding DisplayAddress, UpdateSourceTrigger=PropertyChanged}"
+                          ItemsSource="{Binding Tags, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                          Margin="0,0,0,2"
+                          ToolTip="輸入 PLC 地址，或從已定義的 Tags 中選取">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Address}" FontWeight="SemiBold" MinWidth="70"/>
+                                <TextBlock Text="{Binding Name}" Opacity="0.65" Margin="8,0,0,0" FontSize="11"/>
+                                <TextBlock Text="{Binding Unit}" Opacity="0.5" Margin="4,0,0,0" FontSize="11"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10"
+                           Text="可直接輸入，或點選下拉從 PLC Tags 清單選取" Margin="0,0,0,8"/>
             </StackPanel>
         </DataTemplate>
 
@@ -90,7 +138,23 @@
                 <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
                 <TextBlock Text="命令位址" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                <TextBox Text="{Binding CommandAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+                <ComboBox IsEditable="True"
+                          Text="{Binding CommandAddress, UpdateSourceTrigger=PropertyChanged}"
+                          ItemsSource="{Binding Tags, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                          Margin="0,0,0,2"
+                          ToolTip="輸入 PLC 地址，或從已定義的 Tags 中選取">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Address}" FontWeight="SemiBold" MinWidth="70"/>
+                                <TextBlock Text="{Binding Name}" Opacity="0.65" Margin="8,0,0,0" FontSize="11"/>
+                                <TextBlock Text="{Binding Unit}" Opacity="0.5" Margin="4,0,0,0" FontSize="11"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10"
+                           Text="可直接輸入，或點選下拉從 PLC Tags 清單選取" Margin="0,0,0,8"/>
 
                 <TextBlock Text="寫入值" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding WriteValue, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"/>

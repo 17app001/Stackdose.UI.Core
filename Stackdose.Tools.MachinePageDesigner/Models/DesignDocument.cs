@@ -22,6 +22,13 @@ public sealed class DesignDocument
     [JsonPropertyName("pages")]
     public List<DesignPage>? Pages { get; set; }
 
+    /// <summary>
+    /// PLC 標籤定義（地址 → 名稱對照表）。
+    /// 設計師在屬性面板輸入地址時可從下拉選取，由工程師事先定義。
+    /// </summary>
+    [JsonPropertyName("tags")]
+    public List<PlcTag> Tags { get; set; } = [];
+
     // ── 下列欄位為向後相容（v1.0 格式 / Runtime 讀取第一頁用） ──────────
 
     /// <summary>第一頁元件清單（Runtime 相容用，Save 時同步自 Pages[0]）</summary>

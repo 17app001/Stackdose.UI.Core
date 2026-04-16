@@ -106,4 +106,54 @@ public static class PropsExtensions
         }
         return fallback;
     }
+
+    /// <summary>
+    /// 從 Props 取出物件陣列（支援 JsonElement 反序列化 + 原生 List）
+    /// </summary>
+    public static List<Dictionary<string, object?>> GetObjectList(
+        this Dictionary<string, object?> props, string key)
+    {
+        if (!props.TryGetValue(key, out var val) || val is null)
+            return [];
+
+        // 原生 List（設計器執行時直接存的）
+        if (val is List<object?> rawList)
+        {
+            var result = new List<Dictionary<string, object?>>();
+            foreach (var item in rawList)
+            {
+                if (item is Dictionary<string, object?> dict)
+                    result.Add(dict);
+            }
+            return result;
+        }
+
+        // JSON 反序列化後為 JsonElement
+        if (val is System.Text.Json.JsonElement je && je.ValueKind == System.Text.Json.JsonValueKind.Array)
+        {
+            var result = new List<Dictionary<string, object?>>();
+            foreach (var elem in je.EnumerateArray())
+            {
+                if (elem.ValueKind == System.Text.Json.JsonValueKind.Object)
+                {
+                    var dict = new Dictionary<string, object?>();
+                    foreach (var prop in elem.EnumerateObject())
+                    {
+                        dict[prop.Name] = prop.Value.ValueKind switch
+                        {
+                            System.Text.Json.JsonValueKind.String => prop.Value.GetString(),
+                            System.Text.Json.JsonValueKind.Number => prop.Value.TryGetInt32(out var i) ? i : (object)prop.Value.GetDouble(),
+                            System.Text.Json.JsonValueKind.True   => true,
+                            System.Text.Json.JsonValueKind.False  => false,
+                            _ => prop.Value.ToString()
+                        };
+                    }
+                    result.Add(dict);
+                }
+            }
+            return result;
+        }
+
+        return [];
+    }
 }

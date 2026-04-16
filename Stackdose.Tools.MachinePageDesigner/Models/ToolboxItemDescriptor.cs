@@ -56,7 +56,10 @@ public sealed class ToolboxItemDescriptor
                 ["label"] = "Command",
                 ["commandAddress"] = "M100",
                 ["requiredLevel"] = "Operator",
-                ["theme"] = "Primary"
+                ["theme"] = "Primary",
+                ["writeValue"] = "1",
+                ["commandType"] = "write",
+                ["pulseMs"] = 300.0
             }
         },
         "Spacer" => new DesignerItemDefinition

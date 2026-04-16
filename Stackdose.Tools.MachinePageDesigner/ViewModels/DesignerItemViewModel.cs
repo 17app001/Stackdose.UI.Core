@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Windows;
 using Stackdose.Tools.MachinePageDesigner.Controls;
 using Stackdose.Tools.MachinePageDesigner.Models;
@@ -13,12 +14,80 @@ public sealed class DesignerItemViewModel : ObservableObject
     private readonly DesignerItemDefinition _definition;
     private bool _isSelected;
     private UIElement? _preview;
+    private ObservableCollection<AlarmEditItem>? _alarmItems;
+    private ObservableCollection<SensorEditItem>? _sensorItems;
 
     public DesignerItemViewModel(DesignerItemDefinition definition)
     {
         _definition = definition;
+        LoadEmbeddedCollections();
         RefreshPreview();
     }
+
+    private void LoadEmbeddedCollections()
+    {
+        if (_definition.Type == "AlarmViewer")
+        {
+            var raw = _definition.Props.GetObjectList("alarmItems");
+            _alarmItems = new ObservableCollection<AlarmEditItem>(
+                raw.Select(AlarmEditItem.FromDictionary));
+            _alarmItems.CollectionChanged += OnAlarmItemsChanged;
+            foreach (var item in _alarmItems)
+                item.PropertyChanged += (_, _) => SyncAlarmItemsToProps();
+        }
+        else if (_definition.Type == "SensorViewer")
+        {
+            var raw = _definition.Props.GetObjectList("sensorItems");
+            _sensorItems = new ObservableCollection<SensorEditItem>(
+                raw.Select(SensorEditItem.FromDictionary));
+            _sensorItems.CollectionChanged += OnSensorItemsChanged;
+            foreach (var item in _sensorItems)
+                item.PropertyChanged += (_, _) => SyncSensorItemsToProps();
+        }
+    }
+
+    private void OnAlarmItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.NewItems != null)
+            foreach (AlarmEditItem item in e.NewItems)
+                item.PropertyChanged += (_, _) => SyncAlarmItemsToProps();
+        SyncAlarmItemsToProps();
+    }
+
+    private void OnSensorItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.NewItems != null)
+            foreach (SensorEditItem item in e.NewItems)
+                item.PropertyChanged += (_, _) => SyncSensorItemsToProps();
+        SyncSensorItemsToProps();
+    }
+
+    private void SyncAlarmItemsToProps()
+    {
+        if (_alarmItems == null) return;
+        var list = _alarmItems.Select(a => (object?)a.ToDictionary()).ToList();
+        _definition.Props["alarmItems"] = list;
+        N(nameof(AlarmItemCount));
+        RefreshPreview();
+    }
+
+    private void SyncSensorItemsToProps()
+    {
+        if (_sensorItems == null) return;
+        var list = _sensorItems.Select(s => (object?)s.ToDictionary()).ToList();
+        _definition.Props["sensorItems"] = list;
+        N(nameof(SensorItemCount));
+        RefreshPreview();
+    }
+
+    public ObservableCollection<AlarmEditItem> AlarmItems
+        => _alarmItems ??= new ObservableCollection<AlarmEditItem>();
+
+    public ObservableCollection<SensorEditItem> SensorItems
+        => _sensorItems ??= new ObservableCollection<SensorEditItem>();
+
+    public int AlarmItemCount => _alarmItems?.Count ?? 0;
+    public int SensorItemCount => _sensorItems?.Count ?? 0;
 
     // 嚙緩嚙緩 Identity 嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩
     public string Id => _definition.Id;
@@ -120,6 +189,9 @@ public sealed class DesignerItemViewModel : ObservableObject
             "commandAddress" => nameof(CommandAddress),
             "requiredLevel" => nameof(RequiredLevel),
             "theme" => nameof(Theme),
+            "writeValue" => nameof(WriteValue),
+            "commandType" => nameof(CommandType),
+            "pulseMs" => nameof(PulseMs),
             "isLocked" => nameof(IsLocked),
             "title" => nameof(GroupTitle),
             "configFile" => nameof(ConfigFile),
@@ -278,6 +350,42 @@ public sealed class DesignerItemViewModel : ObservableObject
             if (old == value) return;
             SetPropDirect("theme", value);
             PropCommitted?.Invoke("theme", old, value);
+        }
+    }
+
+    public string WriteValue
+    {
+        get => GetProp("writeValue", "1");
+        set
+        {
+            var old = GetProp("writeValue", "1");
+            if (old == value) return;
+            SetPropDirect("writeValue", value);
+            PropCommitted?.Invoke("writeValue", old, value);
+        }
+    }
+
+    public string CommandType
+    {
+        get => GetProp("commandType", "write");
+        set
+        {
+            var old = GetProp("commandType", "write");
+            if (old == value) return;
+            SetPropDirect("commandType", value);
+            PropCommitted?.Invoke("commandType", old, value);
+        }
+    }
+
+    public double PulseMs
+    {
+        get => GetPropDouble("pulseMs", 300);
+        set
+        {
+            var old = GetPropDouble("pulseMs", 300);
+            if (old == value) return;
+            SetPropDirect("pulseMs", value);
+            PropCommitted?.Invoke("pulseMs", old, value);
         }
     }
 
@@ -457,6 +565,7 @@ public sealed class DesignerItemViewModel : ObservableObject
     public static readonly string[] StringFormats = ["F0", "F1", "F2", "F3"];
     public static readonly string[] ButtonThemes = ["Primary", "Success", "Danger", "Warning"];
     public static readonly string[] AccessLevels = ["Operator", "Instructor", "Supervisor", "Admin", "SuperAdmin"];
+    public static readonly string[] CommandTypes = ["write", "pulse", "toggle"];
     public static readonly string[] FontWeightOptions = ["Normal", "Bold"];
     public static readonly string[] TextAlignOptions  = ["Left", "Center", "Right"];
     public static readonly string[] ForegroundOptions =

@@ -92,6 +92,25 @@
                 <TextBlock Text="命令位址" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding CommandAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
+                <TextBlock Text="寫入值" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding WriteValue, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"/>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap"
+                           Text="點擊按鈕時寫入 PLC 的值（預設 1）。toggle 模式下此值為「開啟值」。" Margin="0,0,0,8"/>
+
+                <TextBlock Text="命令類型" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.CommandTypes}"
+                          SelectedItem="{Binding CommandType}" Margin="0,0,0,4"/>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap"
+                           Text="write＝寫入固定值；pulse＝寫入後延遲歸零；toggle＝讀取當前值取反。" Margin="0,0,0,8"/>
+
+                <TextBlock Style="{StaticResource FieldLabel}" Margin="0,0,0,2">
+                    <Run Text="Pulse 持續時間 (ms)："/><Run Text="{Binding PulseMs, StringFormat=F0, Mode=OneWay}"/>
+                </TextBlock>
+                <Slider Value="{Binding PulseMs}" Minimum="50" Maximum="3000" TickFrequency="50"
+                        IsSnapToTickEnabled="True" Margin="0,0,0,4"/>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap"
+                           Text="僅 pulse 模式有效。寫入值後等待此毫秒數再寫 0。" Margin="0,0,0,8"/>
+
                 <TextBlock Text="所需權限" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.AccessLevels}"
                           SelectedItem="{Binding RequiredLevel}" Margin="0,0,0,8"/>
@@ -131,10 +150,68 @@
              ════════════════════════════════════════════════════════ -->
         <DataTemplate x:Key="AlarmViewerTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
             <StackPanel Margin="0,4">
-                <TextBlock Text="設定檔路徑" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <!-- Config file path (optional override) -->
+                <TextBlock Text="設定檔路徑（選填）" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding ConfigFile, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"/>
-                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap"
-                           Text="相對於 App 根目錄的 alarms.json 路徑。留空則使用預設設定。"/>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,0,0,8"
+                           Text="留空則使用下方內嵌的報警定義。若填入路徑，Runtime 優先載入外部 JSON。"/>
+
+                <Separator Margin="0,4,0,8"/>
+
+                <!-- Inline alarm editor -->
+                <Grid Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource SectionHeader}">
+                        <Run Text="報警定義 ("/>
+                        <Run Text="{Binding AlarmItemCount, Mode=OneWay}"/>
+                        <Run Text=" 筆)"/>
+                    </TextBlock>
+                    <Button Grid.Column="1" Content="＋ 新增" Padding="8,2" FontSize="11"
+                            Click="OnAddAlarmItem"/>
+                </Grid>
+
+                <ItemsControl ItemsSource="{Binding AlarmItems}" Margin="0,4,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                    CornerRadius="3" Padding="6,4" Margin="0,0,0,4"
+                                    Background="{StaticResource PanelBrush}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <Grid Margin="0,0,0,3">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="4"/>
+                                                <ColumnDefinition Width="60"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Grid.Column="0" Text="{Binding Group, UpdateSourceTrigger=PropertyChanged}"
+                                                     ToolTip="群組"/>
+                                            <TextBox Grid.Column="2" Text="{Binding Bit, UpdateSourceTrigger=PropertyChanged}"
+                                                     ToolTip="Bit" HorizontalContentAlignment="Center"/>
+                                        </Grid>
+                                        <TextBox Text="{Binding Device, UpdateSourceTrigger=PropertyChanged}"
+                                                 ToolTip="PLC 位址" Margin="0,0,0,3"/>
+                                        <TextBox Text="{Binding OperationDescription, UpdateSourceTrigger=PropertyChanged}"
+                                                 ToolTip="描述"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Content="✕" VerticalAlignment="Top"
+                                            Margin="4,0,0,0" Padding="4,2" FontSize="10"
+                                            Click="OnRemoveAlarmItem" Tag="{Binding}"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0"
+                           Text="欄位：群組 | Bit / PLC 位址 / 描述。存檔時自動輸出 alarms.json。"/>
             </StackPanel>
         </DataTemplate>
 
@@ -143,10 +220,83 @@
              ════════════════════════════════════════════════════════ -->
         <DataTemplate x:Key="SensorViewerTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
             <StackPanel Margin="0,4">
-                <TextBlock Text="設定檔路徑" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <!-- Config file path (optional override) -->
+                <TextBlock Text="設定檔路徑（選填）" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding ConfigFile, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"/>
-                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap"
-                           Text="相對於 App 根目錄的 sensors.json 路徑。留空則使用預設設定。"/>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,0,0,8"
+                           Text="留空則使用下方內嵌的感測器定義。若填入路徑，Runtime 優先載入外部 JSON。"/>
+
+                <Separator Margin="0,4,0,8"/>
+
+                <!-- Inline sensor editor -->
+                <Grid Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource SectionHeader}">
+                        <Run Text="感測器定義 ("/>
+                        <Run Text="{Binding SensorItemCount, Mode=OneWay}"/>
+                        <Run Text=" 筆)"/>
+                    </TextBlock>
+                    <Button Grid.Column="1" Content="＋ 新增" Padding="8,2" FontSize="11"
+                            Click="OnAddSensorItem"/>
+                </Grid>
+
+                <ItemsControl ItemsSource="{Binding SensorItems}" Margin="0,4,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                    CornerRadius="3" Padding="6,4" Margin="0,0,0,4"
+                                    Background="{StaticResource PanelBrush}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <Grid Margin="0,0,0,3">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="4"/>
+                                                <ColumnDefinition Width="70"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Grid.Column="0" Text="{Binding Group, UpdateSourceTrigger=PropertyChanged}"
+                                                     ToolTip="群組"/>
+                                            <ComboBox Grid.Column="2"
+                                                      ItemsSource="{x:Static local:SensorModes.All}"
+                                                      SelectedItem="{Binding Mode}"
+                                                      ToolTip="模式"/>
+                                        </Grid>
+                                        <Grid Margin="0,0,0,3">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="4"/>
+                                                <ColumnDefinition Width="50"/>
+                                                <ColumnDefinition Width="4"/>
+                                                <ColumnDefinition Width="50"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Grid.Column="0" Text="{Binding Device, UpdateSourceTrigger=PropertyChanged}"
+                                                     ToolTip="PLC 位址"/>
+                                            <TextBox Grid.Column="2" Text="{Binding Bit, UpdateSourceTrigger=PropertyChanged}"
+                                                     ToolTip="Bit" HorizontalContentAlignment="Center"/>
+                                            <TextBox Grid.Column="4" Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                     ToolTip="期望值" HorizontalContentAlignment="Center"/>
+                                        </Grid>
+                                        <TextBox Text="{Binding OperationDescription, UpdateSourceTrigger=PropertyChanged}"
+                                                 ToolTip="描述"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Content="✕" VerticalAlignment="Top"
+                                            Margin="4,0,0,0" Padding="4,2" FontSize="10"
+                                            Click="OnRemoveSensorItem" Tag="{Binding}"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0"
+                           Text="欄位：群組 | 模式 / 位址 | Bit | 值 / 描述。存檔時自動輸出 sensors.json。"/>
             </StackPanel>
         </DataTemplate>
 

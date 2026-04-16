@@ -13,6 +13,14 @@ public class ProcessCommandService
         string machineName,
         string commandName,
         string commandAddress)
+        => await ExecuteCommandAsync(machineId, machineName, commandName, commandAddress, "1");
+
+    public virtual async Task<ProcessExecutionResult> ExecuteCommandAsync(
+        string machineId,
+        string machineName,
+        string commandName,
+        string commandAddress,
+        string writeValue)
     {
         if (string.IsNullOrWhiteSpace(commandAddress) || commandAddress == "--")
         {
@@ -31,22 +39,22 @@ public class ProcessCommandService
                 $"Cannot execute '{commandName}': PLC not connected.\n\nMachine: {machineName}\nAddress: {commandAddress}");
         }
 
-        var writeSucceeded = await manager.WriteAsync($"{commandAddress},1");
+        var writeSucceeded = await manager.WriteAsync($"{commandAddress},{writeValue}");
         if (!writeSucceeded)
         {
             return new ProcessExecutionResult(
                 false,
                 ProcessState.Faulted,
-                $"'{commandName}' write failed.\n\nMachine: {machineName}\nAddress: {commandAddress}");
+                $"'{commandName}' write failed.\n\nMachine: {machineName}\nAddress: {commandAddress}\nValue: {writeValue}");
         }
 
         ComplianceContext.LogSystem(
-            $"[Process] {commandName} requested: {machineName} ({machineId}) -> {commandAddress}",
+            $"[Process] {commandName} requested: {machineName} ({machineId}) -> {commandAddress}={writeValue}",
             machineId: machineId);
 
         return new ProcessExecutionResult(
             true,
             ProcessState.Starting,
-            $"Command '{commandName}' sent.\n\nMachine: {machineName}\nMachine ID: {machineId}\nAddress: {commandAddress}");
+            $"Command '{commandName}' sent.\n\nMachine: {machineName}\nMachine ID: {machineId}\nAddress: {commandAddress}\nValue: {writeValue}");
     }
 }

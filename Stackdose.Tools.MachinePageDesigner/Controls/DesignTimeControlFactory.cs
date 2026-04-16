@@ -23,8 +23,12 @@ public static class DesignTimeControlFactory
             "SecuredButton"      => CreateSecuredButton(def),
             "Spacer"             => CreateGroupBox(def),
             "LiveLog"            => CreateViewerPlaceholder("System Log",    "\u2637", Color.FromRgb(0x1A, 0x1A, 0x30), null),
-            "AlarmViewer"        => CreateViewerPlaceholder("Alarm Viewer",  "\u26A0", Color.FromRgb(0x30, 0x18, 0x18), def.Props.GetString("configFile")),
-            "SensorViewer"       => CreateViewerPlaceholder("Sensor Viewer", "\u26A1", Color.FromRgb(0x18, 0x28, 0x30), def.Props.GetString("configFile")),
+            "AlarmViewer"        => CreateViewerPlaceholder("Alarm Viewer",  "\u26A0", Color.FromRgb(0x30, 0x18, 0x18),
+                                        def.Props.GetString("configFile"),
+                                        def.Props.GetObjectList("alarmItems").Count),
+            "SensorViewer"       => CreateViewerPlaceholder("Sensor Viewer", "\u26A1", Color.FromRgb(0x18, 0x28, 0x30),
+                                        def.Props.GetString("configFile"),
+                                        def.Props.GetObjectList("sensorItems").Count),
             "StaticLabel"        => CreateStaticLabel(def),
             _ => new TextBlock
             {
@@ -215,7 +219,7 @@ public static class DesignTimeControlFactory
         };
     }
 
-    private static UIElement CreateViewerPlaceholder(string title, string icon, Color bgColor, string? configFile)
+    private static UIElement CreateViewerPlaceholder(string title, string icon, Color bgColor, string? configFile, int embeddedCount = 0)
     {
         var border = new Border
         {
@@ -253,6 +257,18 @@ public static class DesignTimeControlFactory
             stack.Children.Add(new TextBlock
             {
                 Text       = System.IO.Path.GetFileName(configFile),
+                FontSize   = 10,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0xAA)),
+                Margin     = new Thickness(0, 4, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+            });
+        }
+        else if (embeddedCount > 0)
+        {
+            stack.Children.Add(new TextBlock
+            {
+                Text       = $"({embeddedCount} 筆內嵌定義)",
                 FontSize   = 10,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Foreground = new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0xAA)),

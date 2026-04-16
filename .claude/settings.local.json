@@ -49,7 +49,11 @@
       "Bash(git -C \"D:/工作區/Project/Stackdose.Platform\" log --oneline --format=\"%ad %h %s\" --date=short)",
       "Bash(git:*)",
       "Bash(grep -v \"^obj$\")",
-      "Bash(grep -v \"^bin$\")"
+      "Bash(grep -v \"^bin$\")",
+      "Bash(grep -n \"多頁\\\\|ConnectionLost\\\\|DesignPage\\\\|pages\" docs/kb/*.md)",
+      "Bash(\"C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe\" Stackdose.App.DesignPlayer/Stackdose.App.DesignPlayer.csproj /p:Configuration=Debug /nologo /v:minimal)",
+      "Bash(\"C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe\" \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\\\\Stackdose.App.DesignPlayer\\\\Stackdose.App.DesignPlayer.csproj\" /p:Configuration=Debug /nologo /v:minimal)",
+      "Bash(cmd /c '\"C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Community\\\\MSBuild\\\\Current\\\\Bin\\\\MSBuild.exe\" \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\\\\Stackdose.App.DesignPlayer\\\\Stackdose.App.DesignPlayer.csproj\" /p:Configuration=Debug /t:Build /nologo /v:minimal 2>&1\"')"
     ]
   }
 }

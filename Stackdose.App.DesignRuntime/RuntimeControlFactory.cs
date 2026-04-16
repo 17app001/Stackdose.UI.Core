@@ -134,9 +134,12 @@ public static class RuntimeControlFactory
 
     private static UIElement CreateSecuredButton(DesignerItemDefinition def)
     {
-        var p       = def.Props;
-        var label   = p.GetString("label",   "Command");
-        var address = p.GetString("address", "");
+        var p           = def.Props;
+        var label       = p.GetString("label",          "Command");
+        var address     = p.GetString("commandAddress",  p.GetString("address", ""));
+        var writeValue  = p.GetString("writeValue",      "1");
+        var commandType = p.GetString("commandType",     "write");
+        var pulseMs     = (int)p.GetDouble("pulseMs",    300);
 
         var theme = p.GetString("theme", "Primary").ToLowerInvariant() switch
         {
@@ -160,10 +163,36 @@ public static class RuntimeControlFactory
         {
             btn.Click += async (_, _) =>
             {
-                var result = await _cmdSvc.ExecuteCommandAsync("Runtime", label, label, address);
-                if (!result.Success)
+                switch (commandType.ToLowerInvariant())
                 {
-                    MessageBox.Show(result.Message, "執行失敗", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    case "pulse":
+                    {
+                        var r1 = await _cmdSvc.ExecuteCommandAsync("Runtime", label, label, address, writeValue);
+                        if (!r1.Success) { MessageBox.Show(r1.Message, "執行失敗", MessageBoxButton.OK, MessageBoxImage.Warning); break; }
+                        await Task.Delay(Math.Max(50, pulseMs));
+                        var r2 = await _cmdSvc.ExecuteCommandAsync("Runtime", label, $"{label}(reset)", address, "0");
+                        if (!r2.Success) MessageBox.Show(r2.Message, "歸零失敗", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        break;
+                    }
+                    case "toggle":
+                    {
+                        var mgr = PlcContext.GlobalStatus?.CurrentManager;
+                        if (mgr == null || !mgr.IsConnected)
+                        { MessageBox.Show("PLC 未連線", "執行失敗", MessageBoxButton.OK, MessageBoxImage.Warning); break; }
+                        int? current = address.StartsWith("M", StringComparison.OrdinalIgnoreCase)
+                            ? (mgr.ReadBit(address) == true ? 1 : 0)
+                            : mgr.ReadWord(address);
+                        var newVal = (current is > 0) ? "0" : writeValue;
+                        var result = await _cmdSvc.ExecuteCommandAsync("Runtime", label, label, address, newVal);
+                        if (!result.Success) MessageBox.Show(result.Message, "執行失敗", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        break;
+                    }
+                    default: // "write"
+                    {
+                        var result = await _cmdSvc.ExecuteCommandAsync("Runtime", label, label, address, writeValue);
+                        if (!result.Success) MessageBox.Show(result.Message, "執行失敗", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        break;
+                    }
                 }
             };
         }

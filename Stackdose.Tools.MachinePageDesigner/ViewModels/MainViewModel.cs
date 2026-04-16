@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
@@ -5,7 +7,6 @@ using System.Windows.Threading;
 using Microsoft.Win32;
 using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.Tools.MachinePageDesigner.Services;
-using System.ComponentModel;
 
 namespace Stackdose.Tools.MachinePageDesigner.ViewModels;
 
@@ -15,8 +16,27 @@ namespace Stackdose.Tools.MachinePageDesigner.ViewModels;
 public sealed class MainViewModel : ObservableObject
 {
     // ── Sub-ViewModels ───────────────────────────────────────────────
-    public DesignCanvasViewModel Canvas { get; } = new();
     public ToolboxViewModel Toolbox { get; } = new();
+
+    // ── Pages ────────────────────────────────────────────────────────
+    public ObservableCollection<PageTabViewModel> Pages { get; } = [];
+
+    private PageTabViewModel? _currentPage;
+
+    public PageTabViewModel? CurrentPage
+    {
+        get => _currentPage;
+        set => SetCurrentPage(value);
+    }
+
+    /// <summary>目前頁面的畫布 ViewModel（供 FreeCanvas / PropertyPanel 綁定用）</summary>
+    public DesignCanvasViewModel Canvas => _currentPage?.Canvas ?? _fallbackCanvas;
+
+    /// <summary>目前頁面的 UndoRedo 服務</summary>
+    public UndoRedoService UndoRedo => _currentPage?.UndoRedo ?? _fallbackUndoRedo;
+
+    private static readonly DesignCanvasViewModel _fallbackCanvas   = new();
+    private static readonly UndoRedoService       _fallbackUndoRedo = new();
 
     // ── Document state ───────────────────────────────────────────────
     private DesignDocument _document = new();
@@ -43,8 +63,7 @@ public sealed class MainViewModel : ObservableObject
     private List<DesignerItemDefinition> _clipboard = [];
     private int _pasteCount;
 
-    // ── Services ─────────────────────────────────────────────────────
-    public UndoRedoService UndoRedo { get; } = new();
+    // ── Services（UndoRedo 現為 CurrentPage 代理，保留空行以免誤刪其他成員）─
 
     private DesignerItemViewModel? _subscribedPropItem;
 
@@ -69,8 +88,13 @@ public sealed class MainViewModel : ObservableObject
         OpenCmd = new RelayCommand(_ => OpenDocument());
         SaveCmd = new RelayCommand(_ => SaveDocument());
         SaveAsCmd = new RelayCommand(_ => SaveDocumentAs());
-        UndoCmd = new RelayCommand(_ => PerformUndo(), _ => UndoRedo.CanUndo);
-        RedoCmd = new RelayCommand(_ => PerformRedo(), _ => UndoRedo.CanRedo);
+        UndoCmd = new RelayCommand(_ => PerformUndo(), _ => UndoRedo?.CanUndo == true);
+        RedoCmd = new RelayCommand(_ => PerformRedo(), _ => UndoRedo?.CanRedo == true);
+        AddPageCmd    = new RelayCommand(_ => AddPage());
+        DeletePageCmd = new RelayCommand(p => DeletePage(p as PageTabViewModel),
+                                         p => Pages.Count > 1);
+        SelectPageCmd = new RelayCommand(p => { if (p is PageTabViewModel vm) SetCurrentPage(vm); });
+        RenamePageCmd = new RelayCommand(p => { if (p is PageTabViewModel vm) vm.IsEditing = true; });
         DeleteSelectedCmd  = new RelayCommand(_ => DeleteSelected(),  _ => Canvas.HasSelectedItem);
         BringToFrontCmd    = new RelayCommand(_ => BringToFront(),   _ => Canvas.HasSelectedItem);
         SendToBackCmd      = new RelayCommand(_ => SendToBack(),     _ => Canvas.HasSelectedItem);
@@ -91,32 +115,8 @@ public sealed class MainViewModel : ObservableObject
         DistributeHorizCmd = new RelayCommand(_ => DistributeItems(horizontal: true),  _ => Canvas.HasSelectedItem);
         DistributeVertCmd  = new RelayCommand(_ => DistributeItems(horizontal: false), _ => Canvas.HasSelectedItem);
 
-        // UndoRedo 狀態變更時更新 dirty 並強制刷新 Command enable 狀態
-        UndoRedo.StateChanged += () =>
-        {
-            MarkDirty();
-            Application.Current?.Dispatcher.InvokeAsync(
-                CommandManager.InvalidateRequerySuggested,
-                DispatcherPriority.Background);
-        };
-
-        // 追蹤 SelectedItem 變更：訂閱 PropCommitted + 更新 StatusBar
-        Canvas.PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName != nameof(DesignCanvasViewModel.SelectedItem)) return;
-
-            if (_subscribedPropItem != null)
-                _subscribedPropItem.PropCommitted -= OnItemPropCommitted;
-
-            _subscribedPropItem = Canvas.SelectedItem;
-
-            if (_subscribedPropItem != null)
-                _subscribedPropItem.PropCommitted += OnItemPropCommitted;
-
-            UpdateStatusFromSelection();
-        };
-
-        Canvas.LoadFromDocument(_document);
+        // 初始化時建立第一個頁面（LoadDocumentIntoUI 會設定 CurrentPage → 觸發事件訂閱）
+        LoadDocumentIntoUI();
     }
 
     // ── Properties ───────────────────────────────────────────────────
@@ -267,6 +267,12 @@ public sealed class MainViewModel : ObservableObject
     public ICommand DistributeHorizCmd { get; }
     public ICommand DistributeVertCmd  { get; }
 
+    // Page Management
+    public ICommand AddPageCmd    { get; }
+    public ICommand DeletePageCmd { get; }
+    public ICommand SelectPageCmd { get; }
+    public ICommand RenamePageCmd { get; }
+
     // ── UndoRedo 整合方法（供 View 呼叫） ────────────────────────────
 
     /// <summary>
@@ -340,7 +346,7 @@ public sealed class MainViewModel : ObservableObject
         LoadDocumentIntoUI();
         CurrentFilePath = null;
         IsDirty = false;
-        UndoRedo.Clear();
+        foreach (var p in Pages) p.UndoRedo.Clear();
         StatusText = "已建立新文件";
     }
 
@@ -361,7 +367,7 @@ public sealed class MainViewModel : ObservableObject
             LoadDocumentIntoUI();
             CurrentFilePath = dlg.FileName;
             IsDirty = false;
-            UndoRedo.Clear();
+            foreach (var p in Pages) p.UndoRedo.Clear();
             StatusText = $"已開啟：{Path.GetFileName(dlg.FileName)}";
         }
         catch (Exception ex)
@@ -628,6 +634,99 @@ public sealed class MainViewModel : ObservableObject
         StatusText = "重做";
     }
 
+    // ── Page Management ──────────────────────────────────────────────
+
+    private void SetCurrentPage(PageTabViewModel? page)
+    {
+        // 解除舊頁面事件訂閱
+        if (_currentPage != null)
+        {
+            _currentPage.Canvas.PropertyChanged -= OnCanvasPropertyChanged;
+            _currentPage.UndoRedo.StateChanged  -= OnUndoRedoStateChanged;
+            if (_subscribedPropItem != null)
+                _subscribedPropItem.PropCommitted -= OnItemPropCommitted;
+            _subscribedPropItem  = null;
+            _lastPropSnapshot    = null;
+        }
+
+        // 更新所有頁籤 IsActive
+        foreach (var p in Pages)
+            p.IsActive = ReferenceEquals(p, page);
+
+        _currentPage = page;
+        N(nameof(CurrentPage));
+        N(nameof(Canvas));
+        N(nameof(UndoRedo));
+        N(nameof(CanvasWidth));
+        N(nameof(CanvasHeight));
+
+        // 訂閱新頁面事件
+        if (_currentPage != null)
+        {
+            _currentPage.Canvas.PropertyChanged += OnCanvasPropertyChanged;
+            _currentPage.UndoRedo.StateChanged  += OnUndoRedoStateChanged;
+        }
+
+        UpdateStatusFromSelection();
+        Application.Current?.Dispatcher.InvokeAsync(
+            CommandManager.InvalidateRequerySuggested,
+            DispatcherPriority.Background);
+    }
+
+    private void OnCanvasPropertyChanged(object? _, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(DesignCanvasViewModel.SelectedItem)) return;
+
+        if (_subscribedPropItem != null)
+            _subscribedPropItem.PropCommitted -= OnItemPropCommitted;
+
+        _subscribedPropItem = Canvas.SelectedItem;
+
+        if (_subscribedPropItem != null)
+            _subscribedPropItem.PropCommitted += OnItemPropCommitted;
+
+        UpdateStatusFromSelection();
+    }
+
+    private void OnUndoRedoStateChanged()
+    {
+        MarkDirty();
+        Application.Current?.Dispatcher.InvokeAsync(
+            CommandManager.InvalidateRequerySuggested,
+            DispatcherPriority.Background);
+    }
+
+    private void AddPage()
+    {
+        var page = new DesignPage
+        {
+            PageId      = Guid.NewGuid().ToString("N")[..8],
+            Name        = $"Page {Pages.Count + 1}",
+            CanvasWidth  = Canvas.CanvasWidth,
+            CanvasHeight = Canvas.CanvasHeight,
+        };
+        var vm = new PageTabViewModel(page);
+        Pages.Add(vm);
+        SetCurrentPage(vm);
+        MarkDirty();
+        StatusText = $"已新增頁面：{vm.Name}";
+    }
+
+    private void DeletePage(PageTabViewModel? page)
+    {
+        if (page == null || Pages.Count <= 1)
+        {
+            StatusText = "至少需要保留一個頁面";
+            return;
+        }
+        var idx = Pages.IndexOf(page);
+        Pages.Remove(page);
+        if (ReferenceEquals(page, _currentPage))
+            SetCurrentPage(Pages[Math.Max(0, Math.Min(idx, Pages.Count - 1))]);
+        MarkDirty();
+        StatusText = $"已刪除頁面：{page.Name}";
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────
 
     public void MarkDirty()
@@ -655,10 +754,16 @@ public sealed class MainViewModel : ObservableObject
         N(nameof(DocTitle));
         N(nameof(MachineId));
 
-        Canvas.LoadFromDocument(_document);
-        // 通知代理屬性更新（Canvas.LoadFromDocument 直接設值，MainVM 需手動通知）
-        N(nameof(CanvasWidth));
-        N(nameof(CanvasHeight));
+        // 建立頁面 ViewModels
+        Pages.Clear();
+        foreach (var page in _document.Pages ?? [])
+            Pages.Add(new PageTabViewModel(page));
+
+        // 確保至少有一頁
+        if (Pages.Count == 0)
+            Pages.Add(new PageTabViewModel(new DesignPage()));
+
+        SetCurrentPage(Pages[0]);
     }
 
     private void SyncUIToDocument()
@@ -673,9 +778,8 @@ public sealed class MainViewModel : ObservableObject
         _document.Layout.ShowAlarmViewer = ShowAlarmViewer;
         _document.Layout.ShowSensorViewer = ShowSensorViewer;
 
-        _document.CanvasItems = Canvas.ExportCanvasItems();
-        _document.CanvasWidth = Canvas.CanvasWidth;
-        _document.CanvasHeight = Canvas.CanvasHeight;
+        // 匯出所有頁面（DesignFileService.Save 會同步 Legacy 欄位）
+        _document.Pages = Pages.Select(p => p.Export()).ToList();
     }
 
     private static readonly TimeSpan _propDebounce = TimeSpan.FromMilliseconds(300);

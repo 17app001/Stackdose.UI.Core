@@ -126,16 +126,45 @@ public sealed class DesignCanvasViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 從 DesignDocument 載入畫布元件
+    /// 從 DesignDocument 載入畫布元件（相容舊呼叫，載入第一頁）
     /// </summary>
     public void LoadFromDocument(DesignDocument doc)
     {
+        var page = doc.Pages?.FirstOrDefault();
+        if (page != null)
+            LoadFromPage(page);
+        else
+        {
+            CanvasItems.Clear();
+            ClearSelection();
+            CanvasWidth  = doc.CanvasWidth;
+            CanvasHeight = doc.CanvasHeight;
+            foreach (var def in doc.CanvasItems)
+                CanvasItems.Add(new DesignerItemViewModel(def));
+        }
+    }
+
+    /// <summary>
+    /// 從 DesignPage 載入畫布
+    /// </summary>
+    public void LoadFromPage(DesignPage page)
+    {
         CanvasItems.Clear();
         ClearSelection();
-        CanvasWidth = doc.CanvasWidth;
-        CanvasHeight = doc.CanvasHeight;
-        foreach (var def in doc.CanvasItems)
+        CanvasWidth  = page.CanvasWidth;
+        CanvasHeight = page.CanvasHeight;
+        foreach (var def in page.CanvasItems)
             CanvasItems.Add(new DesignerItemViewModel(def));
+    }
+
+    /// <summary>
+    /// 將目前畫布狀態寫回 DesignPage
+    /// </summary>
+    public void ExportToPage(DesignPage page)
+    {
+        page.CanvasWidth  = CanvasWidth;
+        page.CanvasHeight = CanvasHeight;
+        page.CanvasItems  = ExportCanvasItems();
     }
 
     /// <summary>

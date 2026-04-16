@@ -8,7 +8,7 @@ namespace Stackdose.Tools.MachinePageDesigner.Models;
 public sealed class DesignDocument
 {
     [JsonPropertyName("version")]
-    public string Version { get; set; } = "1.0";
+    public string Version { get; set; } = "2.0";
 
     [JsonPropertyName("meta")]
     public DesignMeta Meta { get; set; } = new();
@@ -17,16 +17,22 @@ public sealed class DesignDocument
     public PageLayoutConfig Layout { get; set; } = new();
 
     /// <summary>
-    /// 自由畫布元件清單（含 x/y/width/height）
+    /// 多頁面清單（v2.0+，DesignFileService.Load 保證此欄位一定有值）
     /// </summary>
+    [JsonPropertyName("pages")]
+    public List<DesignPage>? Pages { get; set; }
+
+    // ── 下列欄位為向後相容（v1.0 格式 / Runtime 讀取第一頁用） ──────────
+
+    /// <summary>第一頁元件清單（Runtime 相容用，Save 時同步自 Pages[0]）</summary>
     [JsonPropertyName("canvasItems")]
     public List<DesignerItemDefinition> CanvasItems { get; set; } = [];
 
-    /// <summary>畫布邏輯寬度（px），預設 1200</summary>
+    /// <summary>第一頁畫布寬度（Runtime 相容用）</summary>
     [JsonPropertyName("canvasWidth")]
     public double CanvasWidth { get; set; } = 1200;
 
-    /// <summary>畫布邏輯高度（px），預設 750</summary>
+    /// <summary>第一頁畫布高度（Runtime 相容用）</summary>
     [JsonPropertyName("canvasHeight")]
     public double CanvasHeight { get; set; } = 750;
 }

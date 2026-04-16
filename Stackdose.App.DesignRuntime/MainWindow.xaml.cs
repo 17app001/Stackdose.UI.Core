@@ -59,9 +59,24 @@ public partial class MainWindow : Window
         {
             Dispatcher.BeginInvoke(() =>
             {
-                ShowStatus($"PLC 已連線：{ip}:{port}");
+                var isReconnect = !btnConnect.IsEnabled; // connect 已按過，表示重連
+                ShowStatus(isReconnect
+                    ? $"↺ PLC 重新連線成功：{ip}:{port}"
+                    : $"PLC 已連線：{ip}:{port}");
                 btnConnect.IsEnabled = false;
                 btnDisconnect.IsEnabled = true;
+                // 重連後確保所有畫布 PLC 地址重新納入掃描清單
+                _plcStatus?.RefreshMonitors();
+            });
+        };
+
+        _plcStatus.ConnectionLost += () =>
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                ShowStatus("⚠ PLC 斷線，正在重新連線…", error: true);
+                // 斷線期間停用 Disconnect 按鈕（避免操作衝突）
+                btnDisconnect.IsEnabled = false;
             });
         };
 

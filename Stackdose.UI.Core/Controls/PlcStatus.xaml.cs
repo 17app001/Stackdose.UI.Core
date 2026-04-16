@@ -58,7 +58,10 @@ namespace Stackdose.UI.Core.Controls
         
         // 🔥 當 PLC 連線成功時觸發的事件
         public event Action<IPlcManager>? ConnectionEstablished;
-        
+
+        // 🔥 當 PLC 斷線（看門狗偵測）時觸發的事件
+        public event Action? ConnectionLost;
+
         public event Action<IPlcManager>? ScanUpdated;
 
         public PlcStatus()
@@ -487,6 +490,9 @@ namespace Stackdose.UI.Core.Controls
             {
                 ComplianceContext.LogSystem("Connection lost detected! Attempting to reconnect...", LogLevel.Error);
                 CancelWatchdog();
+                UpdateUiState(ConnectionState.Failed);
+                StatusText.Text = "RECONNECTING...";
+                ConnectionLost?.Invoke();
             });
 
             await ConnectAsync();

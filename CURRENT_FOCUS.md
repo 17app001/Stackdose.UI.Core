@@ -20,9 +20,11 @@
 - [x] MachinePageDesigner：新增右鍵 ContextMenu（複製/貼上/刪除/鎖定/Z-Order）
 - [x] MachinePageDesigner：新增 StaticLabel 靜態文字控制項（9 種控制項完整支援）
 - [x] DesignPlayer：Settings 頁面（免 JSON 修改 PLC 設定）
+- [x] DesignRuntime：PLC 連線斷線重連穩定性（ConnectionLost 事件 + RefreshMonitors 重連後呼叫）
+- [x] MachinePageDesigner：多頁面支援（pages 陣列 + 頁籤列 UI + 獨立 UndoRedo/Canvas）
 - [ ] DesignPlayer：驗證在真實環境部署（需配合 PLC 測試）
-- [ ] DesignRuntime：PLC 連線斷線重連穩定性
-- [ ] MachinePageDesigner：多頁面支援（候選下一功能）
+- [ ] DesignPlayer：多頁面支援（同步 MachinePageDesigner v2.0 格式，顯示頁籤導航）
+- [ ] DesignRuntime：多頁面支援（讀取 pages 陣列，加入頁面切換）
 
 ---
 

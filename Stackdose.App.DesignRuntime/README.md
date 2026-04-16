@@ -22,8 +22,9 @@
 | 縮放 | Slider 控制畫布縮放比例 |
 | 亂數注入 | 「亂數 D100~D102」按鈕每 100~300ms 隨機寫入測試值（Toggle） |
 | 錯誤占位符 | 元件建立失敗時以橘框標示，不中斷其他元件載入 |
-| JSON 熱更新 | FileSystemWatcher 偵測變更後自動重載畫布（防抖 800ms） |
+| JSON 熱更新 | FileSystemWatcher 偵測變更後自動重載畫布（防抖 800ms），保留當前頁 |
 | **PLC 斷線重連** | `ConnectionLost` 事件觸發 → UI 顯示警告 → 自動重連 → `RefreshMonitors()` |
+| **多頁面切換** | 讀取 `pages` 陣列，頂部頁籤列切換頁面；單頁文件自動隱藏頁籤列 |
 
 ## 使用流程
 
@@ -34,5 +35,5 @@
 
 ## 開發狀態
 
-Active。JSON Hot-Reload 與 PLC 斷線重連均已完成。
-下一步：讀取 `pages` 陣列支援多頁面切換（目前僅讀第一頁）。
+Active。JSON Hot-Reload、PLC 斷線重連、多頁面切換均已完成。
+下一步：DesignPlayer 多頁面切換（Shell 頁籤導航）。

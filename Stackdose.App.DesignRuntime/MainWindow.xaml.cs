@@ -18,6 +18,8 @@ public partial class MainWindow : Window
     private FileSystemWatcher? _fileWatcher;
     private string? _loadedFilePath;
     private DateTime _lastHotReload = DateTime.MinValue;
+    private DesignDocument? _currentDocument;
+    private int _currentPageIndex = 0;
 
     public MainWindow()
     {
@@ -211,20 +213,110 @@ public partial class MainWindow : Window
 
     private void RenderDocument(DesignDocument doc, string filePath)
     {
+        // Hot-reload 時保留當前頁索引（若頁數足夠），否則回到第一頁
+        var restorePage = (_currentDocument != null)
+            ? Math.Min(_currentPageIndex, (doc.Pages?.Count ?? 1) - 1)
+            : 0;
+
+        _currentDocument = doc;
+        _currentPageIndex = 0;
+
+        var fileName = Path.GetFileName(filePath);
+        Title = $"DesignRuntime — {fileName}";
+
+        // 建立頁籤列
+        BuildPageTabs(doc, fileName);
+
+        // 渲染目標頁（hot-reload 保留頁，首次載入從第一頁開始）
+        SwitchPage(restorePage);
+    }
+
+    private void BuildPageTabs(DesignDocument doc, string? fileName = null)
+    {
+        pageTabs.Children.Clear();
+
+        var pages = doc.Pages;
+        if (pages == null || pages.Count <= 1)
+        {
+            // 單頁：隱藏頁籤列
+            pageTabsBar.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        pageTabsBar.Visibility = Visibility.Visible;
+
+        for (int i = 0; i < pages.Count; i++)
+        {
+            var idx = i; // closure capture
+            var page = pages[i];
+
+            var btn = new Button
+            {
+                Content = page.Name,
+                Tag = idx,
+                Padding = new Thickness(14, 5, 14, 5),
+                Margin = new Thickness(0, 0, 2, 0),
+                Cursor = System.Windows.Input.Cursors.Hand,
+                FontSize = 12,
+                FontWeight = FontWeights.Normal,
+                BorderThickness = new Thickness(1),
+                Foreground = Brushes.White,
+            };
+            SetTabStyle(btn, active: i == 0);
+            btn.Click += (_, _) => SwitchPage(idx);
+            pageTabs.Children.Add(btn);
+        }
+    }
+
+    private void SwitchPage(int index)
+    {
+        var pages = _currentDocument?.Pages;
+        if (pages == null || index < 0 || index >= pages.Count) return;
+
+        _currentPageIndex = index;
+
+        // 更新頁籤樣式
+        for (int i = 0; i < pageTabs.Children.Count; i++)
+        {
+            if (pageTabs.Children[i] is Button btn)
+                SetTabStyle(btn, active: i == index);
+        }
+
+        RenderPage(pages[index]);
+    }
+
+    private static void SetTabStyle(Button btn, bool active)
+    {
+        if (active)
+        {
+            btn.Background = new SolidColorBrush(Color.FromRgb(0x4A, 0x6E, 0xBF));
+            btn.BorderBrush = new SolidColorBrush(Color.FromRgb(0x6A, 0x8E, 0xDF));
+            btn.FontWeight = FontWeights.SemiBold;
+        }
+        else
+        {
+            btn.Background = new SolidColorBrush(Color.FromRgb(0x2A, 0x2A, 0x48));
+            btn.BorderBrush = new SolidColorBrush(Color.FromRgb(0x4A, 0x4A, 0x6A));
+            btn.FontWeight = FontWeights.Normal;
+        }
+    }
+
+    private void RenderPage(DesignPage page)
+    {
         // 清除舊有元件
         runtimeCanvas.Children.Clear();
 
         // 套用畫布尺寸
-        runtimeCanvas.Width = doc.CanvasWidth;
-        runtimeCanvas.Height = doc.CanvasHeight;
-        canvasBorder.Width = doc.CanvasWidth;
-        canvasBorder.Height = doc.CanvasHeight;
+        runtimeCanvas.Width = page.CanvasWidth;
+        runtimeCanvas.Height = page.CanvasHeight;
+        canvasBorder.Width = page.CanvasWidth;
+        canvasBorder.Height = page.CanvasHeight;
 
         int okCount = 0;
         int errorCount = 0;
 
         // 依 Z-order 建立控制項（canvasItems[0] = 最底層）
-        foreach (var def in doc.CanvasItems)
+        foreach (var def in page.CanvasItems)
         {
             UIElement control;
             try
@@ -250,13 +342,12 @@ public partial class MainWindow : Window
             runtimeCanvas.Children.Add(control);
         }
 
-        // 更新 UI
-        var fileName = Path.GetFileName(filePath);
-        Title = $"DesignRuntime — {fileName}";
-        lblCanvasInfo.Text = $"畫布：{doc.CanvasWidth:F0} × {doc.CanvasHeight:F0} px";
+        // 更新狀態列
+        lblCanvasInfo.Text = $"畫布：{page.CanvasWidth:F0} × {page.CanvasHeight:F0} px";
         lblItemCount.Text = $"元件：{okCount} 個" + (errorCount > 0 ? $"（{errorCount} 個錯誤）" : "");
 
-        var status = $"已載入：{fileName}  共 {doc.CanvasItems.Count} 個元件";
+        var pageLabel = page.Name;
+        var status = $"頁面：{pageLabel}  共 {page.CanvasItems.Count} 個元件";
         if (errorCount > 0) status += $"，{errorCount} 個建立失敗（橘框標示）";
         ShowStatus(status, error: errorCount > 0);
 

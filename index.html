@@ -791,9 +791,10 @@
             <div class="prog-row"><span class="prog-check">✓</span><span>畫布尺寸設定</span></div>
             <div class="prog-row"><span class="prog-check">✓</span><span>Undo / Redo</span></div>
             <div class="prog-row"><span class="prog-check">✓</span><span>儲存 / 載入 JSON</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>多頁面（頁籤切換）</span></div>
           </div>
           <div style="margin-top:14px;">
-            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;"><span>完成度</span><span>11 / 11</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;"><span>完成度</span><span>12 / 12</span></div>
             <div style="background:var(--border); border-radius:4px; height:4px;"><div style="background:var(--green); width:100%; height:4px; border-radius:4px;"></div></div>
           </div>
         </div>
@@ -810,11 +811,11 @@
             <div class="prog-row"><span class="prog-check">✓</span><span>模擬器模式（免 PLC）</span></div>
             <div class="prog-row"><span class="prog-check">✓</span><span>亂數測試注入（D100~D102）</span></div>
             <div class="prog-row"><span class="prog-check">✓</span><span>JSON Hot-Reload（FileSystemWatcher，存檔自動重載）</span></div>
-            <div class="prog-row prog-pending"><span class="prog-dot-pending">○</span><span>PLC 斷線自動重連穩定化</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>PLC 斷線自動重連（ConnectionLost 事件 + 視覺回饋）</span></div>
           </div>
           <div style="margin-top:14px;">
-            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;"><span>完成度</span><span>7 / 8</span></div>
-            <div style="background:var(--border); border-radius:4px; height:4px;"><div style="background:var(--orange); width:87.5%; height:4px; border-radius:4px;"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;"><span>完成度</span><span>8 / 8</span></div>
+            <div style="background:var(--border); border-radius:4px; height:4px;"><div style="background:var(--green); width:100%; height:4px; border-radius:4px;"></div></div>
           </div>
         </div>
 
@@ -847,7 +848,8 @@
           <div class="tl-item"><span class="tl-date">4月08日</span><span class="tl-dot"></span><span class="tl-text">切換為自由畫布（FreeCanvas）模式，完成拖曳基礎功能</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月13日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 自由畫布全功能整合；DesignViewer + DesignRuntime 新增</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月15日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ JSON Hot-Reload；DesignPlayer 量產 Shell App；StaticLabel + ContextMenu；設定頁面；文件知識庫</span></div>
-          <div class="tl-item tl-future"><span class="tl-date">近期</span><span class="tl-dot tl-dot-future"></span><span class="tl-text">PLC 斷線自動重連穩定化；DesignPlayer 真實環境部署驗證；多頁面支援候選</span></div>
+          <div class="tl-item tl-highlight"><span class="tl-date">4月16日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 多頁面支援（JSON v2.0 + 頁籤 UI）；PLC 斷線重連穩定化（ConnectionLost 事件）</span></div>
+          <div class="tl-item tl-future"><span class="tl-date">近期</span><span class="tl-dot tl-dot-future"></span><span class="tl-text">DesignPlayer / DesignRuntime 多頁面讀取；DesignPlayer 真實環境部署驗證</span></div>
         </div>
       </div>
     </div>
@@ -973,6 +975,7 @@
             <li>右鍵 ContextMenu</li>
             <li>StaticLabel 靜態文字控制項</li>
             <li>所有控制項屬性面板</li>
+            <li>多頁面支援（頁籤切換 + 獨立 UndoRedo）</li>
           </ul>
         </div>
 
@@ -985,7 +988,8 @@
             <li>DesignPlayer Shell App（8 控制項）</li>
             <li>Settings 頁面 — 免 JSON 修改 PLC</li>
             <li>JSON Hot-Reload（DesignRuntime + DesignPlayer）</li>
-            <li><em style="color:var(--orange);">☐ PLC 斷線自動重連穩定化</em></li>
+            <li>PLC 斷線自動重連（ConnectionLost 事件 + 視覺回饋）</li>
+            <li><em style="color:var(--orange);">☐ DesignPlayer / DesignRuntime 多頁面讀取</em></li>
             <li><em style="color:var(--orange);">☐ 真實環境部署驗證</em></li>
           </ul>
         </div>
@@ -996,7 +1000,6 @@
             <span style="font-weight:600;">下一階段候選</span>
           </div>
           <ul style="padding-left:18px; font-size:13px; color:var(--text-secondary); line-height:1.9;">
-            <li>多頁面支援（ Tab / 導航頁面切換）</li>
             <li>控制項模板庫（Template Gallery）</li>
             <li>畫布縮放（Zoom in/out）</li>
             <li>從 DesignPlayer 直接觸發設計器開啟</li>
@@ -1014,7 +1017,7 @@
 <footer class="site-footer">
   <div class="container" style="display:flex; align-items:center; justify-content:space-between; width:100%;">
     <span>Stackdose.UI.Core · .NET 8 WPF · Windows x64</span>
-    <span>更新：2026-04-15</span>
+    <span>更新：2026-04-16</span>
   </div>
 </footer>
 

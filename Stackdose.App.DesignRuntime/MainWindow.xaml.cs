@@ -321,7 +321,7 @@ public partial class MainWindow : Window
             UIElement control;
             try
             {
-                control = RuntimeControlFactory.Create(def);
+                control = RuntimeControlFactory.Instance.Create(def);
                 okCount++;
             }
             catch (Exception ex)

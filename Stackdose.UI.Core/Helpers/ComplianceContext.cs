@@ -62,23 +62,42 @@ namespace Stackdose.UI.Core.Helpers
 
         #region Initialization
 
+        /// <summary>
+        /// 指示合規引擎是否已成功初始化。若為 false 則 SqliteLogger 不可用。
+        /// </summary>
+        public static bool IsInitialized { get; private set; }
+
         // 靜態建構子：確保程式一啟動或第一次使用時，資料庫已準備就緒
         static ComplianceContext()
         {
             BindingOperations.EnableCollectionSynchronization(LiveLogs, _lock);
             try
             {
-                // 🔥 初始化批次寫入模式的 SqliteLogger
                 SqliteLogger.Initialize();
-                
+                IsInitialized = true;
+
                 #if DEBUG
                 System.Diagnostics.Debug.WriteLine("[ComplianceContext] 合規引擎已啟動（批次寫入模式）");
                 #endif
             }
             catch (Exception ex)
             {
-                // 在實際生產環境，這裡應該寫入系統事件檢視器或發出嚴重警報
+                IsInitialized = false;
                 System.Diagnostics.Debug.WriteLine($"[CRITICAL] Compliance Engine Init Failed: {ex.Message}");
+
+                // 寫入 Windows 事件檢視器，確保生產環境能追蹤初始化失敗
+                try
+                {
+                    using var eventLog = new System.Diagnostics.EventLog("Application");
+                    eventLog.Source = "Stackdose.UI.Core";
+                    eventLog.WriteEntry(
+                        $"ComplianceContext initialization failed: {ex.Message}\n{ex.StackTrace}",
+                        System.Diagnostics.EventLogEntryType.Error);
+                }
+                catch
+                {
+                    // EventLog 寫入失敗不應阻擋啟動（可能缺少註冊源權限）
+                }
             }
         }
 

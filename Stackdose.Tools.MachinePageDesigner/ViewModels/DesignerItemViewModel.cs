@@ -141,8 +141,30 @@ public sealed class DesignerItemViewModel : ObservableObject
     }
 
     /// <summary>
-    /// ?湔閮剖?撅祆批潘?靘?UndoRedo Command 雿輻嚗?閫貊憿??賭誘嚗?
+    /// 字串屬性 set 輔助：比較→寫入→通知→提交
     /// </summary>
+    private bool CommitStr(string key, string value, string fallback = "", params string[] extraNotify)
+    {
+        var old = GetProp(key, fallback);
+        if (old == value) return false;
+        SetPropDirect(key, value);
+        foreach (var n in extraNotify) N(n);
+        PropCommitted?.Invoke(key, old, value);
+        return true;
+    }
+
+    /// <summary>
+    /// 數值屬性 set 輔助：比較→寫入→通知→提交
+    /// </summary>
+    private bool CommitDbl(string key, double value, double fallback = 0)
+    {
+        var old = GetPropDouble(key, fallback);
+        if (old == value) return false;
+        SetPropDirect(key, value);
+        PropCommitted?.Invoke(key, old, value);
+        return true;
+    }
+
     public void SetPropDirect(string key, object? value)
     {
         var d = ToDouble(value);
@@ -210,282 +232,140 @@ public sealed class DesignerItemViewModel : ObservableObject
     public string Label
     {
         get => GetProp("label", ItemType);
-        set
-        {
-            var old = GetProp("label", ItemType);
-            if (old == value) return;
-            SetPropDirect("label", value);
-            N(nameof(DisplayName));
-            PropCommitted?.Invoke("label", old, value);
-        }
+        set => CommitStr("label", value, ItemType, nameof(DisplayName));
     }
 
     public string Address
     {
         get => GetProp("address");
-        set
-        {
-            var old = GetProp("address");
-            if (old == value) return;
-            SetPropDirect("address", value);
-            N(nameof(DisplayName));
-            PropCommitted?.Invoke("address", old, value);
-        }
+        set => CommitStr("address", value, "", nameof(DisplayName));
     }
 
     public string DefaultValue
     {
         get => GetProp("defaultValue", "0");
-        set
-        {
-            var old = GetProp("defaultValue", "0");
-            if (old == value) return;
-            SetPropDirect("defaultValue", value);
-            PropCommitted?.Invoke("defaultValue", old, value);
-        }
+        set => CommitStr("defaultValue", value, "0");
     }
 
     public double ValueFontSize
     {
         get => GetPropDouble("valueFontSize", 20);
-        set
-        {
-            var old = GetPropDouble("valueFontSize", 20);
-            if (old == value) return;
-            SetPropDirect("valueFontSize", value);
-            PropCommitted?.Invoke("valueFontSize", old, value);
-        }
+        set => CommitDbl("valueFontSize", value, 20);
     }
 
     public string FrameShape
     {
         get => GetProp("frameShape", "Rectangle");
-        set
-        {
-            var old = GetProp("frameShape", "Rectangle");
-            if (old == value) return;
-            SetPropDirect("frameShape", value);
-            PropCommitted?.Invoke("frameShape", old, value);
-        }
+        set => CommitStr("frameShape", value, "Rectangle");
     }
 
     public string ValueColorTheme
     {
         get => GetProp("valueColorTheme", "NeonBlue");
-        set
-        {
-            var old = GetProp("valueColorTheme", "NeonBlue");
-            if (old == value) return;
-            SetPropDirect("valueColorTheme", value);
-            PropCommitted?.Invoke("valueColorTheme", old, value);
-        }
+        set => CommitStr("valueColorTheme", value, "NeonBlue");
     }
 
     public double Divisor
     {
         get => GetPropDouble("divisor", 1);
-        set
-        {
-            var old = GetPropDouble("divisor", 1);
-            if (old == value) return;
-            SetPropDirect("divisor", value);
-            PropCommitted?.Invoke("divisor", old, value);
-        }
+        set => CommitDbl("divisor", value, 1);
     }
 
     public string StringFormat
     {
         get => GetProp("stringFormat", "F0");
-        set
-        {
-            var old = GetProp("stringFormat", "F0");
-            if (old == value) return;
-            SetPropDirect("stringFormat", value);
-            PropCommitted?.Invoke("stringFormat", old, value);
-        }
+        set => CommitStr("stringFormat", value, "F0");
     }
 
     public string DisplayAddress
     {
         get => GetProp("displayAddress");
-        set
-        {
-            var old = GetProp("displayAddress");
-            if (old == value) return;
-            SetPropDirect("displayAddress", value);
-            N(nameof(DisplayName));
-            PropCommitted?.Invoke("displayAddress", old, value);
-        }
+        set => CommitStr("displayAddress", value, "", nameof(DisplayName));
     }
 
     public string CommandAddress
     {
         get => GetProp("commandAddress");
-        set
-        {
-            var old = GetProp("commandAddress");
-            if (old == value) return;
-            SetPropDirect("commandAddress", value);
-            PropCommitted?.Invoke("commandAddress", old, value);
-        }
+        set => CommitStr("commandAddress", value);
     }
 
     public string RequiredLevel
     {
         get => GetProp("requiredLevel", "Operator");
-        set
-        {
-            var old = GetProp("requiredLevel", "Operator");
-            if (old == value) return;
-            SetPropDirect("requiredLevel", value);
-            PropCommitted?.Invoke("requiredLevel", old, value);
-        }
+        set => CommitStr("requiredLevel", value, "Operator");
     }
 
     public string Theme
     {
         get => GetProp("theme", "Primary");
-        set
-        {
-            var old = GetProp("theme", "Primary");
-            if (old == value) return;
-            SetPropDirect("theme", value);
-            PropCommitted?.Invoke("theme", old, value);
-        }
+        set => CommitStr("theme", value, "Primary");
     }
 
     public string WriteValue
     {
         get => GetProp("writeValue", "1");
-        set
-        {
-            var old = GetProp("writeValue", "1");
-            if (old == value) return;
-            SetPropDirect("writeValue", value);
-            PropCommitted?.Invoke("writeValue", old, value);
-        }
+        set => CommitStr("writeValue", value, "1");
     }
 
     public string CommandType
     {
         get => GetProp("commandType", "write");
-        set
-        {
-            var old = GetProp("commandType", "write");
-            if (old == value) return;
-            SetPropDirect("commandType", value);
-            PropCommitted?.Invoke("commandType", old, value);
-        }
+        set => CommitStr("commandType", value, "write");
     }
 
     public double PulseMs
     {
         get => GetPropDouble("pulseMs", 300);
-        set
-        {
-            var old = GetPropDouble("pulseMs", 300);
-            if (old == value) return;
-            SetPropDirect("pulseMs", value);
-            PropCommitted?.Invoke("pulseMs", old, value);
-        }
+        set => CommitDbl("pulseMs", value, 300);
     }
 
     /// <summary>序列定義 JSON（commandType=sequence 時使用）</summary>
     public string SequenceDefinition
     {
         get => GetProp("sequenceDefinition", "");
-        set
-        {
-            var old = GetProp("sequenceDefinition", "");
-            if (old == value) return;
-            SetPropDirect("sequenceDefinition", value);
-            PropCommitted?.Invoke("sequenceDefinition", old, value);
-        }
+        set => CommitStr("sequenceDefinition", value);
     }
 
     public string GroupTitle
     {
         get => GetProp("title", "Group");
-        set
-        {
-            var old = GetProp("title", "Group");
-            if (old == value) return;
-            SetPropDirect("title", value);
-            PropCommitted?.Invoke("title", old, value);
-        }
+        set => CommitStr("title", value, "Group");
     }
 
     public string ConfigFile
     {
         get => GetProp("configFile");
-        set
-        {
-            var old = GetProp("configFile");
-            if (old == value) return;
-            SetPropDirect("configFile", value);
-            PropCommitted?.Invoke("configFile", old, value);
-        }
+        set => CommitStr("configFile", value);
     }
 
     public string StaticText
     {
         get => GetProp("staticText", "Text");
-        set
-        {
-            var old = GetProp("staticText", "Text");
-            if (old == value) return;
-            SetPropDirect("staticText", value);
-            N(nameof(DisplayName));
-            PropCommitted?.Invoke("staticText", old, value);
-        }
+        set => CommitStr("staticText", value, "Text", nameof(DisplayName));
     }
 
     public double StaticFontSize
     {
         get => GetPropDouble("staticFontSize", 16);
-        set
-        {
-            var old = GetPropDouble("staticFontSize", 16);
-            if (old == value) return;
-            SetPropDirect("staticFontSize", value);
-            PropCommitted?.Invoke("staticFontSize", old, value);
-        }
+        set => CommitDbl("staticFontSize", value, 16);
     }
 
     public string StaticFontWeight
     {
         get => GetProp("staticFontWeight", "Normal");
-        set
-        {
-            var old = GetProp("staticFontWeight", "Normal");
-            if (old == value) return;
-            SetPropDirect("staticFontWeight", value);
-            PropCommitted?.Invoke("staticFontWeight", old, value);
-        }
+        set => CommitStr("staticFontWeight", value, "Normal");
     }
 
     public string StaticTextAlign
     {
         get => GetProp("staticTextAlign", "Left");
-        set
-        {
-            var old = GetProp("staticTextAlign", "Left");
-            if (old == value) return;
-            SetPropDirect("staticTextAlign", value);
-            PropCommitted?.Invoke("staticTextAlign", old, value);
-        }
+        set => CommitStr("staticTextAlign", value, "Left");
     }
 
     public string StaticForeground
     {
         get => GetProp("staticForeground", "#E2E2F0");
-        set
-        {
-            var old = GetProp("staticForeground", "#E2E2F0");
-            if (old == value) return;
-            SetPropDirect("staticForeground", value);
-            PropCommitted?.Invoke("staticForeground", old, value);
-        }
+        set => CommitStr("staticForeground", value, "#E2E2F0");
     }
 
     // ── 自由畫布空間屬性 ──────────────────────────────────────────────────

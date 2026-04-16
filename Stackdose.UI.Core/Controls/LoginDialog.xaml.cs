@@ -142,14 +142,14 @@ namespace Stackdose.UI.Core.Controls
         private static async Task<bool> AuthenticateAsync(string userId, string password)
         {
 #if DEBUG
-            System.Diagnostics.Debug.WriteLine("[LoginDialog] Calling SecurityContext.Login...");
+            System.Diagnostics.Debug.WriteLine("[LoginDialog] Calling SecurityContext.LoginAsync...");
 #endif
 
-            var loginTask = Task.Run(() => SecurityContext.Login(userId, password));
+            var loginTask = SecurityContext.LoginAsync(userId, password);
             var delayTask = Task.Delay(MinimumLoadingDurationMs);
 
-            await Task.WhenAll(loginTask, delayTask);
-            return loginTask.Result;
+            await Task.WhenAll(loginTask, delayTask).ConfigureAwait(false);
+            return await loginTask.ConfigureAwait(false);
         }
 
         private bool ValidateCredentials(string userId, string password)

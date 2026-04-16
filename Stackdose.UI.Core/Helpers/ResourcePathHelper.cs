@@ -307,7 +307,7 @@ namespace Stackdose.UI.Core.Helpers
                 }
 
                 // ?? 強制使用 UTF-8 編碼讀取（支援中文）
-                return await File.ReadAllTextAsync(fullPath, System.Text.Encoding.UTF8);
+                return await File.ReadAllTextAsync(fullPath, System.Text.Encoding.UTF8).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

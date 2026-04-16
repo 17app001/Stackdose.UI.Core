@@ -100,7 +100,7 @@ namespace Stackdose.UI.Core.Helpers
 
                 if (autoLoad)
                 {
-                    return await LoadRecipeAsync(DefaultRecipeFilePath, isAutoLoad: true);
+                    return await LoadRecipeAsync(DefaultRecipeFilePath, isAutoLoad: true).ConfigureAwait(false);
                 }
 
                 return true;
@@ -174,7 +174,7 @@ namespace Stackdose.UI.Core.Helpers
 
                 // 2. Read and parse JSON file
                 // ?? 使用 UTF-8 編碼讀取（支援中文）
-                string jsonContent = await File.ReadAllTextAsync(fullPath, System.Text.Encoding.UTF8);
+                string jsonContent = await File.ReadAllTextAsync(fullPath, System.Text.Encoding.UTF8).ConfigureAwait(false);
                 
                 var options = new JsonSerializerOptions
                 {
@@ -335,7 +335,7 @@ namespace Stackdose.UI.Core.Helpers
                 return false;
             }
 
-            return await LoadRecipeAsync(DefaultRecipeFilePath, isAutoLoad: false);
+            return await LoadRecipeAsync(DefaultRecipeFilePath, isAutoLoad: false).ConfigureAwait(false);
         }
 
         #endregion
@@ -556,7 +556,7 @@ namespace Stackdose.UI.Core.Helpers
 
                             if (int.TryParse(item.Value, out int bitValue) && (bitValue == 0 || bitValue == 1))
                             {
-                                await plcManager.PlcClient.WriteBitAsync(device, address, bitPos, bitValue);
+                                await plcManager.PlcClient.WriteBitAsync(device, address, bitPos, bitValue).ConfigureAwait(false);
                                 writeSuccess = true;
 
                                 ComplianceContext.LogSystem(
@@ -585,7 +585,7 @@ namespace Stackdose.UI.Core.Helpers
 
                                 if (int.TryParse(item.Value, out int bitValue) && (bitValue == 0 || bitValue == 1))
                                 {
-                                    await plcManager.PlcClient.WriteBitAsync(device, address, bitValue);
+                                    await plcManager.PlcClient.WriteBitAsync(device, address, bitValue).ConfigureAwait(false);
                                     writeSuccess = true;
 
                                     ComplianceContext.LogSystem(
@@ -624,7 +624,7 @@ namespace Stackdose.UI.Core.Helpers
                                 // Short/Word: 單一暫存器
                                 if (short.TryParse(item.Value, out short value))
                                 {
-                                    await plcManager.PlcClient.WriteWordAsync(device, address, value);
+                                    await plcManager.PlcClient.WriteWordAsync(device, address, value).ConfigureAwait(false);
                                     writeSuccess = true;
                                 }
                                 else
@@ -641,7 +641,7 @@ namespace Stackdose.UI.Core.Helpers
                                 // DWord/Int: 兩個連續暫存器
                                 if (int.TryParse(item.Value, out int value))
                                 {
-                                    await plcManager.PlcClient.WriteDWordAsync(device, address, value);
+                                    await plcManager.PlcClient.WriteDWordAsync(device, address, value).ConfigureAwait(false);
                                     writeSuccess = true;
                                 }
                                 else
@@ -657,7 +657,7 @@ namespace Stackdose.UI.Core.Helpers
                                 if (float.TryParse(item.Value, out float floatValue))
                                 {
                                     int intValue = (int)(floatValue * 10);
-                                    await plcManager.PlcClient.WriteDWordAsync(device, address, intValue);
+                                    await plcManager.PlcClient.WriteDWordAsync(device, address, intValue).ConfigureAwait(false);
                                     writeSuccess = true;
                                 }
                                 else

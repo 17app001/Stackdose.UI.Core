@@ -249,7 +249,7 @@ public partial class MonitorPage : UserControl
         foreach (var def in page.CanvasItems)
         {
             UIElement control;
-            try   { control = RuntimeControlFactory.Create(def); ok++;  }
+            try   { control = RuntimeControlFactory.Instance.Create(def); ok++;  }
             catch (Exception ex) { control = MakeErrorPlaceholder(def, ex.Message); err++; }
 
             if (control is FrameworkElement fe)

@@ -730,7 +730,7 @@ namespace Stackdose.UI.Core.Services
 
                 using var conn = new SqliteConnection(_connectionString);
 
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
 
 
 
@@ -740,7 +740,7 @@ namespace Stackdose.UI.Core.Services
 
                     "SELECT * FROM Users WHERE (UserId = @UserId OR DisplayName = @UserId) AND IsActive = 1",
 
-                    new { UserId = userId });
+                    new { UserId = userId }).ConfigureAwait(false);
 
 
 
@@ -792,7 +792,7 @@ namespace Stackdose.UI.Core.Services
 
                     "UPDATE Users SET LastLoginAt = @Now WHERE Id = @Id",
 
-                    new { Now = DateTime.Now, Id = user.Id });
+                    new { Now = DateTime.Now, Id = user.Id }).ConfigureAwait(false);
 
 
 
@@ -863,7 +863,7 @@ namespace Stackdose.UI.Core.Services
 
                 using var conn = new SqliteConnection(_connectionString);
 
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
 
 
 
@@ -893,7 +893,7 @@ namespace Stackdose.UI.Core.Services
 
                     "SELECT * FROM Users WHERE UserId = @UserId",
 
-                    new { UserId = actualUserId });
+                    new { UserId = actualUserId }).ConfigureAwait(false);
 
 
 
@@ -913,7 +913,7 @@ namespace Stackdose.UI.Core.Services
 
                     "SELECT * FROM Users WHERE Id = @Id",
 
-                    new { Id = creatorUserId });
+                    new { Id = creatorUserId }).ConfigureAwait(false);
 
 
 
@@ -921,7 +921,7 @@ namespace Stackdose.UI.Core.Services
                 if (creator == null)
                 {
                     creator = await conn.QueryFirstOrDefaultAsync<UserAccount>(
-                        "SELECT * FROM Users WHERE UserId = 'UID-000001'");
+                        "SELECT * FROM Users WHERE UserId = 'UID-000001'").ConfigureAwait(false);
                 }
 
                 if (creator == null)
@@ -1002,7 +1002,7 @@ namespace Stackdose.UI.Core.Services
 
 
 
-                newUser.Id = await conn.ExecuteScalarAsync<int>(sql, newUser);
+                newUser.Id = await conn.ExecuteScalarAsync<int>(sql, newUser).ConfigureAwait(false);
 
 
 
@@ -1026,7 +1026,7 @@ namespace Stackdose.UI.Core.Services
 
                     Details = $"Created user: {displayName} ({accessLevel}), UID: {actualUserId}"
 
-                });
+                }).ConfigureAwait(false);
 
 
 
@@ -1080,7 +1080,7 @@ namespace Stackdose.UI.Core.Services
 
                 using var conn = new SqliteConnection(_connectionString);
 
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
 
 
 
@@ -1118,7 +1118,7 @@ namespace Stackdose.UI.Core.Services
 
                     "SELECT * FROM Users WHERE UserId = @UserId",
 
-                    new { UserId = adUsername });
+                    new { UserId = adUsername }).ConfigureAwait(false);
 
 
 
@@ -1138,7 +1138,7 @@ namespace Stackdose.UI.Core.Services
 
                     "SELECT * FROM Users WHERE Id = @Id",
 
-                    new { Id = creatorUserId });
+                    new { Id = creatorUserId }).ConfigureAwait(false);
 
 
 
@@ -1240,7 +1240,7 @@ namespace Stackdose.UI.Core.Services
 
 
 
-                newUser.Id = await conn.ExecuteScalarAsync<int>(sql, newUser);
+                newUser.Id = await conn.ExecuteScalarAsync<int>(sql, newUser).ConfigureAwait(false);
 
 
 
@@ -1264,7 +1264,7 @@ namespace Stackdose.UI.Core.Services
 
                     Details = $"從 AD 建立使用者: {adUserInfo.DisplayName} ({accessLevel})"
 
-                });
+                }).ConfigureAwait(false);
 
 
 
@@ -1302,17 +1302,17 @@ namespace Stackdose.UI.Core.Services
 
                 using var conn = new SqliteConnection(_connectionString);
 
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
 
 
 
                 var operatorUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
 
-                    "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId });
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId }).ConfigureAwait(false);
 
                 var targetUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
 
-                    "SELECT * FROM Users WHERE Id = @Id", new { Id = targetUserId });
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = targetUserId }).ConfigureAwait(false);
 
 
 
@@ -1344,7 +1344,7 @@ namespace Stackdose.UI.Core.Services
 
                     "UPDATE Users SET IsActive = 0, LastModifiedAt = @Now, LastModifiedByUserId = @OperatorId WHERE Id = @TargetId",
 
-                    new { Now = DateTime.Now, OperatorId = operatorUserId, TargetId = targetUserId });
+                    new { Now = DateTime.Now, OperatorId = operatorUserId, TargetId = targetUserId }).ConfigureAwait(false);
 
 
 
@@ -1368,7 +1368,7 @@ namespace Stackdose.UI.Core.Services
 
                     Details = $"停用使用者: {targetUser.DisplayName}"
 
-                });
+                }).ConfigureAwait(false);
 
 
 
@@ -1406,17 +1406,17 @@ namespace Stackdose.UI.Core.Services
 
                 using var conn = new SqliteConnection(_connectionString);
 
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
 
 
 
                 var operatorUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
 
-                    "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId });
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId }).ConfigureAwait(false);
 
                 var targetUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
 
-                    "SELECT * FROM Users WHERE Id = @Id", new { Id = targetUserId });
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = targetUserId }).ConfigureAwait(false);
 
 
 
@@ -1436,7 +1436,7 @@ namespace Stackdose.UI.Core.Services
 
                     "UPDATE Users SET IsActive = 1, LastModifiedAt = @Now, LastModifiedByUserId = @OperatorId WHERE Id = @TargetId",
 
-                    new { Now = DateTime.Now, OperatorId = operatorUserId, TargetId = targetUserId });
+                    new { Now = DateTime.Now, OperatorId = operatorUserId, TargetId = targetUserId }).ConfigureAwait(false);
 
 
 
@@ -1460,7 +1460,7 @@ namespace Stackdose.UI.Core.Services
 
                     Details = $"啟用使用者: {targetUser.DisplayName}"
 
-                });
+                }).ConfigureAwait(false);
 
 
 
@@ -1512,17 +1512,17 @@ namespace Stackdose.UI.Core.Services
 
                 using var conn = new SqliteConnection(_connectionString);
 
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
 
 
 
                 var operatorUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
 
-                    "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId });
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId }).ConfigureAwait(false);
 
                 var targetUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
 
-                    "SELECT * FROM Users WHERE Id = @Id", new { Id = targetUserId });
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = targetUserId }).ConfigureAwait(false);
 
 
 
@@ -1656,7 +1656,7 @@ namespace Stackdose.UI.Core.Services
 
                 var sql = $"UPDATE Users SET {string.Join(", ", updates)} WHERE Id = @Id";
 
-                await conn.ExecuteAsync(sql, parameters);
+                await conn.ExecuteAsync(sql, parameters).ConfigureAwait(false);
 
 
 
@@ -1680,7 +1680,7 @@ namespace Stackdose.UI.Core.Services
 
                     Details = $"更新使用者: {string.Join(", ", updates)}"
 
-                });
+                }).ConfigureAwait(false);
 
 
 
@@ -1724,17 +1724,17 @@ namespace Stackdose.UI.Core.Services
 
                 using var conn = new SqliteConnection(_connectionString);
 
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
 
 
 
                 var operatorUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
 
-                    "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId });
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId }).ConfigureAwait(false);
 
                 var targetUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
 
-                    "SELECT * FROM Users WHERE Id = @Id", new { Id = targetUserId });
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = targetUserId }).ConfigureAwait(false);
 
 
 
@@ -1764,7 +1764,7 @@ namespace Stackdose.UI.Core.Services
 
                       WHERE Id = @TargetId",
 
-                    new { Hash = hash, Salt = salt, Now = DateTime.Now, OperatorId = operatorUserId, TargetId = targetUserId });
+                    new { Hash = hash, Salt = salt, Now = DateTime.Now, OperatorId = operatorUserId, TargetId = targetUserId }).ConfigureAwait(false);
 
 
 
@@ -1788,7 +1788,7 @@ namespace Stackdose.UI.Core.Services
 
                     Details = $"重設密碼: {targetUser.DisplayName}"
 
-                });
+                }).ConfigureAwait(false);
 
 
 
@@ -1822,13 +1822,13 @@ namespace Stackdose.UI.Core.Services
 
             using var conn = new SqliteConnection(_connectionString);
 
-            await conn.OpenAsync();
+            await conn.OpenAsync().ConfigureAwait(false);
 
 
 
             var operatorUser = await conn.QueryFirstOrDefaultAsync<UserAccount>(
 
-                "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId });
+                "SELECT * FROM Users WHERE Id = @Id", new { Id = operatorUserId }).ConfigureAwait(false);
 
 
 
@@ -1844,7 +1844,7 @@ namespace Stackdose.UI.Core.Services
 
             {
 
-                return (await conn.QueryAsync<UserAccount>("SELECT * FROM Users ORDER BY AccessLevel DESC, UserId")).ToList();
+                return (await conn.QueryAsync<UserAccount>("SELECT * FROM Users ORDER BY AccessLevel DESC, UserId").ConfigureAwait(false)).ToList();
 
             }
 
@@ -1866,7 +1866,7 @@ namespace Stackdose.UI.Core.Services
 
                     new { SuperAdminLevel = (int)AccessLevel.SuperAdmin }
 
-                )).ToList();
+                ).ConfigureAwait(false)).ToList();
 
             }
 
@@ -1888,7 +1888,7 @@ namespace Stackdose.UI.Core.Services
 
                     new { SupervisorLevel = (int)AccessLevel.Supervisor }
 
-                )).ToList();
+                ).ConfigureAwait(false)).ToList();
 
             }
 
@@ -1908,9 +1908,9 @@ namespace Stackdose.UI.Core.Services
 
             using var conn = new SqliteConnection(_connectionString);
 
-            await conn.OpenAsync();
+            await conn.OpenAsync().ConfigureAwait(false);
 
-            return (await conn.QueryAsync<UserAccount>("SELECT * FROM Users ORDER BY AccessLevel DESC, UserId")).ToList();
+            return (await conn.QueryAsync<UserAccount>("SELECT * FROM Users ORDER BY AccessLevel DESC, UserId").ConfigureAwait(false)).ToList();
 
         }
 
@@ -1922,11 +1922,11 @@ namespace Stackdose.UI.Core.Services
 
             using var conn = new SqliteConnection(_connectionString);
 
-            await conn.OpenAsync();
+            await conn.OpenAsync().ConfigureAwait(false);
 
             return await conn.QueryFirstOrDefaultAsync<UserAccount>(
 
-                "SELECT * FROM Users WHERE Id = @Id", new { Id = userId });
+                "SELECT * FROM Users WHERE Id = @Id", new { Id = userId }).ConfigureAwait(false);
 
         }
 
@@ -1938,7 +1938,7 @@ namespace Stackdose.UI.Core.Services
 
             using var conn = new SqliteConnection(_connectionString);
 
-            await conn.OpenAsync();
+            await conn.OpenAsync().ConfigureAwait(false);
 
 
 
@@ -1952,7 +1952,7 @@ namespace Stackdose.UI.Core.Services
 
                     new { TargetUserId = targetUserId.Value, PageSize = pageSize }
 
-                )).ToList();
+                ).ConfigureAwait(false)).ToList();
 
             }
 
@@ -1966,7 +1966,7 @@ namespace Stackdose.UI.Core.Services
 
                     new { PageSize = pageSize }
 
-                )).ToList();
+                ).ConfigureAwait(false)).ToList();
 
             }
 
@@ -2164,7 +2164,7 @@ namespace Stackdose.UI.Core.Services
 
             using var conn = new SqliteConnection(_connectionString);
 
-            await conn.OpenAsync();
+            await conn.OpenAsync().ConfigureAwait(false);
 
             
 
@@ -2172,7 +2172,7 @@ namespace Stackdose.UI.Core.Services
 
                 "SELECT COUNT(*) FROM Users WHERE UserId = @UserId",
 
-                new { UserId = adUsername });
+                new { UserId = adUsername }).ConfigureAwait(false);
 
             
 
@@ -2204,7 +2204,7 @@ namespace Stackdose.UI.Core.Services
 
                          @TargetUserId, @TargetUserName, @Details, @IpAddress)",
 
-                log);
+                log).ConfigureAwait(false);
 
         }
 

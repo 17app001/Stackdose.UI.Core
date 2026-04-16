@@ -64,7 +64,7 @@ namespace Stackdose.UI.Core.Helpers
         /// <param name="userId">使用者帳號</param>
         /// <param name="password">密碼</param>
         /// <returns>是否登入成功</returns>
-        public static bool Login(string userId, string password)
+        public static async Task<bool> LoginAsync(string userId, string password)
         {
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
@@ -77,7 +77,7 @@ namespace Stackdose.UI.Core.Helpers
             {
                 WriteLoginDebug("[Step 1] 嘗試資料庫驗證...");
                 var userService = new Stackdose.UI.Core.Services.UserManagementService();
-                var dbResult = userService.AuthenticateAsync(userId, password).Result;
+                var dbResult = await userService.AuthenticateAsync(userId, password).ConfigureAwait(false);
 
                 if (dbResult.Success && dbResult.User != null)
                 {
@@ -195,6 +195,12 @@ namespace Stackdose.UI.Core.Helpers
                 return false;
             }
         }
+
+        /// <summary>
+        /// 同步登入（向後相容）。新程式碼請使用 <see cref="LoginAsync"/>。
+        /// </summary>
+        public static bool Login(string userId, string password)
+            => LoginAsync(userId, password).GetAwaiter().GetResult();
 
         /// <summary>
         /// 快速登入（預設帳號，用於測試或初始化）

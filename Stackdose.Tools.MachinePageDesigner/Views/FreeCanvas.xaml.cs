@@ -20,7 +20,7 @@ public partial class FreeCanvas : UserControl
 
     private void OnDragOver(object sender, DragEventArgs e)
     {
-        e.Effects = e.Data.GetDataPresent("ToolboxItem")
+        e.Effects = (e.Data.GetDataPresent("ToolboxItem") || e.Data.GetDataPresent("Template"))
             ? DragDropEffects.Copy
             : DragDropEffects.None;
         e.Handled = true;
@@ -28,19 +28,41 @@ public partial class FreeCanvas : UserControl
 
     private void OnDrop(object sender, DragEventArgs e)
     {
-        if (e.Data.GetData("ToolboxItem") is not ToolboxItemDescriptor desc) return;
         if (MainVm == null) return;
-
         var pos = e.GetPosition(designCanvas);
-        var def = desc.CreateDefinition();
 
-        def.X = Math.Max(0, Math.Min(Snap(pos.X - def.Width / 2), MainVm.Canvas.CanvasWidth - def.Width));
-        def.Y = Math.Max(0, Math.Min(Snap(pos.Y - def.Height / 2), MainVm.Canvas.CanvasHeight - def.Height));
+        // Single control from toolbox
+        if (e.Data.GetData("ToolboxItem") is ToolboxItemDescriptor desc)
+        {
+            var def = desc.CreateDefinition();
+            def.X = Math.Max(0, Math.Min(Snap(pos.X - def.Width / 2), MainVm.Canvas.CanvasWidth - def.Width));
+            def.Y = Math.Max(0, Math.Min(Snap(pos.Y - def.Height / 2), MainVm.Canvas.CanvasHeight - def.Height));
 
-        var vm = new DesignerItemViewModel(def);
-        MainVm.ExecuteCanvasAddItem(vm);
-        MainVm.Canvas.SelectedItem = vm;
-        e.Handled = true;
+            var vm = new DesignerItemViewModel(def);
+            MainVm.ExecuteCanvasAddItem(vm);
+            MainVm.Canvas.SelectedItem = vm;
+            e.Handled = true;
+            return;
+        }
+
+        // Template (multiple controls)
+        if (e.Data.GetData("Template") is TemplateDescriptor template)
+        {
+            var baseX = Snap(pos.X);
+            var baseY = Snap(pos.Y);
+            var instances = template.CreateInstances(baseX, baseY);
+
+            MainVm.Canvas.ClearSelection();
+            foreach (var def in instances)
+            {
+                def.X = Snap(Math.Max(0, Math.Min(def.X, MainVm.Canvas.CanvasWidth - def.Width)));
+                def.Y = Snap(Math.Max(0, Math.Min(def.Y, MainVm.Canvas.CanvasHeight - def.Height)));
+                var vm = new DesignerItemViewModel(def);
+                MainVm.ExecuteCanvasAddItem(vm);
+                MainVm.Canvas.ToggleMultiSelect(vm);
+            }
+            e.Handled = true;
+        }
     }
 
     // ── Background Click → Deselect / Rubber-band ───────────────────────

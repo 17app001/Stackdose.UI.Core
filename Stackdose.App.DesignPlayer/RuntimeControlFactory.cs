@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Stackdose.App.DeviceFramework.Models;
 using Stackdose.App.DeviceFramework.Services;
 using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.UI.Core.Controls;
@@ -145,12 +146,30 @@ public static class RuntimeControlFactory
             MinWidth      = 80,
         };
 
-        if (!string.IsNullOrWhiteSpace(address))
+        var hasAction = !string.IsNullOrWhiteSpace(address) || commandType.Equals("sequence", StringComparison.OrdinalIgnoreCase);
+        if (hasAction)
         {
             btn.Click += async (_, _) =>
             {
                 switch (commandType.ToLowerInvariant())
                 {
+                    case "sequence":
+                    {
+                        var seqJson = p.GetString("sequenceDefinition", "");
+                        if (string.IsNullOrWhiteSpace(seqJson))
+                        { MessageBox.Show("未定義序列步驟", "執行失敗", MessageBoxButton.OK, MessageBoxImage.Warning); break; }
+                        var seqDef = SequenceStepSerializer.Deserialize(seqJson);
+                        if (seqDef == null)
+                        { MessageBox.Show("序列定義解析失敗", "執行失敗", MessageBoxButton.OK, MessageBoxImage.Warning); break; }
+                        btn.IsEnabled = false;
+                        try
+                        {
+                            var seqResult = await _cmdSvc.ExecuteSequenceAsync("Player", label, label, seqDef);
+                            if (!seqResult.Success) MessageBox.Show(seqResult.Message, "序列執行失敗", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        }
+                        finally { btn.IsEnabled = true; }
+                        break;
+                    }
                     case "pulse":
                     {
                         var r1 = await _cmdSvc.ExecuteCommandAsync("Player", label, label, address, writeValue);

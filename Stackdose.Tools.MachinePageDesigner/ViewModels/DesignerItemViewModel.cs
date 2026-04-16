@@ -192,6 +192,7 @@ public sealed class DesignerItemViewModel : ObservableObject
             "writeValue" => nameof(WriteValue),
             "commandType" => nameof(CommandType),
             "pulseMs" => nameof(PulseMs),
+            "sequenceDefinition" => nameof(SequenceDefinition),
             "isLocked" => nameof(IsLocked),
             "title" => nameof(GroupTitle),
             "configFile" => nameof(ConfigFile),
@@ -389,6 +390,19 @@ public sealed class DesignerItemViewModel : ObservableObject
         }
     }
 
+    /// <summary>序列定義 JSON（commandType=sequence 時使用）</summary>
+    public string SequenceDefinition
+    {
+        get => GetProp("sequenceDefinition", "");
+        set
+        {
+            var old = GetProp("sequenceDefinition", "");
+            if (old == value) return;
+            SetPropDirect("sequenceDefinition", value);
+            PropCommitted?.Invoke("sequenceDefinition", old, value);
+        }
+    }
+
     public string GroupTitle
     {
         get => GetProp("title", "Group");
@@ -565,7 +579,7 @@ public sealed class DesignerItemViewModel : ObservableObject
     public static readonly string[] StringFormats = ["F0", "F1", "F2", "F3"];
     public static readonly string[] ButtonThemes = ["Primary", "Success", "Danger", "Warning"];
     public static readonly string[] AccessLevels = ["Operator", "Instructor", "Supervisor", "Admin", "SuperAdmin"];
-    public static readonly string[] CommandTypes = ["write", "pulse", "toggle"];
+    public static readonly string[] CommandTypes = ["write", "pulse", "toggle", "sequence"];
     public static readonly string[] FontWeightOptions = ["Normal", "Bold"];
     public static readonly string[] TextAlignOptions  = ["Left", "Center", "Right"];
     public static readonly string[] ForegroundOptions =

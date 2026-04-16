@@ -115,6 +115,8 @@ public sealed class MainViewModel : ObservableObject
         DistributeHorizCmd = new RelayCommand(_ => DistributeItems(horizontal: true),  _ => Canvas.HasSelectedItem);
         DistributeVertCmd  = new RelayCommand(_ => DistributeItems(horizontal: false), _ => Canvas.HasSelectedItem);
 
+        SaveAsTemplateCmd  = new RelayCommand(_ => SaveSelectionAsTemplate(), _ => Canvas.HasSelectedItem);
+
         // 初始化時建立第一個頁面（LoadDocumentIntoUI 會設定 CurrentPage → 觸發事件訂閱）
         LoadDocumentIntoUI();
     }
@@ -266,6 +268,9 @@ public sealed class MainViewModel : ObservableObject
     // Distribute
     public ICommand DistributeHorizCmd { get; }
     public ICommand DistributeVertCmd  { get; }
+
+    // Template
+    public ICommand SaveAsTemplateCmd { get; }
 
     // Page Management
     public ICommand AddPageCmd    { get; }
@@ -457,6 +462,63 @@ public sealed class MainViewModel : ObservableObject
             Canvas.ToggleMultiSelect(item);
         }
         StatusText = $"已全選 {Canvas.SelectedItems.Count} 個元件";
+    }
+
+    private void SaveSelectionAsTemplate()
+    {
+        var items = Canvas.GetAllSelectedItems();
+        if (items.Count == 0) return;
+
+        var name = PromptTemplateName();
+        if (string.IsNullOrWhiteSpace(name)) return;
+
+        var defs = items.Select(i => i.ToDefinition().Clone()).ToList();
+        var template = new TemplateDescriptor
+        {
+            Id = $"user-{Guid.NewGuid():N}"[..16],
+            Name = name,
+            Category = "Custom",
+            Description = $"包含 {defs.Count} 個控制項",
+            Icon = "⭐",
+            IsUserTemplate = true,
+            Items = defs,
+        };
+
+        TemplateLibraryService.SaveUserTemplate(template);
+        StatusText = $"已儲存模板：{name}（{defs.Count} 個元件）";
+    }
+
+    private static string? PromptTemplateName()
+    {
+        var win = new Window
+        {
+            Title = "儲存為模板",
+            Width = 360, Height = 140,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            ResizeMode = ResizeMode.NoResize,
+            Owner = Application.Current?.MainWindow,
+        };
+        var sp = new System.Windows.Controls.StackPanel { Margin = new Thickness(16) };
+        sp.Children.Add(new System.Windows.Controls.TextBlock { Text = "請輸入模板名稱：", Margin = new Thickness(0, 0, 0, 8) });
+        var tb = new System.Windows.Controls.TextBox { Text = $"自訂模板 {DateTime.Now:HHmmss}" };
+        sp.Children.Add(tb);
+        var btnPanel = new System.Windows.Controls.StackPanel
+        {
+            Orientation = System.Windows.Controls.Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(0, 12, 0, 0)
+        };
+        var okBtn = new System.Windows.Controls.Button { Content = "確定", Width = 72, IsDefault = true };
+        var cancelBtn = new System.Windows.Controls.Button { Content = "取消", Width = 72, Margin = new Thickness(8, 0, 0, 0) };
+        okBtn.Click += (_, _) => { win.DialogResult = true; win.Close(); };
+        cancelBtn.Click += (_, _) => { win.DialogResult = false; win.Close(); };
+        btnPanel.Children.Add(okBtn);
+        btnPanel.Children.Add(cancelBtn);
+        sp.Children.Add(btnPanel);
+        win.Content = sp;
+        tb.SelectAll();
+        tb.Focus();
+        return win.ShowDialog() == true ? tb.Text.Trim() : null;
     }
 
     private void DeleteSelected()

@@ -101,7 +101,7 @@
                 <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.CommandTypes}"
                           SelectedItem="{Binding CommandType}" Margin="0,0,0,4"/>
                 <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap"
-                           Text="write＝寫入固定值；pulse＝寫入後延遲歸零；toggle＝讀取當前值取反。" Margin="0,0,0,8"/>
+                           Text="write＝寫入固定值；pulse＝寫入後延遲歸零；toggle＝讀取當前值取反；sequence＝多步驟序列。" Margin="0,0,0,8"/>
 
                 <TextBlock Style="{StaticResource FieldLabel}" Margin="0,0,0,2">
                     <Run Text="Pulse 持續時間 (ms)："/><Run Text="{Binding PulseMs, StringFormat=F0, Mode=OneWay}"/>
@@ -110,6 +110,28 @@
                         IsSnapToTickEnabled="True" Margin="0,0,0,4"/>
                 <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap"
                            Text="僅 pulse 模式有效。寫入值後等待此毫秒數再寫 0。" Margin="0,0,0,8"/>
+
+                <!-- Sequence Definition Editor (visible when commandType=sequence) -->
+                <StackPanel Margin="0,0,0,8">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CommandType}" Value="sequence">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                    <Separator Margin="0,4,0,8"/>
+                    <TextBlock Text="序列定義 (JSON)" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                    <TextBox Text="{Binding SequenceDefinition, UpdateSourceTrigger=LostFocus}"
+                             AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                             MinHeight="120" MaxHeight="300" FontFamily="Consolas" FontSize="11"
+                             Margin="0,0,0,4"/>
+                    <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap"
+                               Text="JSON 格式定義多步驟 PLC 指令序列。步驟類型：write（寫入）、read（讀取存變數）、wait（延遲）、conditional（條件分支）、readWait（輪詢等待）。&#x0A;範例：{&quot;steps&quot;:[{&quot;type&quot;:&quot;write&quot;,&quot;address&quot;:&quot;D100&quot;,&quot;value&quot;:1},{&quot;type&quot;:&quot;wait&quot;,&quot;ms&quot;:500},{&quot;type&quot;:&quot;write&quot;,&quot;address&quot;:&quot;D100&quot;,&quot;value&quot;:0}],&quot;onError&quot;:&quot;rollback&quot;}"/>
+                </StackPanel>
 
                 <TextBlock Text="所需權限" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.AccessLevels}"

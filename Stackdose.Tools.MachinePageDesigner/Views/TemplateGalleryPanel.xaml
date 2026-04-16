@@ -1,0 +1,75 @@
+<UserControl x:Class="Stackdose.Tools.MachinePageDesigner.Views.TemplateGalleryPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{StaticResource SurfaceBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Category Filter -->
+        <ComboBox Grid.Row="0" x:Name="categoryFilter" Margin="8,8,8,4"
+                  SelectionChanged="OnCategoryChanged">
+            <ComboBoxItem Content="全部" IsSelected="True" Tag="All"/>
+            <ComboBoxItem Content="📊 監控 Monitoring" Tag="Monitoring"/>
+            <ComboBoxItem Content="⏯️ 控制 Control" Tag="Control"/>
+            <ComboBoxItem Content="📋 面板 Dashboard" Tag="Dashboard"/>
+            <ComboBoxItem Content="⭐ 自訂 Custom" Tag="Custom"/>
+        </ComboBox>
+
+        <!-- Search -->
+        <TextBox Grid.Row="1" x:Name="searchBox" Margin="8,0,8,8"
+                 TextChanged="OnSearchChanged"/>
+
+        <!-- Template List -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="4,0">
+            <ItemsControl x:Name="templateList">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="4,2" Padding="10,8" CornerRadius="4" Cursor="Hand"
+                                MouseMove="TemplateCard_MouseMove" Tag="{Binding}"
+                                Background="#FF2A2A3E" BorderBrush="#FF3A3A55" BorderThickness="1">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                            <Setter Property="Background" Value="#FF32325A"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="20"
+                                           VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="#FFE2E2F0"/>
+                                    <TextBlock Text="{Binding Description}" FontSize="10"
+                                               Foreground="{StaticResource TextMutedBrush}"
+                                               TextTrimming="CharacterEllipsis" MaxWidth="180"/>
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" VerticalAlignment="Center"
+                                           FontSize="10" Foreground="{StaticResource TextMutedBrush}">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0} 項">
+                                            <Binding Path="Items.Count"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

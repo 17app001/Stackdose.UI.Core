@@ -853,7 +853,8 @@
           <div class="tl-item tl-highlight"><span class="tl-date">4月13日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 自由畫布全功能整合；DesignViewer + DesignRuntime 新增</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月15日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ JSON Hot-Reload；DesignPlayer 量產 Shell App；StaticLabel + ContextMenu；設定頁面；文件知識庫</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月16日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 多頁面支援（JSON v2.0 + 頁籤 UI）；PLC 斷線重連；DesignRuntime + DesignPlayer 多頁面切換</span></div>
-          <div class="tl-item tl-future"><span class="tl-date">近期</span><span class="tl-dot tl-dot-future"></span><span class="tl-text">DesignPlayer 真實環境部署驗證；控制項模板庫（Template Gallery）</span></div>
+          <div class="tl-item tl-highlight"><span class="tl-date">4月17日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ SecuredButton 擴充（pulse/toggle/writeValue）；AlarmViewer + SensorViewer 設計器內編輯 UI</span></div>
+          <div class="tl-item tl-highlight"><span class="tl-date">4月18日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 控制項模板庫（Template Gallery）；Command Sequence DSL（多步驟 PLC 指令框架）</span></div>
         </div>
       </div>
     </div>
@@ -1000,14 +1001,14 @@
 
         <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <span style="background:var(--bg-card2); color:var(--text-muted); font-size:11px; font-weight:600; padding:2px 8px; border-radius:4px; border:1px solid var(--border);">計畫中</span>
+            <span style="background:#22c55e22; color:#22c55e; font-size:11px; font-weight:600; padding:2px 8px; border-radius:4px; border:1px solid #22c55e44;">全部完成</span>
             <span style="font-weight:600;">下一階段候選</span>
           </div>
           <ul style="padding-left:18px; font-size:13px; color:var(--text-secondary); line-height:1.9;">
             <li><s>AlarmViewer / SensorViewer 設定 UI</s> ✅</li>
-            <li><s>SecuredButton 擴充（writeValue / pulse / toggle）</s> ✅</li>
-            <li>控制項模板庫（Template Gallery）</li>
-            <li>工程師複雜指令框架（多步驟 / 條件執行）</li>
+            <li><s>SecuredButton 擴充（writeValue / pulse / toggle / sequence）</s> ✅</li>
+            <li><s>控制項模板庫（Template Gallery）— 9 個內建模板 + 自訂模板</s> ✅</li>
+            <li><s>工程師複雜指令框架（Command Sequence DSL — 多步驟 / 條件 / 回滾）</s> ✅</li>
           </ul>
         </div>
 
@@ -1071,15 +1072,15 @@
           </ul>
         </div>
 
-        <!-- Engineer Framework (still pending) -->
-        <div style="background:var(--bg-card); border:1px solid #9a670033; border-radius:10px; padding:20px;">
+        <!-- Engineer Framework ✅ -->
+        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:10px; padding:20px;">
           <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
-            <span style="background:#9a670018; color:var(--yellow); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #9a670033;">部分可用</span>
-            <span style="font-weight:700; font-size:15px;">工程師複雜功能框架</span>
+            <span style="background:#2da44e18; color:var(--green); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #2da44e33;">✅ 已完成</span>
+            <span style="font-weight:700; font-size:15px;">工程師複雜功能框架 — Command Sequence DSL</span>
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
             <div>
-              <div style="font-size:11px; font-weight:600; color:var(--green); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">✅ 已有（DeviceFramework 路線）</div>
+              <div style="font-size:11px; font-weight:600; color:var(--green); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">✅ DeviceFramework 路線</div>
               <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
                 <li><code>DeviceFramework</code>：完整 JSON 驅動設備 App 框架</li>
                 <li>自定義 Module 機制（繼承 DeviceModuleBase）</li>
@@ -1088,18 +1089,31 @@
               </ul>
             </div>
             <div>
-              <div style="font-size:11px; font-weight:600; color:var(--yellow); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">⚠️ 限制（DesignPlayer 路線）</div>
+              <div style="font-size:11px; font-weight:600; color:var(--green); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">✅ DesignPlayer 路線 — Command Sequence DSL</div>
               <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
-                <li>無多步驟指令序列（JSON 設定）</li>
-                <li>無條件執行（先讀狀態再決定寫什麼）</li>
-                <li>無指令 Queue / debounce</li>
-                <li>複雜邏輯只能走 DeviceFramework，無法純 JSON 設定</li>
+                <li>JSON 定義多步驟指令序列：write / read / wait / conditional / readWait</li>
+                <li>變數儲存（<code>${varName}</code>）+ 條件分支（>, <, ==, !=...）</li>
+                <li>錯誤處理策略：rollback / stop / continue</li>
+                <li>SequenceExecutor 完整執行引擎，含 FDA 稽核日誌</li>
+                <li>MachinePageDesigner PropertyPanel JSON 編輯器（commandType=sequence）</li>
+                <li>DesignPlayer + DesignRuntime 均已整合</li>
               </ul>
             </div>
           </div>
-          <div style="margin-top:10px; font-size:12px; color:var(--text-muted);">
-            <strong>待辦：</strong> 評估是否在 DesignPlayer 路線支援「指令腳本」（小型 DSL 或 JSON steps），或維持「複雜邏輯走 DeviceFramework」的分工策略
+        </div>
+
+        <!-- Template Gallery ✅ -->
+        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:10px; padding:20px;">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+            <span style="background:#2da44e18; color:var(--green); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #2da44e33;">✅ 已完成</span>
+            <span style="font-weight:700; font-size:15px;">控制項模板庫（Template Gallery）</span>
           </div>
+          <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
+            <li>9 個內建模板：溫度監控組、壓力監控組、計數器顯示、啟動/停止控制、緊急停止、閥門切換控制、設備總覽面板、日誌+警報面板</li>
+            <li>ToolboxPanel 雙頁籤切換（控制項 | 模板），分類篩選 + 搜尋</li>
+            <li>拖曳放置至 FreeCanvas，自動展開多元件佈局</li>
+            <li>「存為模板」功能：框選元件 → 右鍵 → 儲存為自訂模板（%LOCALAPPDATA%）</li>
+          </ul>
         </div>
 
       </div>
@@ -1117,7 +1131,9 @@
               <li>DesignViewer 靜態預覽確認版型</li>
               <li>修改後熱更新，不用重啟 DesignPlayer</li>
               <li><strong>在設計器內建立 AlarmViewer / SensorViewer 定義</strong></li>
-              <li><strong>設定 SecuredButton 寫入模式（write / pulse / toggle）</strong></li>
+              <li><strong>設定 SecuredButton 寫入模式（write / pulse / toggle / sequence）</strong></li>
+              <li><strong>從模板庫拖曳常用控制項組合（Template Gallery）</strong></li>
+              <li><strong>定義多步驟 PLC 指令序列（Command Sequence DSL）</strong></li>
             </ul>
           </div>
           <div>
@@ -1125,7 +1141,7 @@
             <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
               <li>提供 PLC 地址對應表（D103=壓差…）</li>
               <li>第一次部署 DesignPlayer（設定 PLC IP）</li>
-              <li>複雜設備邏輯走 DeviceFramework 路線</li>
+              <li>複雜設備邏輯走 DeviceFramework 路線（進階自訂 Module）</li>
             </ul>
           </div>
         </div>

@@ -1038,153 +1038,60 @@
     </div>
   </section>
 
-  <!-- ══════════════ KNOWN GAPS ══════════════ -->
+  <!-- ══════════════ FEATURE STATUS ══════════════ -->
   <section class="section">
     <div class="container">
-      <div class="section-title">功能缺口補強紀錄</div>
+      <div class="section-title">功能完成狀態</div>
       <p style="font-size:13px; color:var(--text-secondary); margin-bottom:24px; max-width:720px;">
-        原已知缺口已大幅補強。以下記錄各項的完成狀態與剩餘限制。
+        所有主要功能與缺口補強均已完成。詳細規格與 JSON 格式見 <code>docs/STATUS.md</code>。
       </p>
 
-      <div style="display:flex; flex-direction:column; gap:16px;">
-
-        <!-- AlarmViewer ✅ -->
-        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:10px; padding:20px;">
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
-            <span style="background:#2da44e18; color:var(--green); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #2da44e33;">✅ 已補強</span>
-            <span style="font-weight:700; font-size:15px;">AlarmViewer</span>
-          </div>
-          <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
-            <li>MachinePageDesigner PropertyPanel 行內編輯器（新增/刪除/修改 alarm 定義）</li>
-            <li>嵌入式項目存於 <code>.machinedesign.json</code> 的 props.alarmItems</li>
-            <li>存檔時自動在同目錄輸出 <code>alarms.json</code>（<code>{"alarms":[...]}</code> 格式）</li>
-            <li>設計時預覽顯示嵌入項目數量</li>
-            <li>仍支援外部 configFile 路徑覆蓋（向後相容）</li>
-          </ul>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; margin-bottom:24px;">
+        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:8px; padding:14px 16px; display:flex; align-items:center; gap:10px;">
+          <span style="color:var(--green); font-size:16px;">✅</span>
+          <div><div style="font-weight:600; font-size:13px;">AlarmViewer</div><div style="font-size:11px; color:var(--text-secondary);">PropertyPanel 行內編輯器 + 自動輸出 alarms.json</div></div>
         </div>
-
-        <!-- SensorViewer ✅ -->
-        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:10px; padding:20px;">
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
-            <span style="background:#2da44e18; color:var(--green); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #2da44e33;">✅ 已補強</span>
-            <span style="font-weight:700; font-size:15px;">SensorViewer</span>
-          </div>
-          <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
-            <li>同 AlarmViewer 架構，PropertyPanel 行內編輯器</li>
-            <li>支援 AND / OR / COMPARE 三種模式設定</li>
-            <li>sensors.json 格式已確認（扁平 JSON 陣列）</li>
-            <li>存檔時自動輸出 <code>sensors.json</code></li>
-            <li>SensorContext 完整實作驗證通過（LoadFromJson + GenerateMonitorAddresses + 狀態更新）</li>
-          </ul>
+        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:8px; padding:14px 16px; display:flex; align-items:center; gap:10px;">
+          <span style="color:var(--green); font-size:16px;">✅</span>
+          <div><div style="font-weight:600; font-size:13px;">SensorViewer</div><div style="font-size:11px; color:var(--text-secondary);">AND / OR / COMPARE 模式 + 自動輸出 sensors.json</div></div>
         </div>
-
-        <!-- SecuredButton ✅ -->
-        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:10px; padding:20px;">
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
-            <span style="background:#2da44e18; color:var(--green); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #2da44e33;">✅ 已補強</span>
-            <span style="font-weight:700; font-size:15px;">SecuredButton</span>
-          </div>
-          <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
-            <li>新增 <code>writeValue</code>（自訂寫入值）、<code>commandType</code>（write / pulse / toggle）、<code>pulseMs</code>（pulse 持續時間）</li>
-            <li><strong>write</strong>：寫入指定值至 PLC 位址</li>
-            <li><strong>pulse</strong>：寫入值 → 延遲 pulseMs → 寫 0（兩次寫入均記錄稽核日誌）</li>
-            <li><strong>toggle</strong>：讀取當前值 → 翻轉（M 位址用 ReadBit，其他用 ReadWord）</li>
-            <li>修復 commandAddress vs address 讀取 bug（RuntimeControlFactory）</li>
-            <li>PropertyPanel 完整 UI：writeValue 輸入、commandType 下拉、pulseMs 滑桿</li>
-          </ul>
+        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:8px; padding:14px 16px; display:flex; align-items:center; gap:10px;">
+          <span style="color:var(--green); font-size:16px;">✅</span>
+          <div><div style="font-weight:600; font-size:13px;">SecuredButton</div><div style="font-size:11px; color:var(--text-secondary);">write / pulse / toggle / sequence 四種 commandType</div></div>
         </div>
-
-        <!-- Engineer Framework ✅ -->
-        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:10px; padding:20px;">
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
-            <span style="background:#2da44e18; color:var(--green); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #2da44e33;">✅ 已完成</span>
-            <span style="font-weight:700; font-size:15px;">工程師複雜功能框架 — Command Sequence DSL</span>
-          </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-            <div>
-              <div style="font-size:11px; font-weight:600; color:var(--green); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">✅ DeviceFramework 路線</div>
-              <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
-                <li><code>DeviceFramework</code>：完整 JSON 驅動設備 App 框架</li>
-                <li>自定義 Module 機制（繼承 DeviceModuleBase）</li>
-                <li>ProcessCommandService 可繼承複寫</li>
-                <li>UbiDemo 完整範例可參考</li>
-              </ul>
-            </div>
-            <div>
-              <div style="font-size:11px; font-weight:600; color:var(--green); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">✅ DesignPlayer 路線 — Command Sequence DSL</div>
-              <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
-                <li>JSON 定義多步驟指令序列：write / read / wait / conditional / readWait</li>
-                <li>變數儲存（<code>${varName}</code>）+ 條件分支（>, <, ==, !=...）</li>
-                <li>錯誤處理策略：rollback / stop / continue</li>
-                <li>SequenceExecutor 完整執行引擎，含 FDA 稽核日誌</li>
-                <li>MachinePageDesigner PropertyPanel JSON 編輯器（commandType=sequence）</li>
-                <li>DesignPlayer + DesignRuntime 均已整合</li>
-              </ul>
-            </div>
-          </div>
+        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:8px; padding:14px 16px; display:flex; align-items:center; gap:10px;">
+          <span style="color:var(--green); font-size:16px;">✅</span>
+          <div><div style="font-weight:600; font-size:13px;">Template Gallery</div><div style="font-size:11px; color:var(--text-secondary);">9 個內建模板 + 自訂模板 CRUD + 拖曳放置</div></div>
         </div>
-
-        <!-- PLC Tags ✅ -->
-        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:10px; padding:20px;">
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
-            <span style="background:#2da44e18; color:var(--green); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #2da44e33;">✅ 已完成</span>
-            <span style="font-weight:700; font-size:15px;">PLC Tags — 地址名稱對照表</span>
-          </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-            <div>
-              <div style="font-size:11px; font-weight:600; color:var(--green); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">✅ 已完成</div>
-              <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
-                <li>工程師在設計器 Toolbar「📌 Tags」定義 Address → Name → Unit</li>
-                <li>Tags 存於 <code>.machinedesign.json</code> 的 <code>tags[]</code> 欄位</li>
-                <li>PlcLabel / PlcText / PlcStatusIndicator / SecuredButton 位址欄升級為可編輯 ComboBox</li>
-                <li>下拉顯示地址 + 名稱 + 單位；選取後只填入地址（不影響 JSON 格式）</li>
-                <li>設計師仍可直接輸入，Tags 清單為可選輔助</li>
-              </ul>
-            </div>
-            <div>
-              <div style="font-size:11px; font-weight:600; color:var(--blue); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">解決的問題</div>
-              <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
-                <li>設計師不再需要查詢另一份 PLC 地址表</li>
-                <li>工程師一次定義，設計師多次選取，減少打錯地址</li>
-                <li>地址清單版控隨設計稿一起管理（同一個 JSON 檔）</li>
-              </ul>
-            </div>
-          </div>
+        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:8px; padding:14px 16px; display:flex; align-items:center; gap:10px;">
+          <span style="color:var(--green); font-size:16px;">✅</span>
+          <div><div style="font-weight:600; font-size:13px;">Command Sequence DSL</div><div style="font-size:11px; color:var(--text-secondary);">JSON 多步驟 PLC 指令：write/read/wait/conditional/readWait</div></div>
         </div>
-
-        <!-- Template Gallery ✅ -->
-        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:10px; padding:20px;">
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
-            <span style="background:#2da44e18; color:var(--green); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #2da44e33;">✅ 已完成</span>
-            <span style="font-weight:700; font-size:15px;">控制項模板庫（Template Gallery）</span>
-          </div>
-          <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
-            <li>9 個內建模板：溫度監控組、壓力監控組、計數器顯示、啟動/停止控制、緊急停止、閥門切換控制、設備總覽面板、日誌+警報面板</li>
-            <li>ToolboxPanel 雙頁籤切換（控制項 | 模板），分類篩選 + 搜尋</li>
-            <li>拖曳放置至 FreeCanvas，自動展開多元件佈局</li>
-            <li>「存為模板」功能：框選元件 → 右鍵 → 儲存為自訂模板（%LOCALAPPDATA%）</li>
-          </ul>
+        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:8px; padding:14px 16px; display:flex; align-items:center; gap:10px;">
+          <span style="color:var(--green); font-size:16px;">✅</span>
+          <div><div style="font-weight:600; font-size:13px;">PLC Tags</div><div style="font-size:11px; color:var(--text-secondary);">地址↔名稱對照表 + 設計師下拉選取 + Tags 使用報告</div></div>
         </div>
-
+        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:8px; padding:14px 16px; display:flex; align-items:center; gap:10px;">
+          <span style="color:var(--green); font-size:16px;">✅</span>
+          <div><div style="font-weight:600; font-size:13px;">架構優化 P0/P1/P2</div><div style="font-size:11px; color:var(--text-secondary);">13/13 完成：async 修正、共用 Timer、日誌匯出、ViewModel 精簡</div></div>
+        </div>
       </div>
 
       <!-- 分工建議 -->
-      <div style="margin-top:24px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
+      <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
         <div style="font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:14px; text-transform:uppercase; letter-spacing:0.05em;">目前實際可行的分工</div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
           <div>
             <div style="font-size:13px; font-weight:600; color:var(--green); margin-bottom:8px;">設計師可獨立完成</div>
             <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
               <li>PlcLabel / PlcText / PlcStatusIndicator 版面</li>
-              <li>StaticLabel / Spacer 排版</li>
-              <li>多頁面規劃與頁籤命名</li>
-              <li>DesignViewer 靜態預覽確認版型</li>
-              <li>修改後熱更新，不用重啟 DesignPlayer</li>
-              <li><strong>在設計器內建立 AlarmViewer / SensorViewer 定義</strong></li>
-              <li><strong>設定 SecuredButton 寫入模式（write / pulse / toggle / sequence）</strong></li>
-              <li><strong>從模板庫拖曳常用控制項組合（Template Gallery）</strong></li>
-              <li><strong>定義多步驟 PLC 指令序列（Command Sequence DSL）</strong></li>
-              <li><strong>從 PLC Tags 下拉選取位址（工程師預先定義清單）</strong></li>
+              <li>StaticLabel / Spacer 排版 + 多頁面規劃</li>
+              <li>從 PLC Tags 下拉選取位址（工程師預先定義）</li>
+              <li>在設計器內建立 AlarmViewer / SensorViewer 定義</li>
+              <li>設定 SecuredButton 寫入模式（write / pulse / toggle / sequence）</li>
+              <li>從模板庫拖曳常用控制項組合（Template Gallery）</li>
+              <li>定義多步驟 PLC 指令序列（Command Sequence DSL）</li>
+              <li>DesignViewer 靜態預覽確認版型 + 熱更新驗證</li>
             </ul>
           </div>
           <div>

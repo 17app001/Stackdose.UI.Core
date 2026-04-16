@@ -224,11 +224,56 @@ public partial class MainWindow : Window
         var fileName = Path.GetFileName(filePath);
         Title = $"DesignRuntime — {fileName}";
 
+        // 更新 Tags 狀態
+        UpdateTagsStatus(doc);
+
         // 建立頁籤列
         BuildPageTabs(doc, fileName);
 
         // 渲染目標頁（hot-reload 保留頁，首次載入從第一頁開始）
         SwitchPage(restorePage);
+    }
+
+    /// <summary>
+    /// 掃描文件中所有 PLC 地址，與 Tags 清單比對後更新狀態列右側資訊。
+    /// 未定義在 Tags 中的地址會以橘色警告標示，方便工程師在上線前發現遺漏。
+    /// </summary>
+    private void UpdateTagsStatus(DesignDocument doc)
+    {
+        var tagCount = doc.Tags.Count;
+        if (tagCount == 0)
+        {
+            lblItemCount.Text = "";
+            return;
+        }
+
+        var allItems = doc.Pages?.SelectMany(p => p.CanvasItems) ?? [];
+        var used = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in allItems)
+        {
+            var a = item.Props.GetString("address");
+            var d = item.Props.GetString("displayAddress");
+            var c = item.Props.GetString("commandAddress");
+            if (!string.IsNullOrWhiteSpace(a)) used.Add(a.Trim());
+            if (!string.IsNullOrWhiteSpace(d)) used.Add(d.Trim());
+            if (!string.IsNullOrWhiteSpace(c)) used.Add(c.Trim());
+        }
+
+        var tagSet = new HashSet<string>(doc.Tags.Select(t => t.Address), StringComparer.OrdinalIgnoreCase);
+        var undefinedCount = used.Count(a => !tagSet.Contains(a));
+
+        if (undefinedCount > 0)
+        {
+            lblItemCount.Text = $"📌 Tags {tagCount}  ⚠ {undefinedCount} 未對應";
+            lblItemCount.Foreground = System.Windows.Media.Brushes.Orange;
+            lblItemCount.ToolTip = $"有 {undefinedCount} 個地址未定義在 Tags 清單中，建議在設計器補充定義";
+        }
+        else
+        {
+            lblItemCount.Text = $"📌 Tags {tagCount}  ✓ 全部對應";
+            lblItemCount.Foreground = System.Windows.Media.Brushes.LightGreen;
+            lblItemCount.ToolTip = $"所有 PLC 地址均已定義在 Tags 清單中";
+        }
     }
 
     private void BuildPageTabs(DesignDocument doc, string? fileName = null)

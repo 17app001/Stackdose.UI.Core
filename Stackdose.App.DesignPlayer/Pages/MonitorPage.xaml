@@ -10,6 +10,7 @@
     <Grid Background="{DynamicResource Surface.Bg.Page}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>   <!-- PLC 連線列 -->
+            <RowDefinition Height="Auto"/>   <!-- 頁籤列（多頁時顯示） -->
             <RowDefinition Height="*"/>      <!-- 設計器畫布 -->
         </Grid.RowDefinitions>
 
@@ -40,8 +41,23 @@
             </DockPanel>
         </Border>
 
+        <!-- ── 頁籤列（多頁文件才顯示） ── -->
+        <Border Grid.Row="1"
+                x:Name="PageTabsBar"
+                Background="{DynamicResource Surface.Bg.Panel}"
+                BorderBrush="{DynamicResource Surface.Border.Default}"
+                BorderThickness="0,0,0,1"
+                Padding="8,4"
+                Visibility="Collapsed">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled"
+                          HorizontalAlignment="Left">
+                <StackPanel x:Name="PageTabs" Orientation="Horizontal" VerticalAlignment="Center"/>
+            </ScrollViewer>
+        </Border>
+
         <!-- ── 設計器畫布（可縮放 + 捲動） ── -->
-        <ScrollViewer Grid.Row="1"
+        <ScrollViewer Grid.Row="2"
                       HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto"
                       Background="{DynamicResource Surface.Bg.Page}"
@@ -65,7 +81,7 @@
 
         <!-- 空畫面提示（還沒載入設計稿時顯示） -->
         <StackPanel x:Name="EmptyHint"
-                    Grid.Row="1"
+                    Grid.Row="2"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Opacity="0.4">

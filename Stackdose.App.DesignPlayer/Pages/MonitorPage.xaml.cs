@@ -16,6 +16,8 @@ public partial class MonitorPage : UserControl
     private FileSystemWatcher? _fileWatcher;
     private string? _loadedDesignPath;
     private DateTime _lastHotReload = DateTime.MinValue;
+    private DesignDocument? _currentDocument;
+    private int _currentPageIndex = 0;
 
     public MonitorPage(PlayerAppConfig config)
     {
@@ -153,14 +155,98 @@ public partial class MonitorPage : UserControl
 
     private void RenderDocument(DesignDocument doc)
     {
+        // Hot-reload 時保留當前頁索引
+        var restorePage = (_currentDocument != null)
+            ? Math.Min(_currentPageIndex, (doc.Pages?.Count ?? 1) - 1)
+            : 0;
+
+        _currentDocument = doc;
+        _currentPageIndex = 0;
+
+        BuildPageTabs(doc);
+        SwitchPage(restorePage);
+    }
+
+    private void BuildPageTabs(DesignDocument doc)
+    {
+        PageTabs.Children.Clear();
+
+        var pages = doc.Pages;
+        if (pages == null || pages.Count <= 1)
+        {
+            PageTabsBar.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        PageTabsBar.Visibility = Visibility.Visible;
+
+        for (int i = 0; i < pages.Count; i++)
+        {
+            var idx = i;
+            var btn = new Button
+            {
+                Content         = pages[i].Name,
+                Tag             = idx,
+                Padding         = new Thickness(14, 5, 14, 5),
+                Margin          = new Thickness(0, 0, 2, 0),
+                Cursor          = System.Windows.Input.Cursors.Hand,
+                FontSize        = 12,
+                BorderThickness = new Thickness(1),
+                Foreground      = FindResource("Surface.Text.Primary") as System.Windows.Media.Brush
+                                  ?? System.Windows.Media.Brushes.White,
+            };
+            SetTabActive(btn, i == 0);
+            btn.Click += (_, _) => SwitchPage(idx);
+            PageTabs.Children.Add(btn);
+        }
+    }
+
+    private void SwitchPage(int index)
+    {
+        var pages = _currentDocument?.Pages;
+        if (pages == null || index < 0 || index >= pages.Count) return;
+
+        _currentPageIndex = index;
+
+        for (int i = 0; i < PageTabs.Children.Count; i++)
+        {
+            if (PageTabs.Children[i] is Button btn)
+                SetTabActive(btn, i == index);
+        }
+
+        RenderPage(pages[index]);
+    }
+
+    private void SetTabActive(Button btn, bool active)
+    {
+        if (active)
+        {
+            btn.Background  = FindResource("Action.Primary") as System.Windows.Media.Brush
+                              ?? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4A, 0x6E, 0xBF));
+            btn.BorderBrush = FindResource("Action.Primary.Hover") as System.Windows.Media.Brush
+                              ?? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6A, 0x8E, 0xDF));
+            btn.FontWeight  = FontWeights.SemiBold;
+        }
+        else
+        {
+            btn.Background  = FindResource("Surface.Bg.Elevated") as System.Windows.Media.Brush
+                              ?? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2A, 0x2A, 0x48));
+            btn.BorderBrush = FindResource("Surface.Border.Default") as System.Windows.Media.Brush
+                              ?? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4A, 0x4A, 0x6A));
+            btn.FontWeight  = FontWeights.Normal;
+        }
+    }
+
+    private void RenderPage(DesignPage page)
+    {
         MonitorCanvas.Children.Clear();
-        MonitorCanvas.Width  = doc.CanvasWidth;
-        MonitorCanvas.Height = doc.CanvasHeight;
-        CanvasBorder.Width   = doc.CanvasWidth;
-        CanvasBorder.Height  = doc.CanvasHeight;
+        MonitorCanvas.Width  = page.CanvasWidth;
+        MonitorCanvas.Height = page.CanvasHeight;
+        CanvasBorder.Width   = page.CanvasWidth;
+        CanvasBorder.Height  = page.CanvasHeight;
 
         int ok = 0, err = 0;
-        foreach (var def in doc.CanvasItems)
+        foreach (var def in page.CanvasItems)
         {
             UIElement control;
             try   { control = RuntimeControlFactory.Create(def); ok++;  }
@@ -177,7 +263,7 @@ public partial class MonitorPage : UserControl
             MonitorCanvas.Children.Add(control);
         }
 
-        lblCanvasInfo.Text = $"{doc.CanvasWidth:F0} × {doc.CanvasHeight:F0} px　{ok} 個元件"
+        lblCanvasInfo.Text = $"{page.CanvasWidth:F0} × {page.CanvasHeight:F0} px　{ok} 個元件"
                            + (err > 0 ? $"（{err} 個錯誤）" : "");
 
         // 所有 PlcLabel Loaded 後刷新 Monitor 讓新地址加入掃描清單

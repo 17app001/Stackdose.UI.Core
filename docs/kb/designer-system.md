@@ -164,7 +164,7 @@ Stackdose.Tools.DesignViewer
 ## 4. DesignRuntime
 
 **專案：** `Stackdose.App.DesignRuntime`
-**狀態：** 開發中
+**狀態：** ✅ 功能完整
 
 ### 4.1 用途
 開發者驗證工具：手動輸入 PLC IP、開啟 JSON，確認控制項顯示正確的實際 PLC 數值。適合設計完成後上線前的最終驗證，不適合量產部署。
@@ -176,9 +176,15 @@ Stackdose.Tools.DesignViewer
 | 手動輸入 PLC IP / Port / Scan | 工具列直接輸入，無需設定檔 |
 | 模擬器模式 | 勾選後無需真實 PLC 即可連線 |
 | 亂數測試注入 | 自動寫入 D100~D102 隨機值，驗證數值更新 |
-| JSON 熱更新 | 偵測到 .machinedesign.json 變更後自動重載畫布 |
+| JSON 熱更新 | 偵測到 .machinedesign.json 變更後自動重載畫布，保留當前頁 |
 | 縮放 | 0.25x ~ 2.0x 滑桿縮放 |
 | **PLC 斷線重連** | 看門狗偵測斷線 → UI 顯示 `⚠ 重連中` → 自動重新連線 → `RefreshMonitors()` |
+| **多頁面切換** | 讀取 `pages` 陣列，頂部頁籤列切換；單頁自動隱藏頁籤列 |
+
+### 4.3 架構重點（`MainWindow.xaml.cs`）
+- `RenderDocument(doc, path)` → `BuildPageTabs` + `SwitchPage(index)`
+- `SwitchPage(index)` → 更新頁籤高亮 → `RenderPage(DesignPage)`
+- `RenderPage` 讀 `page.CanvasItems`，渲染後呼叫 `RefreshMonitors()`
 
 ### 4.3 專案依賴
 ```
@@ -193,7 +199,7 @@ Stackdose.App.DesignRuntime
 ## 5. DesignPlayer
 
 **專案：** `Stackdose.App.DesignPlayer`
-**狀態：** 開發中
+**狀態：** 開發中（多頁面切換進行中）
 
 ### 5.1 用途
 可交付量產的 Shell App。設備廠商直接部署到現場，不需修改程式碼，只需編輯 `Config/` 下的 JSON 設定。
@@ -240,6 +246,7 @@ Stackdose.App.DesignRuntime
 | Shell UI | ❌ | ❌ | ❌ | ✅ |
 | 登入管控 | ❌ | ❌ | ❌ | 可選 |
 | JSON 熱更新 | — | — | ✅ | ✅ |
+| 多頁面 | ✅ | — | ✅ | 🔧 進行中 |
 | 用途 | 設計 | 預覽 | 開發驗證 | 量產交付 |
 
 ### 5.5 專案依賴

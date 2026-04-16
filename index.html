@@ -373,6 +373,7 @@
         <span class="badge badge-purple">Mitsubishi FX3U PLC</span>
         <span class="badge badge-orange">Unity-like 拖曳設計器</span>
         <span class="badge badge-blue">JSON 驅動部署</span>
+        <span class="badge badge-green">PLC Tags 地址管理</span>
       </div>
     </div>
   </div>
@@ -855,6 +856,7 @@
           <div class="tl-item tl-highlight"><span class="tl-date">4月16日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 多頁面支援（JSON v2.0 + 頁籤 UI）；PLC 斷線重連；DesignRuntime + DesignPlayer 多頁面切換</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月17日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ SecuredButton 擴充（pulse/toggle/writeValue）；AlarmViewer + SensorViewer 設計器內編輯 UI</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月18日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 控制項模板庫（Template Gallery）；Command Sequence DSL（多步驟 PLC 指令框架）</span></div>
+          <div class="tl-item tl-highlight"><span class="tl-date">4月16日(續)</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ PLC Tags（地址名稱對照表 + 屬性面板下拉選取）；設計師 Quick Start 文件</span></div>
         </div>
       </div>
     </div>
@@ -916,8 +918,9 @@
         <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
           <div style="font-size:11px; font-weight:600; color:var(--blue); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Step 2 — 拖放設計</div>
           <ol style="padding-left:18px; font-size:13px; color:var(--text-secondary); line-height:1.8;">
+            <li>Toolbar「📌 Tags」先定義 PLC 地址清單（D100=溫度…）</li>
             <li>從左側 Toolbox 拖曳控制項至畫布</li>
-            <li>右側 Properties 面板設定 PLC 位址、標籤等屬性</li>
+            <li>右側 Properties 面板 — PLC 位址欄可<strong>下拉選取</strong> Tags，或直接輸入</li>
             <li>右鍵選單：複製、刪除、Z-Order、鎖定</li>
             <li>Ctrl+S 儲存為 .machinedesign.json</li>
           </ol>
@@ -1009,6 +1012,8 @@
             <li><s>SecuredButton 擴充（writeValue / pulse / toggle / sequence）</s> ✅</li>
             <li><s>控制項模板庫（Template Gallery）— 9 個內建模板 + 自訂模板</s> ✅</li>
             <li><s>工程師複雜指令框架（Command Sequence DSL — 多步驟 / 條件 / 回滾）</s> ✅</li>
+            <li><s>PLC Tags — 地址名稱對照表（屬性面板下拉選取）</s> ✅</li>
+            <li><s>設計師 Quick Start 文件（角色分工 + 完整部署流程）</s> ✅</li>
           </ul>
         </div>
 
@@ -1119,6 +1124,34 @@
           </div>
         </div>
 
+        <!-- PLC Tags ✅ -->
+        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:10px; padding:20px;">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+            <span style="background:#2da44e18; color:var(--green); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #2da44e33;">✅ 已完成</span>
+            <span style="font-weight:700; font-size:15px;">PLC Tags — 地址名稱對照表</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div>
+              <div style="font-size:11px; font-weight:600; color:var(--green); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">✅ 已完成</div>
+              <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
+                <li>工程師在設計器 Toolbar「📌 Tags」定義 Address → Name → Unit</li>
+                <li>Tags 存於 <code>.machinedesign.json</code> 的 <code>tags[]</code> 欄位</li>
+                <li>PlcLabel / PlcText / PlcStatusIndicator / SecuredButton 位址欄升級為可編輯 ComboBox</li>
+                <li>下拉顯示地址 + 名稱 + 單位；選取後只填入地址（不影響 JSON 格式）</li>
+                <li>設計師仍可直接輸入，Tags 清單為可選輔助</li>
+              </ul>
+            </div>
+            <div>
+              <div style="font-size:11px; font-weight:600; color:var(--blue); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">解決的問題</div>
+              <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
+                <li>設計師不再需要查詢另一份 PLC 地址表</li>
+                <li>工程師一次定義，設計師多次選取，減少打錯地址</li>
+                <li>地址清單版控隨設計稿一起管理（同一個 JSON 檔）</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
         <!-- Template Gallery ✅ -->
         <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:10px; padding:20px;">
           <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
@@ -1151,12 +1184,13 @@
               <li><strong>設定 SecuredButton 寫入模式（write / pulse / toggle / sequence）</strong></li>
               <li><strong>從模板庫拖曳常用控制項組合（Template Gallery）</strong></li>
               <li><strong>定義多步驟 PLC 指令序列（Command Sequence DSL）</strong></li>
+              <li><strong>從 PLC Tags 下拉選取位址（工程師預先定義清單）</strong></li>
             </ul>
           </div>
           <div>
             <div style="font-size:13px; font-weight:600; color:var(--orange); margin-bottom:8px;">仍需工程師協助</div>
             <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
-              <li>提供 PLC 地址對應表（D103=壓差…）</li>
+              <li>在設計器 Toolbar「📌 Tags」定義 PLC 地址清單（一次設定）</li>
               <li>第一次部署 DesignPlayer（設定 PLC IP）</li>
               <li>複雜設備邏輯走 DeviceFramework 路線（進階自訂 Module）</li>
             </ul>

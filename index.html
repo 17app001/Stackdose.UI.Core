@@ -1004,8 +1004,8 @@
             <span style="font-weight:600;">下一階段候選</span>
           </div>
           <ul style="padding-left:18px; font-size:13px; color:var(--text-secondary); line-height:1.9;">
-            <li>AlarmViewer / SensorViewer 設定 UI（見下方缺口說明）</li>
-            <li>SecuredButton 擴充（writeValue / pulse / toggle）</li>
+            <li><s>AlarmViewer / SensorViewer 設定 UI</s> ✅</li>
+            <li><s>SecuredButton 擴充（writeValue / pulse / toggle）</s> ✅</li>
             <li>控制項模板庫（Template Gallery）</li>
             <li>工程師複雜指令框架（多步驟 / 條件執行）</li>
           </ul>
@@ -1018,114 +1018,60 @@
   <!-- ══════════════ KNOWN GAPS ══════════════ -->
   <section class="section">
     <div class="container">
-      <div class="section-title">已知功能缺口 — 待補強項目</div>
+      <div class="section-title">功能缺口補強紀錄</div>
       <p style="font-size:13px; color:var(--text-secondary); margin-bottom:24px; max-width:720px;">
-        以下控制項底層架構已存在，但設計師或工程師使用上仍有缺口，需要額外開發才能達到完全可獨立使用的狀態。
+        原已知缺口已大幅補強。以下記錄各項的完成狀態與剩餘限制。
       </p>
 
       <div style="display:flex; flex-direction:column; gap:16px;">
 
-        <!-- AlarmViewer -->
-        <div style="background:var(--bg-card); border:1px solid #cf222e33; border-radius:10px; padding:20px;">
+        <!-- AlarmViewer ✅ -->
+        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:10px; padding:20px;">
           <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
-            <span style="background:#cf222e18; color:var(--red); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #cf222e33;">功能有缺口</span>
+            <span style="background:#2da44e18; color:var(--green); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #2da44e33;">✅ 已補強</span>
             <span style="font-weight:700; font-size:15px;">AlarmViewer</span>
-            <code style="font-size:11px; background:var(--bg-card2); border:1px solid var(--border); padding:2px 8px; border-radius:4px; color:var(--text-secondary);">Stackdose.UI.Core/Controls/AlarmViewer.xaml.cs</code>
           </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-            <div>
-              <div style="font-size:11px; font-weight:600; color:var(--green); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">✅ 已有</div>
-              <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
-                <li>讀取 <code>configFile</code>（alarms.json）</li>
-                <li>依 Device 位元（bit）判斷警報狀態</li>
-                <li>訂閱 <code>ScanUpdated</code> 事件即時更新</li>
-                <li>Group 分組顯示</li>
-                <li>「只顯示活躍警報」過濾開關</li>
-              </ul>
-            </div>
-            <div>
-              <div style="font-size:11px; font-weight:600; color:var(--red); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">❌ 缺口</div>
-              <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
-                <li>設計師無法在 MachinePageDesigner 內建立/編輯 alarms.json</li>
-                <li>需手寫 JSON，格式未在工具內說明</li>
-                <li>無法驗證 configFile 路徑是否存在</li>
-              </ul>
-            </div>
-          </div>
-          <div style="margin-top:12px; padding:10px 14px; background:var(--bg-card2); border-radius:6px; border:1px solid var(--border);">
-            <div style="font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:6px;">alarms.json 格式（需手寫）</div>
-            <pre style="font-size:11px; color:var(--text-secondary); margin:0; overflow-x:auto;">{ "alarms": [
-  { "group": "馬達", "device": "D200", "bit": 0, "operationDescription": "馬達過載" },
-  { "group": "馬達", "device": "D200", "bit": 1, "operationDescription": "馬達過熱" }
-] }</pre>
-          </div>
-          <div style="margin-top:10px; font-size:12px; color:var(--text-muted);">
-            <strong>待辦：</strong> MachinePageDesigner PropertyPanel 加 AlarmViewer 行內條目編輯器（新增/刪除/修改 alarm 定義，存檔時同步輸出 alarms.json）
-          </div>
+          <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
+            <li>MachinePageDesigner PropertyPanel 行內編輯器（新增/刪除/修改 alarm 定義）</li>
+            <li>嵌入式項目存於 <code>.machinedesign.json</code> 的 props.alarmItems</li>
+            <li>存檔時自動在同目錄輸出 <code>alarms.json</code>（<code>{"alarms":[...]}</code> 格式）</li>
+            <li>設計時預覽顯示嵌入項目數量</li>
+            <li>仍支援外部 configFile 路徑覆蓋（向後相容）</li>
+          </ul>
         </div>
 
-        <!-- SensorViewer -->
-        <div style="background:var(--bg-card); border:1px solid #cf222e33; border-radius:10px; padding:20px;">
+        <!-- SensorViewer ✅ -->
+        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:10px; padding:20px;">
           <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
-            <span style="background:#cf222e18; color:var(--red); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #cf222e33;">功能有缺口</span>
+            <span style="background:#2da44e18; color:var(--green); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #2da44e33;">✅ 已補強</span>
             <span style="font-weight:700; font-size:15px;">SensorViewer</span>
-            <code style="font-size:11px; background:var(--bg-card2); border:1px solid var(--border); padding:2px 8px; border-radius:4px; color:var(--text-secondary);">Stackdose.UI.Core/Controls/SensorViewer.xaml.cs</code>
           </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-            <div>
-              <div style="font-size:11px; font-weight:600; color:var(--green); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">✅ 已有</div>
-              <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
-                <li>有 <code>ConfigFile</code> DP</li>
-                <li>有計時器輪詢架構（DispatcherTimer）</li>
-              </ul>
-            </div>
-            <div>
-              <div style="font-size:11px; font-weight:600; color:var(--red); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">❌ 缺口</div>
-              <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
-                <li>sensors.json 格式尚未完整文件化</li>
-                <li>同 AlarmViewer：無視覺化設定 UI</li>
-                <li>PLC 讀值完整性尚未驗證（code 僅讀到一半）</li>
-              </ul>
-            </div>
-          </div>
-          <div style="margin-top:10px; font-size:12px; color:var(--text-muted);">
-            <strong>待辦：</strong> 先讀完 SensorViewer 完整實作確認狀態，再補 PropertyPanel 行內編輯器（與 AlarmViewer 同批處理）
-          </div>
+          <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
+            <li>同 AlarmViewer 架構，PropertyPanel 行內編輯器</li>
+            <li>支援 AND / OR / COMPARE 三種模式設定</li>
+            <li>sensors.json 格式已確認（扁平 JSON 陣列）</li>
+            <li>存檔時自動輸出 <code>sensors.json</code></li>
+            <li>SensorContext 完整實作驗證通過（LoadFromJson + GenerateMonitorAddresses + 狀態更新）</li>
+          </ul>
         </div>
 
-        <!-- SecuredButton -->
-        <div style="background:var(--bg-card); border:1px solid #9a670033; border-radius:10px; padding:20px;">
+        <!-- SecuredButton ✅ -->
+        <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:10px; padding:20px;">
           <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
-            <span style="background:#9a670018; color:var(--yellow); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #9a670033;">部分可用</span>
+            <span style="background:#2da44e18; color:var(--green); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #2da44e33;">✅ 已補強</span>
             <span style="font-weight:700; font-size:15px;">SecuredButton</span>
-            <code style="font-size:11px; background:var(--bg-card2); border:1px solid var(--border); padding:2px 8px; border-radius:4px; color:var(--text-secondary);">DesignPlayer/RuntimeControlFactory.cs</code>
           </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-            <div>
-              <div style="font-size:11px; font-weight:600; color:var(--green); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">✅ 已有</div>
-              <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
-                <li>點擊 → <code>ProcessCommandService</code> → <code>WriteAsync("address,1")</code></li>
-                <li>需使用者權限驗證（SecuredButton 控制項）</li>
-                <li>操作日誌自動寫入（ComplianceContext）</li>
-                <li>5 種按鈕主題（Primary / Error / Success / Warning / Info）</li>
-              </ul>
-            </div>
-            <div>
-              <div style="font-size:11px; font-weight:600; color:var(--yellow); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">⚠️ 限制</div>
-              <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
-                <li>只能寫入固定值 <strong>1</strong>（無法設定寫入值）</li>
-                <li>無 Pulse 模式（寫1→延遲→寫0）</li>
-                <li>無 Toggle（讀當前值取反）</li>
-                <li>無多步驟指令序列</li>
-              </ul>
-            </div>
-          </div>
-          <div style="margin-top:10px; font-size:12px; color:var(--text-muted);">
-            <strong>待辦：</strong> 新增 props：<code>writeValue</code>（預設 1）、<code>commandType</code>（write / pulse / toggle）、<code>pulseMs</code>（pulse 持續時間）
-          </div>
+          <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
+            <li>新增 <code>writeValue</code>（自訂寫入值）、<code>commandType</code>（write / pulse / toggle）、<code>pulseMs</code>（pulse 持續時間）</li>
+            <li><strong>write</strong>：寫入指定值至 PLC 位址</li>
+            <li><strong>pulse</strong>：寫入值 → 延遲 pulseMs → 寫 0（兩次寫入均記錄稽核日誌）</li>
+            <li><strong>toggle</strong>：讀取當前值 → 翻轉（M 位址用 ReadBit，其他用 ReadWord）</li>
+            <li>修復 commandAddress vs address 讀取 bug（RuntimeControlFactory）</li>
+            <li>PropertyPanel 完整 UI：writeValue 輸入、commandType 下拉、pulseMs 滑桿</li>
+          </ul>
         </div>
 
-        <!-- Engineer Framework -->
+        <!-- Engineer Framework (still pending) -->
         <div style="background:var(--bg-card); border:1px solid #9a670033; border-radius:10px; padding:20px;">
           <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
             <span style="background:#9a670018; color:var(--yellow); font-size:11px; font-weight:600; padding:2px 10px; border-radius:4px; border:1px solid #9a670033;">部分可用</span>
@@ -1170,15 +1116,16 @@
               <li>多頁面規劃與頁籤命名</li>
               <li>DesignViewer 靜態預覽確認版型</li>
               <li>修改後熱更新，不用重啟 DesignPlayer</li>
+              <li><strong>在設計器內建立 AlarmViewer / SensorViewer 定義</strong></li>
+              <li><strong>設定 SecuredButton 寫入模式（write / pulse / toggle）</strong></li>
             </ul>
           </div>
           <div>
             <div style="font-size:13px; font-weight:600; color:var(--orange); margin-bottom:8px;">仍需工程師協助</div>
             <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;">
               <li>提供 PLC 地址對應表（D103=壓差…）</li>
-              <li>建立 alarms.json / sensors.json</li>
-              <li>SecuredButton 複雜寫入邏輯</li>
               <li>第一次部署 DesignPlayer（設定 PLC IP）</li>
+              <li>複雜設備邏輯走 DeviceFramework 路線</li>
             </ul>
           </div>
         </div>
@@ -1192,7 +1139,7 @@
 <footer class="site-footer">
   <div class="container" style="display:flex; align-items:center; justify-content:space-between; width:100%;">
     <span>Stackdose.UI.Core · .NET 8 WPF · Windows x64</span>
-    <span>更新：2026-04-16</span>
+    <span>更新：2026-04-17</span>
   </div>
 </footer>
 

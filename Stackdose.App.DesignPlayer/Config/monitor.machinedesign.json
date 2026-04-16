@@ -1,5 +1,60 @@
 {
-  "version": "1.0",
+  "version": "2.0",
+  "meta": { "title": "Monitor", "machineId": "M1" },
+  "pages": [
+    {
+      "pageId": "page01",
+      "name": "Main",
+      "canvasWidth": 1100,
+      "canvasHeight": 200,
+      "canvasItems": [
+        {
+          "type": "PlcLabel",
+          "x": 10, "y": 10,
+          "width": 200, "height": 160,
+          "props": {
+            "label": "壓差",
+            "address": "D103",
+            "valueColorTheme": "NeonBlue",
+            "frameShape": "Rectangle"
+          }
+        },
+        {
+          "type": "PlcLabel",
+          "x": 230, "y": 10,
+          "width": 200, "height": 160,
+          "props": {
+            "label": "流量",
+            "address": "D104",
+            "valueColorTheme": "NeonBlue",
+            "frameShape": "Rectangle"
+          }
+        },
+        {
+          "type": "PlcLabel",
+          "x": 450, "y": 10,
+          "width": 200, "height": 160,
+          "props": {
+            "label": "供壓壓力",
+            "address": "D105",
+            "valueColorTheme": "NeonBlue",
+            "frameShape": "Rectangle"
+          }
+        },
+        {
+          "type": "PlcLabel",
+          "x": 670, "y": 10,
+          "width": 200, "height": 160,
+          "props": {
+            "label": "回壓壓力",
+            "address": "D106",
+            "valueColorTheme": "NeonBlue",
+            "frameShape": "Rectangle"
+          }
+        }
+      ]
+    }
+  ],
   "canvasWidth": 1100,
   "canvasHeight": 200,
   "canvasItems": [
@@ -7,45 +62,25 @@
       "type": "PlcLabel",
       "x": 10, "y": 10,
       "width": 200, "height": 160,
-      "properties": {
-        "label": "壓差",
-        "address": "D103",
-        "valueColorTheme": "NeonBlue",
-        "frameShape": "Rectangle"
-      }
+      "props": { "label": "壓差", "address": "D103", "valueColorTheme": "NeonBlue", "frameShape": "Rectangle" }
     },
     {
       "type": "PlcLabel",
       "x": 230, "y": 10,
       "width": 200, "height": 160,
-      "properties": {
-        "label": "流量",
-        "address": "D104",
-        "valueColorTheme": "NeonBlue",
-        "frameShape": "Rectangle"
-      }
+      "props": { "label": "流量", "address": "D104", "valueColorTheme": "NeonBlue", "frameShape": "Rectangle" }
     },
     {
       "type": "PlcLabel",
       "x": 450, "y": 10,
       "width": 200, "height": 160,
-      "properties": {
-        "label": "供壓壓力",
-        "address": "D105",
-        "valueColorTheme": "NeonBlue",
-        "frameShape": "Rectangle"
-      }
+      "props": { "label": "供壓壓力", "address": "D105", "valueColorTheme": "NeonBlue", "frameShape": "Rectangle" }
     },
     {
       "type": "PlcLabel",
       "x": 670, "y": 10,
       "width": 200, "height": 160,
-      "properties": {
-        "label": "回壓壓力",
-        "address": "D106",
-        "valueColorTheme": "NeonBlue",
-        "frameShape": "Rectangle"
-      }
+      "props": { "label": "回壓壓力", "address": "D106", "valueColorTheme": "NeonBlue", "frameShape": "Rectangle" }
     }
   ]
 }

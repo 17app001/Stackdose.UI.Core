@@ -58,3 +58,6 @@ package.json
 Stackdose.WinForms/
 Stackdose.Wpf/
 WpfAppPrintHead/
+
+# Generated sample projects (from ProjectGenerator)
+Stackdose.App.Monitor/

@@ -22,9 +22,9 @@ public static class DesignTimeControlFactory
             "PlcStatusIndicator" => CreatePlcStatusIndicator(def),
             "SecuredButton"      => CreateSecuredButton(def),
             "Spacer"             => CreateGroupBox(def),
-            "LiveLog"            => CreateViewerPlaceholder("System Log",    "\u2637", Color.FromRgb(0x1A, 0x1A, 0x30)),
-            "AlarmViewer"        => CreateViewerPlaceholder("Alarm Viewer",  "\u26A0", Color.FromRgb(0x30, 0x18, 0x18)),
-            "SensorViewer"       => CreateViewerPlaceholder("Sensor Viewer", "\u26A1", Color.FromRgb(0x18, 0x28, 0x30)),
+            "LiveLog"            => CreateViewerPlaceholder("System Log",    "\u2637", Color.FromRgb(0x1A, 0x1A, 0x30), null),
+            "AlarmViewer"        => CreateViewerPlaceholder("Alarm Viewer",  "\u26A0", Color.FromRgb(0x30, 0x18, 0x18), def.Props.GetString("configFile")),
+            "SensorViewer"       => CreateViewerPlaceholder("Sensor Viewer", "\u26A1", Color.FromRgb(0x18, 0x28, 0x30), def.Props.GetString("configFile")),
             "StaticLabel"        => CreateStaticLabel(def),
             _ => new TextBlock
             {
@@ -79,31 +79,30 @@ public static class DesignTimeControlFactory
 
     private static UIElement CreatePlcStatusIndicator(DesignerItemDefinition def)
     {
-        // 用簡化的設計時預覽代替真實控件
-        var p = def.Props;
-        var addr = p.GetString("displayAddress", "M100");
+        var p     = def.Props;
+        var addr  = p.GetString("displayAddress", "M100");
+        var label = p.GetString("label", addr);
 
         var border = new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(0x31, 0x31, 0x45)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x5A)),
+            Background      = new SolidColorBrush(Color.FromRgb(0x31, 0x31, 0x45)),
+            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x5A)),
             BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(4),
-            Padding = new Thickness(8),
-            MinHeight = 40,
+            CornerRadius    = new CornerRadius(4),
+            Padding         = new Thickness(8),
+            MinHeight       = 40,
         };
         var stack = new StackPanel { Orientation = Orientation.Horizontal };
         stack.Children.Add(new System.Windows.Shapes.Ellipse
         {
-            Width = 12,
-            Height = 12,
-            Fill = Brushes.Gray,
+            Width  = 12, Height = 12,
+            Fill   = Brushes.Gray,
             Margin = new Thickness(0, 0, 8, 0),
             VerticalAlignment = VerticalAlignment.Center
         });
         stack.Children.Add(new TextBlock
         {
-            Text = $"StatusIndicator [{addr}]",
+            Text      = $"{label}  [{addr}]",
             Foreground = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)),
             VerticalAlignment = VerticalAlignment.Center
         });
@@ -216,39 +215,51 @@ public static class DesignTimeControlFactory
         };
     }
 
-    private static UIElement CreateViewerPlaceholder(string title, string icon, Color bgColor)
+    private static UIElement CreateViewerPlaceholder(string title, string icon, Color bgColor, string? configFile)
     {
         var border = new Border
         {
-            Background = new SolidColorBrush(bgColor),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x5A)),
+            Background      = new SolidColorBrush(bgColor),
+            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x5A)),
             BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(6),
+            CornerRadius    = new CornerRadius(6),
         };
         var stack = new StackPanel
         {
             HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-            Margin = new Thickness(12),
+            VerticalAlignment   = VerticalAlignment.Center,
+            Margin              = new Thickness(12),
         };
         stack.Children.Add(new TextBlock
         {
-            Text = icon,
-            FontSize = 28,
+            Text      = icon,
+            FontSize  = 28,
             HorizontalAlignment = HorizontalAlignment.Center,
             Foreground = new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xDD)),
-            Margin = new Thickness(0, 0, 0, 6),
+            Margin    = new Thickness(0, 0, 0, 6),
             VerticalAlignment = VerticalAlignment.Center,
         });
         stack.Children.Add(new TextBlock
         {
-            Text = title,
-            FontSize = 13,
+            Text       = title,
+            FontSize   = 13,
             FontWeight = FontWeights.SemiBold,
             HorizontalAlignment = HorizontalAlignment.Center,
             Foreground = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)),
             VerticalAlignment = VerticalAlignment.Center,
         });
+        if (!string.IsNullOrWhiteSpace(configFile))
+        {
+            stack.Children.Add(new TextBlock
+            {
+                Text       = System.IO.Path.GetFileName(configFile),
+                FontSize   = 10,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0xAA)),
+                Margin     = new Thickness(0, 4, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+            });
+        }
         border.Child = stack;
         return border;
     }

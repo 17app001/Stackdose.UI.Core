@@ -44,6 +44,7 @@ public sealed class ToolboxItemDescriptor
             Type = "PlcStatusIndicator",
             Props = new()
             {
+                ["label"]          = "Status",
                 ["displayAddress"] = "M100"
             }
         },
@@ -73,13 +74,13 @@ public sealed class ToolboxItemDescriptor
         "AlarmViewer" => new DesignerItemDefinition
         {
             Type = "AlarmViewer",
-            Props = [],
+            Props = new() { ["configFile"] = "" },
             Width = 420, Height = 280
         },
         "SensorViewer" => new DesignerItemDefinition
         {
             Type = "SensorViewer",
-            Props = [],
+            Props = new() { ["configFile"] = "" },
             Width = 420, Height = 200
         },
         "StaticLabel" => new DesignerItemDefinition
@@ -104,7 +105,7 @@ public sealed class ToolboxItemDescriptor
         new() { Type = "PlcText",            DisplayName = "PlcText",            Category = "PLC",    Icon = "\u270E" },
         new() { Type = "PlcStatusIndicator", DisplayName = "PlcStatusIndicator", Category = "PLC",    Icon = "\u25CF" },
         new() { Type = "SecuredButton",      DisplayName = "SecuredButton",      Category = "Button", Icon = "\u25A3" },
-        new() { Type = "Spacer",             DisplayName = "Spacer",             Category = "Layout", Icon = "\u25A1" },
+        new() { Type = "Spacer",             DisplayName = "GroupBox",           Category = "Layout", Icon = "\u25A1" },
         new() { Type = "LiveLog",            DisplayName = "LiveLog",            Category = "Viewer", Icon = "\u2637" },
         new() { Type = "AlarmViewer",        DisplayName = "AlarmViewer",        Category = "Viewer", Icon = "\u26A0" },
         new() { Type = "SensorViewer",       DisplayName = "SensorViewer",       Category = "Viewer", Icon = "\u26A1" },

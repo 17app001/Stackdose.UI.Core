@@ -44,15 +44,17 @@ public static class DesignTimeControlFactory
     {
         var p = def.Props;
 
+        var defaultVal = p.GetString("defaultValue", "0");
         var label = new PlcLabel
         {
-            Label = p.GetString("label", "Label"),
-            Address = p.GetString("address", "D100"),
-            DefaultValue = p.GetString("defaultValue", "0"),
+            Label        = p.GetString("label", "Label"),
+            Address      = p.GetString("address", "D100"),
+            DefaultValue = defaultVal,
+            Value        = defaultVal,   // 設計時顯示 DefaultValue 而非 "-"，避免觸發 Opacity=0.5 的 DataTrigger
             ValueFontSize = p.GetDouble("valueFontSize", 20),
-            Divisor = p.GetDouble("divisor", 1),
+            Divisor      = p.GetDouble("divisor", 1),
             StringFormat = p.GetString("stringFormat", "F0"),
-            ShowAddress = false,
+            ShowAddress  = false,
             IsHitTestVisible = false,  // 設計時不可互動
         };
 

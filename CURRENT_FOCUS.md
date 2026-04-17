@@ -7,9 +7,10 @@
 
 ## 目前狀態
 
-**專案整體進度：✅ 所有主要功能完成，架構優化完成**
+**專案整體進度：✅ 所有主要功能完成，UI 視覺優化完成**
 
-所有路線圖功能（含設計器核心、量產部署、功能缺口補強、Template Gallery、Command Sequence DSL）及 13 項架構優化均已完成並提交至 `feature/copilot` 分支。
+所有路線圖功能（含設計器核心、量產部署、功能缺口補強、Template Gallery、Command Sequence DSL）及 13 項架構優化均已完成。  
+2026-04-17 進行第二輪 UI 視覺優化（MachinePageDesigner 主題色階、Viewer Header、PlcStatusIndicator 重設計）。
 
 **下一步方向（尚未啟動）：**
 - 真實客戶場景驗證（選一個設備，實際跑完 Designer → DesignPlayer 全流程）

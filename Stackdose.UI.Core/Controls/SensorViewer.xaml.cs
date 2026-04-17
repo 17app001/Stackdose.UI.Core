@@ -233,9 +233,8 @@ namespace Stackdose.UI.Core.Controls
             if (string.IsNullOrWhiteSpace(configFile)) return;
             try
             {
-                string fullPath = Path.IsPathRooted(configFile) && File.Exists(configFile)
-                    ? configFile
-                    : ResourcePathHelper.GetResourceFilePath(configFile);
+                // 與 AlarmViewer 統一：絕對路徑直接用，相對路徑以 exe 目錄為基準
+                string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configFile);
                 if (!File.Exists(fullPath)) return;
                 var json = File.ReadAllText(fullPath, System.Text.Encoding.UTF8);
                 var configs = JsonSerializer.Deserialize<SensorConfig[]>(json, new JsonSerializerOptions

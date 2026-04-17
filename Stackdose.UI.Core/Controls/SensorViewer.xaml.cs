@@ -40,7 +40,7 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         public static readonly DependencyProperty TitleProperty =
             DependencyProperty.Register("Title", typeof(string), typeof(SensorViewer), 
-                new PropertyMetadata("Sensor Status"));
+                new PropertyMetadata("SENSOR VIEWER"));
         public string Title
         {
             get { return (string)GetValue(TitleProperty); }

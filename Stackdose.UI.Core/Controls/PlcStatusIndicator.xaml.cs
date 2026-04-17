@@ -1,4 +1,4 @@
-using Stackdose.Abstractions.Hardware;
+﻿using Stackdose.Abstractions.Hardware;
 using Stackdose.UI.Core.Helpers;
 using System.Windows;
 using System.Windows.Controls;
@@ -25,7 +25,23 @@ namespace Stackdose.UI.Core.Controls
             this.Unloaded += PlcStatusIndicator_Unloaded;
         }
 
-        #region Dependency Properties
+        #region Dependency Properties
+        /// <summary>
+        /// Header 標題文字（預設 "PLC STATUS"）
+        /// </summary>
+        public static readonly DependencyProperty LabelProperty =
+            DependencyProperty.Register(
+                nameof(Label),
+                typeof(string),
+                typeof(PlcStatusIndicator),
+                new PropertyMetadata("PLC STATUS"));
+
+        public string Label
+        {
+            get => (string)GetValue(LabelProperty);
+            set => SetValue(LabelProperty, value);
+        }
+
 
         /// <summary>
         /// 顯示的 IP 位址

@@ -121,6 +121,7 @@ public sealed class MainViewModel : ObservableObject
 
         SaveAsTemplateCmd  = new RelayCommand(_ => SaveSelectionAsTemplate(), _ => Canvas.HasSelectedItem);
         OpenTagEditorCmd   = new RelayCommand(_ => OpenTagEditor());
+        OpenAppConfigCmd   = new RelayCommand(_ => OpenAppConfigEditor(), _ => !string.IsNullOrEmpty(CurrentFilePath));
 
         // 初始化時建立第一個頁面（LoadDocumentIntoUI 會設定 CurrentPage → 觸發事件訂閱）
         LoadDocumentIntoUI();
@@ -278,7 +279,11 @@ public sealed class MainViewModel : ObservableObject
     public ICommand SaveAsTemplateCmd { get; }
 
     // PLC Tags
-    public ICommand OpenTagEditorCmd { get; }
+    // PLC Tags
+    public ICommand OpenTagEditorCmd  { get; }
+
+    // App Config
+    public ICommand OpenAppConfigCmd  { get; }
 
     // Page Management
     public ICommand AddPageCmd    { get; }
@@ -944,6 +949,19 @@ public sealed class MainViewModel : ObservableObject
         _document.Tags = [..Tags];
         MarkDirty();
         StatusText = $"PLC Tags：{Tags.Count} 筆";
+    }
+
+    // ── App Config Editor ──────────────────────────────────────────
+
+    private void OpenAppConfigEditor()
+    {
+        if (string.IsNullOrEmpty(CurrentFilePath))
+        { StatusText = "請先儲存設計稿後再開啟 App Config 編輯器"; return; }
+        var win = new AppConfigEditorWindow(CurrentFilePath)
+        {
+            Owner = Application.Current?.MainWindow,
+        };
+        win.ShowDialog();
     }
 
     private static bool ConfirmDiscard()

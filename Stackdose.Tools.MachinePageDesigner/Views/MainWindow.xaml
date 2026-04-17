@@ -103,8 +103,15 @@
                 <Button Content="&#x1F4CC; Tags"
                         Command="{Binding OpenTagEditorCmd}"
                         Style="{StaticResource ToolbarButton}"
-                        Margin="0,0,16,0"
+                        Margin="0,0,4,0"
                         ToolTip="編輯 PLC Tags（地址 → 名稱對照表）"/>
+
+                <!-- App Config -->
+                <Button Content="&#x2699; App Config"
+                        Command="{Binding OpenAppConfigCmd}"
+                        Style="{StaticResource ToolbarButton}"
+                        Margin="0,0,16,0"
+                        ToolTip="產生/編輯 app-config.json（App 標題、PLC 連線、登入設定）"/>
 
                 <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
 

@@ -1,0 +1,132 @@
+<Window x:Class="Stackdose.Tools.MachinePageDesigner.Views.AppConfigEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="App Config 編輯器 — app-config.json"
+        Width="520" Height="440"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- Header -->
+            <RowDefinition Height="*"/>     <!-- Form -->
+            <RowDefinition Height="Auto"/>  <!-- Buttons -->
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,14">
+            <TextBlock Text="App Config 設定" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <TextBlock TextWrapping="Wrap" FontSize="11" Opacity="0.65"
+                       Text="填寫後點「儲存」，將在設計稿同目錄產生 app-config.json，DesignPlayer 部署時直接使用。"/>
+            <TextBlock x:Name="SavePathText" FontSize="10" Opacity="0.5" Margin="0,4,0,0"
+                       FontFamily="Consolas"/>
+        </StackPanel>
+
+        <!-- Form -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+
+                <!-- ── App Settings ────────────────────────────────── -->
+                <TextBlock Text="App 設定" FontSize="11" FontWeight="SemiBold" Opacity="0.7"
+                           Margin="0,0,0,6"/>
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="App 名稱"
+                               VerticalAlignment="Center" Margin="0,0,8,6" FontSize="12"/>
+                    <TextBox  Grid.Row="0" Grid.Column="1" x:Name="AppTitleBox"
+                              Margin="0,0,0,6" Padding="6,4" FontSize="12"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="設備標籤（Header）"
+                               VerticalAlignment="Center" Margin="0,0,8,6" FontSize="12"/>
+                    <TextBox  Grid.Row="1" Grid.Column="1" x:Name="DeviceNameBox"
+                              Margin="0,0,0,6" Padding="6,4" FontSize="12"/>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="啟動登入"
+                               VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12"/>
+                    <CheckBox Grid.Row="2" Grid.Column="1" x:Name="LoginRequiredBox"
+                              Content="啟動時要求帳號密碼登入" VerticalAlignment="Center"
+                              FontSize="12"/>
+                </Grid>
+
+                <Separator Margin="0,0,0,12" Opacity="0.3"/>
+
+                <!-- ── PLC Connection ──────────────────────────────── -->
+                <TextBlock Text="PLC 連線" FontSize="11" FontWeight="SemiBold" Opacity="0.7"
+                           Margin="0,0,0,6"/>
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="IP 位址"
+                               VerticalAlignment="Center" Margin="0,0,8,6" FontSize="12"/>
+                    <TextBox  Grid.Row="0" Grid.Column="1" x:Name="PlcIpBox"
+                              Margin="0,0,0,6" Padding="6,4" FontSize="12" FontFamily="Consolas"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Port"
+                               VerticalAlignment="Center" Margin="0,0,8,6" FontSize="12"/>
+                    <TextBox  Grid.Row="1" Grid.Column="1" x:Name="PlcPortBox"
+                              Margin="0,0,0,6" Padding="6,4" FontSize="12" FontFamily="Consolas"/>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="輪詢間隔（ms）"
+                               VerticalAlignment="Center" Margin="0,0,8,6" FontSize="12"/>
+                    <TextBox  Grid.Row="2" Grid.Column="1" x:Name="PollIntervalBox"
+                              Margin="0,0,0,6" Padding="6,4" FontSize="12" FontFamily="Consolas"/>
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="自動連線"
+                               VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12"/>
+                    <CheckBox Grid.Row="3" Grid.Column="1" x:Name="AutoConnectBox"
+                              Content="啟動後自動連線 PLC" VerticalAlignment="Center"
+                              FontSize="12"/>
+                </Grid>
+
+                <Separator Margin="0,0,0,12" Opacity="0.3"/>
+
+                <!-- ── Design File ─────────────────────────────────── -->
+                <TextBlock Text="設計稿路徑" FontSize="11" FontWeight="SemiBold" Opacity="0.7"
+                           Margin="0,0,0,6"/>
+                <Grid Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="designFile"
+                               VerticalAlignment="Center" Margin="0,0,8,0"
+                               FontSize="12" FontFamily="Consolas"/>
+                    <TextBox Grid.Column="1" x:Name="DesignFileBox"
+                             Padding="6,4" FontSize="12" FontFamily="Consolas"
+                             ToolTip="相對於 DesignPlayer.exe 的路徑，慣例 Config/{filename}.machinedesign.json"/>
+                </Grid>
+                <TextBlock Text="此路徑為 DesignPlayer.exe 的相對路徑，勿隨意更改。" FontSize="10" Opacity="0.5" Margin="130,2,0,0"/>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <Button x:Name="SaveBtn" Content="&#x1F4BE; 儲存 app-config.json"
+                    Width="200" Padding="0,7" Margin="0,0,10,0"
+                    IsDefault="True" Click="OnSave"
+                    FontWeight="SemiBold"/>
+            <Button Content="取消" Width="80" Padding="0,7"
+                    IsCancel="True" Click="OnCancel"/>
+        </StackPanel>
+    </Grid>
+</Window>

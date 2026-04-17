@@ -105,6 +105,7 @@ public static class DesignTimeControlFactory
         var label = p.GetString("label", null);
         var bgHex = p.GetString("cardBackground", "");
 
+        // Plc.Bg.Main = #1F1F32, fallback if cardBackground override not set
         Brush bgBrush = string.IsNullOrWhiteSpace(bgHex)
             ? new SolidColorBrush(Color.FromRgb(0x1F, 0x1F, 0x32))
             : TryParseBrush(bgHex, Color.FromRgb(0x1F, 0x1F, 0x32));
@@ -112,7 +113,7 @@ public static class DesignTimeControlFactory
         var border = new Border
         {
             Background      = bgBrush,
-            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x6A)),
+            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x3A, 0x4A, 0x5F)), // Plc.Border
             BorderThickness = new Thickness(1),
             CornerRadius    = new CornerRadius(6),
             Padding         = new Thickness(10, 8, 10, 8),
@@ -123,7 +124,7 @@ public static class DesignTimeControlFactory
         hStack.Children.Add(new System.Windows.Shapes.Ellipse
         {
             Width  = 18, Height = 18,
-            Fill   = new SolidColorBrush(Color.FromRgb(0xEF, 0x53, 0x50)),
+            Fill   = new SolidColorBrush(Color.FromRgb(0xEF, 0x53, 0x50)), // offline red
             Margin = new Thickness(0, 0, 10, 0),
             VerticalAlignment = VerticalAlignment.Center,
         });
@@ -137,7 +138,7 @@ public static class DesignTimeControlFactory
                 FontSize   = 13,
                 FontWeight = FontWeights.SemiBold,
                 FontFamily = new FontFamily("Microsoft JhengHei"),
-                Foreground = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)),
+                Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xE5, 0xFF)), // Plc.Text.Value / NeonBlue
             });
         }
         textStack.Children.Add(new TextBlock
@@ -145,8 +146,8 @@ public static class DesignTimeControlFactory
             Text       = addr,
             FontSize   = 10,
             FontFamily = new FontFamily("Consolas"),
-            Foreground = new SolidColorBrush(Color.FromRgb(0x70, 0x70, 0x90)),
-            Opacity    = 0.8,
+            Foreground = new SolidColorBrush(Color.FromRgb(0x95, 0xA5, 0xBA)), // Plc.Text.Label
+            Opacity    = 0.85,
         });
         hStack.Children.Add(textStack);
         border.Child = hStack;

@@ -4,77 +4,38 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="70" d:DesignWidth="300"
+             d:DesignHeight="60" d:DesignWidth="300"
              x:Name="Root">
 
     <Border Background="{DynamicResource Plc.Bg.Main}"
             BorderBrush="{DynamicResource Plc.Border}"
             BorderThickness="1"
-            CornerRadius="6">
+            CornerRadius="5"
+            Padding="10">
         <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-            <!-- Header Bar — same pattern as PlcLabel card title -->
-            <Border Grid.Row="0"
-                    Background="{DynamicResource Plc.Bg.Dark}"
-                    BorderBrush="{DynamicResource Plc.Border}"
-                    BorderThickness="0,0,0,1"
-                    CornerRadius="6,6,0,0"
-                    Padding="10,5">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+            <Ellipse x:Name="StatusLight"
+                     Grid.Column="0"
+                     Width="24" Height="24"
+                     Fill="Red"
+                     VerticalAlignment="Center"
+                     Margin="0,0,10,0"/>
 
-                    <TextBlock Grid.Column="0"
-                               Text="{Binding Label, ElementName=Root}"
-                               Foreground="{DynamicResource Plc.Text.Label}"
-                               FontSize="10"
-                               FontWeight="Bold"
-                               FontFamily="Consolas"
-                               VerticalAlignment="Center"/>
-
-                    <!-- Live indicator dot -->
-                    <Ellipse x:Name="HeaderDot"
-                             Grid.Column="1"
-                             Width="7" Height="7"
-                             Fill="Red"
-                             VerticalAlignment="Center"/>
-                </Grid>
-            </Border>
-
-            <!-- Body — status light + text + IP -->
-            <Grid Grid.Row="1" Margin="10,8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <Ellipse x:Name="StatusLight"
-                         Grid.Column="0"
-                         Width="22" Height="22"
-                         Fill="Red"
-                         VerticalAlignment="Center"
-                         Margin="0,0,10,0"/>
-
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock x:Name="StatusText"
-                               Text="DISCONNECTED"
-                               FontSize="13"
-                               FontWeight="Bold"
-                               FontFamily="Consolas"
-                               Foreground="Red"/>
-                    <TextBlock x:Name="IpDisplay"
-                               Text="192.168.22.39:3000"
-                               FontSize="10"
-                               FontFamily="Consolas"
-                               Foreground="{DynamicResource Plc.Text.Default}"/>
-                </StackPanel>
-            </Grid>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock x:Name="StatusText"
+                           Text="DISCONNECTED"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Foreground="Red"/>
+                <TextBlock x:Name="IpDisplay"
+                           Text="192.168.22.39:3000"
+                           FontSize="10"
+                           Foreground="{DynamicResource Plc.Text.Default}"/>
+            </StackPanel>
         </Grid>
     </Border>
 </UserControl>

@@ -100,33 +100,43 @@ public static class DesignTimeControlFactory
 
     private static UIElement CreatePlcStatusIndicator(DesignerItemDefinition def)
     {
-        var p     = def.Props;
-        var addr  = p.GetString("displayAddress", "M100");
-        var label = p.GetString("label", addr);
+        var p    = def.Props;
+        var addr = p.GetString("displayAddress", "M100");
 
         var border = new Border
         {
-            Background      = new SolidColorBrush(Color.FromRgb(0x31, 0x31, 0x45)),
-            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x5A)),
+            Background      = new SolidColorBrush(Color.FromRgb(0x1F, 0x1F, 0x32)),
+            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x6A)),
             BorderThickness = new Thickness(1),
-            CornerRadius    = new CornerRadius(4),
-            Padding         = new Thickness(8),
+            CornerRadius    = new CornerRadius(5),
+            Padding         = new Thickness(10),
             MinHeight       = 40,
         };
         var stack = new StackPanel { Orientation = Orientation.Horizontal };
         stack.Children.Add(new System.Windows.Shapes.Ellipse
         {
-            Width  = 12, Height = 12,
-            Fill   = Brushes.Gray,
+            Width  = 18, Height = 18,
+            Fill   = new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80)),
             Margin = new Thickness(0, 0, 8, 0),
-            VerticalAlignment = VerticalAlignment.Center
+            VerticalAlignment = VerticalAlignment.Center,
         });
-        stack.Children.Add(new TextBlock
+        var textStack = new StackPanel();
+        textStack.Children.Add(new TextBlock
         {
-            Text      = $"{label}  [{addr}]",
-            Foreground = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)),
-            VerticalAlignment = VerticalAlignment.Center
+            Text       = "DISCONNECTED",
+            FontSize   = 12,
+            FontWeight = FontWeights.Bold,
+            FontFamily = new FontFamily("Consolas"),
+            Foreground = new SolidColorBrush(Color.FromRgb(0x90, 0x90, 0x90)),
         });
+        textStack.Children.Add(new TextBlock
+        {
+            Text       = addr,
+            FontSize   = 10,
+            FontFamily = new FontFamily("Consolas"),
+            Foreground = new SolidColorBrush(Color.FromRgb(0x60, 0x60, 0x80)),
+        });
+        stack.Children.Add(textStack);
         border.Child = stack;
         return border;
     }
@@ -242,59 +252,108 @@ public static class DesignTimeControlFactory
         var border = new Border
         {
             Background      = new SolidColorBrush(bgColor),
-            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x5A)),
+            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x52, 0x52, 0x70)),
             BorderThickness = new Thickness(1),
             CornerRadius    = new CornerRadius(6),
         };
-        var stack = new StackPanel
+
+        var grid = new Grid();
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+        // ── Header bar ──────────────────────────────────────────────
+        var headerBg = Color.FromArgb(0xCC,
+            (byte)Math.Max(0, bgColor.R - 0x0A),
+            (byte)Math.Max(0, bgColor.G - 0x0A),
+            (byte)Math.Max(0, bgColor.B - 0x0A));
+
+        var header = new Border
+        {
+            Background      = new SolidColorBrush(headerBg),
+            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x52, 0x52, 0x70)),
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            CornerRadius    = new CornerRadius(6, 6, 0, 0),
+            Padding         = new Thickness(10, 6, 10, 6),
+        };
+
+        var headerContent = new Grid();
+        headerContent.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        headerContent.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        headerContent.Children.Add(new TextBlock
+        {
+            Text              = title.ToUpperInvariant(),
+            FontSize          = 11,
+            FontWeight        = FontWeights.Bold,
+            FontFamily        = new FontFamily("Consolas"),
+            Foreground        = new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xDD)),
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+
+        // "LIVE" badge on the right
+        var badge = new Border
+        {
+            Background      = new SolidColorBrush(Color.FromArgb(0x40, 0x4E, 0xC9, 0x94)),
+            CornerRadius    = new CornerRadius(10),
+            Padding         = new Thickness(7, 2, 7, 2),
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        badge.Child = new TextBlock
+        {
+            Text       = "LIVE",
+            FontSize   = 9,
+            FontWeight = FontWeights.Bold,
+            FontFamily = new FontFamily("Consolas"),
+            Foreground = new SolidColorBrush(Color.FromRgb(0x4E, 0xC9, 0x94)),
+        };
+        Grid.SetColumn(badge, 1);
+        headerContent.Children.Add(badge);
+
+        header.Child = headerContent;
+        Grid.SetRow(header, 0);
+        grid.Children.Add(header);
+
+        // ── Body — icon + optional config hint ──────────────────────
+        var body = new StackPanel
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment   = VerticalAlignment.Center,
             Margin              = new Thickness(12),
         };
-        stack.Children.Add(new TextBlock
+        body.Children.Add(new TextBlock
         {
-            Text      = icon,
-            FontSize  = 28,
+            Text                = icon,
+            FontSize            = 24,
             HorizontalAlignment = HorizontalAlignment.Center,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xDD)),
-            Margin    = new Thickness(0, 0, 0, 6),
-            VerticalAlignment = VerticalAlignment.Center,
+            Foreground          = new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0xAA)),
+            Margin              = new Thickness(0, 0, 0, 4),
         });
-        stack.Children.Add(new TextBlock
-        {
-            Text       = title,
-            FontSize   = 13,
-            FontWeight = FontWeights.SemiBold,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)),
-            VerticalAlignment = VerticalAlignment.Center,
-        });
+
         if (!string.IsNullOrWhiteSpace(configFile))
         {
-            stack.Children.Add(new TextBlock
+            body.Children.Add(new TextBlock
             {
-                Text       = System.IO.Path.GetFileName(configFile),
-                FontSize   = 10,
+                Text                = System.IO.Path.GetFileName(configFile),
+                FontSize            = 10,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Foreground = new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0xAA)),
-                Margin     = new Thickness(0, 4, 0, 0),
-                VerticalAlignment = VerticalAlignment.Center,
+                Foreground          = new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0xAA)),
             });
         }
         else if (embeddedCount > 0)
         {
-            stack.Children.Add(new TextBlock
+            body.Children.Add(new TextBlock
             {
-                Text       = $"({embeddedCount} 筆內嵌定義)",
-                FontSize   = 10,
+                Text                = $"({embeddedCount} 筆內嵌定義)",
+                FontSize            = 10,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Foreground = new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0xAA)),
-                Margin     = new Thickness(0, 4, 0, 0),
-                VerticalAlignment = VerticalAlignment.Center,
+                Foreground          = new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0xAA)),
             });
         }
-        border.Child = stack;
+
+        Grid.SetRow(body, 1);
+        grid.Children.Add(body);
+
+        border.Child = grid;
         return border;
     }
 

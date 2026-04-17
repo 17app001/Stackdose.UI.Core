@@ -127,6 +127,13 @@ public sealed class DesignerItemViewModel : ObservableObject
     private void NotifyPropKey(string key)
     {
         // 撠?prop key ????VM 撅祆批?隞亥孛??UI ?湔
+        // "labelForeground" is shared by LabelForeground (PlcLabel) and IndicatorLabelForeground (PlcStatusIndicator)
+        if (key == "labelForeground")
+        {
+            N(nameof(LabelForeground));
+            N(nameof(IndicatorLabelForeground));
+            return;
+        }
         var propName = key switch
         {
             "label" => nameof(Label),
@@ -139,7 +146,6 @@ public sealed class DesignerItemViewModel : ObservableObject
             "labelAlignment" => nameof(LabelAlignment),
             "valueAlignment" => nameof(ValueAlignment),
             "labelFontSize" => nameof(LabelFontSize),
-            "labelForeground" => nameof(LabelForeground),
             "plcTextMode" => nameof(PlcTextMode),
             "divisor" => nameof(Divisor),
             "stringFormat" => nameof(StringFormat),

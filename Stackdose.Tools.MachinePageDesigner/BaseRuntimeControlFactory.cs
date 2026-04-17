@@ -199,6 +199,9 @@ public abstract class BaseRuntimeControlFactory
             MinWidth      = 80,
         };
 
+        if (Enum.TryParse<AccessLevel>(p.GetString("requiredLevel", "Operator"), true, out var reqLevel))
+            btn.RequiredLevel = reqLevel;
+
         var hasAction = !string.IsNullOrWhiteSpace(address) || commandType.Equals("sequence", StringComparison.OrdinalIgnoreCase);
         if (hasAction)
         {

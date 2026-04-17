@@ -1,4 +1,7 @@
 ﻿using Stackdose.Abstractions.Hardware;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Text.Json;
 using Stackdose.Abstractions.Logging;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
@@ -19,12 +22,14 @@ namespace Stackdose.UI.Core.Controls
         /// <summary>
         /// 🔥 追蹤是否已初始化 Sensor 狀態（避免重複初始化）- 靜態變數，跨頁面保持
         /// </summary>
-        private static bool _sensorStatesInitialized = false;
+        private bool _sensorStatesInitialized = false;
         
         /// <summary>
         /// 🔥 追蹤是否已載入配置檔案
         /// </summary>
-        private static bool _configLoaded = false;
+        private bool _configLoaded = false;
+        /// <summary>每個 SensorViewer 實例自己的感測器清單（來自 ConfigFile），避免共用全域 SensorContext.Sensors</summary>
+        private readonly ObservableCollection<SensorConfig> _localSensors = new();
 
         public SensorViewer()
         {
@@ -153,7 +158,7 @@ namespace Stackdose.UI.Core.Controls
             // 🔥 載入配置檔案（只載入一次）
             if (!_configLoaded && !string.IsNullOrEmpty(ConfigFile))
             {
-                SensorContext.LoadFromJson(ConfigFile);
+                LoadLocalConfig(ConfigFile);
                 _configLoaded = true;
             }
 
@@ -202,8 +207,8 @@ namespace Stackdose.UI.Core.Controls
 
             if (viewer.IsLoaded && !string.IsNullOrEmpty(e.NewValue as string))
             {
-                SensorContext.LoadFromJson((string)e.NewValue!);
-                _configLoaded = true;
+                viewer.LoadLocalConfig((string)e.NewValue!);
+                viewer._configLoaded = true;
                 viewer.BindSensorList();
             }
         }
@@ -212,6 +217,45 @@ namespace Stackdose.UI.Core.Controls
         {
             var viewer = (SensorViewer)d;
             viewer.BindSensorList();
+        }
+
+        #endregion
+
+        #region 私有輔助方法
+
+        /// <summary>目前有效的感測器清單：ConfigFile 有設定時用自有清單，否則沿用全域 SensorContext.Sensors</summary>
+        private IEnumerable<SensorConfig> ActiveSensors =>
+            _localSensors.Count > 0 ? _localSensors : SensorContext.Sensors;
+
+        /// <summary>從 ConfigFile 載入感測器配置到 _localSensors（每個實例獨立，不影響全域 SensorContext）</summary>
+        private void LoadLocalConfig(string configFile)
+        {
+            if (string.IsNullOrWhiteSpace(configFile)) return;
+            try
+            {
+                string fullPath = Path.IsPathRooted(configFile) && File.Exists(configFile)
+                    ? configFile
+                    : ResourcePathHelper.GetResourceFilePath(configFile);
+                if (!File.Exists(fullPath)) return;
+                var json = File.ReadAllText(fullPath, System.Text.Encoding.UTF8);
+                var configs = JsonSerializer.Deserialize<SensorConfig[]>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    ReadCommentHandling = JsonCommentHandling.Skip,
+                });
+                if (configs == null) return;
+                _localSensors.Clear();
+                foreach (var c in configs) _localSensors.Add(c);
+                ComplianceContext.LogSystem(
+                    $"[SensorViewer] Loaded {configs.Length} sensors from {Path.GetFileName(configFile)}",
+                    Stackdose.Abstractions.Logging.LogLevel.Info, showInUi: false);
+            }
+            catch (Exception ex)
+            {
+                ComplianceContext.LogSystem(
+                    $"[SensorViewer] Failed to load config: {ex.Message}",
+                    Stackdose.Abstractions.Logging.LogLevel.Error, showInUi: true);
+            }
         }
 
         #endregion
@@ -261,7 +305,7 @@ namespace Stackdose.UI.Core.Controls
             bool anyStateChanged = false;
 
             // 逐個檢查感測器
-            foreach (var sensor in SensorContext.Sensors)
+            foreach (var sensor in (_localSensors.Count > 0 ? (IEnumerable<SensorConfig>)_localSensors : SensorContext.Sensors))
             {
                 try
                 {
@@ -423,7 +467,7 @@ namespace Stackdose.UI.Core.Controls
         {
             if (EnableGrouping)
             {
-                var view = CollectionViewSource.GetDefaultView(SensorContext.Sensors);
+                var view = CollectionViewSource.GetDefaultView(ActiveSensors);
                 view.GroupDescriptions.Clear();
                 view.GroupDescriptions.Add(new PropertyGroupDescription("Group"));
                 view.Filter = ApplyFilter;
@@ -431,14 +475,14 @@ namespace Stackdose.UI.Core.Controls
             }
             else
             {
-                var view = CollectionViewSource.GetDefaultView(SensorContext.Sensors);
+                var view = CollectionViewSource.GetDefaultView(ActiveSensors);
                 view.Filter = ApplyFilter;
                 SensorList.ItemsSource = view;
             }
 
             UpdateStatistics();
 
-            NoDataHint.Visibility = SensorContext.Sensors.Count == 0 
+            NoDataHint.Visibility = ActiveSensors.Count() == 0 
                 ? Visibility.Visible 
                 : Visibility.Collapsed;
         }
@@ -462,8 +506,8 @@ namespace Stackdose.UI.Core.Controls
 
         private void UpdateStatistics()
         {
-            int alarmCount = SensorContext.Sensors.Count(s => s.IsActive);
-            int totalCount = SensorContext.Sensors.Count;
+            int alarmCount = ActiveSensors.Count(s => s.IsActive);
+            int totalCount = ActiveSensors.Count();
 
             TxtAlarmCount.Text = alarmCount.ToString();
             TxtTotalCount.Text = totalCount.ToString();
@@ -527,7 +571,7 @@ namespace Stackdose.UI.Core.Controls
 
             var alarmSensors = new List<SensorConfig>();
 
-            foreach (var sensor in SensorContext.Sensors)
+            foreach (var sensor in (_localSensors.Count > 0 ? (IEnumerable<SensorConfig>)_localSensors : SensorContext.Sensors))
             {
                 try
                 {

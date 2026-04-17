@@ -451,7 +451,7 @@ public sealed class DesignerItemViewModel : ObservableObject
 
     // 嚙緩嚙緩 嚙箠嚙踝蕭嚙豎性列嚙踝蕭嚙稽嚙踝蕭 UI 嚙諸考） 嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩
     public static readonly string[] ColorThemes =
-        ["NeonBlue", "NeonGreen", "NeonRed", "White", "Gray", "Warning", "Error", "Success", "Info", "Primary", "Default"];
+        ["NeonBlue", "NeonGreen", "NeonRed", "White", "Black", "Gray", "Warning", "Error", "Success", "Info", "Primary", "Default"];
 
     public static readonly string[] FrameShapes = ["Rectangle", "Circle"];
     public static readonly string[] StringFormats = ["F0", "F1", "F2", "F3"];

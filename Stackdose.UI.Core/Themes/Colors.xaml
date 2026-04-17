@@ -14,6 +14,18 @@
     <SolidColorBrush x:Key="Cyber.Text.Bright" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="Cyber.Bg.Card" Color="#262640"/><!-- Better card separation -->
 
+    <!-- ========== PlcLabel Fill Colors (vivid, aligned with SecuredButton) ========== -->
+    <!-- These are used by PlcLabelColorThemeToBrushConverter for both frameBackground and valueColorTheme -->
+    <!-- Intentionally NOT using Status.* tokens — those are pastel/designed for text, not large fills -->
+    <SolidColorBrush x:Key="Cyber.NeonRed"   Color="#FF1744"/><!-- vivid red — fills the missing token -->
+    <SolidColorBrush x:Key="Cyber.NeonGreen" Color="#00E676"/><!-- vivid green — fills the missing token -->
+    <SolidColorBrush x:Key="PlcFill.Primary" Color="#2196F3"/><!-- Material Blue — same hue as SecuredButton -->
+    <SolidColorBrush x:Key="PlcFill.Success" Color="#4CAF50"/><!-- Material Green -->
+    <SolidColorBrush x:Key="PlcFill.Warning" Color="#FF9800"/><!-- Material Orange -->
+    <SolidColorBrush x:Key="PlcFill.Error"   Color="#F44336"/><!-- Material Red -->
+    <SolidColorBrush x:Key="PlcFill.Info"    Color="#00BCD4"/><!-- Material Cyan -->
+    <SolidColorBrush x:Key="PlcFill.Black"   Color="#1A1A2E"/><!-- near-black dark fill -->
+
     <!-- ========== PlcLabel / PlcStatus Colors ========== -->
     <SolidColorBrush x:Key="Plc.Bg.Main" Color="#1F1F32"/><!-- Slightly lighter -->
     <SolidColorBrush x:Key="Plc.Bg.Dark" Color="#15151F"/>

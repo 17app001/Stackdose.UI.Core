@@ -14,6 +14,16 @@
     <SolidColorBrush x:Key="Cyber.Text.Bright" Color="#000000"/>
     <SolidColorBrush x:Key="Cyber.Bg.Card" Color="#FAFAFA"/>
 
+    <!-- ========== PlcLabel Fill Colors (vivid, aligned with SecuredButton) ========== -->
+    <SolidColorBrush x:Key="Cyber.NeonRed"   Color="#D50000"/>
+    <SolidColorBrush x:Key="Cyber.NeonGreen" Color="#00C853"/>
+    <SolidColorBrush x:Key="PlcFill.Primary" Color="#2196F3"/>
+    <SolidColorBrush x:Key="PlcFill.Success" Color="#4CAF50"/>
+    <SolidColorBrush x:Key="PlcFill.Warning" Color="#FF9800"/>
+    <SolidColorBrush x:Key="PlcFill.Error"   Color="#F44336"/>
+    <SolidColorBrush x:Key="PlcFill.Info"    Color="#00BCD4"/>
+    <SolidColorBrush x:Key="PlcFill.Black"   Color="#212121"/>
+
     <!-- ========== PlcLabel / PlcStatus Colors ========== -->
     <SolidColorBrush x:Key="Plc.Bg.Main" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="Plc.Bg.Dark" Color="#F5F5F5"/>

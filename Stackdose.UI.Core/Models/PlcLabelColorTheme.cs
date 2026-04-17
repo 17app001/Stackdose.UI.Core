@@ -1,21 +1,22 @@
-namespace Stackdose.UI.Core.Models
-{
-    /// <summary>
-    /// PlcLabel 文字顏色主題
-    /// </summary>
-    public enum PlcLabelColorTheme
-    {
-        Default,    // 預設（依照主題）
-        Primary,    // 藍色
-        Success,    // 綠色
-        Warning,    // 橙色
-        Error,      // 紅色
-        Info,       // 青色
-        NeonBlue,   // 霓虹藍
-        NeonRed,    // 霓虹紅
-        NeonGreen,  // 霓虹綠
-        White,      // 白色
-        Gray,       // 灰色
-        DarkBlue    // 深藍色（類似 #1E1E2E）
-    }
-}
+namespace Stackdose.UI.Core.Models
+{
+    /// <summary>
+    /// PlcLabel 文字顏色主題
+    /// </summary>
+    public enum PlcLabelColorTheme
+    {
+        Default,    // 預設（依照主題）
+        Primary,    // 藍色
+        Success,    // 綠色
+        Warning,    // 橙色
+        Error,      // 紅色
+        Info,       // 青色
+        NeonBlue,   // 霓虹藍
+        NeonRed,    // 霓虹紅
+        NeonGreen,  // 霓虹綠
+        White,      // 白色
+        Gray,       // 灰色
+        DarkBlue,   // near-black dark background
+        Black       // near-black fill (#1A1A2E)
+    }
+}

@@ -53,7 +53,31 @@
       "Bash(grep -n \"多頁\\\\|ConnectionLost\\\\|DesignPage\\\\|pages\" docs/kb/*.md)",
       "Bash(\"C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe\" Stackdose.App.DesignPlayer/Stackdose.App.DesignPlayer.csproj /p:Configuration=Debug /nologo /v:minimal)",
       "Bash(\"C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe\" \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\\\\Stackdose.App.DesignPlayer\\\\Stackdose.App.DesignPlayer.csproj\" /p:Configuration=Debug /nologo /v:minimal)",
-      "Bash(cmd /c '\"C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Community\\\\MSBuild\\\\Current\\\\Bin\\\\MSBuild.exe\" \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\\\\Stackdose.App.DesignPlayer\\\\Stackdose.App.DesignPlayer.csproj\" /p:Configuration=Debug /t:Build /nologo /v:minimal 2>&1\"')"
+      "Bash(cmd /c '\"C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Community\\\\MSBuild\\\\Current\\\\Bin\\\\MSBuild.exe\" \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\\\\Stackdose.App.DesignPlayer\\\\Stackdose.App.DesignPlayer.csproj\" /p:Configuration=Debug /t:Build /nologo /v:minimal 2>&1\"')",
+      "Bash(python *)",
+      "Bash(sed -i '1a using System.Collections.ObjectModel;\\\\nusing System.IO;\\\\nusing System.Text.Json;' D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "Bash(sed -i 's/private static bool _sensorStatesInitialized = false;/private bool _sensorStatesInitialized = false;/' D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "Bash(sed -i 's/private static bool _configLoaded = false;/private bool _configLoaded = false;/' D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "Read(//d/工作área/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/**)",
+      "Bash(sed -n '198,215p' \"D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs\")",
+      "Bash(sed -i '161s/SensorContext.LoadFromJson\\(ConfigFile\\);/LoadLocalConfig\\(ConfigFile\\);/' D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "Bash(sed -i '210s/SensorContext.LoadFromJson\\(\\(string\\)e.NewValue!\\);/viewer.LoadLocalConfig\\(\\(string\\)e.NewValue!\\);/' D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "Bash(sed -i '211s/_configLoaded = true;/viewer._configLoaded = true;/' D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "Bash(sed -n 158,165p D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "Bash(sed -n 207,214p D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "Bash(sed -i '431s/CollectionViewSource.GetDefaultView\\(SensorContext.Sensors\\)/CollectionViewSource.GetDefaultView\\(ActiveSensors\\)/' D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "Bash(sed -i '439s/CollectionViewSource.GetDefaultView\\(SensorContext.Sensors\\)/CollectionViewSource.GetDefaultView\\(ActiveSensors\\)/' D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "Bash(sed -i '446s/SensorContext.Sensors.Count == 0/ActiveSensors.Count\\(\\) == 0/' D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "Bash(sed -i '470s/SensorContext.Sensors.Count\\(s => s.IsActive\\)/ActiveSensors.Count\\(s => s.IsActive\\)/' D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "Bash(sed -i '471s/SensorContext.Sensors.Count;/ActiveSensors.Count\\(\\);/' D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "Bash(grep *)",
+      "Bash(sed -i '223d' \"D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs\")",
+      "Bash(sed -n '220,227p' \"D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs\")",
+      "Bash(head -222 D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "Bash(cat /tmp/sensor_helpers.txt)",
+      "Bash(tail -n +223 D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "Bash(cp /tmp/sv_part1.txt D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "Bash(sed -n 220,265p D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)"
     ]
   }
 }

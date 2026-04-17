@@ -1,0 +1,338 @@
+﻿{
+  "version": "2.0",
+  "meta": {
+    "title": "Machine Page",
+    "machineId": "M1",
+    "createdAt": "2026-04-17T08:55:05.1052395Z",
+    "modifiedAt": "2026-04-17T08:58:55.6469347Z"
+  },
+  "layout": {
+    "mode": "SplitRight",
+    "leftCommandWidthPx": 250,
+    "rightColumnWidthStar": 0.85,
+    "showLiveLog": true,
+    "showAlarmViewer": true,
+    "showSensorViewer": false
+  },
+  "pages": [
+    {
+      "pageId": "cd45ff65",
+      "name": "Page 1",
+      "canvasWidth": 1200,
+      "canvasHeight": 750,
+      "canvasItems": [
+        {
+          "id": "05b04af3",
+          "type": "AlarmViewer",
+          "order": 0,
+          "x": 720,
+          "y": 430,
+          "width": 420,
+          "height": 280,
+          "locked": false,
+          "props": {
+            "configFile": "Config/alarms.json"
+          }
+        },
+        {
+          "id": "ed8543db",
+          "type": "SensorViewer",
+          "order": 0,
+          "x": 720,
+          "y": 200,
+          "width": 420,
+          "height": 200,
+          "locked": false,
+          "props": {
+            "configFile": "Config/sensors.json"
+          }
+        },
+        {
+          "id": "57acc0c2",
+          "type": "PlcLabel",
+          "order": 0,
+          "x": 100,
+          "y": 50,
+          "width": 393,
+          "height": 120,
+          "locked": false,
+          "props": {
+            "label": "Label",
+            "address": "D100",
+            "defaultValue": "0",
+            "valueFontSize": 20,
+            "frameShape": "Rectangle",
+            "valueColorTheme": "NeonBlue",
+            "divisor": 1,
+            "stringFormat": "F0"
+          }
+        },
+        {
+          "id": "f13fa209",
+          "type": "PlcLabel",
+          "order": 0,
+          "x": 90,
+          "y": 200,
+          "width": 130,
+          "height": 115,
+          "locked": false,
+          "props": {
+            "label": "\u58D3\u5DEE",
+            "address": "D103",
+            "defaultValue": "0",
+            "valueFontSize": 20,
+            "frameShape": "Circle",
+            "valueColorTheme": "NeonGreen",
+            "divisor": 1,
+            "stringFormat": "F0",
+            "labelAlignment": "Center",
+            "valueAlignment": "Center",
+            "frameBackground": "Primary",
+            "labelForeground": "NeonBlue"
+          }
+        },
+        {
+          "id": "8127a555",
+          "type": "PlcLabel",
+          "order": 0,
+          "x": 240,
+          "y": 200,
+          "width": 130,
+          "height": 115,
+          "locked": false,
+          "props": {
+            "label": "\u6D41\u91CF",
+            "address": "D104",
+            "defaultValue": "0",
+            "valueFontSize": 20,
+            "frameShape": "Circle",
+            "valueColorTheme": "NeonRed",
+            "divisor": 1,
+            "stringFormat": "F0",
+            "labelAlignment": "Center",
+            "valueAlignment": "Center",
+            "frameBackground": "NeonBlue",
+            "labelForeground": "Primary"
+          }
+        },
+        {
+          "id": "7c800fa1",
+          "type": "PlcLabel",
+          "order": 0,
+          "x": 240,
+          "y": 345,
+          "width": 130,
+          "height": 115,
+          "locked": false,
+          "props": {
+            "label": "\u56DE\u91CF\u58D3\u529B",
+            "address": "D106",
+            "defaultValue": "0",
+            "valueFontSize": 20,
+            "frameShape": "Circle",
+            "valueColorTheme": "NeonGreen",
+            "divisor": 1,
+            "stringFormat": "F0",
+            "labelAlignment": "Center",
+            "valueAlignment": "Center",
+            "frameBackground": "Primary",
+            "labelForeground": "NeonBlue"
+          }
+        },
+        {
+          "id": "0913f179",
+          "type": "PlcLabel",
+          "order": 0,
+          "x": 90,
+          "y": 345,
+          "width": 130,
+          "height": 115,
+          "locked": false,
+          "props": {
+            "label": "\u4F9B\u91CF\u58D3\u529B",
+            "address": "D105",
+            "defaultValue": "0",
+            "valueFontSize": 20,
+            "frameShape": "Circle",
+            "valueColorTheme": "NeonGreen",
+            "divisor": 1,
+            "stringFormat": "F0",
+            "labelAlignment": "Center",
+            "valueAlignment": "Center",
+            "frameBackground": "Primary",
+            "labelForeground": "NeonBlue"
+          }
+        },
+        {
+          "id": "d4317ec8",
+          "type": "LiveLog",
+          "order": 0,
+          "x": 260,
+          "y": 500,
+          "width": 420,
+          "height": 200,
+          "locked": false,
+          "props": {}
+        }
+      ]
+    }
+  ],
+  "tags": [],
+  "canvasItems": [
+    {
+      "id": "05b04af3",
+      "type": "AlarmViewer",
+      "order": 0,
+      "x": 720,
+      "y": 430,
+      "width": 420,
+      "height": 280,
+      "locked": false,
+      "props": {
+        "configFile": "Config/alarms.json"
+      }
+    },
+    {
+      "id": "ed8543db",
+      "type": "SensorViewer",
+      "order": 0,
+      "x": 720,
+      "y": 200,
+      "width": 420,
+      "height": 200,
+      "locked": false,
+      "props": {
+        "configFile": "Config/sensors.json"
+      }
+    },
+    {
+      "id": "57acc0c2",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 100,
+      "y": 50,
+      "width": 393,
+      "height": 120,
+      "locked": false,
+      "props": {
+        "label": "Label",
+        "address": "D100",
+        "defaultValue": "0",
+        "valueFontSize": 20,
+        "frameShape": "Rectangle",
+        "valueColorTheme": "NeonBlue",
+        "divisor": 1,
+        "stringFormat": "F0"
+      }
+    },
+    {
+      "id": "f13fa209",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 90,
+      "y": 200,
+      "width": 130,
+      "height": 115,
+      "locked": false,
+      "props": {
+        "label": "\u58D3\u5DEE",
+        "address": "D103",
+        "defaultValue": "0",
+        "valueFontSize": 20,
+        "frameShape": "Circle",
+        "valueColorTheme": "NeonGreen",
+        "divisor": 1,
+        "stringFormat": "F0",
+        "labelAlignment": "Center",
+        "valueAlignment": "Center",
+        "frameBackground": "Primary",
+        "labelForeground": "NeonBlue"
+      }
+    },
+    {
+      "id": "8127a555",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 240,
+      "y": 200,
+      "width": 130,
+      "height": 115,
+      "locked": false,
+      "props": {
+        "label": "\u6D41\u91CF",
+        "address": "D104",
+        "defaultValue": "0",
+        "valueFontSize": 20,
+        "frameShape": "Circle",
+        "valueColorTheme": "NeonRed",
+        "divisor": 1,
+        "stringFormat": "F0",
+        "labelAlignment": "Center",
+        "valueAlignment": "Center",
+        "frameBackground": "NeonBlue",
+        "labelForeground": "Primary"
+      }
+    },
+    {
+      "id": "7c800fa1",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 240,
+      "y": 345,
+      "width": 130,
+      "height": 115,
+      "locked": false,
+      "props": {
+        "label": "\u56DE\u91CF\u58D3\u529B",
+        "address": "D106",
+        "defaultValue": "0",
+        "valueFontSize": 20,
+        "frameShape": "Circle",
+        "valueColorTheme": "NeonGreen",
+        "divisor": 1,
+        "stringFormat": "F0",
+        "labelAlignment": "Center",
+        "valueAlignment": "Center",
+        "frameBackground": "Primary",
+        "labelForeground": "NeonBlue"
+      }
+    },
+    {
+      "id": "0913f179",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 90,
+      "y": 345,
+      "width": 130,
+      "height": 115,
+      "locked": false,
+      "props": {
+        "label": "\u4F9B\u91CF\u58D3\u529B",
+        "address": "D105",
+        "defaultValue": "0",
+        "valueFontSize": 20,
+        "frameShape": "Circle",
+        "valueColorTheme": "NeonGreen",
+        "divisor": 1,
+        "stringFormat": "F0",
+        "labelAlignment": "Center",
+        "valueAlignment": "Center",
+        "frameBackground": "Primary",
+        "labelForeground": "NeonBlue"
+      }
+    },
+    {
+      "id": "d4317ec8",
+      "type": "LiveLog",
+      "order": 0,
+      "x": 260,
+      "y": 500,
+      "width": 420,
+      "height": 200,
+      "locked": false,
+      "props": {}
+    }
+  ],
+  "canvasWidth": 1200,
+  "canvasHeight": 750
+}

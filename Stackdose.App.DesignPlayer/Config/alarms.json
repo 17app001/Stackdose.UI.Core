@@ -1,0 +1,28 @@
+{
+  "Alarms": [
+    {
+      "Group": "Safety",
+      "Device": "M100",
+      "Bit": 0,
+      "OperationDescription": "緊急停止觸發 (Emergency Stop)"
+    },
+    {
+      "Group": "Safety",
+      "Device": "M100",
+      "Bit": 1,
+      "OperationDescription": "安全門開啟 (Door Open)"
+    },
+    {
+      "Group": "Pressure",
+      "Device": "M101",
+      "Bit": 0,
+      "OperationDescription": "CDA 壓力不足 (CDA Low)"
+    },
+    {
+      "Group": "Temperature",
+      "Device": "M102",
+      "Bit": 0,
+      "OperationDescription": "加熱器過熱 (Heater Overheat)"
+    }
+  ]
+}

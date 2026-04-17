@@ -128,6 +128,17 @@
 
                 <TextBlock Text="PLC 位址 (M/D)" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding DisplayAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <TextBlock Text="卡片底色（留空使用預設）" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding IndicatorCardBackground, UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0,0,0,2"
+                         FontFamily="Consolas" FontSize="12"/>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10"
+                           Text="hex 格式，如 #1A2B3C。留空則沿用主題預設色。" Margin="0,0,0,8"/>
+
+                <TextBlock Text="名稱文字顏色" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.ForegroundOptions}"
+                          SelectedItem="{Binding IndicatorLabelForeground}" Margin="0,0,0,4"/>
             </StackPanel>
         </DataTemplate>
 

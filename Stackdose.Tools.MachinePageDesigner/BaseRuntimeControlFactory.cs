@@ -150,46 +150,28 @@ public abstract class BaseRuntimeControlFactory
     {
         var p       = def.Props;
         var address = p.GetString("displayAddress", "M100");
-        var label   = p.GetString("label", address);
+        var label   = p.GetString("label", null);
+        var bgHex   = p.GetString("cardBackground", "");
+        var fgHex   = p.GetString("labelForeground", "#9090B0");
 
-        var root = new Border
+        var ctrl = new PlcStatusIndicator
         {
-            Background      = new SolidColorBrush(Color.FromRgb(0x31, 0x31, 0x45)),
-            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x5A)),
-            BorderThickness = new Thickness(1),
-            CornerRadius    = new CornerRadius(4),
-            Padding         = new Thickness(8),
+            DisplayAddress = address,
         };
 
-        var dot   = new Ellipse { Width = 12, Height = 12, Fill = Brushes.Gray, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
-        var text  = new TextBlock { Text = $"{label}  [{address}]", Foreground = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)), VerticalAlignment = VerticalAlignment.Center };
-        var stack = new StackPanel { Orientation = Orientation.Horizontal };
-        stack.Children.Add(dot);
-        stack.Children.Add(text);
-        root.Child = stack;
+        if (!string.IsNullOrEmpty(label))
+            ctrl.Label = label;
 
-        Action pollAction = () =>
+        if (!string.IsNullOrWhiteSpace(bgHex))
         {
-            try
-            {
-                var mgr = PlcContext.GlobalStatus?.CurrentManager;
-                if (mgr == null || !mgr.IsConnected) { dot.Fill = Brushes.Gray; return; }
+            try { ctrl.CardBackground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(bgHex)); }
+            catch { /* ignore invalid hex */ }
+        }
 
-                int? val = address.StartsWith("M", StringComparison.OrdinalIgnoreCase)
-                    ? (mgr.ReadBit(address) == true ? 1 : 0)
-                    : mgr.ReadWord(address);
+        try { ctrl.LabelForeground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(fgHex)); }
+        catch { /* ignore */ }
 
-                dot.Fill = val is > 0
-                    ? new SolidColorBrush(Color.FromRgb(0x4E, 0xC9, 0x94))
-                    : new SolidColorBrush(Color.FromRgb(0x66, 0x66, 0x88));
-            }
-            catch { dot.Fill = Brushes.OrangeRed; }
-        };
-
-        root.Loaded   += (_, _) => RegisterPollAction(pollAction);
-        root.Unloaded += (_, _) => UnregisterPollAction(pollAction);
-
-        return root;
+        return ctrl;
     }
 
     // ── SecuredButton ─────────────────────────────────────────────────────

@@ -144,6 +144,7 @@ public sealed class DesignerItemViewModel : ObservableObject
             "divisor" => nameof(Divisor),
             "stringFormat" => nameof(StringFormat),
             "displayAddress" => nameof(DisplayAddress),
+            "cardBackground" => nameof(IndicatorCardBackground),
             "commandAddress" => nameof(CommandAddress),
             "requiredLevel" => nameof(RequiredLevel),
             "theme" => nameof(Theme),
@@ -254,6 +255,18 @@ public sealed class DesignerItemViewModel : ObservableObject
     {
         get => GetProp("displayAddress");
         set => CommitStr("displayAddress", value, "", nameof(DisplayName));
+    }
+
+    public string IndicatorCardBackground
+    {
+        get => GetProp("cardBackground", "");
+        set => CommitStr("cardBackground", value, "");
+    }
+
+    public string IndicatorLabelForeground
+    {
+        get => GetProp("labelForeground", "#9090B0");
+        set => CommitStr("labelForeground", value, "#9090B0");
     }
 
     public string CommandAddress

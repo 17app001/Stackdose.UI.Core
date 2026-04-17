@@ -15,29 +15,25 @@
                 <TextBlock Text="標籤名稱" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
-                <!-- Address (tag-aware) -->
+                <!-- Address -->
                 <TextBlock Text="PLC 位址" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                <ComboBox IsEditable="True"
-                          Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}"
-                          ItemsSource="{Binding Tags, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                          Margin="0,0,0,2"
-                          ToolTip="輸入 PLC 地址，或從已定義的 Tags 中選取">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Address}" FontWeight="SemiBold" MinWidth="70"/>
-                                <TextBlock Text="{Binding Name}" Opacity="0.65" Margin="8,0,0,0" FontSize="11"/>
-                                <TextBlock Text="{Binding Unit}" Opacity="0.5" Margin="4,0,0,0" FontSize="11"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10"
-                           Text="可直接輸入，或點選下拉從 PLC Tags 清單選取" Margin="0,0,0,8"/>
+                <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
                 <!-- DefaultValue -->
                 <TextBlock Text="預設值" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding DefaultValue, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <!-- LabelFontSize -->
+                <TextBlock Style="{StaticResource FieldLabel}" Margin="0,0,0,2">
+                    <Run Text="標籤字體大小："/><Run Text="{Binding LabelFontSize, StringFormat=F0, Mode=OneWay}"/>
+                </TextBlock>
+                <Slider Value="{Binding LabelFontSize}" Minimum="8" Maximum="36" TickFrequency="1"
+                        IsSnapToTickEnabled="True" Margin="0,0,0,8"/>
+
+                <!-- LabelForeground -->
+                <TextBlock Text="標籤色彩" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.ColorThemes}"
+                          SelectedItem="{Binding LabelForeground}" Margin="0,0,0,8"/>
 
                 <!-- ValueFontSize -->
                 <TextBlock Style="{StaticResource FieldLabel}" Margin="0,0,0,2">
@@ -56,9 +52,36 @@
                 </StackPanel>
 
                 <!-- ValueColorTheme -->
-                <TextBlock Text="色彩主題" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBlock Text="數值色彩" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.ColorThemes}"
                           SelectedItem="{Binding ValueColorTheme}" Margin="0,0,0,8"/>
+
+                <!-- FrameBackground -->
+                <TextBlock Text="底框背景色" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.ColorThemes}"
+                          SelectedItem="{Binding FrameBackground}" Margin="0,0,0,8"/>
+
+                <!-- LabelAlignment -->
+                <TextBlock Text="標籤對齊" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <RadioButton Content="左" Margin="0,0,12,0"
+                                 IsChecked="{Binding LabelAlignment, Converter={local:StringEqualityConverter}, ConverterParameter=Left}"/>
+                    <RadioButton Content="中" Margin="0,0,12,0"
+                                 IsChecked="{Binding LabelAlignment, Converter={local:StringEqualityConverter}, ConverterParameter=Center}"/>
+                    <RadioButton Content="右"
+                                 IsChecked="{Binding LabelAlignment, Converter={local:StringEqualityConverter}, ConverterParameter=Right}"/>
+                </StackPanel>
+
+                <!-- ValueAlignment -->
+                <TextBlock Text="數值對齊" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <RadioButton Content="左" Margin="0,0,12,0"
+                                 IsChecked="{Binding ValueAlignment, Converter={local:StringEqualityConverter}, ConverterParameter=Left}"/>
+                    <RadioButton Content="中" Margin="0,0,12,0"
+                                 IsChecked="{Binding ValueAlignment, Converter={local:StringEqualityConverter}, ConverterParameter=Center}"/>
+                    <RadioButton Content="右"
+                                 IsChecked="{Binding ValueAlignment, Converter={local:StringEqualityConverter}, ConverterParameter=Right}"/>
+                </StackPanel>
 
                 <!-- Divisor -->
                 <TextBlock Text="除數 (Divisor)" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
@@ -80,23 +103,18 @@
                 <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
                 <TextBlock Text="PLC 位址" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                <ComboBox IsEditable="True"
-                          Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}"
-                          ItemsSource="{Binding Tags, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                          Margin="0,0,0,2"
-                          ToolTip="輸入 PLC 地址，或從已定義的 Tags 中選取">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Address}" FontWeight="SemiBold" MinWidth="70"/>
-                                <TextBlock Text="{Binding Name}" Opacity="0.65" Margin="8,0,0,0" FontSize="11"/>
-                                <TextBlock Text="{Binding Unit}" Opacity="0.5" Margin="4,0,0,0" FontSize="11"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10"
-                           Text="可直接輸入，或點選下拉從 PLC Tags 清單選取" Margin="0,0,0,8"/>
+                <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <!-- Mode -->
+                <TextBlock Text="模式" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <RadioButton Content="Word（數值）" Margin="0,0,12,0"
+                                 IsChecked="{Binding PlcTextMode, Converter={local:StringEqualityConverter}, ConverterParameter=Word}"/>
+                    <RadioButton Content="Bit（ON/OFF）"
+                                 IsChecked="{Binding PlcTextMode, Converter={local:StringEqualityConverter}, ConverterParameter=Bit}"/>
+                </StackPanel>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,0,0,8"
+                           Text="Word：寫入整數值並按套用。Bit：直接點 ON / OFF 按鈕切換。"/>
             </StackPanel>
         </DataTemplate>
 
@@ -109,23 +127,7 @@
                 <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
                 <TextBlock Text="PLC 位址 (M/D)" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                <ComboBox IsEditable="True"
-                          Text="{Binding DisplayAddress, UpdateSourceTrigger=PropertyChanged}"
-                          ItemsSource="{Binding Tags, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                          Margin="0,0,0,2"
-                          ToolTip="輸入 PLC 地址，或從已定義的 Tags 中選取">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Address}" FontWeight="SemiBold" MinWidth="70"/>
-                                <TextBlock Text="{Binding Name}" Opacity="0.65" Margin="8,0,0,0" FontSize="11"/>
-                                <TextBlock Text="{Binding Unit}" Opacity="0.5" Margin="4,0,0,0" FontSize="11"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10"
-                           Text="可直接輸入，或點選下拉從 PLC Tags 清單選取" Margin="0,0,0,8"/>
+                <TextBox Text="{Binding DisplayAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
             </StackPanel>
         </DataTemplate>
 
@@ -138,23 +140,7 @@
                 <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
                 <TextBlock Text="命令位址" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                <ComboBox IsEditable="True"
-                          Text="{Binding CommandAddress, UpdateSourceTrigger=PropertyChanged}"
-                          ItemsSource="{Binding Tags, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                          Margin="0,0,0,2"
-                          ToolTip="輸入 PLC 地址，或從已定義的 Tags 中選取">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Address}" FontWeight="SemiBold" MinWidth="70"/>
-                                <TextBlock Text="{Binding Name}" Opacity="0.65" Margin="8,0,0,0" FontSize="11"/>
-                                <TextBlock Text="{Binding Unit}" Opacity="0.5" Margin="4,0,0,0" FontSize="11"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10"
-                           Text="可直接輸入，或點選下拉從 PLC Tags 清單選取" Margin="0,0,0,8"/>
+                <TextBox Text="{Binding CommandAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
                 <TextBlock Text="寫入值" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding WriteValue, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"/>
@@ -213,7 +199,12 @@
         <DataTemplate x:Key="SpacerTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
             <StackPanel Margin="0,4">
                 <TextBlock Text="群組標題 (Title)" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                <TextBox Text="{Binding GroupTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"/>
+                <TextBox Text="{Binding GroupTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <TextBlock Text="標題列主題色" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.GroupHeaderThemeOptions}"
+                          SelectedItem="{Binding GroupHeaderTheme}" Margin="0,0,0,8"/>
+
                 <TextBlock Text="拖曳此 GroupBox 時，中心點在框內的元件會一起移動"
                            Foreground="{StaticResource TextMutedBrush}"
                            FontSize="10" TextWrapping="Wrap" Margin="0,0,0,4"/>
@@ -236,68 +227,18 @@
              ════════════════════════════════════════════════════════ -->
         <DataTemplate x:Key="AlarmViewerTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
             <StackPanel Margin="0,4">
-                <!-- Config file path (optional override) -->
-                <TextBlock Text="設定檔路徑（選填）" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                <TextBox Text="{Binding ConfigFile, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"/>
-                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,0,0,8"
-                           Text="留空則使用下方內嵌的報警定義。若填入路徑，Runtime 優先載入外部 JSON。"/>
-
-                <Separator Margin="0,4,0,8"/>
-
-                <!-- Inline alarm editor -->
+                <TextBlock Text="設定檔路徑" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <Grid Margin="0,0,0,4">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Style="{StaticResource SectionHeader}">
-                        <Run Text="報警定義 ("/>
-                        <Run Text="{Binding AlarmItemCount, Mode=OneWay}"/>
-                        <Run Text=" 筆)"/>
-                    </TextBlock>
-                    <Button Grid.Column="1" Content="＋ 新增" Padding="8,2" FontSize="11"
-                            Click="OnAddAlarmItem"/>
+                    <TextBox Grid.Column="0" Text="{Binding ConfigFile, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                    <Button Grid.Column="1" Content="產生範本" Padding="8,2" FontSize="11"
+                            Click="OnGenerateAlarmTemplate"/>
                 </Grid>
-
-                <ItemsControl ItemsSource="{Binding AlarmItems}" Margin="0,4,0,0">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
-                                    CornerRadius="3" Padding="6,4" Margin="0,0,0,4"
-                                    Background="{StaticResource PanelBrush}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0">
-                                        <Grid Margin="0,0,0,3">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="4"/>
-                                                <ColumnDefinition Width="60"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBox Grid.Column="0" Text="{Binding Group, UpdateSourceTrigger=PropertyChanged}"
-                                                     ToolTip="群組"/>
-                                            <TextBox Grid.Column="2" Text="{Binding Bit, UpdateSourceTrigger=PropertyChanged}"
-                                                     ToolTip="Bit" HorizontalContentAlignment="Center"/>
-                                        </Grid>
-                                        <TextBox Text="{Binding Device, UpdateSourceTrigger=PropertyChanged}"
-                                                 ToolTip="PLC 位址" Margin="0,0,0,3"/>
-                                        <TextBox Text="{Binding OperationDescription, UpdateSourceTrigger=PropertyChanged}"
-                                                 ToolTip="描述"/>
-                                    </StackPanel>
-                                    <Button Grid.Column="1" Content="✕" VerticalAlignment="Top"
-                                            Margin="4,0,0,0" Padding="4,2" FontSize="10"
-                                            Click="OnRemoveAlarmItem" Tag="{Binding}"/>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0"
-                           Text="欄位：群組 | Bit / PLC 位址 / 描述。存檔時自動輸出 alarms.json。"/>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap"
+                           Text="點「產生範本」建立 alarms.json 並填入路徑；Runtime 從此檔讀取報警定義。"/>
             </StackPanel>
         </DataTemplate>
 
@@ -306,83 +247,18 @@
              ════════════════════════════════════════════════════════ -->
         <DataTemplate x:Key="SensorViewerTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
             <StackPanel Margin="0,4">
-                <!-- Config file path (optional override) -->
-                <TextBlock Text="設定檔路徑（選填）" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                <TextBox Text="{Binding ConfigFile, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"/>
-                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,0,0,8"
-                           Text="留空則使用下方內嵌的感測器定義。若填入路徑，Runtime 優先載入外部 JSON。"/>
-
-                <Separator Margin="0,4,0,8"/>
-
-                <!-- Inline sensor editor -->
+                <TextBlock Text="設定檔路徑" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <Grid Margin="0,0,0,4">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Style="{StaticResource SectionHeader}">
-                        <Run Text="感測器定義 ("/>
-                        <Run Text="{Binding SensorItemCount, Mode=OneWay}"/>
-                        <Run Text=" 筆)"/>
-                    </TextBlock>
-                    <Button Grid.Column="1" Content="＋ 新增" Padding="8,2" FontSize="11"
-                            Click="OnAddSensorItem"/>
+                    <TextBox Grid.Column="0" Text="{Binding ConfigFile, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                    <Button Grid.Column="1" Content="產生範本" Padding="8,2" FontSize="11"
+                            Click="OnGenerateSensorTemplate"/>
                 </Grid>
-
-                <ItemsControl ItemsSource="{Binding SensorItems}" Margin="0,4,0,0">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
-                                    CornerRadius="3" Padding="6,4" Margin="0,0,0,4"
-                                    Background="{StaticResource PanelBrush}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0">
-                                        <Grid Margin="0,0,0,3">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="4"/>
-                                                <ColumnDefinition Width="70"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBox Grid.Column="0" Text="{Binding Group, UpdateSourceTrigger=PropertyChanged}"
-                                                     ToolTip="群組"/>
-                                            <ComboBox Grid.Column="2"
-                                                      ItemsSource="{x:Static local:SensorModes.All}"
-                                                      SelectedItem="{Binding Mode}"
-                                                      ToolTip="模式"/>
-                                        </Grid>
-                                        <Grid Margin="0,0,0,3">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="4"/>
-                                                <ColumnDefinition Width="50"/>
-                                                <ColumnDefinition Width="4"/>
-                                                <ColumnDefinition Width="50"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBox Grid.Column="0" Text="{Binding Device, UpdateSourceTrigger=PropertyChanged}"
-                                                     ToolTip="PLC 位址"/>
-                                            <TextBox Grid.Column="2" Text="{Binding Bit, UpdateSourceTrigger=PropertyChanged}"
-                                                     ToolTip="Bit" HorizontalContentAlignment="Center"/>
-                                            <TextBox Grid.Column="4" Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
-                                                     ToolTip="期望值" HorizontalContentAlignment="Center"/>
-                                        </Grid>
-                                        <TextBox Text="{Binding OperationDescription, UpdateSourceTrigger=PropertyChanged}"
-                                                 ToolTip="描述"/>
-                                    </StackPanel>
-                                    <Button Grid.Column="1" Content="✕" VerticalAlignment="Top"
-                                            Margin="4,0,0,0" Padding="4,2" FontSize="10"
-                                            Click="OnRemoveSensorItem" Tag="{Binding}"/>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0"
-                           Text="欄位：群組 | 模式 / 位址 | Bit | 值 / 描述。存檔時自動輸出 sensors.json。"/>
+                <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap"
+                           Text="點「產生範本」建立 sensors.json 並填入路徑；Runtime 從此檔讀取感測器定義。"/>
             </StackPanel>
         </DataTemplate>
 

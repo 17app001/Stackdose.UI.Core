@@ -1,6 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Windows;
+﻿using System.Windows;
 using Stackdose.Tools.MachinePageDesigner.Controls;
 using Stackdose.Tools.MachinePageDesigner.Models;
 
@@ -14,80 +12,12 @@ public sealed class DesignerItemViewModel : ObservableObject
     private readonly DesignerItemDefinition _definition;
     private bool _isSelected;
     private UIElement? _preview;
-    private ObservableCollection<AlarmEditItem>? _alarmItems;
-    private ObservableCollection<SensorEditItem>? _sensorItems;
 
     public DesignerItemViewModel(DesignerItemDefinition definition)
     {
         _definition = definition;
-        LoadEmbeddedCollections();
         RefreshPreview();
     }
-
-    private void LoadEmbeddedCollections()
-    {
-        if (_definition.Type == "AlarmViewer")
-        {
-            var raw = _definition.Props.GetObjectList("alarmItems");
-            _alarmItems = new ObservableCollection<AlarmEditItem>(
-                raw.Select(AlarmEditItem.FromDictionary));
-            _alarmItems.CollectionChanged += OnAlarmItemsChanged;
-            foreach (var item in _alarmItems)
-                item.PropertyChanged += (_, _) => SyncAlarmItemsToProps();
-        }
-        else if (_definition.Type == "SensorViewer")
-        {
-            var raw = _definition.Props.GetObjectList("sensorItems");
-            _sensorItems = new ObservableCollection<SensorEditItem>(
-                raw.Select(SensorEditItem.FromDictionary));
-            _sensorItems.CollectionChanged += OnSensorItemsChanged;
-            foreach (var item in _sensorItems)
-                item.PropertyChanged += (_, _) => SyncSensorItemsToProps();
-        }
-    }
-
-    private void OnAlarmItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        if (e.NewItems != null)
-            foreach (AlarmEditItem item in e.NewItems)
-                item.PropertyChanged += (_, _) => SyncAlarmItemsToProps();
-        SyncAlarmItemsToProps();
-    }
-
-    private void OnSensorItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        if (e.NewItems != null)
-            foreach (SensorEditItem item in e.NewItems)
-                item.PropertyChanged += (_, _) => SyncSensorItemsToProps();
-        SyncSensorItemsToProps();
-    }
-
-    private void SyncAlarmItemsToProps()
-    {
-        if (_alarmItems == null) return;
-        var list = _alarmItems.Select(a => (object?)a.ToDictionary()).ToList();
-        _definition.Props["alarmItems"] = list;
-        N(nameof(AlarmItemCount));
-        RefreshPreview();
-    }
-
-    private void SyncSensorItemsToProps()
-    {
-        if (_sensorItems == null) return;
-        var list = _sensorItems.Select(s => (object?)s.ToDictionary()).ToList();
-        _definition.Props["sensorItems"] = list;
-        N(nameof(SensorItemCount));
-        RefreshPreview();
-    }
-
-    public ObservableCollection<AlarmEditItem> AlarmItems
-        => _alarmItems ??= new ObservableCollection<AlarmEditItem>();
-
-    public ObservableCollection<SensorEditItem> SensorItems
-        => _sensorItems ??= new ObservableCollection<SensorEditItem>();
-
-    public int AlarmItemCount => _alarmItems?.Count ?? 0;
-    public int SensorItemCount => _sensorItems?.Count ?? 0;
 
     // 嚙緩嚙緩 Identity 嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩
     public string Id => _definition.Id;
@@ -205,6 +135,12 @@ public sealed class DesignerItemViewModel : ObservableObject
             "valueFontSize" => nameof(ValueFontSize),
             "frameShape" => nameof(FrameShape),
             "valueColorTheme" => nameof(ValueColorTheme),
+            "frameBackground" => nameof(FrameBackground),
+            "labelAlignment" => nameof(LabelAlignment),
+            "valueAlignment" => nameof(ValueAlignment),
+            "labelFontSize" => nameof(LabelFontSize),
+            "labelForeground" => nameof(LabelForeground),
+            "plcTextMode" => nameof(PlcTextMode),
             "divisor" => nameof(Divisor),
             "stringFormat" => nameof(StringFormat),
             "displayAddress" => nameof(DisplayAddress),
@@ -216,7 +152,8 @@ public sealed class DesignerItemViewModel : ObservableObject
             "pulseMs" => nameof(PulseMs),
             "sequenceDefinition" => nameof(SequenceDefinition),
             "isLocked" => nameof(IsLocked),
-            "title" => nameof(GroupTitle),
+            "title"            => nameof(GroupTitle),
+            "groupHeaderTheme" => nameof(GroupHeaderTheme),
             "configFile" => nameof(ConfigFile),
             "staticText" => nameof(StaticText),
             "staticFontSize" => nameof(StaticFontSize),
@@ -263,6 +200,42 @@ public sealed class DesignerItemViewModel : ObservableObject
     {
         get => GetProp("valueColorTheme", "NeonBlue");
         set => CommitStr("valueColorTheme", value, "NeonBlue");
+    }
+
+    public string FrameBackground
+    {
+        get => GetProp("frameBackground", "DarkBlue");
+        set => CommitStr("frameBackground", value, "DarkBlue");
+    }
+
+    public string LabelAlignment
+    {
+        get => GetProp("labelAlignment", "Left");
+        set => CommitStr("labelAlignment", value, "Left");
+    }
+
+    public string ValueAlignment
+    {
+        get => GetProp("valueAlignment", "Right");
+        set => CommitStr("valueAlignment", value, "Right");
+    }
+
+    public double LabelFontSize
+    {
+        get => GetPropDouble("labelFontSize", 12);
+        set => CommitDbl("labelFontSize", value, 12);
+    }
+
+    public string LabelForeground
+    {
+        get => GetProp("labelForeground", "Default");
+        set => CommitStr("labelForeground", value, "Default");
+    }
+
+    public string PlcTextMode
+    {
+        get => GetProp("plcTextMode", "Word");
+        set => CommitStr("plcTextMode", value, "Word");
     }
 
     public double Divisor
@@ -330,6 +303,12 @@ public sealed class DesignerItemViewModel : ObservableObject
     {
         get => GetProp("title", "Group");
         set => CommitStr("title", value, "Group");
+    }
+
+    public string GroupHeaderTheme
+    {
+        get => GetProp("groupHeaderTheme", "Primary");
+        set => CommitStr("groupHeaderTheme", value, "Primary");
     }
 
     public string ConfigFile
@@ -460,8 +439,9 @@ public sealed class DesignerItemViewModel : ObservableObject
     public static readonly string[] ButtonThemes = ["Primary", "Success", "Danger", "Warning"];
     public static readonly string[] AccessLevels = ["Operator", "Instructor", "Supervisor", "Admin", "SuperAdmin"];
     public static readonly string[] CommandTypes = ["write", "pulse", "toggle", "sequence"];
-    public static readonly string[] FontWeightOptions = ["Normal", "Bold"];
-    public static readonly string[] TextAlignOptions  = ["Left", "Center", "Right"];
+    public static readonly string[] FontWeightOptions       = ["Normal", "Bold"];
+    public static readonly string[] TextAlignOptions        = ["Left", "Center", "Right"];
+    public static readonly string[] GroupHeaderThemeOptions = ["Primary", "Info", "Success", "Warning", "Error", "Dark"];
     public static readonly string[] ForegroundOptions =
         ["#E2E2F0", "#FFFFFF", "#6C8EEF", "#4EC994", "#EF5350", "#FFB74D", "#90CAF9", "#AAAAAA", "#000000"];
 }

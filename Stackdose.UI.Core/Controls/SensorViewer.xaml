@@ -214,11 +214,11 @@
                     <GroupStyle>
                         <GroupStyle.HeaderTemplate>
                             <DataTemplate>
-                                <Border Background="{DynamicResource Sensor.Bg.Header}" 
+                                <Border Background="{DynamicResource Sensor.Bg.Header}"
                                         BorderBrush="{DynamicResource Sensor.Border}"
                                         BorderThickness="1"
-                                        CornerRadius="4" 
-                                        Padding="8,4" 
+                                        CornerRadius="4"
+                                        Padding="8,4"
                                         Margin="4,8,4,2">
                                     <TextBlock Text="{Binding Name}" Style="{StaticResource GroupHeaderStyle}"/>
                                 </Border>

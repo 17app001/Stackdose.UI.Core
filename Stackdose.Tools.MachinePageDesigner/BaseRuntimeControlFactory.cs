@@ -5,6 +5,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using Stackdose.App.DeviceFramework.Models;
 using Stackdose.App.DeviceFramework.Services;
+using Stackdose.Tools.MachinePageDesigner.Controls;
 using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Helpers;
@@ -110,6 +111,21 @@ public abstract class BaseRuntimeControlFactory
         if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("valueColorTheme", "NeonBlue"), true, out var theme))
             label.ValueForeground = theme;
 
+        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("frameBackground", "DarkBlue"), true, out var bg))
+            label.FrameBackground = bg;
+
+        if (p.GetDouble("labelFontSize", 0) is > 0 and var lfs)
+            label.LabelFontSize = lfs;
+
+        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("labelForeground", "Default"), true, out var labelFg))
+            label.LabelForeground = labelFg;
+
+        if (Enum.TryParse<HorizontalAlignment>(p.GetString("labelAlignment", "Left"), true, out var labelAlign))
+            label.LabelAlignment = labelAlign;
+
+        if (Enum.TryParse<HorizontalAlignment>(p.GetString("valueAlignment", "Right"), true, out var valueAlign))
+            label.ValueAlignment = valueAlign;
+
         return label;
     }
 
@@ -118,11 +134,14 @@ public abstract class BaseRuntimeControlFactory
     protected virtual UIElement CreatePlcText(DesignerItemDefinition def)
     {
         var p = def.Props;
-        return new PlcText
+        var plcText = new PlcText
         {
             Label   = p.GetString("label",   "Parameter"),
             Address = p.GetString("address", "D100"),
         };
+        if (Enum.TryParse<PlcTextMode>(p.GetString("plcTextMode", "Word"), true, out var textMode))
+            plcText.Mode = textMode;
+        return plcText;
     }
 
     // ── Bit Indicator ─────────────────────────────────────────────────────
@@ -266,6 +285,8 @@ public abstract class BaseRuntimeControlFactory
     protected virtual UIElement CreateGroupBox(DesignerItemDefinition def)
     {
         var title = def.Props.GetString("title", "Group");
+        var (headerBgBrush, headerFgBrush) = DesignTimeControlFactory.GroupBoxThemeBrushes(
+            def.Props.GetString("groupHeaderTheme", "Primary"));
         var root  = new Grid();
 
         root.Children.Add(new Border
@@ -279,14 +300,14 @@ public abstract class BaseRuntimeControlFactory
 
         var header = new Border
         {
-            Background   = new SolidColorBrush(Color.FromArgb(0xCC, 0x3A, 0x56, 0xA8)),
+            Background   = headerBgBrush,
             CornerRadius = new CornerRadius(2, 2, 0, 0),
             Padding      = new Thickness(10, 4, 10, 4),
         };
         header.Child = new TextBlock
         {
             Text       = string.IsNullOrWhiteSpace(title) ? "Group" : title,
-            Foreground = Brushes.White,
+            Foreground = headerFgBrush,
             FontSize   = 12,
             FontWeight = FontWeights.SemiBold,
         };

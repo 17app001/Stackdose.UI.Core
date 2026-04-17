@@ -66,6 +66,21 @@ public static class DesignTimeControlFactory
         if (Enum.TryParse<PlcLabelColorTheme>(colorStr, true, out var colorTheme))
             label.ValueForeground = colorTheme;
 
+        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("frameBackground", "DarkBlue"), true, out var bg))
+            label.FrameBackground = bg;
+
+        if (p.GetDouble("labelFontSize", 0) is > 0 and var lfs)
+            label.LabelFontSize = lfs;
+
+        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("labelForeground", "Default"), true, out var labelFg))
+            label.LabelForeground = labelFg;
+
+        if (Enum.TryParse<HorizontalAlignment>(p.GetString("labelAlignment", "Left"), true, out var labelAlign))
+            label.LabelAlignment = labelAlign;
+
+        if (Enum.TryParse<HorizontalAlignment>(p.GetString("valueAlignment", "Right"), true, out var valueAlign))
+            label.ValueAlignment = valueAlign;
+
         return label;
     }
 
@@ -78,6 +93,8 @@ public static class DesignTimeControlFactory
             Address = p.GetString("address", "D100"),
             IsHitTestVisible = false,
         };
+        if (Enum.TryParse<PlcTextMode>(p.GetString("plcTextMode", "Word"), true, out var textMode))
+            plcText.Mode = textMode;
         return plcText;
     }
 
@@ -143,6 +160,7 @@ public static class DesignTimeControlFactory
     private static UIElement CreateGroupBox(DesignerItemDefinition def)
     {
         var title = def.Props.GetString("title", "Group");
+        var (headerBgBrush, headerFgBrush) = GroupBoxThemeBrushes(def.Props.GetString("groupHeaderTheme", "Primary"));
 
         // 根容器（無背景 → 不攔截 hit-test，讓 Body 區點擊穿透到 Canvas）
         var root = new Grid();
@@ -160,7 +178,7 @@ public static class DesignTimeControlFactory
         // ── 第二層：互動（只有 Header 有背景 → 只有 Header 可 hit-test）─
         var headerBorder = new Border
         {
-            Background   = new SolidColorBrush(Color.FromArgb(0xCC, 0x3A, 0x56, 0xA8)),
+            Background   = headerBgBrush,
             CornerRadius = new CornerRadius(2, 2, 0, 0),
             Padding      = new Thickness(10, 4, 10, 4),
             // Background 非 null → 該區域 hit-testable，點 Header 可選取/拖曳 GroupBox
@@ -168,7 +186,7 @@ public static class DesignTimeControlFactory
         headerBorder.Child = new TextBlock
         {
             Text       = string.IsNullOrWhiteSpace(title) ? "Group" : title,
-            Foreground = Brushes.White,
+            Foreground = headerFgBrush,
             FontSize   = 12,
             FontWeight = FontWeights.SemiBold,
         };
@@ -279,4 +297,15 @@ public static class DesignTimeControlFactory
         border.Child = stack;
         return border;
     }
+
+    internal static (Brush bg, Brush fg) GroupBoxThemeBrushes(string theme) =>
+        theme.ToLowerInvariant() switch
+        {
+            "info"    => (new SolidColorBrush(Color.FromArgb(0xCC, 0x0D, 0x6E, 0xAA)), Brushes.White),
+            "success" => (new SolidColorBrush(Color.FromArgb(0xCC, 0x1A, 0x6B, 0x3A)), Brushes.White),
+            "warning" => (new SolidColorBrush(Color.FromArgb(0xCC, 0x7A, 0x4E, 0x00)), Brushes.White),
+            "error"   => (new SolidColorBrush(Color.FromArgb(0xCC, 0x7A, 0x18, 0x18)), Brushes.White),
+            "dark"    => (new SolidColorBrush(Color.FromArgb(0xCC, 0x12, 0x12, 0x20)), Brushes.White),
+            _         => (new SolidColorBrush(Color.FromArgb(0xCC, 0x3A, 0x56, 0xA8)), Brushes.White), // Primary
+        };
 }

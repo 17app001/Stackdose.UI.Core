@@ -7,6 +7,8 @@ using Stackdose.Abstractions.Logging;
 
 namespace Stackdose.UI.Core.Controls
 {
+    public enum PlcTextMode { Word, Bit }
+
     /// <summary>
     /// PlcText - 可編輯的 PLC 參數控件
     /// 顯示 Label + TextBox + Apply 按鈕
@@ -118,6 +120,17 @@ namespace Stackdose.UI.Core.Controls
         {
             get => (bool)GetValue(EnableAuditTrailProperty);
             set => SetValue(EnableAuditTrailProperty, value);
+        }
+
+        /// <summary>Word / Bit 模式</summary>
+        public static readonly DependencyProperty ModeProperty =
+            DependencyProperty.Register(nameof(Mode), typeof(PlcTextMode), typeof(PlcText),
+                new PropertyMetadata(PlcTextMode.Word));
+
+        public PlcTextMode Mode
+        {
+            get => (PlcTextMode)GetValue(ModeProperty);
+            set => SetValue(ModeProperty, value);
         }
 
         /// <summary>ValueApplied 事件 - 當使用者按下 Apply 按鈕時觸發</summary>
@@ -325,6 +338,39 @@ namespace Stackdose.UI.Core.Controls
             catch (Exception ex)
             {
                 HandleWriteException(ex);
+            }
+        }
+
+        private async void BitOn_Click(object sender, RoutedEventArgs e)  => await WriteBitValue(1);
+        private async void BitOff_Click(object sender, RoutedEventArgs e) => await WriteBitValue(0);
+
+        private async Task WriteBitValue(int bitValue)
+        {
+            var manager = PlcContext.GlobalStatus?.CurrentManager;
+            if (manager == null || !manager.IsConnected || string.IsNullOrEmpty(Address)) return;
+
+            string oldValue = Value;
+            string newValue = bitValue.ToString();
+            bool writeSuccess = false;
+
+            try
+            {
+                writeSuccess = await manager.WriteAsync($"{Address},{bitValue}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PlcText] BitWrite error: {ex.Message}");
+            }
+
+            if (writeSuccess)
+            {
+                Value = newValue;
+                _previousValue = newValue;
+                HandleWriteSuccess(oldValue, newValue, bitValue);
+            }
+            else
+            {
+                HandleWriteFailure(oldValue, newValue);
             }
         }
 

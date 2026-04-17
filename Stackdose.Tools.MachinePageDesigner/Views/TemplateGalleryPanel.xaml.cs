@@ -30,6 +30,8 @@ public partial class TemplateGalleryPanel : UserControl
 
     private void ApplyFilter()
     {
+        if (searchBox is null) return;
+
         var category = (categoryFilter.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "All";
         var search = searchBox.Text?.Trim() ?? "";
 

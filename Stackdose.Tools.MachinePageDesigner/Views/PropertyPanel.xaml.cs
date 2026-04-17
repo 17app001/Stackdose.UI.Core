@@ -1,10 +1,13 @@
 ﻿using System.Collections.ObjectModel;
 using System.Globalization;
+using System.IO;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Markup;
+using Microsoft.Win32;
 using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.Tools.MachinePageDesigner.ViewModels;
 
@@ -75,29 +78,68 @@ public partial class PropertyPanel : UserControl
     }
 
     // ── AlarmViewer inline editor handlers ─────────────────────────
-    private void OnAddAlarmItem(object sender, RoutedEventArgs e)
+
+    // ── 產生範本檔 handlers ────────────────────────────────────────────
+
+    private static readonly JsonSerializerOptions _jsonOpts = new()
     {
-        if (GetViewModel(sender) is { } vm)
-            vm.AlarmItems.Add(new AlarmEditItem());
+        WriteIndented = true,
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
+
+    private void OnGenerateAlarmTemplate(object sender, RoutedEventArgs e)
+    {
+        var vm = GetViewModel(sender);
+        if (vm == null) return;
+
+        var dlg = new SaveFileDialog
+        {
+            Title      = "儲存 Alarm 範本",
+            FileName   = "alarms.json",
+            DefaultExt = ".json",
+            Filter     = "JSON 檔案|*.json",
+        };
+        if (dlg.ShowDialog() != true) return;
+
+        var template = new
+        {
+            Alarms = new[]
+            {
+                new { Group = "Safety",      Device = "M100", Bit = 0, OperationDescription = "緊急停止觸發 (Emergency Stop)" },
+                new { Group = "Safety",      Device = "M100", Bit = 1, OperationDescription = "安全門開啟 (Door Open)"        },
+                new { Group = "Pressure",    Device = "M101", Bit = 0, OperationDescription = "CDA 壓力不足 (CDA Low)"        },
+                new { Group = "Temperature", Device = "M102", Bit = 0, OperationDescription = "加熱器過熱 (Heater Overheat)"  },
+            }
+        };
+
+        File.WriteAllText(dlg.FileName, JsonSerializer.Serialize(template, _jsonOpts));
+        vm.ConfigFile = dlg.FileName;
     }
 
-    private void OnRemoveAlarmItem(object sender, RoutedEventArgs e)
+    private void OnGenerateSensorTemplate(object sender, RoutedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is AlarmEditItem item && GetViewModel(sender) is { } vm)
-            vm.AlarmItems.Remove(item);
-    }
+        var vm = GetViewModel(sender);
+        if (vm == null) return;
 
-    // ── SensorViewer inline editor handlers ────────────────────────
-    private void OnAddSensorItem(object sender, RoutedEventArgs e)
-    {
-        if (GetViewModel(sender) is { } vm)
-            vm.SensorItems.Add(new SensorEditItem());
-    }
+        var dlg = new SaveFileDialog
+        {
+            Title      = "儲存 Sensor 範本",
+            FileName   = "sensors.json",
+            DefaultExt = ".json",
+            Filter     = "JSON 檔案|*.json",
+        };
+        if (dlg.ShowDialog() != true) return;
 
-    private void OnRemoveSensorItem(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button btn && btn.Tag is SensorEditItem item && GetViewModel(sender) is { } vm)
-            vm.SensorItems.Remove(item);
+        var template = new object[]
+        {
+            new { Group = "Temperature", Device = "D90",  Bit = "",  Value = ">75",  Mode = "COMPARE", OperationDescription = "加熱器溫度過高 (Heater High)"  },
+            new { Group = "Temperature", Device = "D91",  Bit = "",  Value = "<10",  Mode = "COMPARE", OperationDescription = "冷卻溫度過低 (Cooling Low)"    },
+            new { Group = "Safety",      Device = "M100", Bit = "0", Value = "1",    Mode = "AND",     OperationDescription = "緊急停止啟動 (E-Stop Active)"  },
+            new { Group = "Motion",      Device = "M101", Bit = "2", Value = "1",    Mode = "OR",      OperationDescription = "軸鎖定中 (Axis Interlock)"     },
+        };
+
+        File.WriteAllText(dlg.FileName, JsonSerializer.Serialize(template, _jsonOpts));
+        vm.ConfigFile = dlg.FileName;
     }
 
     private static DesignerItemViewModel? GetViewModel(object sender)

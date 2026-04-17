@@ -52,9 +52,6 @@ public static class DesignFileService
             Directory.CreateDirectory(dir);
         File.WriteAllText(filePath, json, System.Text.Encoding.UTF8);
 
-        // 匯出嵌入式的 alarms.json / sensors.json
-        ExportEmbeddedConfigs(doc, dir ?? ".");
-
         // 輸出 Tags 使用報告（只在有定義 Tags 時產生）
         if (doc.Tags.Count > 0)
             ExportTagsReport(doc, dir ?? ".", Path.GetFileNameWithoutExtension(filePath));
@@ -95,49 +92,6 @@ public static class DesignFileService
                 CanvasItems  = doc.CanvasItems ?? [],
             }
         ];
-    }
-
-    /// <summary>
-    /// 掃描所有頁面的 AlarmViewer / SensorViewer，匯出嵌入式 JSON 設定檔
-    /// </summary>
-    private static void ExportEmbeddedConfigs(DesignDocument doc, string outputDir)
-    {
-        var allItems = doc.Pages?.SelectMany(p => p.CanvasItems) ?? [];
-
-        // ── Alarms ──
-        var alarmEntries = new List<Dictionary<string, object?>>();
-        foreach (var item in allItems.Where(i => i.Type == "AlarmViewer"))
-        {
-            // 只在 configFile 為空時，才從嵌入式項目匯出
-            var configFile = item.Props.GetString("configFile");
-            if (!string.IsNullOrWhiteSpace(configFile)) continue;
-
-            var embedded = item.Props.GetObjectList("alarmItems");
-            alarmEntries.AddRange(embedded);
-        }
-        if (alarmEntries.Count > 0)
-        {
-            var alarmsDoc = new { alarms = alarmEntries };
-            var alarmsJson = JsonSerializer.Serialize(alarmsDoc, _exportOptions);
-            File.WriteAllText(Path.Combine(outputDir, "alarms.json"), alarmsJson, System.Text.Encoding.UTF8);
-        }
-
-        // ── Sensors ──
-        var sensorEntries = new List<Dictionary<string, object?>>();
-        foreach (var item in allItems.Where(i => i.Type == "SensorViewer"))
-        {
-            var configFile = item.Props.GetString("configFile");
-            if (!string.IsNullOrWhiteSpace(configFile)) continue;
-
-            var embedded = item.Props.GetObjectList("sensorItems");
-            sensorEntries.AddRange(embedded);
-        }
-        if (sensorEntries.Count > 0)
-        {
-            // sensors.json 是扁平陣列格式（不像 alarms 包在物件中）
-            var sensorsJson = JsonSerializer.Serialize(sensorEntries, _exportOptions);
-            File.WriteAllText(Path.Combine(outputDir, "sensors.json"), sensorsJson, System.Text.Encoding.UTF8);
-        }
     }
 
     /// <summary>

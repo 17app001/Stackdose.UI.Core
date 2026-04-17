@@ -152,7 +152,6 @@ public abstract class BaseRuntimeControlFactory
         var address = p.GetString("displayAddress", "M100");
         var label   = p.GetString("label", null);
         var bgHex   = p.GetString("cardBackground", "");
-        var fgHex   = p.GetString("labelForeground", "#9090B0");
 
         var ctrl = new PlcStatusIndicator
         {
@@ -167,9 +166,6 @@ public abstract class BaseRuntimeControlFactory
             try { ctrl.CardBackground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(bgHex)); }
             catch { /* ignore invalid hex */ }
         }
-
-        try { ctrl.LabelForeground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(fgHex)); }
-        catch { /* ignore */ }
 
         return ctrl;
     }

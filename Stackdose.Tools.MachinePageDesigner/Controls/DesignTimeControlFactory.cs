@@ -100,35 +100,21 @@ public static class DesignTimeControlFactory
 
     private static UIElement CreatePlcStatusIndicator(DesignerItemDefinition def)
     {
-        var p        = def.Props;
-        var addr     = p.GetString("displayAddress", "M100");
-        var label    = p.GetString("label", null);
-        var bgHex    = p.GetString("cardBackground", "");
-        var fgHex    = p.GetString("labelForeground", "#9090B0");
+        var p     = def.Props;
+        var addr  = p.GetString("displayAddress", "M100");
+        var label = p.GetString("label", null);
+        var bgHex = p.GetString("cardBackground", "");
 
-        // Resolve background
-        Brush bgBrush;
-        if (!string.IsNullOrWhiteSpace(bgHex))
-        {
-            try { bgBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(bgHex)); }
-            catch { bgBrush = new SolidColorBrush(Color.FromRgb(0x1F, 0x1F, 0x32)); }
-        }
-        else
-        {
-            bgBrush = new SolidColorBrush(Color.FromRgb(0x1F, 0x1F, 0x32));
-        }
-
-        // Resolve label foreground
-        Brush labelFgBrush;
-        try { labelFgBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(fgHex)); }
-        catch { labelFgBrush = new SolidColorBrush(Color.FromRgb(0x90, 0x90, 0xB0)); }
+        Brush bgBrush = string.IsNullOrWhiteSpace(bgHex)
+            ? new SolidColorBrush(Color.FromRgb(0x1F, 0x1F, 0x32))
+            : TryParseBrush(bgHex, Color.FromRgb(0x1F, 0x1F, 0x32));
 
         var border = new Border
         {
             Background      = bgBrush,
             BorderBrush     = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x6A)),
             BorderThickness = new Thickness(1),
-            CornerRadius    = new CornerRadius(5),
+            CornerRadius    = new CornerRadius(6),
             Padding         = new Thickness(10, 8, 10, 8),
             MinHeight       = 40,
         };
@@ -137,37 +123,30 @@ public static class DesignTimeControlFactory
         hStack.Children.Add(new System.Windows.Shapes.Ellipse
         {
             Width  = 18, Height = 18,
-            Fill   = new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80)),
-            Margin = new Thickness(0, 0, 8, 0),
+            Fill   = new SolidColorBrush(Color.FromRgb(0xEF, 0x53, 0x50)),
+            Margin = new Thickness(0, 0, 10, 0),
             VerticalAlignment = VerticalAlignment.Center,
         });
 
-        var textStack = new StackPanel();
+        var textStack = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
         if (!string.IsNullOrEmpty(label))
         {
             textStack.Children.Add(new TextBlock
             {
                 Text       = label,
-                FontSize   = 10,
-                FontFamily = new FontFamily("Consolas"),
-                Foreground = labelFgBrush,
-                Margin     = new Thickness(0, 0, 0, 1),
+                FontSize   = 13,
+                FontWeight = FontWeights.SemiBold,
+                FontFamily = new FontFamily("Microsoft JhengHei"),
+                Foreground = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)),
             });
         }
-        textStack.Children.Add(new TextBlock
-        {
-            Text       = "DISCONNECTED",
-            FontSize   = 12,
-            FontWeight = FontWeights.Bold,
-            FontFamily = new FontFamily("Consolas"),
-            Foreground = new SolidColorBrush(Color.FromRgb(0x90, 0x90, 0x90)),
-        });
         textStack.Children.Add(new TextBlock
         {
             Text       = addr,
             FontSize   = 10,
             FontFamily = new FontFamily("Consolas"),
-            Foreground = new SolidColorBrush(Color.FromRgb(0x60, 0x60, 0x80)),
+            Foreground = new SolidColorBrush(Color.FromRgb(0x70, 0x70, 0x90)),
+            Opacity    = 0.8,
         });
         hStack.Children.Add(textStack);
         border.Child = hStack;
@@ -400,4 +379,10 @@ public static class DesignTimeControlFactory
             "dark"    => (new SolidColorBrush(Color.FromArgb(0xCC, 0x12, 0x12, 0x20)), Brushes.White),
             _         => (new SolidColorBrush(Color.FromArgb(0xCC, 0x3A, 0x56, 0xA8)), Brushes.White), // Primary
         };
+
+    private static SolidColorBrush TryParseBrush(string hex, Color fallback)
+    {
+        try { return new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex)); }
+        catch { return new SolidColorBrush(fallback); }
+    }
 }

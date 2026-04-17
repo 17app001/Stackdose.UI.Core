@@ -9,6 +9,7 @@ namespace Stackdose.UI.Core.Controls
 {
     /// <summary>
     /// PLC 状态指示器控件（只显示状态，不负责连线）
+    /// 以圆圈颜色代表 ON/OFF，不显示文字状态
     /// </summary>
     public partial class PlcStatusIndicator : UserControl
     {
@@ -22,6 +23,8 @@ namespace Stackdose.UI.Core.Controls
         }
 
         #region Dependency Properties
+
+        // ── DisplayAddress ───────────────────────────────────────────────────
 
         public static readonly DependencyProperty DisplayAddressProperty =
             DependencyProperty.Register(
@@ -88,27 +91,6 @@ namespace Stackdose.UI.Core.Controls
                 ctrl.CardBorder.Background = brush;
         }
 
-        // ── LabelForeground ──────────────────────────────────────────────────
-
-        public static readonly DependencyProperty LabelForegroundProperty =
-            DependencyProperty.Register(
-                nameof(LabelForeground),
-                typeof(Brush),
-                typeof(PlcStatusIndicator),
-                new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x90, 0x90, 0xB0)), OnLabelForegroundChanged));
-
-        public Brush LabelForeground
-        {
-            get => (Brush)GetValue(LabelForegroundProperty);
-            set => SetValue(LabelForegroundProperty, value);
-        }
-
-        private static void OnLabelForegroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is PlcStatusIndicator ctrl && e.NewValue is Brush brush)
-                ctrl.LabelText.Foreground = brush;
-        }
-
         #endregion
 
         private void PlcStatusIndicator_Loaded(object sender, RoutedEventArgs e)
@@ -152,17 +134,23 @@ namespace Stackdose.UI.Core.Controls
         {
             if (isConnected)
             {
-                StatusLight.Fill = new SolidColorBrush(Colors.LimeGreen);
-                StatusLight.Effect = new DropShadowEffect { Color = Colors.LimeGreen, BlurRadius = 15, ShadowDepth = 0 };
-                StatusText.Text = "CONNECTED";
-                StatusText.Foreground = new SolidColorBrush(Colors.LimeGreen);
+                StatusLight.Fill = new SolidColorBrush(Color.FromRgb(0x4E, 0xC9, 0x94));
+                StatusLight.Effect = new DropShadowEffect
+                {
+                    Color = Color.FromRgb(0x4E, 0xC9, 0x94),
+                    BlurRadius = 12,
+                    ShadowDepth = 0
+                };
             }
             else
             {
-                StatusLight.Fill = new SolidColorBrush(Colors.Red);
-                StatusLight.Effect = new DropShadowEffect { Color = Colors.Red, BlurRadius = 10, ShadowDepth = 0 };
-                StatusText.Text = "DISCONNECTED";
-                StatusText.Foreground = new SolidColorBrush(Colors.Red);
+                StatusLight.Fill = new SolidColorBrush(Color.FromRgb(0xEF, 0x53, 0x50));
+                StatusLight.Effect = new DropShadowEffect
+                {
+                    Color = Color.FromRgb(0xEF, 0x53, 0x50),
+                    BlurRadius = 8,
+                    ShadowDepth = 0
+                };
             }
         }
     }

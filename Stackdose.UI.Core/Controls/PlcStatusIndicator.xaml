@@ -4,13 +4,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="62" d:DesignWidth="300"
+             d:DesignHeight="62" d:DesignWidth="260"
              x:Name="Root">
     <Border x:Name="CardBorder"
             Background="{DynamicResource Plc.Bg.Main}"
             BorderBrush="{DynamicResource Plc.Border}"
             BorderThickness="1"
-            CornerRadius="5"
+            CornerRadius="6"
             Padding="10,8">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -18,31 +18,31 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
+            <!-- Status dot -->
             <Ellipse x:Name="StatusLight"
                      Grid.Column="0"
-                     Width="22" Height="22"
+                     Width="18" Height="18"
                      Fill="Red"
                      VerticalAlignment="Center"
                      Margin="0,0,10,0"/>
 
+            <!-- Text stack -->
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <!-- Label (device name) - shown when Label DP is set -->
                 <TextBlock x:Name="LabelText"
                            Visibility="Collapsed"
-                           FontSize="10"
-                           FontFamily="Consolas"
-                           Margin="0,0,0,1"/>
-
-                <TextBlock x:Name="StatusText"
-                           Text="DISCONNECTED"
                            FontSize="13"
-                           FontWeight="Bold"
-                           FontFamily="Consolas"
-                           Foreground="Red"/>
+                           FontWeight="SemiBold"
+                           FontFamily="Microsoft JhengHei"
+                           Foreground="{DynamicResource Plc.Text.Value}"/>
+
+                <!-- IP / address - always shown -->
                 <TextBlock x:Name="IpDisplay"
                            Text="192.168.22.39:3000"
                            FontSize="10"
                            FontFamily="Consolas"
-                           Foreground="{DynamicResource Plc.Text.Default}"/>
+                           Foreground="{DynamicResource Plc.Text.Default}"
+                           Opacity="0.8"/>
             </StackPanel>
         </Grid>
     </Border>

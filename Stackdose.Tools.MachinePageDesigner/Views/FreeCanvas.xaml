@@ -25,14 +25,14 @@
                               Stretch="None">
                     <DrawingBrush.Drawing>
                         <DrawingGroup>
-                            <GeometryDrawing Brush="#FF1A1A2A">
+                            <GeometryDrawing Brush="#FF121220">
                                 <GeometryDrawing.Geometry>
                                     <RectangleGeometry Rect="0,0,20,20"/>
                                 </GeometryDrawing.Geometry>
                             </GeometryDrawing>
                             <GeometryDrawing>
                                 <GeometryDrawing.Pen>
-                                    <Pen Brush="#18FFFFFF" Thickness="0.5"/>
+                                    <Pen Brush="#22FFFFFF" Thickness="0.5"/>
                                 </GeometryDrawing.Pen>
                                 <GeometryDrawing.Geometry>
                                     <PathGeometry>

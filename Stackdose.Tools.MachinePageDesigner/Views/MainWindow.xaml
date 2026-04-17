@@ -245,13 +245,13 @@
             </Grid.ColumnDefinitions>
 
             <local:ToolboxPanel Grid.Column="0" DataContext="{Binding Toolbox}"/>
-            <GridSplitter Grid.Column="1" Width="3" Background="{StaticResource BorderBrush}" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+            <GridSplitter Grid.Column="1" Width="4" Background="#3A3C55" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
 
             <local:FreeCanvas Grid.Column="2"
                               DataContext="{Binding Canvas}"
                               Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"/>
 
-            <GridSplitter Grid.Column="3" Width="3" Background="{StaticResource BorderBrush}" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+            <GridSplitter Grid.Column="3" Width="4" Background="#3A3C55" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
             <local:PropertyPanel Grid.Column="4" DataContext="{Binding Canvas.SelectedItem}"
                                  Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
                                  Tags="{Binding DataContext.Tags, RelativeSource={RelativeSource AncestorType=Window}}"/>
@@ -259,8 +259,8 @@
 
         <!-- StatusBar -->
         <Border Grid.Row="3"
-                Background="{StaticResource PanelBrush}"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="#1A3468"
+                BorderBrush="#2A4A88"
                 BorderThickness="0,1,0,0"
                 Padding="10,4">
             <TextBlock Text="{Binding StatusText}" Style="{StaticResource FieldLabel}" FontSize="11"/>

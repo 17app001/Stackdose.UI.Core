@@ -2,10 +2,18 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- ── Colours ───────────────────────────────────────────────── -->
-    <Color x:Key="BgColor">#FF1E1E2E</Color>
-    <Color x:Key="SurfaceColor">#FF2A2A3E</Color>
-    <Color x:Key="PanelColor">#FF313145</Color>
-    <Color x:Key="BorderColor">#FF44445A</Color>
+    <!--
+        Zone 色階（由暗到亮）：
+          Canvas outer void  BgColor     #0F0F1C  ← 最暗
+          Toolbar / chrome   PanelColor  #171825  ← 次暗（與 canvas 同陣營）
+          Side panels        SurfaceColor #272A3E ← 中亮，明顯與 canvas 有對比
+          Input fields       (+4 亮度)           ← TextBox 用 SurfaceBrush
+          StatusBar → 藍色 accent（在 MainWindow.xaml 設定）
+    -->
+    <Color x:Key="BgColor">#FF0F0F1C</Color>
+    <Color x:Key="SurfaceColor">#FF272A3E</Color>
+    <Color x:Key="PanelColor">#FF171825</Color>
+    <Color x:Key="BorderColor">#FF525270</Color>
     <Color x:Key="AccentColor">#FF6C8EEF</Color>
     <Color x:Key="AccentHoverColor">#FF8AAAF5</Color>
     <Color x:Key="SuccessColor">#FF4EC994</Color>

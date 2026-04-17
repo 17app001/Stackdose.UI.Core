@@ -1171,6 +1171,8 @@
           <div class="tl-item tl-highlight"><span class="tl-date">4月17日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ SecuredButton 擴充（pulse/toggle/writeValue）；PlcText Bit 模式（ON/OFF 按鈕）；Alarm/Sensor 產生範本 JSON + 中文編碼修正；GroupBox 標題列主題色系統（Primary/Info/Success/Warning/Error/Dark）；移除 inline 編輯 → 改為 JSON 直接編修工作流程</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月18日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 控制項模板庫（Template Gallery）；Command Sequence DSL（多步驟 PLC 指令框架）</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月16日(續)</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ PLC Tags（地址名稱對照表 + 屬性面板下拉選取）；設計師 Quick Start 文件</span></div>
+          <div class="tl-item tl-highlight"><span class="tl-date">4月17日(下午)</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ PlcLabel 顏色系統重設計（PlcFill.* Material 色彩 + Black + Cyber.NeonRed/Green）；修復設計時 Opacity=0.5 預覽色彩失真；App Config 編輯器（設計器內一鍵產生 app-config.json）；SensorViewer 多實例 + 路徑統一；靜態稽核修復 3 個 pipeline bugs</span></div>
+          <div class="tl-item" style="opacity:0.55;"><span class="tl-date">4月21日</span><span class="tl-dot" style="background:var(--orange);box-shadow:0 0 6px var(--orange);"></span><span class="tl-text">📋 <strong>計畫中</strong>：Dashboard 模式 — 無邊框視窗 + 極簡 TopBar + 全畫面 Canvas（layout.mode: "Dashboard"）</span></div>
         </div>
       </div>
     </div>
@@ -1225,6 +1227,21 @@
             <li><s>工程師複雜指令框架（Command Sequence DSL）</s> ✅</li>
             <li><s>PLC Tags — 地址名稱對照表（屬性面板下拉選取）</s> ✅</li>
             <li><s>設計師 Quick Start 文件（角色分工 + 完整部署流程）</s> ✅</li>
+          </ul>
+        </div>
+
+        <div style="background:var(--bg-card); border:2px solid #d9770644; border-radius:10px; padding:20px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span style="background:#d9770622; color:var(--orange); font-size:11px; font-weight:600; padding:2px 8px; border-radius:4px; border:1px solid #d9770644;">📋 計畫中 — 4/21</span>
+            <span style="font-weight:600;">Dashboard 模式</span>
+          </div>
+          <ul style="padding-left:18px; font-size:13px; color:var(--text-secondary); line-height:1.9;">
+            <li>新 <code>layout.mode: "Dashboard"</code> — 設計器下拉即可設定</li>
+            <li>無邊框視窗（WindowStyle=None）</li>
+            <li>極簡 TopBar（~32px）：PLC 狀態燈 + 設備名稱 + 時鐘 + 電源</li>
+            <li>隱藏左側面板 / User Management / 頁面切換列</li>
+            <li>視窗固定尺寸（canvas 尺寸 + TopBar），只可最小化</li>
+            <li>Canvas 填滿剩餘空間，不縮放</li>
           </ul>
         </div>
 
@@ -1323,7 +1340,7 @@
 <footer class="site-footer">
   <div class="container" style="display:flex; align-items:center; justify-content:space-between; width:100%;">
     <span>Stackdose.UI.Core · .NET 8 WPF · Windows x64</span>
-    <span>更新：2026-04-16</span>
+    <span>更新：2026-04-17</span>
   </div>
 </footer>
 

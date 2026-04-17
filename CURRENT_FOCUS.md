@@ -7,15 +7,24 @@
 
 ## 目前狀態
 
-**專案整體進度：✅ 所有主要功能完成，UI 視覺優化完成**
+**專案整體進度：✅ 所有主要功能完成 + 4/17 修復與新功能**
 
-所有路線圖功能（含設計器核心、量產部署、功能缺口補強、Template Gallery、Command Sequence DSL）及 13 項架構優化均已完成。  
-2026-04-17 進行第二輪 UI 視覺優化（MachinePageDesigner 主題色階、Viewer Header、PlcStatusIndicator 重設計）。
+4/17 完成項目：
+- PlcLabel 顏色系統重設計（PlcFill.* Material 色彩 + Black enum + 補齊 Cyber.NeonRed/Green token）
+- 修復設計器預覽 Opacity=0.5（DataTrigger 觸發導致數值顏色在設計時失真）
+- App Config 編輯器（⚙ App Config 按鈕 → 一鍵產生 app-config.json）
+- SensorViewer 多實例污染修復 + 路徑解析與 AlarmViewer 統一
+- Pipeline 靜態稽核修復 3 個 bug（SecuredButton RequiredLevel、IndicatorLabelForeground 通知、SensorViewer 靜態 flag）
 
-**下一步方向（尚未啟動）：**
-- 真實客戶場景驗證（選一個設備，實際跑完 Designer → DesignPlayer 全流程）
-- 客戶端文件（操作手冊、部署 SOP）
-- 需要時再開新功能 Sprint
+**下一步：Dashboard 模式（預計 2026-04-21 開始）**
+
+規格確認：
+- `layout.mode: "Dashboard"` — 設計器 Layout 下拉新增選項
+- 無邊框視窗（`WindowStyle=None`, `ResizeMode=NoResize`）
+- 極簡 TopBar（~32px）：PLC 狀態燈 + 設備名稱 + 時鐘 + 電源按鈕
+- 完全隱藏：左側面板 / User Management / 頁面切換 / Main View 按鈕
+- 視窗固定尺寸 = canvas 寬高 + TopBar 高度，只允許最小化
+- Canvas 填滿剩餘空間，不縮放（不使用 Viewbox）
 
 ---
 

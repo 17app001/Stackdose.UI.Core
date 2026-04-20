@@ -109,13 +109,18 @@ public partial class PublishDashboardWindow : Window
         {
             Directory.CreateDirectory(outputDir);
 
+            // Note: /p:AssemblyName causes NuGet "Ambiguous project name" error.
+            // Publish with original name, then rename output files afterward.
             var args = $"publish \"{projPath}\" -c Release -r win-x64 --self-contained false"
-                     + $" /p:AssemblyName=\"{exeName}\" -o \"{outputDir}\"";
+                     + $" -o \"{outputDir}\"";
 
             var success = await RunDotnetAsync(args);
 
             if (success)
             {
+                // Rename exe + companion files to desired exeName
+                RenamePublishOutput(outputDir, exeName);
+
                 // Copy design file
                 var configDir = Path.Combine(outputDir, "Config");
                 Directory.CreateDirectory(configDir);
@@ -151,14 +156,28 @@ public partial class PublishDashboardWindow : Window
         }
     }
 
+    private static void RenamePublishOutput(string outputDir, string exeName)
+    {
+        const string srcName = "Stackdose.App.DesignPlayer";
+        foreach (var ext in new[] { ".exe", ".runtimeconfig.json", ".deps.json" })
+        {
+            var src = Path.Combine(outputDir, srcName + ext);
+            var dst = Path.Combine(outputDir, exeName + ext);
+            if (File.Exists(src) && src != dst)
+                File.Move(src, dst, overwrite: true);
+        }
+    }
+
     private async Task<bool> RunDotnetAsync(string args)
     {
         var psi = new ProcessStartInfo("dotnet", args)
         {
-            UseShellExecute        = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError  = true,
-            CreateNoWindow         = true
+            UseShellExecute         = false,
+            RedirectStandardOutput  = true,
+            RedirectStandardError   = true,
+            CreateNoWindow          = true,
+            StandardOutputEncoding  = System.Text.Encoding.UTF8,
+            StandardErrorEncoding   = System.Text.Encoding.UTF8,
         };
 
         using var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };

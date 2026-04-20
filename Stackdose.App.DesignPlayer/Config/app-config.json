@@ -8,5 +8,5 @@
     "pollIntervalMs": 180,
     "autoConnect": true
   },
-  "designFile": "Config/M1.machinedesign.json"
+  "designFile": "Config/Dashboard.machinedesign.json"
 }

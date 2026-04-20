@@ -1,0 +1,242 @@
+﻿{
+  "version": "2.0",
+  "meta": {
+    "title": "Machine Page",
+    "machineId": "M1",
+    "createdAt": "2026-04-20T02:20:19.5481221Z",
+    "modifiedAt": "2026-04-20T02:23:34.9343539Z"
+  },
+  "layout": {
+    "mode": "Dashboard",
+    "leftCommandWidthPx": 250,
+    "rightColumnWidthStar": 0.85,
+    "showLiveLog": true,
+    "showAlarmViewer": true,
+    "showSensorViewer": false
+  },
+  "pages": [
+    {
+      "pageId": "60e10144",
+      "name": "Page 1",
+      "canvasWidth": 900,
+      "canvasHeight": 300,
+      "canvasItems": [
+        {
+          "id": "350791b6",
+          "type": "PlcLabel",
+          "order": 0,
+          "x": 30,
+          "y": 80,
+          "width": 192,
+          "height": 186,
+          "locked": false,
+          "props": {
+            "label": "壓差",
+            "address": "D103",
+            "defaultValue": "0",
+            "valueFontSize": 20,
+            "frameShape": "Circle",
+            "valueColorTheme": "NeonBlue",
+            "divisor": 1,
+            "stringFormat": "F0",
+            "labelAlignment": "Center",
+            "valueAlignment": "Center"
+          }
+        },
+        {
+          "id": "f44645ea",
+          "type": "PlcLabel",
+          "order": 0,
+          "x": 250,
+          "y": 80,
+          "width": 192,
+          "height": 186,
+          "locked": false,
+          "props": {
+            "label": "流量",
+            "address": "D104",
+            "defaultValue": "0",
+            "valueFontSize": 20,
+            "frameShape": "Circle",
+            "valueColorTheme": "NeonBlue",
+            "divisor": 1,
+            "stringFormat": "F0",
+            "labelAlignment": "Center",
+            "valueAlignment": "Center"
+          }
+        },
+        {
+          "id": "e761af89",
+          "type": "PlcLabel",
+          "order": 0,
+          "x": 470,
+          "y": 80,
+          "width": 192,
+          "height": 186,
+          "locked": false,
+          "props": {
+            "label": "供墨壓力",
+            "address": "D105",
+            "defaultValue": "0",
+            "valueFontSize": 20,
+            "frameShape": "Circle",
+            "valueColorTheme": "NeonBlue",
+            "divisor": 1,
+            "stringFormat": "F0",
+            "labelAlignment": "Center",
+            "valueAlignment": "Center"
+          }
+        },
+        {
+          "id": "6de35b78",
+          "type": "PlcLabel",
+          "order": 0,
+          "x": 680,
+          "y": 80,
+          "width": 192,
+          "height": 186,
+          "locked": false,
+          "props": {
+            "label": "回墨壓力",
+            "address": "D106",
+            "defaultValue": "0",
+            "valueFontSize": 20,
+            "frameShape": "Circle",
+            "valueColorTheme": "NeonBlue",
+            "divisor": 1,
+            "stringFormat": "F0",
+            "labelAlignment": "Center",
+            "valueAlignment": "Center"
+          }
+        },
+        {
+          "id": "0450e835",
+          "type": "StaticLabel",
+          "order": 0,
+          "x": 346,
+          "y": 10,
+          "width": 200,
+          "height": 40,
+          "locked": false,
+          "props": {
+            "staticText": "\u6578\u503C\u76E3\u8996",
+            "staticFontSize": 29,
+            "staticFontWeight": "Normal",
+            "staticTextAlign": "Center",
+            "staticForeground": "#E2E2F0"
+          }
+        }
+      ]
+    }
+  ],
+  "tags": [],
+  "canvasItems": [
+    {
+      "id": "350791b6",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 30,
+      "y": 80,
+      "width": 192,
+      "height": 186,
+      "locked": false,
+      "props": {
+        "label": "Label",
+        "address": "D102",
+        "defaultValue": "0",
+        "valueFontSize": 20,
+        "frameShape": "Circle",
+        "valueColorTheme": "NeonBlue",
+        "divisor": 1,
+        "stringFormat": "F0",
+        "labelAlignment": "Center",
+        "valueAlignment": "Center"
+      }
+    },
+    {
+      "id": "f44645ea",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 250,
+      "y": 80,
+      "width": 192,
+      "height": 186,
+      "locked": false,
+      "props": {
+        "label": "Label",
+        "address": "D103",
+        "defaultValue": "0",
+        "valueFontSize": 20,
+        "frameShape": "Circle",
+        "valueColorTheme": "NeonBlue",
+        "divisor": 1,
+        "stringFormat": "F0",
+        "labelAlignment": "Center",
+        "valueAlignment": "Center"
+      }
+    },
+    {
+      "id": "e761af89",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 470,
+      "y": 80,
+      "width": 192,
+      "height": 186,
+      "locked": false,
+      "props": {
+        "label": "Label",
+        "address": "D104",
+        "defaultValue": "0",
+        "valueFontSize": 20,
+        "frameShape": "Circle",
+        "valueColorTheme": "NeonBlue",
+        "divisor": 1,
+        "stringFormat": "F0",
+        "labelAlignment": "Center",
+        "valueAlignment": "Center"
+      }
+    },
+    {
+      "id": "6de35b78",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 680,
+      "y": 80,
+      "width": 192,
+      "height": 186,
+      "locked": false,
+      "props": {
+        "label": "Label",
+        "address": "D105",
+        "defaultValue": "0",
+        "valueFontSize": 20,
+        "frameShape": "Circle",
+        "valueColorTheme": "NeonBlue",
+        "divisor": 1,
+        "stringFormat": "F0",
+        "labelAlignment": "Center",
+        "valueAlignment": "Center"
+      }
+    },
+    {
+      "id": "0450e835",
+      "type": "StaticLabel",
+      "order": 0,
+      "x": 346,
+      "y": 10,
+      "width": 200,
+      "height": 40,
+      "locked": false,
+      "props": {
+        "staticText": "\u6578\u503C\u76E3\u8996",
+        "staticFontSize": 29,
+        "staticFontWeight": "Normal",
+        "staticTextAlign": "Center",
+        "staticForeground": "#E2E2F0"
+      }
+    }
+  ],
+  "canvasWidth": 900,
+  "canvasHeight": 300
+}

@@ -5,8 +5,10 @@
              xmlns:vm="clr-namespace:Stackdose.Tools.MachinePageDesigner.ViewModels"
              Background="{StaticResource BgBrush}"
              AllowDrop="True"
+             Focusable="True"
              Drop="OnDrop"
-             DragOver="OnDragOver">
+             DragOver="OnDragOver"
+             PreviewKeyDown="OnPreviewKeyDown">
 
     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="24">
 

@@ -112,8 +112,8 @@ public partial class PublishDashboardWindow : Window
             // Note: /p:AssemblyName causes NuGet "Ambiguous project name" error.
             // Publish with original name, then rename output files afterward.
             // DebugType=None suppresses .pdb generation at the source.
-            var args = $"publish \"{projPath}\" -c Release -r win-x64 --self-contained false"
-                     + $" /p:DebugType=None /p:DebugSymbols=false"
+            var args = $"publish \"{projPath}\" -c Release -r win-x64 --self-contained true"
+                     + $" /p:DebugType=None /p:DebugSymbols=false /p:PublishReadyToRun=false"
                      + $" -o \"{outputDir}\"";
 
             var exitedClean = await RunDotnetAsync(args);
@@ -132,6 +132,9 @@ public partial class PublishDashboardWindow : Window
                 // Rename exe + companion files to desired exeName
                 RenamePublishOutput(outputDir, exeName);
 
+                // Allow running on .NET 9/10+ without requiring exact .NET 8 installation
+                PatchRollForward(outputDir, exeName);
+
                 // Remove dev-only and unused-module files
                 CleanPublishOutput(outputDir, exeName);
 
@@ -142,9 +145,9 @@ public partial class PublishDashboardWindow : Window
                 File.Copy(_designFilePath, destDesign, overwrite: true);
                 Log($"[複製] 設計稿 → Config/{Path.GetFileName(_designFilePath)}");
 
-                // Copy app-config.json
-                File.Copy(configPath, Path.Combine(outputDir, "app-config.json"), overwrite: true);
-                Log("[複製] app-config.json");
+                // Copy app-config.json into Config/ (App reads Config/app-config.json)
+                File.Copy(configPath, Path.Combine(configDir, "app-config.json"), overwrite: true);
+                Log("[複製] app-config.json → Config/app-config.json");
 
                 Log("────────────────────────────────");
                 Log($"[完成] ✅ 封裝成功！{DateTime.Now:HH:mm:ss}");
@@ -197,6 +200,30 @@ public partial class PublishDashboardWindow : Window
     {
         try { if (File.Exists(path)) File.Delete(path); }
         catch (Exception ex) { Log($"[清理跳過] {Path.GetFileName(path)}: {ex.Message}"); }
+    }
+
+    private static void PatchRollForward(string outputDir, string exeName)
+    {
+        var path = Path.Combine(outputDir, exeName + ".runtimeconfig.json");
+        if (!File.Exists(path)) return;
+
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+        var root = doc.RootElement;
+
+        using var stream = new System.IO.MemoryStream();
+        using var writer = new System.Text.Json.Utf8JsonWriter(stream, new System.Text.Json.JsonWriterOptions { Indented = true });
+
+        writer.WriteStartObject();
+        writer.WritePropertyName("runtimeOptions");
+        writer.WriteStartObject();
+        writer.WriteString("rollForward", "LatestMajor");
+        foreach (var prop in root.GetProperty("runtimeOptions").EnumerateObject())
+            prop.WriteTo(writer);
+        writer.WriteEndObject();
+        writer.WriteEndObject();
+        writer.Flush();
+
+        File.WriteAllBytes(path, stream.ToArray());
     }
 
     private static void RenamePublishOutput(string outputDir, string exeName)

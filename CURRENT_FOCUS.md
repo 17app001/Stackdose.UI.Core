@@ -40,9 +40,18 @@
   - 輸出資料夾（預設桌面 `{machineId}-app/`，可瀏覽選擇）
   - app-config.json 路徑（必填，記住上次路徑）
   - DesignPlayer.csproj 路徑（自動從 BaseDirectory 往上搜尋，可手動覆蓋）
-- 封裝流程：`dotnet publish` → 複製 .machinedesign.json 至 `Config/` → 複製 app-config.json → 顯示 streaming log
+- 封裝流程：`dotnet publish --self-contained true /p:PublishReadyToRun=false` → 複製 .machinedesign.json 至 `Config/` → 複製 app-config.json 至 `Config/` → 顯示 streaming log
 - 成功後出現「📂 開啟資料夾」按鈕
 - 路徑設定持久化至 `%AppData%\Stackdose\Designer\publish-settings.json`
+- **Bug 修復（4/20 下午）**：
+  - dll 不 rename（apphost binary baked-in 原始 dll 名稱）
+  - app-config.json 複製至 `Config/` 子目錄（App 讀取路徑一致）
+  - 改 self-contained 解決目標機器缺少 .NET Runtime 問題
+
+**4/20 完成項目（續二）：設計器體驗改善**
+
+- 畫布最小尺寸：Width 400→100 / Height 300→100
+- 鍵盤方向鍵移動控件：Arrow=1px、Shift+Arrow=10px（多選同步 + Undo/Redo 整合）
 
 **下一步：待規劃**
 

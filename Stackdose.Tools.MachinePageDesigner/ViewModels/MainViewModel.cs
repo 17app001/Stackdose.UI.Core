@@ -166,7 +166,7 @@ public sealed class MainViewModel : ObservableObject
         get => Canvas.CanvasWidth;
         set
         {
-            var v = Math.Max(400, Math.Min(value, 4000));
+            var v = Math.Max(100, Math.Min(value, 4000));
             if (Canvas.CanvasWidth == v) return;
             Canvas.CanvasWidth = v;
             N();
@@ -179,7 +179,7 @@ public sealed class MainViewModel : ObservableObject
         get => Canvas.CanvasHeight;
         set
         {
-            var v = Math.Max(300, Math.Min(value, 3000));
+            var v = Math.Max(100, Math.Min(value, 3000));
             if (Canvas.CanvasHeight == v) return;
             Canvas.CanvasHeight = v;
             N();

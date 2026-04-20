@@ -12,8 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- FeiyangWrapper：有 DLL 就引用，沒有不報錯 -->
-    <ProjectReference Condition="Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\FeiyangWrapper.vcxproj')"
+    <!-- FeiyangWrapper：有 DLL 且在 VS（Full MSBuild）才引用；dotnet CLI 跳過（無 C++ Build Tools） -->
+    <ProjectReference Condition="Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\FeiyangWrapper.vcxproj') and '$(MSBuildRuntimeType)' == 'Full'"
                       Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\FeiyangWrapper.vcxproj" />
     <ProjectReference Include="..\Stackdose.App.DeviceFramework\Stackdose.App.DeviceFramework.csproj" />
     <ProjectReference Include="..\Stackdose.Tools.MachinePageDesigner\Stackdose.Tools.MachinePageDesigner.csproj" />

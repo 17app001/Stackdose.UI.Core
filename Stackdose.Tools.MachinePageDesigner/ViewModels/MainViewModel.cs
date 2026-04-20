@@ -121,7 +121,9 @@ public sealed class MainViewModel : ObservableObject
 
         SaveAsTemplateCmd  = new RelayCommand(_ => SaveSelectionAsTemplate(), _ => Canvas.HasSelectedItem);
         OpenTagEditorCmd   = new RelayCommand(_ => OpenTagEditor());
-        OpenAppConfigCmd   = new RelayCommand(_ => OpenAppConfigEditor(), _ => !string.IsNullOrEmpty(CurrentFilePath));
+        OpenAppConfigCmd      = new RelayCommand(_ => OpenAppConfigEditor(), _ => !string.IsNullOrEmpty(CurrentFilePath));
+        PublishDashboardCmd   = new RelayCommand(_ => OpenPublishDashboard(),
+                                                 _ => LayoutMode == "Dashboard" && !string.IsNullOrEmpty(CurrentFilePath));
 
         // 初始化時建立第一個頁面（LoadDocumentIntoUI 會設定 CurrentPage → 觸發事件訂閱）
         LoadDocumentIntoUI();
@@ -190,7 +192,14 @@ public sealed class MainViewModel : ObservableObject
     public string LayoutMode
     {
         get => _layoutMode;
-        set { if (Set(ref _layoutMode, value)) MarkDirty(); }
+        set
+        {
+            if (Set(ref _layoutMode, value))
+            {
+                MarkDirty();
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            }
+        }
     }
 
     public int LeftCommandWidthPx
@@ -283,7 +292,10 @@ public sealed class MainViewModel : ObservableObject
     public ICommand OpenTagEditorCmd  { get; }
 
     // App Config
-    public ICommand OpenAppConfigCmd  { get; }
+    public ICommand OpenAppConfigCmd     { get; }
+
+    // Publish
+    public ICommand PublishDashboardCmd  { get; }
 
     // Page Management
     public ICommand AddPageCmd    { get; }
@@ -958,6 +970,17 @@ public sealed class MainViewModel : ObservableObject
         if (string.IsNullOrEmpty(CurrentFilePath))
         { StatusText = "請先儲存設計稿後再開啟 App Config 編輯器"; return; }
         var win = new AppConfigEditorWindow(CurrentFilePath)
+        {
+            Owner = Application.Current?.MainWindow,
+        };
+        win.ShowDialog();
+    }
+
+    private void OpenPublishDashboard()
+    {
+        if (string.IsNullOrEmpty(CurrentFilePath))
+        { StatusText = "請先儲存設計稿後再封裝"; return; }
+        var win = new PublishDashboardWindow(CurrentFilePath, MachineId)
         {
             Owner = Application.Current?.MainWindow,
         };

@@ -1172,7 +1172,7 @@
           <div class="tl-item tl-highlight"><span class="tl-date">4月18日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 控制項模板庫（Template Gallery）；Command Sequence DSL（多步驟 PLC 指令框架）</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月16日(續)</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ PLC Tags（地址名稱對照表 + 屬性面板下拉選取）；設計師 Quick Start 文件</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月17日(下午)</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ PlcLabel 顏色系統重設計（PlcFill.* Material 色彩 + Black + Cyber.NeonRed/Green）；修復設計時 Opacity=0.5 預覽色彩失真；App Config 編輯器（設計器內一鍵產生 app-config.json）；SensorViewer 多實例 + 路徑統一；靜態稽核修復 3 個 pipeline bugs</span></div>
-          <div class="tl-item tl-highlight"><span class="tl-date">4月20日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ Dashboard 模式 — DesignPlayer 自動切換無邊框固定尺寸視窗 + 32px TopBar；DesignRuntime 同步支援預覽（黃色 Banner + 🙈 隱藏工具列切換 + 退出預覽）</span></div>
+          <div class="tl-item tl-highlight"><span class="tl-date">4月20日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ Dashboard 模式 — DesignPlayer 自動切換無邊框固定尺寸視窗 + 32px TopBar；DesignRuntime 同步支援預覽（黃色 Banner + 🙈 隱藏工具列切換 + 退出預覽）；一鍵封裝 Dashboard App（設計器「📦 封裝 App」按鈕 → dotnet publish + 複製設計稿 + app-config，streaming log）</span></div>
         </div>
       </div>
     </div>
@@ -1247,6 +1247,8 @@
             <li>視窗固定尺寸 = canvas 寬 × (canvas 高 + 32px)，置中顯示，只可最小化</li>
             <li>32px TopBar：PLC 狀態燈 + 設備名稱 + 時鐘 + 最小化 / 關閉</li>
             <li>完全隱藏：Shell Header / LeftNav / BottomBar / 頁籤列</li>
+            <li>DesignRuntime 黃色 Banner 預覽模式（🙈 隱藏工具列 + 退出預覽）</li>
+            <li><strong>📦 一鍵封裝</strong>：設計器「封裝 App」按鈕 → <code>dotnet publish</code> + 複製設計稿與 app-config → streaming log + 開啟資料夾</li>
           </ul>
         </div>
 

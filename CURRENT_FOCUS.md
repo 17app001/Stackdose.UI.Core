@@ -32,6 +32,18 @@
   - 顯示工具列：還原 PlcConfigBar + 標題列，視窗尺寸重新計算
   - 退出預覽：完整還原所有工具列與視窗狀態
 
+**4/20 完成項目（續）：一鍵封裝 Dashboard App**
+
+- **MachinePageDesigner** 新增「📦 封裝 App」按鈕（僅 Dashboard 模式 + 已儲存時啟用）
+- 點擊開啟 `PublishDashboardWindow` 對話框：
+  - 執行檔名稱（預設 = MachineId）
+  - 輸出資料夾（預設桌面 `{machineId}-app/`，可瀏覽選擇）
+  - app-config.json 路徑（必填，記住上次路徑）
+  - DesignPlayer.csproj 路徑（自動從 BaseDirectory 往上搜尋，可手動覆蓋）
+- 封裝流程：`dotnet publish` → 複製 .machinedesign.json 至 `Config/` → 複製 app-config.json → 顯示 streaming log
+- 成功後出現「📂 開啟資料夾」按鈕
+- 路徑設定持久化至 `%AppData%\Stackdose\Designer\publish-settings.json`
+
 **下一步：待規劃**
 
 ---

@@ -77,7 +77,22 @@
       "Bash(cat /tmp/sensor_helpers.txt)",
       "Bash(tail -n +223 D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
       "Bash(cp /tmp/sv_part1.txt D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
-      "Bash(sed -n 220,265p D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)"
+      "Bash(sed -n 220,265p D:/工作區/Project/Stackdose.UI.Core/Stackdose.UI.Core/Controls/SensorViewer.xaml.cs)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Read(//c/Users/jerry/.claude/**)",
+      "Read(//c/Users/jerry/.claude/skills/**)",
+      "Bash(dir \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\\\\docs\\\\kb\")",
+      "Bash(dir \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\\\\docs\\\\devlog\")",
+      "Bash(dotnet publish *)",
+      "Bash(dir \"C:\\\\Users\\\\jerry\\\\Desktop\\\\M1-app-test\" /b)",
+      "Bash(reg query *)",
+      "Bash(echo \"exit: $?\")",
+      "Read(//c/Users/jerry/Desktop/M1-app/**)",
+      "Read(//c/Users/jerry/Desktop/M1-app/Config/**)",
+      "Bash(./M1.exe)",
+      "Bash(echo \"Exit: $?\")"
     ]
   }
 }

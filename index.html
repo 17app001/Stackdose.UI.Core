@@ -1270,6 +1270,62 @@
           </ul>
         </div>
 
+        <!-- Standard 模式封裝 — 進行中 -->
+        <div style="background:var(--bg-card); border:2px solid #3b82f644; border-radius:10px; padding:20px; grid-column: 1 / -1;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="background:#3b82f622; color:#60a5fa; font-size:11px; font-weight:600; padding:2px 8px; border-radius:4px; border:1px solid #3b82f644;">🚧 進行中</span>
+              <span style="font-weight:600; font-size:15px;">Standard 模式封裝 — FDA 21 CFR Part 11 完整機台介面</span>
+            </div>
+            <a href="docs/kb/standard-mode-roadmap.md" class="doc-card"
+               style="font-size:11px; color:var(--blue); border:1px solid var(--border-hi); border-radius:5px; padding:2px 9px; white-space:nowrap; text-decoration:none; background:var(--bg-card2); display:inline-flex; align-items:center;">
+              📖 完整規劃
+            </a>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px;">
+
+            <div style="background:var(--bg-card2); border-radius:8px; padding:14px;">
+              <div style="font-size:12px; font-weight:600; color:#60a5fa; margin-bottom:8px;">Phase 1 · 明天</div>
+              <ul style="padding-left:16px; font-size:12px; color:var(--text-secondary); line-height:1.8; margin:0;">
+                <li>封裝按鈕解鎖（不限 Dashboard）</li>
+                <li><code>layoutMode</code> 欄位加入 app-config</li>
+                <li>Pages[] → LeftNav 自動對應</li>
+                <li>部署驗收（完整 Shell 可運行）</li>
+              </ul>
+            </div>
+
+            <div style="background:var(--bg-card2); border-radius:8px; padding:14px;">
+              <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:8px;">Phase 2 · Day 2</div>
+              <ul style="padding-left:16px; font-size:12px; color:var(--text-muted); line-height:1.8; margin:0;">
+                <li>DesignPage <code>requiredLevel</code> 欄位</li>
+                <li>設計器 PageTab 存取層級設定</li>
+                <li>DesignPlayer 動態過濾導航項目</li>
+                <li>登出 → 退回 Guest 視圖</li>
+              </ul>
+            </div>
+
+            <div style="background:var(--bg-card2); border-radius:8px; padding:14px;">
+              <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:8px;">Phase 3 · Day 3</div>
+              <ul style="padding-left:16px; font-size:12px; color:var(--text-muted); line-height:1.8; margin:0;">
+                <li>SQLite 日誌路徑 → AppData（可設定）</li>
+                <li>使用者帳號持久化（JSON）</li>
+                <li>稽核日誌查看頁（Supervisor+）</li>
+                <li>CSV 匯出</li>
+              </ul>
+            </div>
+
+            <div style="background:var(--bg-card2); border-radius:8px; padding:14px;">
+              <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:8px;">Phase 4 · Day 4+</div>
+              <ul style="padding-left:16px; font-size:12px; color:var(--text-muted); line-height:1.8; margin:0;">
+                <li>電子簽名對話框（E-Signature）</li>
+                <li>首次啟動設定精靈</li>
+                <li>DesignRuntime Standard 預覽</li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+
       </div>
     </div>
   </section>

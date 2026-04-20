@@ -53,7 +53,18 @@
 - 畫布最小尺寸：Width 400→100 / Height 300→100
 - 鍵盤方向鍵移動控件：Arrow=1px、Shift+Arrow=10px（多選同步 + Undo/Redo 整合）
 
-**下一步：待規劃**
+**下一步：Standard 模式封裝（Phase 1）**
+
+目標：讓設計師封裝出完整 Shell（Header + LeftNav + BottomBar）+ FDA 21 CFR Part 11 的機台介面 App。
+
+明天（Phase 1）實作項目：
+1. 移除封裝按鈕 Dashboard-only 限制
+2. `PlayerAppConfig` 新增 `layoutMode` 欄位
+3. `App.xaml.cs` 根據 `layoutMode` 分流啟動
+4. `MainWindow` `BuildNavFromPages()` — Pages 自動對應 LeftNav
+5. 封裝 + 部署驗收
+
+完整四階段規劃見 `docs/kb/standard-mode-roadmap.md`
 
 ---
 

@@ -16,15 +16,23 @@
 - SensorViewer 多實例污染修復 + 路徑解析與 AlarmViewer 統一
 - Pipeline 靜態稽核修復 3 個 bug（SecuredButton RequiredLevel、IndicatorLabelForeground 通知、SensorViewer 靜態 flag）
 
-**下一步：Dashboard 模式（預計 2026-04-21 開始）**
+**4/20 完成項目：Dashboard 模式**
 
-規格確認：
-- `layout.mode: "Dashboard"` — 設計器 Layout 下拉新增選項
-- 無邊框視窗（`WindowStyle=None`, `ResizeMode=NoResize`）
-- 極簡 TopBar（~32px）：PLC 狀態燈 + 設備名稱 + 時鐘 + 電源按鈕
-- 完全隱藏：左側面板 / User Management / 頁面切換 / Main View 按鈕
-- 視窗固定尺寸 = canvas 寬高 + TopBar 高度，只允許最小化
-- Canvas 填滿剩餘空間，不縮放（不使用 Viewbox）
+- `layout.mode: "Dashboard"` — 設計器 Layout 下拉新增 Dashboard 選項
+- **DesignPlayer** 載入 Dashboard 設計稿時自動切換：
+  - 無邊框視窗（`ResizeMode=CanMinimize`，只允許最小化）
+  - 視窗固定尺寸 = canvas 寬 × (canvas 高 + 32px)，置中顯示
+  - 極簡 DashboardTopBar（32px）：PlcStatusIndicator + 設備名稱 + 時鐘 + 最小化 / 關閉
+  - 完全隱藏：MainShell（Header + LeftNav + BottomBar）/ 頁籤列
+  - Canvas 直接填滿剩餘空間，無 ScrollViewer padding、無縮放
+- **DesignRuntime** 同步支援 Dashboard 模式預覽：
+  - 偵測 Dashboard layout 自動進入預覽模式
+  - 黃色 Banner：「🙈 隱藏工具列」切換鈕 + 「✕ 退出預覽」
+  - 隱藏工具列：PlcConfigBar 收起 + 標題列移除，純 Canvas 視圖，Banner 可拖曳移動視窗
+  - 顯示工具列：還原 PlcConfigBar + 標題列，視窗尺寸重新計算
+  - 退出預覽：完整還原所有工具列與視窗狀態
+
+**下一步：待規劃**
 
 ---
 

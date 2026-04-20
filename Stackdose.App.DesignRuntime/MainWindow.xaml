@@ -11,6 +11,37 @@
         DragOver="OnWindowDragOver"
         Closing="OnWindowClosing">
 
+    <Window.Resources>
+        <Style x:Key="ToolBtn" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.82"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.65"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.35"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -21,7 +52,8 @@
         </Grid.RowDefinitions>
 
         <!-- ── Row 0：PLC 連線設定 ── -->
-        <Border Grid.Row="0"
+        <Border x:Name="PlcConfigBar"
+                Grid.Row="0"
                 Background="#1E2040"
                 BorderBrush="#3A3A6A"
                 BorderThickness="0,0,0,1"
@@ -29,7 +61,7 @@
             <WrapPanel VerticalAlignment="Center">
 
                 <TextBlock Text="PLC IP：" Foreground="#9090B0" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="12"/>
-                <TextBox x:Name="txtIp" Text="192.168.1.100" Width="130" Margin="0,0,6,0"
+                <TextBox x:Name="txtIp" Text="192.168.22.39" Width="130" Margin="0,0,6,0"
                          Background="#2A2A48" Foreground="White" BorderBrush="#4A4A6A"
                          Padding="4,3" VerticalAlignment="Center"/>
 
@@ -39,21 +71,21 @@
                          Padding="4,3" VerticalAlignment="Center"/>
 
                 <TextBlock Text="Scan (ms)：" Foreground="#9090B0" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="12"/>
-                <TextBox x:Name="txtScan" Text="200" Width="50" Margin="0,0,10,0"
+                <TextBox x:Name="txtScan" Text="150" Width="50" Margin="0,0,10,0"
                          Background="#2A2A48" Foreground="White" BorderBrush="#4A4A6A"
                          Padding="4,3" VerticalAlignment="Center"/>
 
                 <Button x:Name="btnConnect" Content="&#x1F50C; 連線"
+                        Style="{StaticResource ToolBtn}"
                         Click="OnConnectClick"
                         Padding="12,5" Margin="0,0,12,0"
-                        Background="#4CAF50" Foreground="White"
-                        BorderThickness="0" Cursor="Hand" FontWeight="SemiBold"/>
+                        Background="#4CAF50"/>
 
                 <Button x:Name="btnDisconnect" Content="&#x26D4; 斷線"
+                        Style="{StaticResource ToolBtn}"
                         Click="OnDisconnectClick"
                         Padding="12,5" Margin="0,0,16,0"
-                        Background="#EF5350" Foreground="White"
-                        BorderThickness="0" Cursor="Hand" FontWeight="SemiBold"
+                        Background="#EF5350"
                         IsEnabled="False"/>
 
                 <Separator Width="1" Background="#3A3A6A" Margin="0,2,16,2" Style="{x:Null}"/>
@@ -77,7 +109,8 @@
         </Border>
 
         <!-- ── Row 1：檔案 + 縮放工具列 ── -->
-        <Border Grid.Row="1"
+        <Border x:Name="FileToolBar"
+                Grid.Row="1"
                 Background="#252540"
                 BorderBrush="#3A3A5A"
                 BorderThickness="0,0,0,1"
@@ -85,10 +118,10 @@
             <WrapPanel VerticalAlignment="Center">
 
                 <Button x:Name="btnOpen" Content="&#x1F4C2; 開啟 JSON"
+                        Style="{StaticResource ToolBtn}"
                         Click="OnOpenClick"
                         Padding="12,5" Margin="0,0,8,0"
-                        Background="#4A6EBF" Foreground="White"
-                        BorderThickness="0" Cursor="Hand" FontWeight="SemiBold"/>
+                        Background="#4A6EBF"/>
 
                 <TextBlock x:Name="lblFilePath"
                            Text="尚未載入   拖曳 .machinedesign.json 至視窗"
@@ -116,11 +149,11 @@
                 <Separator Width="1" Background="#3A3A5A" Margin="16,2,16,2" Style="{x:Null}"/>
 
                 <Button x:Name="btnRandomSim"
+                        Style="{StaticResource ToolBtn}"
                         Content="🎲 亂數 D100~D102"
                         Click="OnRandomSimClick"
                         Padding="12,5"
-                        Background="#5C6BC0" Foreground="White"
-                        BorderThickness="0" Cursor="Hand" FontWeight="SemiBold"
+                        Background="#5C6BC0"
                         ToolTip="每 100~300ms 隨機寫入 0~32767 至 D100、D101、D102（需先連線）"/>
 
             </WrapPanel>
@@ -142,7 +175,8 @@
         </Border>
 
         <!-- ── Row 3：執行畫布 ── -->
-        <ScrollViewer Grid.Row="3"
+        <ScrollViewer x:Name="CanvasScrollViewer"
+                      Grid.Row="3"
                       HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto"
                       Background="#12121E"
@@ -166,8 +200,40 @@
             </Grid>
         </ScrollViewer>
 
+        <!-- ── Dashboard 預覽 Banner（Dashboard 模式時顯示，覆蓋在 Row 3 上方） ── -->
+        <Border x:Name="DashboardBanner"
+                Grid.Row="3"
+                VerticalAlignment="Top"
+                Background="#CC2A2040"
+                BorderBrush="#FFB74D"
+                BorderThickness="0,0,0,1"
+                Padding="12,5"
+                Visibility="Collapsed"
+                Panel.ZIndex="10"
+                MouseLeftButtonDown="OnDashboardBannerDrag">
+            <DockPanel>
+                <Button DockPanel.Dock="Right"
+                        Content="✕ 退出預覽"
+                        Click="OnExitDashboardPreview"
+                        Padding="10,3" Margin="6,0,0,0"
+                        Background="#FFB74D" Foreground="#1A1A2E"
+                        BorderThickness="0" Cursor="Hand" FontWeight="SemiBold" FontSize="11"/>
+                <Button x:Name="BtnToggleToolbar"
+                        DockPanel.Dock="Right"
+                        Content="🙈 隱藏工具列"
+                        Click="OnToggleToolbar"
+                        Padding="10,3"
+                        Background="#3A3A6A" Foreground="#FFB74D"
+                        BorderThickness="1" BorderBrush="#FFB74D"
+                        Cursor="Hand" FontWeight="SemiBold" FontSize="11"/>
+                <TextBlock Text="📊 Dashboard 模式預覽中"
+                           Foreground="#FFB74D" VerticalAlignment="Center" FontSize="11"/>
+            </DockPanel>
+        </Border>
+
         <!-- ── Row 4：狀態列 ── -->
-        <Border Grid.Row="4"
+        <Border x:Name="StatusBar"
+                Grid.Row="4"
                 Background="#252540"
                 BorderBrush="#3A3A5A"
                 BorderThickness="0,1,0,0"

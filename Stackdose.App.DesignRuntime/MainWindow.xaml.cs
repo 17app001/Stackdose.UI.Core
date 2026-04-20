@@ -20,6 +20,8 @@ public partial class MainWindow : Window
     private DateTime _lastHotReload = DateTime.MinValue;
     private DesignDocument? _currentDocument;
     private int _currentPageIndex = 0;
+    private bool _isDashboardPreview  = false;
+    private bool _isToolbarHidden     = false;
 
     public MainWindow()
     {
@@ -54,7 +56,7 @@ public partial class MainWindow : Window
             AutoConnect = true,
             IsGlobal = true,
             ScanInterval = scan,
-            ShowBorder = true,
+            ShowBorder = false,
         };
 
         _plcStatus.ConnectionEstablished += mgr =>
@@ -224,13 +226,9 @@ public partial class MainWindow : Window
         var fileName = Path.GetFileName(filePath);
         Title = $"DesignRuntime — {fileName}";
 
-        // 更新 Tags 狀態
+        ApplyLayoutMode(doc.Layout?.Mode ?? "SplitRight");
         UpdateTagsStatus(doc);
-
-        // 建立頁籤列
         BuildPageTabs(doc, fileName);
-
-        // 渲染目標頁（hot-reload 保留頁，首次載入從第一頁開始）
         SwitchPage(restorePage);
     }
 
@@ -276,14 +274,131 @@ public partial class MainWindow : Window
         }
     }
 
+    // ── Dashboard 模式 ────────────────────────────────────────────────────
+
+    private void ApplyLayoutMode(string mode)
+    {
+        if (mode == "Dashboard")
+            EnterDashboardPreview();
+        else if (_isDashboardPreview)
+            ExitDashboardPreview();
+    }
+
+    private void EnterDashboardPreview()
+    {
+        _isDashboardPreview = true;
+
+        // PlcConfigBar 保留可見（開發者仍需連線 PLC）
+        FileToolBar.Visibility     = Visibility.Collapsed;
+        StatusBar.Visibility       = Visibility.Collapsed;
+        DashboardBanner.Visibility = Visibility.Visible;
+
+        CanvasScrollViewer.Padding = new Thickness(0);
+        CanvasScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+        CanvasScrollViewer.VerticalScrollBarVisibility   = ScrollBarVisibility.Disabled;
+
+        var firstPage = _currentDocument?.Pages?.FirstOrDefault();
+        var w = firstPage?.CanvasWidth  ?? _currentDocument?.CanvasWidth  ?? 1200;
+        var h = firstPage?.CanvasHeight ?? _currentDocument?.CanvasHeight ?? 750;
+
+        ResizeMode = ResizeMode.CanMinimize;
+        Width = w;
+
+        // 等 PlcConfigBar + Banner 完成 layout 後再計算正確高度
+        Dispatcher.InvokeAsync(() =>
+        {
+            Height = h + 28 + PlcConfigBar.ActualHeight;
+            Left = (SystemParameters.PrimaryScreenWidth  - Width)  / 2;
+            Top  = (SystemParameters.PrimaryScreenHeight - Height) / 2;
+        }, System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    private void OnToggleToolbar(object sender, RoutedEventArgs e)
+    {
+        if (_isToolbarHidden)
+            ShowToolbar();
+        else
+            HideToolbar();
+    }
+
+    private void HideToolbar()
+    {
+        _isToolbarHidden = true;
+        BtnToggleToolbar.Content = "👁 顯示工具列";
+
+        PlcConfigBar.Visibility = Visibility.Collapsed;
+        WindowStyle             = WindowStyle.None;
+
+        var firstPage = _currentDocument?.Pages?.FirstOrDefault();
+        var w = firstPage?.CanvasWidth  ?? _currentDocument?.CanvasWidth  ?? 1200;
+        var h = firstPage?.CanvasHeight ?? _currentDocument?.CanvasHeight ?? 750;
+
+        Width  = w;
+        Height = h + 28;
+        Left = (SystemParameters.PrimaryScreenWidth  - Width)  / 2;
+        Top  = (SystemParameters.PrimaryScreenHeight - Height) / 2;
+    }
+
+    private void ShowToolbar()
+    {
+        _isToolbarHidden = false;
+        BtnToggleToolbar.Content = "🙈 隱藏工具列";
+
+        WindowStyle             = WindowStyle.SingleBorderWindow;
+        PlcConfigBar.Visibility = Visibility.Visible;
+
+        Dispatcher.InvokeAsync(() =>
+        {
+            var firstPage = _currentDocument?.Pages?.FirstOrDefault();
+            var w = firstPage?.CanvasWidth  ?? _currentDocument?.CanvasWidth  ?? 1200;
+            var h = firstPage?.CanvasHeight ?? _currentDocument?.CanvasHeight ?? 750;
+            Width  = w;
+            Height = h + 28 + PlcConfigBar.ActualHeight;
+            Left = (SystemParameters.PrimaryScreenWidth  - Width)  / 2;
+            Top  = (SystemParameters.PrimaryScreenHeight - Height) / 2;
+        }, System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    private void ExitDashboardPreview()
+    {
+        _isDashboardPreview = false;
+
+        if (_isToolbarHidden)
+        {
+            _isToolbarHidden        = false;
+            WindowStyle             = WindowStyle.SingleBorderWindow;
+            PlcConfigBar.Visibility = Visibility.Visible;
+        }
+
+        FileToolBar.Visibility     = Visibility.Visible;
+        StatusBar.Visibility       = Visibility.Visible;
+        DashboardBanner.Visibility = Visibility.Collapsed;
+
+        CanvasScrollViewer.Padding = new Thickness(40);
+        CanvasScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+        CanvasScrollViewer.VerticalScrollBarVisibility   = ScrollBarVisibility.Auto;
+
+        ResizeMode = ResizeMode.CanResize;
+        Width  = 1400;
+        Height = 860;
+    }
+
+    private void OnExitDashboardPreview(object sender, RoutedEventArgs e) =>
+        ExitDashboardPreview();
+
+    private void OnDashboardBannerDrag(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (e.ButtonState == System.Windows.Input.MouseButtonState.Pressed)
+            DragMove();
+    }
+
     private void BuildPageTabs(DesignDocument doc, string? fileName = null)
     {
         pageTabs.Children.Clear();
 
         var pages = doc.Pages;
-        if (pages == null || pages.Count <= 1)
+        if (_isDashboardPreview || pages == null || pages.Count <= 1)
         {
-            // 單頁：隱藏頁籤列
             pageTabsBar.Visibility = Visibility.Collapsed;
             return;
         }

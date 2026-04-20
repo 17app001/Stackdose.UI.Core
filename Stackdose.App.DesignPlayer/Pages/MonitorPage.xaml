@@ -15,7 +15,8 @@
         </Grid.RowDefinitions>
 
         <!-- ── PLC 連線狀態列 ── -->
-        <Border Grid.Row="0"
+        <Border x:Name="PlcStatusRow"
+                Grid.Row="0"
                 Background="{DynamicResource Surface.Bg.Panel}"
                 BorderBrush="{DynamicResource Surface.Border.Default}"
                 BorderThickness="0,0,0,1"
@@ -57,12 +58,13 @@
         </Border>
 
         <!-- ── 設計器畫布（可縮放 + 捲動） ── -->
-        <ScrollViewer Grid.Row="2"
+        <ScrollViewer x:Name="CanvasScrollViewer"
+                      Grid.Row="2"
                       HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto"
                       Background="{DynamicResource Surface.Bg.Page}"
                       Padding="24">
-            <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Grid x:Name="CanvasGrid" HorizontalAlignment="Left" VerticalAlignment="Top">
                 <Grid.LayoutTransform>
                     <ScaleTransform x:Name="CanvasScale" ScaleX="1" ScaleY="1"/>
                 </Grid.LayoutTransform>

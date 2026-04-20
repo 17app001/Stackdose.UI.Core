@@ -1,0 +1,48 @@
+<UserControl x:Class="Stackdose.App.DesignPlayer.Controls.DashboardTopBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:core="http://schemas.stackdose.com/wpf"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             Height="32">
+    <Border Background="{DynamicResource Surface.Bg.Panel}"
+            BorderBrush="{DynamicResource Surface.Border.Default}"
+            BorderThickness="0,0,0,1"
+            MouseLeftButtonDown="OnDragMove">
+        <DockPanel Margin="8,0" LastChildFill="True">
+
+            <!-- 關閉 -->
+            <Button DockPanel.Dock="Right" Width="32" Height="32"
+                    Content="✕" ToolTip="關閉" Click="OnClose"
+                    Background="Transparent" BorderThickness="0"
+                    Foreground="{DynamicResource Surface.Text.Secondary}" FontSize="11"
+                    Cursor="Hand"/>
+
+            <!-- 最小化 -->
+            <Button DockPanel.Dock="Right" Width="32" Height="32"
+                    Content="—" ToolTip="最小化" Click="OnMinimize"
+                    Background="Transparent" BorderThickness="0"
+                    Foreground="{DynamicResource Surface.Text.Secondary}" FontSize="11"
+                    Cursor="Hand"/>
+
+            <!-- 時鐘 -->
+            <TextBlock DockPanel.Dock="Right" x:Name="ClockText"
+                       VerticalAlignment="Center" FontSize="11"
+                       Foreground="{DynamicResource Surface.Text.Secondary}"
+                       Margin="0,0,10,0" FontFamily="Consolas"/>
+
+            <!-- PLC 狀態指示燈（只顯示，不管理連線） -->
+            <core:PlcStatusIndicator DockPanel.Dock="Left"
+                                     x:Name="PlcIndicator"
+                                     VerticalAlignment="Center"
+                                     Margin="0,0,8,0"/>
+
+            <!-- 設備名稱 -->
+            <TextBlock x:Name="DeviceNameText"
+                       VerticalAlignment="Center"
+                       FontSize="12" FontWeight="SemiBold"
+                       Foreground="{DynamicResource Surface.Text.Primary}"/>
+        </DockPanel>
+    </Border>
+</UserControl>

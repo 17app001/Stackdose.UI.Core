@@ -260,7 +260,79 @@ Stackdose.App.DesignPlayer
 
 ---
 
-## 6. 常見問題
+## 6. Dashboard 模式
+
+**加入版本：** 2026-04-20
+
+### 6.1 用途
+
+Dashboard 模式適合「全屏無人操作的監控看板」場景：工廠展示螢幕、單機台狀態牆、無須操作員登入的儀表板。
+
+**與標準模式的差異：**
+
+| | 標準模式（SplitRight/Standard） | Dashboard 模式 |
+|---|---|---|
+| Shell UI | 完整（Header + LeftNav + BottomBar） | 無 |
+| TopBar | 60px AppHeader（含登出/導航） | 32px 極簡 TopBar |
+| 頁籤切換 | 多頁時顯示頁籤列 | 隱藏（固定顯示第一頁） |
+| 視窗大小 | Maximized（全螢幕） | 固定 = canvas 寬 × (canvas 高 + 32px) |
+| 縮放 | 可縮放（ScrollViewer + ScaleTransform） | 無（原始尺寸） |
+| 使用者管理 | 可選 | 不顯示 |
+
+### 6.2 設定方式（設計師）
+
+1. 開啟 **MachinePageDesigner**
+2. 工具列 **Layout** 下拉選單選擇 `Dashboard`
+3. 設定畫布尺寸（建議與目標螢幕解析度相同，例如 1920×1080）
+4. 拖曳控制項、設計版面
+5. `Ctrl+S` 儲存 `.machinedesign.json`
+
+儲存後 JSON 的 `layout.mode` 欄位會寫入 `"Dashboard"`：
+
+```json
+{
+  "version": "2.0",
+  "layout": { "mode": "Dashboard" },
+  "pages": [
+    {
+      "canvasWidth": 1920,
+      "canvasHeight": 1080,
+      "canvasItems": [...]
+    }
+  ]
+}
+```
+
+### 6.3 部署方式（工程師）
+
+與標準 DesignPlayer 部署流程完全相同，**不需額外設定**：
+
+1. 編輯 `Config/app-config.json`，將 `designFile` 指向設計師交付的 `.machinedesign.json`
+2. 啟動 `Stackdose.App.DesignPlayer.exe`
+
+DesignPlayer 讀取到 `layout.mode: "Dashboard"` 後**自動切換**為 Dashboard 模式。
+
+### 6.4 Dashboard TopBar 說明
+
+| 元素 | 說明 |
+|---|---|
+| ● 狀態燈 | `PlcStatusIndicator`：綠色 = 已連線，紅色 = 斷線（自動重連不影響） |
+| 設備名稱 | 取自 `app-config.json` 的 `headerDeviceName` |
+| `HH:mm:ss` 時鐘 | 每秒更新 |
+| `—` 最小化 | 將視窗最小化到工作列 |
+| `✕` 關閉 | 關閉應用程式 |
+
+> TopBar 可拖曳移動視窗（點住 TopBar 空白處拖曳）。
+
+### 6.5 視窗尺寸規則
+
+視窗固定尺寸 = **canvas 寬度 × (canvas 高度 + 32px)**，啟動時自動置中於主螢幕。
+
+`ResizeMode = CanMinimize`：只允許最小化，無法調整大小或最大化。
+
+---
+
+## 7. 常見問題
 
 **Q: 設計時控制項不顯示數值？**
 A: 正常，MachinePageDesigner 和 DesignViewer 不連 PLC，顯示 DefaultValue。

@@ -235,7 +235,7 @@ public sealed class MainViewModel : ObservableObject
         set { if (Set(ref _machineId, value)) MarkDirty(); }
     }
 
-    public string[] LayoutModes { get; } = ["SplitRight", "Standard", "SplitBottom"];
+    public string[] LayoutModes { get; } = ["SplitRight", "Standard", "SplitBottom", "Dashboard"];
 
     public bool SnapToGrid
     {

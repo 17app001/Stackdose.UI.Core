@@ -31,6 +31,7 @@ public partial class MainWindow : Window
 
         // ── 監控頁面 ────────────────────────────────────────────────
         _monitorPage = new MonitorPage(config);
+        _monitorPage.DashboardModeActivated += OnDashboardModeActivated;
         MainShell.ShellContent = _monitorPage;
 
         // ── 設定頁面 ────────────────────────────────────────────────
@@ -76,6 +77,24 @@ public partial class MainWindow : Window
                 MainShell.PageTitle    = "User Management";
                 break;
         }
+    }
+
+    // ── Dashboard 模式 ────────────────────────────────────────────────────
+
+    private void OnDashboardModeActivated(object? sender, DashboardModeArgs args)
+    {
+        MainShell.Visibility     = Visibility.Collapsed;
+        DashboardLayout.Visibility = Visibility.Visible;
+        DashboardContent.Content  = _monitorPage;
+        DashTopBar.DeviceName     = _config.HeaderDeviceName;
+
+        WindowState = WindowState.Normal;
+        ResizeMode  = ResizeMode.CanMinimize;
+        Width       = args.CanvasWidth;
+        Height      = args.CanvasHeight + 32;
+
+        Left = (SystemParameters.PrimaryScreenWidth  - Width)  / 2;
+        Top  = (SystemParameters.PrimaryScreenHeight - Height) / 2;
     }
 
     // ── 設定套用 ──────────────────────────────────────────────────────────

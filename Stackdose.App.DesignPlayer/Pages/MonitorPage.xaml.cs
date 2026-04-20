@@ -9,8 +9,12 @@ using System.Windows.Controls;
 
 namespace Stackdose.App.DesignPlayer.Pages;
 
+public sealed record DashboardModeArgs(double CanvasWidth, double CanvasHeight);
+
 public partial class MonitorPage : UserControl
 {
+    public event EventHandler<DashboardModeArgs>? DashboardModeActivated;
+
     private readonly PlayerAppConfig _config;
     private PlcStatus? _plcStatus;
     private FileSystemWatcher? _fileWatcher;
@@ -18,6 +22,7 @@ public partial class MonitorPage : UserControl
     private DateTime _lastHotReload = DateTime.MinValue;
     private DesignDocument? _currentDocument;
     private int _currentPageIndex = 0;
+    private bool _isDashboardMode = false;
 
     public MonitorPage(PlayerAppConfig config)
     {
@@ -155,7 +160,6 @@ public partial class MonitorPage : UserControl
 
     private void RenderDocument(DesignDocument doc)
     {
-        // Hot-reload 時保留當前頁索引
         var restorePage = (_currentDocument != null)
             ? Math.Min(_currentPageIndex, (doc.Pages?.Count ?? 1) - 1)
             : 0;
@@ -163,8 +167,25 @@ public partial class MonitorPage : UserControl
         _currentDocument = doc;
         _currentPageIndex = 0;
 
+        ApplyLayoutMode(doc.Layout?.Mode ?? "SplitRight");
         BuildPageTabs(doc);
         SwitchPage(restorePage);
+    }
+
+    private void ApplyLayoutMode(string mode)
+    {
+        if (mode != "Dashboard") return;
+
+        _isDashboardMode = true;
+        PlcStatusRow.Visibility = Visibility.Collapsed;
+        CanvasScrollViewer.Padding = new Thickness(0);
+        CanvasScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+        CanvasScrollViewer.VerticalScrollBarVisibility   = ScrollBarVisibility.Disabled;
+
+        var firstPage = _currentDocument?.Pages?.FirstOrDefault();
+        var w = firstPage?.CanvasWidth  ?? _currentDocument?.CanvasWidth  ?? 1200;
+        var h = firstPage?.CanvasHeight ?? _currentDocument?.CanvasHeight ?? 750;
+        DashboardModeActivated?.Invoke(this, new DashboardModeArgs(w, h));
     }
 
     private void BuildPageTabs(DesignDocument doc)
@@ -172,7 +193,7 @@ public partial class MonitorPage : UserControl
         PageTabs.Children.Clear();
 
         var pages = doc.Pages;
-        if (pages == null || pages.Count <= 1)
+        if (_isDashboardMode || pages == null || pages.Count <= 1)
         {
             PageTabsBar.Visibility = Visibility.Collapsed;
             return;

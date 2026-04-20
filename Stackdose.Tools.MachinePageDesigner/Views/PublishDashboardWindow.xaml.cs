@@ -111,7 +111,9 @@ public partial class PublishDashboardWindow : Window
 
             // Note: /p:AssemblyName causes NuGet "Ambiguous project name" error.
             // Publish with original name, then rename output files afterward.
+            // DebugType=None suppresses .pdb generation at the source.
             var args = $"publish \"{projPath}\" -c Release -r win-x64 --self-contained false"
+                     + $" /p:DebugType=None /p:DebugSymbols=false"
                      + $" -o \"{outputDir}\"";
 
             var exitedClean = await RunDotnetAsync(args);
@@ -129,6 +131,9 @@ public partial class PublishDashboardWindow : Window
             {
                 // Rename exe + companion files to desired exeName
                 RenamePublishOutput(outputDir, exeName);
+
+                // Remove dev-only and unused-module files
+                CleanPublishOutput(outputDir, exeName);
 
                 // Copy design file
                 var configDir = Path.Combine(outputDir, "Config");
@@ -163,6 +168,35 @@ public partial class PublishDashboardWindow : Window
             PublishBtn.IsEnabled = true;
             CloseBtn.IsEnabled   = true;
         }
+    }
+
+    private void CleanPublishOutput(string outputDir, string exeName)
+    {
+        // MachinePageDesigner is a design tool pulled in as ProjectReference for model types.
+        // DesignPlayer only needs the .dll; the standalone launcher files are not required.
+        var designerBase = Path.Combine(outputDir, "Stackdose.Tools.MachinePageDesigner");
+        foreach (var ext in new[] { ".exe", ".runtimeconfig.json", ".deps.json", ".pdb" })
+            TryDeleteFile(designerBase + ext);
+
+        // PrintHead / FeiyangWrapper — C++ native DLL for ink-jet head, not used in Dashboard
+        foreach (var prefix in new[] { "FeiyangWrapper", "Stackdose.PrintHead" })
+        {
+            foreach (var f in Directory.GetFiles(outputDir, prefix + ".*"))
+                TryDeleteFile(f);
+        }
+
+        // Sweep any remaining .pdb (DebugType=None should have suppressed these,
+        // but some platform DLLs may still ship them)
+        foreach (var pdb in Directory.GetFiles(outputDir, "*.pdb"))
+            TryDeleteFile(pdb);
+
+        Log("[清理] 移除 .pdb、MachinePageDesigner 執行檔、FeiyangWrapper、PrintHead");
+    }
+
+    private void TryDeleteFile(string path)
+    {
+        try { if (File.Exists(path)) File.Delete(path); }
+        catch (Exception ex) { Log($"[清理跳過] {Path.GetFileName(path)}: {ex.Message}"); }
     }
 
     private static void RenamePublishOutput(string outputDir, string exeName)

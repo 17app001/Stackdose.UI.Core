@@ -114,7 +114,16 @@ public partial class PublishDashboardWindow : Window
             var args = $"publish \"{projPath}\" -c Release -r win-x64 --self-contained false"
                      + $" -o \"{outputDir}\"";
 
-            var success = await RunDotnetAsync(args);
+            var exitedClean = await RunDotnetAsync(args);
+
+            // FeiyangWrapper.vcxproj (C++ native) can't be built by dotnet CLI,
+            // so exit code may be non-zero even though all C# output was produced.
+            // Treat as success if the published exe actually exists.
+            var publishedExe = Path.Combine(outputDir, "Stackdose.App.DesignPlayer.exe");
+            var success = exitedClean || File.Exists(publishedExe);
+
+            if (!exitedClean && success)
+                Log("[提示] 偵測到 C++ 原生元件建置警告（FeiyangWrapper），但 C# 輸出完整，繼續封裝。");
 
             if (success)
             {

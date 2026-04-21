@@ -31,12 +31,12 @@
 - **B0.7** Commit、回報、停手等 B1 許可
 
 ### 驗收
-- [ ] `controls-reference.md` 所有控件對應實體檔案且屬性正確
-- [ ] `architecture.md` 沒有「檔案不存在的基類體系」
-- [ ] `PROJECT_MAP.md` 控件歸屬正確
-- [ ] `index.html` 對外描述不誇大
-- [ ] `B0-control-inventory.md` 涵蓋 24 個 Core + 7 個 Templates 控件
-- [ ] `B0-findings.md` 每條差異都有「誰該改 / 改成什麼」
+- [x] `controls-reference.md` 所有控件對應實體檔案且屬性正確
+- [x] `architecture.md` 沒有「檔案不存在的基類體系」
+- [x] `PROJECT_MAP.md` 控件歸屬正確
+- [x] `index.html` — 檔案不存在，已記錄為 F18 跳過
+- [x] `B0-control-inventory.md` 涵蓋 26 個 Core + 16 個 Templates 元件（實際清點結果）
+- [x] `B0-findings.md` 每條差異都有「誰該改 / 改成什麼」
 
 ---
 

@@ -12,7 +12,7 @@
 | **B0** 底層現況校正 | ✅ 完成 | 2026-04-21 | `01a903c` | 盤點、修文件，不動程式碼 |
 | **B1** 抽共用基類 | ✅ 完成 | 2026-04-21 | `b0e424d` | PlcLabel/Text/StatusIndicator/AlarmViewer/SensorViewer 全遷移 |
 | **B2** 事件能力收斂 | ✅ 完成 | 2026-04-21 | `b0e424d` | PlcEventContext + ControlValueChanged event bus（與 B1 同 commit） |
-| **B3** Shell 策略化 | ⚪ 待命 | — | — | — |
+| **B3** Templates/Shell 策略化 | ✅ 完成 | 2026-04-21 | `70b919f` | IShellStrategy + FreeCanvas/SinglePage/Standard |
 | **B4** Behavior Schema | ⚪ 待命 | — | — | — |
 | **B5** Behavior Engine | ⚪ 待命 | — | — | — |
 | **B6** Designer UI | ⚪ 待命 | — | — | — |
@@ -54,7 +54,16 @@
 
 > 接手 AI：從這裡開始做事。
 
-**現在在做：** 🛑 **等待使用者授權** B3（B1+B2+sln 修復全部完成並已 commit）
+**現在在做：** 🛑 **等待使用者授權** B4（B3 Shell 策略化已完成並 commit `70b919f`）
+
+**B3 產出：**
+- 新增：`ShellShared/Services/IShellStrategy.cs`（介面 + 說明）
+- 新增：`ShellShared/Services/ShellStrategyFactory.cs`（依 shellMode 字串選策略）
+- 新增：`FreeCanvasShellStrategy` / `SinglePageShellStrategy` / `StandardShellStrategy`
+- 修改：`DesignDocument.cs` 加 `ShellMode` 欄位（預設 `"FreeCanvas"`，向後相容）
+- 修改：`DesignRuntime.csproj` 加入 ShellShared 參考
+- 修改：`MainWindow.xaml` Row 2 加 `shellPreviewHost`；狀態列加 Shell 模式指示
+- 修改：`MainWindow.xaml.cs` 加 `ApplyShellStrategy()` — 載入文件後自動切換外殼
 
 **已完成的 commits：**
 | Commit | 內容 |
@@ -68,6 +77,8 @@
 | `c3d2ba5` | fix(runtime)：StaticLabel 正確 key、ClipToBounds、VerticalAlignment |
 | `0d4a639` | fix(runtime)：PlcLabel factory 補齊 5 個 display props |
 | `8494b36` | feat(runtime)：ValueChanged 事件監測 ToggleButton |
+| `13b9e13` | fix(factory)：PlcText 補 showSuccessMessage/enableAuditTrail；docs 補齊 |
+| `70b919f` | B3：IShellStrategy + 三策略 + DesignRuntime 接線 |
 
 **B1+B2 產出總覽：**
 - 新增：`Stackdose.UI.Core/Helpers/PlcValueChangedEventArgs.cs`

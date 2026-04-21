@@ -306,6 +306,29 @@ public partial class MainWindow : Window
         }
     }
 
+    // ── ValueChanged 事件監視 ─────────────────────────────────────────────
+
+    private void OnWatchEventsToggled(object sender, RoutedEventArgs e)
+    {
+        if (btnWatchEvents.IsChecked == true)
+        {
+            lblEventLog.Visibility = Visibility.Visible;
+            PlcEventContext.ControlValueChanged += OnControlValueChanged;
+            lblEventLog.Text = "等待值變化…";
+        }
+        else
+        {
+            PlcEventContext.ControlValueChanged -= OnControlValueChanged;
+            lblEventLog.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private void OnControlValueChanged(object? sender, PlcValueChangedEventArgs e)
+    {
+        Dispatcher.BeginInvoke(() =>
+            lblEventLog.Text = $"⚡ {e.Address} = {e.DisplayText}");
+    }
+
     // ── 狀態列 ────────────────────────────────────────────────────────
 
     private void ShowStatus(string msg, bool error = false)

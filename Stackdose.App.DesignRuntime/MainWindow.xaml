@@ -186,6 +186,24 @@
                 Padding="10,4">
             <DockPanel>
                 <TextBlock x:Name="lblItemCount" Text="" Foreground="#7070A0" FontSize="11" DockPanel.Dock="Right" Margin="0,0,16,0"/>
+                <!-- ValueChanged 事件監視 -->
+                <ToggleButton x:Name="btnWatchEvents"
+                              Content="📡 偵測值變化"
+                              DockPanel.Dock="Right"
+                              Padding="8,2" Margin="0,0,8,0"
+                              Background="#2A3A5A" Foreground="#7090C0"
+                              BorderThickness="1" BorderBrush="#3A5A8A"
+                              FontSize="11" Cursor="Hand"
+                              Checked="OnWatchEventsToggled"
+                              Unchecked="OnWatchEventsToggled"/>
+                <TextBlock x:Name="lblEventLog"
+                           Text=""
+                           DockPanel.Dock="Right"
+                           Foreground="#5DE2FF" FontSize="11"
+                           FontFamily="Consolas"
+                           VerticalAlignment="Center"
+                           Margin="0,0,16,0"
+                           Visibility="Collapsed"/>
                 <TextBlock x:Name="lblStatus"
                            Text="就緒 — 請先設定 PLC 連線，再開啟 .machinedesign.json"
                            Foreground="#7070A0" FontSize="11"/>

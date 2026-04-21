@@ -8,11 +8,17 @@ namespace Stackdose.Tools.MachinePageDesigner.Models;
 /// </summary>
 public sealed class PageDefinition
 {
-    [JsonPropertyName("id")]
+    [JsonPropertyName("pageId")]
     public string Id { get; set; } = "";
 
-    [JsonPropertyName("title")]
+    [JsonPropertyName("name")]
     public string Title { get; set; } = "";
+
+    [JsonPropertyName("canvasWidth")]
+    public double CanvasWidth { get; set; } = 1200;
+
+    [JsonPropertyName("canvasHeight")]
+    public double CanvasHeight { get; set; } = 750;
 
     [JsonPropertyName("canvasItems")]
     public List<DesignerItemDefinition> CanvasItems { get; set; } = [];

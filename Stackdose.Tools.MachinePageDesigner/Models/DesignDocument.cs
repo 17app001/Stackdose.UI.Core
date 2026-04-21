@@ -23,11 +23,20 @@ public sealed class DesignDocument
     public List<DesignerItemDefinition> CanvasItems { get; set; } = [];
 
     /// <summary>
-    /// Shell 外殼模式：FreeCanvas（預設）/ SinglePage / Standard。
-    /// 決定 DesignRuntime / DesignPlayer 載入此文件時使用哪種 Shell 策略包裝畫布。
+    /// Shell 外殼模式：FreeCanvas（預設）/ SinglePage / Standard。<br/>
+    /// 決定 DesignRuntime / DesignPlayer 載入此文件時使用哪種 Shell 策略包裝畫布。<br/>
+    /// 注意：此值會與 Layout.Mode 同步（Dashboard 對應 FreeCanvas）。
     /// </summary>
     [JsonPropertyName("shellMode")]
-    public string ShellMode { get; set; } = "FreeCanvas";
+    public string ShellMode
+    {
+        get => Layout.Mode switch
+        {
+            "Dashboard" => "FreeCanvas",
+            _ => Layout.Mode
+        };
+        set => Layout.Mode = value;
+    }
 
     /// <summary>
     /// Standard 模式多頁面定義。<br/>

@@ -187,12 +187,20 @@ public partial class App : Application
 <Window x:Class="$AppName.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:core="http://schemas.stackdose.com/wpf"
         xmlns:Templates="http://schemas.stackdose.com/templates"
         Title="$AppName"
         Height="900" Width="1800"
         WindowState="Maximized" WindowStyle="None" ResizeMode="CanResize">
-    <!-- Standard 模式：MainContainer 由 MainWindow.xaml.cs 動態建立 -->
-    <ContentPresenter x:Name="RootContent" />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <ContentPresenter x:Name="ShellHost" Grid.Row="0" />
+        <!-- PLC 狀態列 -->
+        <core:PlcStatus x:Name="PlcStatusBar" Grid.Row="1" Height="50" ShowBorder="False" IsGlobal="True" />
+    </Grid>
 </Window>
 "@
     } else {
@@ -200,14 +208,23 @@ public partial class App : Application
 <Window x:Class="$AppName.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:core="http://schemas.stackdose.com/wpf"
         xmlns:Templates="http://schemas.stackdose.com/templates"
         Title="$AppName"
         Height="900" Width="1800"
         WindowState="Maximized" WindowStyle="None" ResizeMode="CanResize">
-    <Templates:SinglePageContainer x:Name="Shell"
-        CloseRequested="Shell_OnCloseRequested"
-        MinimizeRequested="Shell_OnMinimizeRequested"
-        LogoutRequested="Shell_OnLogoutRequested" />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Templates:SinglePageContainer x:Name="Shell" Grid.Row="0"
+            CloseRequested="Shell_OnCloseRequested"
+            MinimizeRequested="Shell_OnMinimizeRequested"
+            LogoutRequested="Shell_OnLogoutRequested" />
+        <!-- PLC 狀態列 -->
+        <core:PlcStatus x:Name="PlcStatusBar" Grid.Row="1" Height="50" ShowBorder="False" IsGlobal="True" />
+    </Grid>
 </Window>
 "@
     }
@@ -219,6 +236,7 @@ public partial class App : Application
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -251,9 +269,33 @@ public partial class MainWindow : Window
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         var configDir = Path.Combine(AppContext.BaseDirectory, "Config");
-        var jsonFile  = Directory.EnumerateFiles(configDir, "*.machinedesign.json").FirstOrDefault();
-        if (jsonFile == null) { MessageBox.Show("找不到 Config/*.machinedesign.json", "啟動失敗"); return; }
-        var doc = DesignFileService.Load(jsonFile);
+        var appConfigPath = Path.Combine(configDir, "app-config.json");
+        
+        if (!File.Exists(appConfigPath)) { MessageBox.Show("找不到 Config/app-config.json", "啟動失敗"); return; }
+        
+        var appConfigJson = File.ReadAllText(appConfigPath);
+        using var appDoc = JsonDocument.Parse(appConfigJson);
+        var root = appDoc.RootElement;
+        
+        // 設定 PLC
+        if (root.TryGetProperty("plc", out var plc)) {
+            PlcStatusBar.IpAddress = plc.TryGetProperty("ip", out var ip) ? ip.GetString() ?? "127.0.0.1" : "127.0.0.1";
+            PlcStatusBar.Port = plc.TryGetProperty("port", out var port) ? port.GetInt32() : 3000;
+            PlcStatusBar.ScanInterval = plc.TryGetProperty("pollIntervalMs", out var scan) ? scan.GetInt32() : 200;
+            PlcStatusBar.AutoConnect = !plc.TryGetProperty("autoConnect", out var auto) || auto.GetBoolean();
+        }
+        
+        // 讀取設計檔
+        var designFile = root.TryGetProperty("designFile", out var df) ? df.GetString() : null;
+        if (string.IsNullOrEmpty(designFile)) {
+             designFile = Directory.EnumerateFiles(configDir, "*.machinedesign.json").FirstOrDefault();
+        } else {
+             designFile = Path.Combine(AppContext.BaseDirectory, designFile);
+        }
+
+        if (designFile == null || !File.Exists(designFile)) { MessageBox.Show("找不到設計檔", "啟動失敗"); return; }
+        
+        var doc = DesignFileService.Load(designFile);
         RenderDocument(doc);
     }
 
@@ -268,7 +310,7 @@ public partial class MainWindow : Window
         container.MinimizeRequested += (_, _) => WindowState = WindowState.Minimized;
         container.LogoutRequested   += (_, _) => SecurityContext.Logout();
 
-        RootContent.Content = container;
+        ShellHost.Content = container;
         SetupMultiPageNavigation(container, doc);
     }
 
@@ -326,7 +368,6 @@ public partial class MainWindow : Window
         if (doc.Pages.Count > 0) Navigate(doc.Pages[0].Id);
     }
 
-    // 在這裡注入機型專屬 Handler
     private void RegisterCustomHandlers()
     {
         // 範例：_behaviorEngine.Register(new Handlers.ModelSStartCycleHandler());
@@ -351,6 +392,7 @@ public partial class MainWindow : Window
         $mainWindowCs = @"
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -380,9 +422,33 @@ public partial class MainWindow : Window
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         var configDir = Path.Combine(AppContext.BaseDirectory, "Config");
-        var jsonFile  = Directory.EnumerateFiles(configDir, "*.machinedesign.json").FirstOrDefault();
-        if (jsonFile == null) { MessageBox.Show("找不到 Config/*.machinedesign.json", "啟動失敗"); return; }
-        var doc = DesignFileService.Load(jsonFile);
+        var appConfigPath = Path.Combine(configDir, "app-config.json");
+        
+        if (!File.Exists(appConfigPath)) { MessageBox.Show("找不到 Config/app-config.json", "啟動失敗"); return; }
+        
+        var appConfigJson = File.ReadAllText(appConfigPath);
+        using var appDoc = JsonDocument.Parse(appConfigJson);
+        var root = appDoc.RootElement;
+        
+        // 設定 PLC
+        if (root.TryGetProperty("plc", out var plc)) {
+            PlcStatusBar.IpAddress = plc.TryGetProperty("ip", out var ip) ? ip.GetString() ?? "127.0.0.1" : "127.0.0.1";
+            PlcStatusBar.Port = plc.TryGetProperty("port", out var port) ? port.GetInt32() : 3000;
+            PlcStatusBar.ScanInterval = plc.TryGetProperty("pollIntervalMs", out var scan) ? scan.GetInt32() : 200;
+            PlcStatusBar.AutoConnect = !plc.TryGetProperty("autoConnect", out var auto) || auto.GetBoolean();
+        }
+
+        // 讀取設計檔
+        var designFile = root.TryGetProperty("designFile", out var df) ? df.GetString() : null;
+        if (string.IsNullOrEmpty(designFile)) {
+             designFile = Directory.EnumerateFiles(configDir, "*.machinedesign.json").FirstOrDefault();
+        } else {
+             designFile = Path.Combine(AppContext.BaseDirectory, designFile);
+        }
+
+        if (designFile == null || !File.Exists(designFile)) { MessageBox.Show("找不到設計檔", "啟動失敗"); return; }
+        
+        var doc = DesignFileService.Load(designFile);
         RenderDocument(doc);
     }
 
@@ -428,7 +494,6 @@ public partial class MainWindow : Window
         _behaviorEngine.BindDocument(doc.CanvasItems, controlMap);
     }
 
-    // 在這裡注入機型專屬 Handler
     private void RegisterCustomHandlers()
     {
         // 範例：_behaviorEngine.Register(new Handlers.ModelSStartCycleHandler());
@@ -724,16 +789,29 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler
 
 @"
 {
-  "machine": { "id": "M1", "name": "$AppName" },
-  "plc": { "ip": "192.168.22.39", "port": 3000, "pollIntervalMs": 150, "autoConnect": false }
+  "appTitle": "$AppName",
+  "headerDeviceName": "DEVICE",
+  "loginRequired": false,
+  "plc": {
+    "ip": "192.168.22.39",
+    "port": 3000,
+    "pollIntervalMs": 150,
+    "autoConnect": true
+  },
+  "designFile": "Config/$AppName.machinedesign.json"
 }
-"@ | Set-Content -Path (Join-Path $jdConfigDir "Machine1.config.json") -Encoding UTF8
+"@ | Set-Content -Path (Join-Path $jdConfigDir "app-config.json") -Encoding UTF8
 
     $shellModeValue = if ($JsonDrivenShellMode -eq "Standard") { "Standard" } else { "SinglePage" }
 @"
 {
+  "version": "2.0",
   "meta": { "title": "$AppName", "machineId": "M1" },
-  "shellMode": "$shellModeValue",
+  "layout": {
+    "mode": "$shellModeValue",
+    "showLiveLog": true,
+    "showAlarmViewer": true
+  },
   "canvasWidth": 1280,
   "canvasHeight": 720,
   "canvasItems": [

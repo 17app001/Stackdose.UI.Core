@@ -702,8 +702,7 @@ namespace Stackdose.UI.Core.Controls
 
                         string name = kvp.Key;
 
-                        // ⭐ 修正 3：呼叫實際具有傳輸圖片功能的 TransferBitmap 方法
-                        var (result, msg) = printHead.TransferBitmap(bitmap, startX, caliMM);
+                        var (result, msg) = await printHead.TransferBitmapAsync(bitmap, startX, caliMM);
 
                         if (result)
                         {

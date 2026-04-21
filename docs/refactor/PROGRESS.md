@@ -54,7 +54,14 @@
 
 > 接手 AI：從這裡開始做事。
 
-**現在在做：** 🛑 **等待使用者確認**（B1+B2 完成，commit `b0e424d` 已落盤）
+**現在在做：** 🛑 **等待使用者授權** B3（B1+B2+sln 修復全部完成並已 commit）
+
+**已完成的三筆 commits（本次對話）：**
+| Commit | 內容 |
+|---|---|
+| `b0e424d` | B1+B2：5 個控件遷移 PlcControlBase、PlcEventContext 事件匯流 |
+| `8e363f7` | docs：PROGRESS.md + devlog B1+B2 記錄 |
+| `623335f` | fix(sln)：VisualStudioVersion 18→17.14、移除 inline # 注釋、加入 App.Monitor 至 UI.Core.sln |
 
 **B1+B2 產出總覽：**
 - 新增：`Stackdose.UI.Core/Helpers/PlcValueChangedEventArgs.cs`

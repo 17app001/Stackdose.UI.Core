@@ -52,30 +52,74 @@ MachinePageDesigner        DesignViewer              DesignRuntime
 ```json
 {
   "version": "2.0",
+  "shellMode": "FreeCanvas",
   "meta": {
     "title": "頁面標題",
-    "machineId": "M1",
-    "canvasWidth": 1280,
-    "canvasHeight": 720
+    "machineId": "M1"
   },
-  "items": [
+  "canvasWidth": 1280,
+  "canvasHeight": 720,
+  "canvasItems": [
     {
+      "id": "a1b2c3d4",
       "type": "PlcLabel",
       "x": 100, "y": 200,
       "width": 120, "height": 80,
-      "zIndex": 0,
+      "order": 0,
       "locked": false,
-      "properties": {
+      "props": {
         "label": "溫度",
         "address": "D100",
         "colorTheme": "NeonBlue",
-        "shape": "Rectangle"
-      }
+        "shape": "Circle"
+      },
+      "events": [
+        {
+          "on": "valueChanged",
+          "when": { "op": ">", "value": 100 },
+          "do": [
+            { "action": "SetProp", "target": "self", "prop": "background", "value": "Red" },
+            { "action": "LogAudit", "message": "溫度超標: {value}" },
+            { "action": "ShowDialog", "title": "警告", "message": "溫度超過 100°C！" }
+          ]
+        }
+      ]
     }
-  ],
-  "groups": [...]
+  ]
 }
 ```
+
+#### shellMode 可選值
+| 值 | 說明 |
+|---|---|
+| `FreeCanvas`（預設） | 裸畫布，無外殼包裝 |
+| `SinglePage` | 包裝進 SinglePageContainer（Header only） |
+| `Standard` | 包裝進 MainContainer（Header + LeftNav + BottomBar，B7 接線） |
+
+#### events 欄位（B4 新增）
+
+每個控制項可定義行為事件清單，實現「無 XAML 反應式 UI」：
+
+| 欄位 | 型別 | 說明 |
+|---|---|---|
+| `on` | string | 觸發來源：`valueChanged` / `click` / `connected` / `disconnected` |
+| `when` | 物件（可省略） | 比較條件；省略時無條件觸發 |
+| `when.op` | string | 運算子：`>` / `>=` / `<` / `<=` / `==` / `!=` |
+| `when.value` | number | 比較基準值 |
+| `do` | 陣列 | 依序執行的動作清單 |
+
+#### 支援的動作（B5 Engine 實作）
+
+| `action` | 必填欄位 | 說明 |
+|---|---|---|
+| `SetProp` | `target`, `prop`, `value` | 修改控制項 props（`"self"` = 觸發控制項） |
+| `WritePlc` | `target`(位址), `value` | 寫入 PLC 暫存器 |
+| `LogAudit` | `message` | 寫入 FDA 稽核日誌 |
+| `ShowDialog` | `title`, `message` | 顯示警告對話框 |
+| `Navigate` | `page` | 切換頁面（Standard Shell） |
+| `SetStatus` | `value` | 設定機器狀態 |
+
+`message` / `value` 支援 `{value}` 佔位符（運行時替換為實際 PLC 值）。
 
 ### 2.4 支援控制項
 
@@ -152,7 +196,7 @@ Stackdose.Tools.DesignViewer
 ```
 Stackdose.App.DesignRuntime
 ├── → Stackdose.UI.Core
-├── → Stackdose.UI.Templates
+├── → Stackdose.App.ShellShared（B3：Shell 策略）
 ├── → Stackdose.App.DeviceFramework
 └── → Stackdose.Tools.MachinePageDesigner（載入 JSON 渲染）
 ```

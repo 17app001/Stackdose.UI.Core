@@ -13,7 +13,8 @@
 | **B1** 抽共用基類 | ✅ 完成 | 2026-04-21 | `b0e424d` | PlcLabel/Text/StatusIndicator/AlarmViewer/SensorViewer 全遷移 |
 | **B2** 事件能力收斂 | ✅ 完成 | 2026-04-21 | `b0e424d` | PlcEventContext + ControlValueChanged event bus（與 B1 同 commit） |
 | **B3** Templates/Shell 策略化 | ✅ 完成 | 2026-04-21 | `70b919f` | IShellStrategy + FreeCanvas/SinglePage/Standard |
-| **B4** Behavior Schema | ⚪ 待命 | — | — | — |
+| **B4** Behavior Schema | ✅ 完成 | 2026-04-21 | `pending` | BehaviorEvent/Condition/Action POCO + events[] |
+| **B5** Behavior Engine | ⚪ 待命 | — | — | — |
 | **B5** Behavior Engine | ⚪ 待命 | — | — | — |
 | **B6** Designer UI | ⚪ 待命 | — | — | — |
 | **B7** Standard 模式收尾 | ⚪ 待命 | — | — | — |

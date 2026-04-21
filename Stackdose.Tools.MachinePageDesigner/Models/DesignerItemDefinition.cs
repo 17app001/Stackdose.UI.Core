@@ -1,11 +1,12 @@
-﻿using System.Text.Json.Serialization;
+﻿using Stackdose.UI.Core.Models;
+using System.Text.Json.Serialization;
 
 namespace Stackdose.Tools.MachinePageDesigner.Models;
 
 /// <summary>
 /// 單一控制項定義（type + props）
 /// </summary>
-public sealed class DesignerItemDefinition
+public sealed class DesignerItemDefinition : IControlWithBehaviors
 {
     [JsonPropertyName("id")]
     public string Id { get; set; } = Guid.NewGuid().ToString("N")[..8];

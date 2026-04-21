@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Microsoft.Win32;
+using Stackdose.App.ShellShared.Behaviors;
 using Stackdose.App.ShellShared.Services;
 using Stackdose.Hardware.Plc;
 using Stackdose.Tools.MachinePageDesigner.Models;
@@ -16,10 +17,19 @@ public partial class MainWindow : Window
 {
     private PlcStatus? _plcStatus;
     private CancellationTokenSource? _simCts;
+    private readonly BehaviorEngine _behaviorEngine;
 
     public MainWindow()
     {
         InitializeComponent();
+
+        _behaviorEngine = new BehaviorEngine
+        {
+            AuditLogger = msg => ComplianceContext.LogSystem(
+                msg, Abstractions.Logging.LogLevel.Info),
+        };
+
+        Closing += (_, _) => _behaviorEngine.Dispose();
     }
 
     // ── PLC 連線 ──────────────────────────────────────────────────────────
@@ -57,6 +67,7 @@ public partial class MainWindow : Window
         {
             Dispatcher.BeginInvoke(() =>
             {
+                _behaviorEngine.PlcManager = mgr;
                 ShowStatus($"PLC 已連線：{ip}:{port}");
                 btnConnect.IsEnabled = false;
                 btnDisconnect.IsEnabled = true;
@@ -83,6 +94,7 @@ public partial class MainWindow : Window
         _plcStatus?.Dispose();
         plcStatusHost.Child = null;
         _plcStatus = null;
+        _behaviorEngine.PlcManager = null;
 
         btnConnect.IsEnabled = true;
         btnDisconnect.IsEnabled = false;
@@ -200,6 +212,13 @@ public partial class MainWindow : Window
 
         // 套用 Shell 策略（FreeCanvas / SinglePage / Standard）
         ApplyShellStrategy(doc);
+
+        // 綁定 BehaviorEngine：建立 id→control 對照表
+        var controlMap = runtimeCanvas.Children
+            .OfType<FrameworkElement>()
+            .Where(fe => fe.Tag is ControlRuntimeTag)
+            .Select(fe => KeyValuePair.Create(((ControlRuntimeTag)fe.Tag!).Id, fe));
+        _behaviorEngine.BindDocument(doc.CanvasItems, controlMap);
 
         // 等所有 PlcLabel 的 Loaded 事件執行完後，刷新 Monitor 讓新地址加入掃描清單
         Dispatcher.BeginInvoke(

@@ -4,6 +4,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Stackdose.App.DeviceFramework.Services;
+using Stackdose.App.ShellShared.Behaviors;
 using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Helpers;
@@ -21,7 +22,7 @@ public static class RuntimeControlFactory
 
     public static UIElement Create(DesignerItemDefinition def)
     {
-        return def.Type switch
+        var control = def.Type switch
         {
             "PlcLabel"           => CreatePlcLabel(def),
             "PlcText"            => CreatePlcText(def),
@@ -34,7 +35,64 @@ public static class RuntimeControlFactory
             "StaticLabel"        => CreateStaticLabel(def),
             _ => MakeUnknownPlaceholder(def.Type),
         };
+
+        // 附加 BehaviorTag — 讓 BehaviorEngine 能識別控制項並執行 SetProp
+        AttachBehaviorTag(def, control);
+        return control;
     }
+
+    /// <summary>
+    /// 將 ControlRuntimeTag 設定至控制項 Tag 屬性，並為 SecuredButton 設定 BehaviorId。
+    /// </summary>
+    private static void AttachBehaviorTag(DesignerItemDefinition def, UIElement control)
+    {
+        if (control is not FrameworkElement fe) return;
+
+        var tag = new ControlRuntimeTag
+        {
+            Id          = def.Id,
+            PropSetters = BuildPropSetters(fe),
+        };
+        fe.Tag = tag;
+
+        if (fe is SecuredButton btn)
+            btn.BehaviorId = def.Id;
+    }
+
+    /// <summary>
+    /// 依控制項類型建立 prop 名稱 → setter 字典（閉包捕捉控制項實體）。
+    /// </summary>
+    private static Dictionary<string, Action<string>> BuildPropSetters(FrameworkElement fe)
+    {
+        var s = new Dictionary<string, Action<string>>(StringComparer.OrdinalIgnoreCase);
+
+        // 通用（Control 有 Background / Foreground）
+        if (fe is System.Windows.Controls.Control ctrl)
+        {
+            s["background"] = v => { try { ctrl.Background = ParseBrush(v); } catch { } };
+            s["foreground"] = v => { try { ctrl.Foreground = ParseBrush(v); } catch { } };
+        }
+
+        // 控制項特定
+        switch (fe)
+        {
+            case PlcLabel lbl:
+                s["label"] = v => lbl.Label = v;
+                break;
+            case SecuredButton btn:
+                s["label"] = v => btn.Content = v;
+                break;
+            case TextBlock tb:
+                s["text"]       = v => tb.Text = v;
+                s["foreground"] = v => { try { tb.Foreground = ParseBrush(v); } catch { } };
+                break;
+        }
+
+        return s;
+    }
+
+    private static SolidColorBrush ParseBrush(string colorStr)
+        => new((Color)ColorConverter.ConvertFromString(colorStr));
 
     // ── PlcLabel ─────────────────────────────────────────────────────────
 

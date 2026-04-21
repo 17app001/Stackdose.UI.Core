@@ -121,6 +121,20 @@ namespace Stackdose.UI.Core.Controls
             set => SetValue(CommandParameterProperty, value);
         }
 
+        /// <summary>
+        /// Behavior Engine 控制項識別 Id（對應 DesignerItemDefinition.Id）。<br/>
+        /// 設定後，按鈕 auth 通過時會透過 BehaviorEventBus 發布 click 事件供 BehaviorEngine 處理。
+        /// </summary>
+        public static readonly DependencyProperty BehaviorIdProperty =
+            DependencyProperty.Register(nameof(BehaviorId), typeof(string), typeof(SecuredButton),
+                new PropertyMetadata(string.Empty));
+
+        public string BehaviorId
+        {
+            get => (string)GetValue(BehaviorIdProperty);
+            set => SetValue(BehaviorIdProperty, value);
+        }
+
         public static readonly DependencyProperty BackgroundBrushProperty =
             DependencyProperty.Register("BackgroundBrush", typeof(Brush), typeof(SecuredButton),
                 new FrameworkPropertyMetadata(
@@ -201,6 +215,11 @@ namespace Stackdose.UI.Core.Controls
             }
 
             Click?.Invoke(this, e);
+
+            // 發布 Behavior click 事件（BehaviorEngine 訂閱處理）
+            var bid = BehaviorId;
+            if (!string.IsNullOrEmpty(bid))
+                Stackdose.UI.Core.Helpers.BehaviorEventBus.Fire(bid, "click");
         }
 
         private void OnAccessLevelChanged(object? sender, EventArgs e)

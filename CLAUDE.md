@@ -4,6 +4,20 @@
 
 ---
 
+## ⚠️ 重構進行中 — 必讀
+
+目前在 **`refactor/foundation-and-behavior`** 分支執行 B0–B8 底層重構。
+
+**若你在這條分支上，進來後必須按以下順序讀：**
+1. 本文件（你正在讀）
+2. **`docs/refactor/HANDOFF.md`** ← 接手指引，給 AI 讀的，告訴你怎麼接手
+3. **`docs/refactor/PROGRESS.md`** ← 看現在停在哪、下一步做什麼
+4. `docs/refactor/PLAN.md` ← 掌握 B0–B8 全部路線
+
+**不要跳過 HANDOFF.md。** 那份文件有鐵律、用戶偏好、遇到問題怎麼辦。
+
+---
+
 ## 專案定位
 
 企業級 WPF 工業設備 UI 框架（.NET 8 Windows-only，x64），目標讓設備廠商快速建立符合 **FDA 21 CFR Part 11** 稽核要求的操作介面。

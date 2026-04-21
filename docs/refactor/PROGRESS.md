@@ -16,7 +16,7 @@
 | **B4** Behavior Schema | ✅ 完成 | 2026-04-21 | `4a8cc13` | BehaviorEvent/Condition/Action POCO + events[] |
 | **B5** Behavior Engine | ✅ 完成 | 2026-04-22 | `34d9c1f` | BehaviorEngine + 6 Handler + SecuredButton click + DesignRuntime 接線 |
 | **B6** Designer UI | ✅ 完成 | 2026-04-22 | `f314dcf` | PropertyPanel → TabControl + EventsPanel 事件編輯 UI |
-| **B7** Standard 模式收尾 | ✅ 完成 | 2026-04-21 | — | — |
+| **B7** Standard 模式收尾 | ✅ 完成 | 2026-04-21 | `d7c185a` | PageDefinition + pages[] + SetupMultiPageNavigation + Navigator 接線 |
 | **B8** docs 全面對齊 | ⚪ 待命 | — | — | — |
 
 圖例：⚪ 待命 / 🟡 進行中 / ✅ 完成 / ⛔ 擱置

@@ -131,7 +131,48 @@ MachinePageDesigner        DesignViewer              DesignRuntime
 | `SecuredButton` | 需權限驗證的操作按鈕 |
 | `Spacer` | 空白佔位元素 |
 
-### 2.5 快捷鍵
+### 2.7 PropertyPanel — 事件（⚡）Tab（B6 新增）
+
+`MachinePageDesigner/Views/PropertyPanel.xaml` 現在是一個 TabControl，有兩個 Tab：
+
+| Tab | 內容 |
+|---|---|
+| **屬性** | 原有的控件屬性設定（Label、Address、Shape…） |
+| **事件 ⚡** | `EventsPanel`：事件行為編輯 UI |
+
+#### EventsPanel 結構
+
+3 層 Master-Detail：
+
+```
+事件清單（ListBox）
+  ├── 每筆：On 觸發類型 + 觸發說明 Summary
+  ├── [新增] / [移除] 按鈕
+  └── 選取某事件後展開「事件詳情」
+        ├── On：下拉（valueChanged / click / connected / disconnected）
+        ├── When：勾選框（有無條件）→ 運算子 + 基準值
+        └── Do（動作清單 ListBox）
+              ├── 每筆：動作 Summary
+              ├── [新增動作] / [移除動作] 按鈕
+              └── 選取某動作後展開「動作詳情」
+                    ├── ActionType 下拉（SetProp / WritePlc / LogAudit…）
+                    └── 依 ActionType 動態顯示欄位（Target/Prop/Value/Message/Title/Page）
+```
+
+#### 相關 ViewModel
+
+| 類別 | 說明 |
+|---|---|
+| `BehaviorEventViewModel` | 包裝 `BehaviorEvent` POCO；`Actions` = ObservableCollection；靜態 `OnTypes`/`WhenOps` 供 ComboBox |
+| `BehaviorActionViewModel` | 包裝 `BehaviorAction` POCO；`ShowTarget/Prop/Value/Message/Title/Page` 可見性；`Summary` 顯示字串 |
+
+`DesignerItemViewModel.Events`（ObservableCollection）由 `BuildEventsCollection()` 初始化並 CollectionChanged 同步回 `_definition.Events`（POCO 清單）。
+
+#### 注意：_suppressHandlers 機制
+
+`EventsPanel.xaml.cs` 中 `ShowEventDetail()` / `ShowActionDetail()` 使用 `_suppressHandlers = true/false` 包裹程式碼寫 UI 的段落，防止 ComboBox.SelectionChanged 等事件在程式更新 UI 時觸發回寫邏輯，造成資料損毀。
+
+
 
 | 快捷鍵 | 功能 |
 |---|---|

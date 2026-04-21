@@ -15,7 +15,7 @@
 | **B3** Templates/Shell 策略化 | ✅ 完成 | 2026-04-21 | `70b919f` | IShellStrategy + FreeCanvas/SinglePage/Standard |
 | **B4** Behavior Schema | ✅ 完成 | 2026-04-21 | `4a8cc13` | BehaviorEvent/Condition/Action POCO + events[] |
 | **B5** Behavior Engine | ✅ 完成 | 2026-04-22 | `34d9c1f` | BehaviorEngine + 6 Handler + SecuredButton click + DesignRuntime 接線 |
-| **B6** Designer UI | ✅ 完成 | 2026-04-22 | pending | PropertyPanel → TabControl + EventsPanel 事件編輯 UI |
+| **B6** Designer UI | ✅ 完成 | 2026-04-22 | `f314dcf` | PropertyPanel → TabControl + EventsPanel 事件編輯 UI |
 | **B7** Standard 模式收尾 | ⚪ 待命 | — | — | — |
 | **B8** docs 全面對齊 | ⚪ 待命 | — | — | — |
 

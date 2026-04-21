@@ -78,3 +78,31 @@
 3. commit（訊息規範：見最近 devlog 或 git log 範例）
 4. 若是 B 大階段（非子任務）完成 → 更新 `docs/devlog/2026-04.md`
 5. 回報用戶並停手
+
+---
+
+## 現在的狀態（2026-04-22，給接手 AI 快速定位）
+
+**已完成：B0 → B6（commit `f314dcf`）**
+
+| 階段 | Commit | 重點 |
+|---|---|---|
+| B0 | `01a903c` | 盤點、修文件 |
+| B1+B2 | `b0e424d` | PlcControlBase 基類 + PlcEventContext 事件匯流 |
+| B3 | `70b919f` | IShellStrategy + FreeCanvas/SinglePage/Standard 三策略 |
+| B4 | `4a8cc13` | BehaviorEvent/Condition/Action POCO + events[] |
+| B5 | `34d9c1f` | BehaviorEngine + 6 Handler + SecuredButton click 接線 |
+| B6 | `f314dcf` | PropertyPanel → TabControl + EventsPanel（事件編輯 UI） |
+
+**下一步：B7 Standard 模式收尾**
+
+B7 要做的事（詳見 `PLAN.md` B7 段落）：
+- `StandardShellStrategy` 頁面導航真正接線（`BehaviorEngine.NavigateDelegate` 目前是空委派 `_ => { }`）
+- AppHeader 連線按鈕、BottomBar 狀態列在 Standard 模式下的行為
+- `Navigate` 動作（json `"action": "Navigate"`, `"page": "..."`) 在 DesignRuntime 能實際切換頁面
+
+**分支：** `refactor/foundation-and-behavior`
+**最後 commit：** `f314dcf`
+
+> **警告**：`dotnet build Stackdose.Designer.sln` 會看到 `FeiyangWrapper.vcxproj` 的 MSB4278 error（C++ 專案、需 VS MSBuild）— 這是**預期失敗**，不是我們造成的。所有 C# 專案必須 0 errors。
+

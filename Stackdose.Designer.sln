@@ -26,15 +26,15 @@ EndProject
 
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "⚙ 外部依賴 Platform", "⚙ 外部依賴 Platform", "{B0000003-0000-0000-0000-000000000003}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Abstractions", "..\Stackdose.Platform\Stackdose.Abstractions\Stackdose.Abstractions.csproj", "{42A359B4-B96E-6F41-729B-E8E9655118B7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Abstractions", "..\Stackdose.Platform\src\Stackdose.Abstractions\Stackdose.Abstractions.csproj", "{42A359B4-B96E-6F41-729B-E8E9655118B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Core", "..\Stackdose.Platform\Stackdose.Core\Stackdose.Core.csproj", "{4AF2FF94-2D44-813E-8137-7730BB7BAD85}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Core", "..\Stackdose.Platform\src\Stackdose.Core\Stackdose.Core.csproj", "{4AF2FF94-2D44-813E-8137-7730BB7BAD85}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Hardware", "..\Stackdose.Platform\Stackdose.Hardware\Stackdose.Hardware.csproj", "{2C085A15-6152-AFEC-F925-676C705527D4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Hardware", "..\Stackdose.Platform\src\Stackdose.Hardware\Stackdose.Hardware.csproj", "{2C085A15-6152-AFEC-F925-676C705527D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Plc", "..\Stackdose.Platform\Stackdose.Plc\Stackdose.Plc.csproj", "{AD27C021-4D83-4715-BF2F-02F4B8C2A771}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Plc", "..\Stackdose.Platform\src\Stackdose.Plc\Stackdose.Plc.csproj", "{AD27C021-4D83-4715-BF2F-02F4B8C2A771}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.PrintHead", "..\Stackdose.Platform\Stackdose.PrintHead\Stackdose.PrintHead.csproj", "{6D1AF2F1-BF31-7231-72EF-18823B146A70}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.PrintHead", "..\Stackdose.Platform\src\Stackdose.PrintHead\Stackdose.PrintHead.csproj", "{6D1AF2F1-BF31-7231-72EF-18823B146A70}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FeiyangWrapper", "..\Sdk\FeiyangWrapper\FeiyangWrapper\FeiyangWrapper.vcxproj", "{0EA55D76-D882-4C31-0F9D-32712C8F24C7}"
 EndProject

@@ -15,10 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Stackdose.Platform\Stackdose.Abstractions\Stackdose.Abstractions.csproj" />
-    <ProjectReference Include="..\..\Stackdose.Platform\Stackdose.Core\Stackdose.Core.csproj" />
-    <ProjectReference Include="..\..\Stackdose.Platform\Stackdose.Hardware\Stackdose.Hardware.csproj" />
-    <ProjectReference Include="..\..\Stackdose.Platform\Stackdose.PrintHead\Stackdose.PrintHead.csproj" />
+    <ProjectReference Include="..\..\Stackdose.Platform\src\Stackdose.Abstractions\Stackdose.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Stackdose.Platform\src\Stackdose.Core\Stackdose.Core.csproj" />
+    <ProjectReference Include="..\..\Stackdose.Platform\src\Stackdose.Hardware\Stackdose.Hardware.csproj" />
+    <ProjectReference Include="..\..\Stackdose.Platform\src\Stackdose.PrintHead\Stackdose.PrintHead.csproj" />
   </ItemGroup>
 
   <ItemGroup>

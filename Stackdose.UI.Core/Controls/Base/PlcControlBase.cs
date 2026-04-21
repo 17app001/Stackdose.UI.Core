@@ -1,10 +1,27 @@
-using System;
+﻿using System;
 using System.Windows;
+using System.Windows.Markup;
 using Stackdose.Abstractions.Hardware;
 using Stackdose.UI.Core.Helpers;
 
 namespace Stackdose.UI.Core.Controls.Base
 {
+    /// <summary>
+    /// 統一 PLC 事件 payload，供 PlcEventContext 匯流排使用
+    /// </summary>
+    public class PlcControlEventPayload
+    {
+        public object Sender { get; }
+        public PlcValueChangedEventArgs Args { get; }
+        public DateTime Timestamp { get; } = DateTime.Now;
+
+        public PlcControlEventPayload(object sender, PlcValueChangedEventArgs args)
+        {
+            Sender = sender;
+            Args = args;
+        }
+    }
+
     /// <summary>
     /// PLC ����������� - ���ѲΤ@�� PLC �s���޲z
     /// </summary>
@@ -17,6 +34,7 @@ namespace Stackdose.UI.Core.Controls.Base
     /// <item>������w���� PLC �ާ@</item>
     /// </list>
     /// </remarks>
+    [RuntimeNameProperty("Name")]
     public abstract class PlcControlBase : CyberControlBase
     {
         #region Private Fields
@@ -70,6 +88,7 @@ namespace Stackdose.UI.Core.Controls.Base
 
             // ���ոj�w�� PLC
             TryBindToPlc();
+            PlcContext.GlobalStatusChanged += OnGlobalStatusChanged;
 
             // �I�s�l����l��
             OnPlcControlLoaded();
@@ -78,6 +97,7 @@ namespace Stackdose.UI.Core.Controls.Base
         protected override void OnControlUnloaded()
         {
             // ���� PLC �q�\
+            PlcContext.GlobalStatusChanged -= OnGlobalStatusChanged;
             UnsubscribeFromPlc();
 
             // �I�s�l���M�z
@@ -245,27 +265,63 @@ namespace Stackdose.UI.Core.Controls.Base
 
         #endregion
 
-        #region Virtual Methods for�l��Override
+        #region ValueChanged Event (B1 統一出口)
 
         /// <summary>
-        /// �l����@�GPLC �s�u�إ߮ɪ��B�z�޿�
+        /// PLC 值變更統一事件出口（所有 PlcControlBase 子類共用）
         /// </summary>
-        /// <param name="manager">PlcManager ���</param>
+        public event EventHandler<PlcValueChangedEventArgs>? ValueChanged;
+
+        /// <summary>
+        /// 最新值（子類在 RaiseValueChanged 後更新）
+        /// </summary>
+        public object? CurrentValue { get; private set; }
+
+        /// <summary>
+        /// 子類呼叫此方法觸發 ValueChanged 並同步推送到 PlcEventContext 匯流排
+        /// </summary>
+        protected void RaiseValueChanged(object? rawValue, string displayText, string? address = null)
+        {
+            CurrentValue = rawValue;
+            var args = new PlcValueChangedEventArgs(rawValue, displayText, address);
+            ValueChanged?.Invoke(this, args);
+            PlcEventContext.PublishControlValueChanged(this, args);
+        }
+
+        #endregion
+
+        #region GlobalStatusChanged 熱更新
+
+        private void OnGlobalStatusChanged(object? sender, PlcStatus? newStatus)
+        {
+            if (newStatus == null || TargetStatus != null) return;
+
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(() => OnGlobalStatusChanged(sender, newStatus));
+                return;
+            }
+
+            BindToPlcStatus(newStatus);
+            if (newStatus.CurrentManager?.IsConnected == true)
+                OnPlcConnectionEstablished(newStatus.CurrentManager);
+        }
+
+        #endregion
+
+        #region Virtual Methods for Override
+
+        /// <summary>PLC 連線建立時的覆寫點</summary>
         protected virtual void OnPlcConnected(IPlcManager manager)
         {
-            // �l���мg����k��@�s�u���\�᪺�޿�
             #if DEBUG
             System.Diagnostics.Debug.WriteLine($"[{GetType().Name}] PLC connected");
             #endif
         }
 
-        /// <summary>
-        /// �l����@�GPLC �ƾڧ�s�ɪ��B�z�޿�
-        /// </summary>
-        /// <param name="manager">PlcManager ���</param>
+        /// <summary>PLC 資料掃描更新時的覆寫點</summary>
         protected virtual void OnPlcDataUpdated(IPlcManager manager)
         {
-            // �l���мg����k��@�ƾڧ�s�޿�
         }
 
         #endregion

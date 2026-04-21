@@ -6,12 +6,13 @@ using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using Stackdose.UI.Core.Controls.Base;
 using System.Windows.Data;
 using System.Windows.Threading;
 
 namespace Stackdose.UI.Core.Controls
 {
-    public partial class SensorViewer : UserControl
+    public partial class SensorViewer : PlcControlBase
     {
         private DispatcherTimer? _monitorTimer;
         private CancellationTokenSource? _cancellationTokenSource;
@@ -29,8 +30,6 @@ namespace Stackdose.UI.Core.Controls
         public SensorViewer()
         {
             InitializeComponent();
-            Loaded += SensorViewer_Loaded;
-            Unloaded += SensorViewer_Unloaded;
         }
 
         #region Dependency Properties
@@ -135,7 +134,7 @@ namespace Stackdose.UI.Core.Controls
 
         #region 事件處理
 
-        private void SensorViewer_Loaded(object sender, RoutedEventArgs e)
+        protected override void OnPlcControlLoaded()
         {
             if (DesignerProperties.GetIsInDesignMode(this))
             {
@@ -143,54 +142,32 @@ namespace Stackdose.UI.Core.Controls
                 return;
             }
 
-            // 🔥 套用預設 Only ON 勾選狀態
             ChkShowAlarmsOnly.IsChecked = DefaultShowActiveOnly;
 
-            #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[SensorViewer] Loaded called. SensorStatesInitialized={_sensorStatesInitialized}, ConfigLoaded={_configLoaded}");
-            #endif
-            
-            // 🔥 載入配置檔案（只載入一次）
             if (!_configLoaded && !string.IsNullOrEmpty(ConfigFile))
             {
                 SensorContext.LoadFromJson(ConfigFile);
                 _configLoaded = true;
             }
 
-            // 🔥 訂閱 PlcStatus 事件（只需要訂閱一次）
-            if (PlcContext.GlobalStatus != null)
-            {
-                // 移除舊的訂閱（避免重複訂閱）
-                PlcContext.GlobalStatus.ConnectionEstablished -= OnPlcConnectionEstablished;
-                PlcContext.GlobalStatus.ConnectionEstablished += OnPlcConnectionEstablished;
-            }
-
-            // 綁定資料源
             BindSensorList();
 
-            // 🔥 自動啟動監控
             if (AutoStart && PlcContext.GlobalStatus?.CurrentManager?.IsConnected == true)
             {
-                // 🔥 只在第一次初始化 Sensor 狀態
                 if (!_sensorStatesInitialized)
                 {
                     InitializeSensorStates(PlcContext.GlobalStatus.CurrentManager);
                     _sensorStatesInitialized = true;
                 }
-                
                 StartMonitoring();
             }
         }
 
-        private void SensorViewer_Unloaded(object sender, RoutedEventArgs e)
+        protected override void OnPlcControlUnloaded()
         {
-            // 🔥 Tab 切換時停止監控（節省資源）
             StopMonitoring();
-            
-            #if DEBUG
-            System.Diagnostics.Debug.WriteLine("[SensorViewer] Unloaded, monitoring stopped (will restart on next Loaded)");
-            #endif
         }
+
 
         private static void OnConfigFileChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -472,7 +449,7 @@ namespace Stackdose.UI.Core.Controls
         /// <summary>
         /// 當 PLC 連線成功時的回呼
         /// </summary>
-        private void OnPlcConnectionEstablished(IPlcManager manager)
+        protected override void OnPlcConnected(IPlcManager manager)
         {
             try
             {
@@ -510,6 +487,8 @@ namespace Stackdose.UI.Core.Controls
             }
         }
 
+
+        protected override void OnPlcDataUpdated(IPlcManager manager) { }
         /// <summary>
         /// 初始化 Sensor 狀態（靜默讀取，不觸發警報）- 只執行一次
         /// </summary>

@@ -1,13 +1,12 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 18
-VisualStudioVersion = 18.4.11626.88
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36705.20
 MinimumVisualStudioVersion = 10.0.40219.1
 
-# ═══════════════════════════════════════════════════════
-#  🚀  開發中（每天在動的）
-# ═══════════════════════════════════════════════════════
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "🚀 開發中", "🚀 開發中", "{A0000001-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.App.Monitor", "Stackdose.App.Monitor\Stackdose.App.Monitor.csproj", "{D1000001-0000-0000-0000-000000000001}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Tools.MachinePageDesigner", "Stackdose.Tools.MachinePageDesigner\Stackdose.Tools.MachinePageDesigner.csproj", "{282E6333-E3C7-4AA4-8929-BA69C92C67FD}"
 EndProject
@@ -16,9 +15,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Tools.DesignViewer", "Stackdose.Tools.DesignViewer\Stackdose.Tools.DesignViewer.csproj", "{656757FC-966E-490D-8A76-C177DFC1652C}"
 EndProject
 
-# ═══════════════════════════════════════════════════════
-#  🏗  框架與核心庫（穩定，依賴層）
-# ═══════════════════════════════════════════════════════
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "🏗 框架與核心庫", "🏗 框架與核心庫", "{A0000002-0000-0000-0000-000000000002}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.UI.Core", "Stackdose.UI.Core\Stackdose.UI.Core.csproj", "{45B8429F-B530-4B17-9477-BBE36E386E09}"
@@ -30,17 +26,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.App.DeviceFramework", "Stackdose.App.DeviceFramework\Stackdose.App.DeviceFramework.csproj", "{8C56CF1C-CB8C-44C8-ACD5-651E3E770D61}"
 EndProject
 
-# ═══════════════════════════════════════════════════════
-#  🧪  測試
-# ═══════════════════════════════════════════════════════
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "🧪 測試", "🧪 測試", "{A0000006-0000-0000-0000-000000000006}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.UI.Core.Tests", "Stackdose.UI.Core.Tests\Stackdose.UI.Core.Tests.csproj", "{C9000001-0000-0000-0000-000000000001}"
 EndProject
 
-# ═══════════════════════════════════════════════════════
-#  🔧  工具（穩定，少動）
-# ═══════════════════════════════════════════════════════
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "🔧 工具（穩定）", "🔧 工具（穩定）", "{A0000003-0000-0000-0000-000000000003}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Tools.ProjectGeneratorUI", "Stackdose.Tools.ProjectGeneratorUI\Stackdose.Tools.ProjectGeneratorUI.csproj", "{0FE9ACCE-8A4F-462D-9938-29C0B52315C7}"
@@ -48,17 +38,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Tools.ProjectGenerator", "Stackdose.Tools.ProjectGenerator\Stackdose.Tools.ProjectGenerator.csproj", "{49EB5E04-DDCA-7570-9BA5-D16193E57F91}"
 EndProject
 
-# ═══════════════════════════════════════════════════════
-#  📚  參考實作（已完成，維護用）
-# ═══════════════════════════════════════════════════════
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "📚 參考實作", "📚 參考實作", "{A0000004-0000-0000-0000-000000000004}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.App.UbiDemo", "Stackdose.App.UbiDemo\Stackdose.App.UbiDemo.csproj", "{BABF4433-DE3E-4277-8CF9-6895FA211783}"
 EndProject
 
-# ═══════════════════════════════════════════════════════
-#  ⚙  外部依賴 Platform（另一個 Repo，通常不在此修改）
-# ═══════════════════════════════════════════════════════
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "⚙ 外部依賴 Platform", "⚙ 外部依賴 Platform", "{A0000005-0000-0000-0000-000000000005}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Abstractions", "..\Stackdose.Platform\Stackdose.Abstractions\Stackdose.Abstractions.csproj", "{42A359B4-B96E-6F41-729B-E8E9655118B7}"
@@ -82,6 +66,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
+		{D1000001-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1000001-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1000001-0000-0000-0000-000000000001}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D1000001-0000-0000-0000-000000000001}.Debug|x64.Build.0 = Debug|Any CPU
+		{D1000001-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1000001-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1000001-0000-0000-0000-000000000001}.Release|x64.ActiveCfg = Release|Any CPU
+		{D1000001-0000-0000-0000-000000000001}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{45B8429F-B530-4B17-9477-BBE36E386E09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -319,5 +311,6 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8C32A5E8-A6CF-49BC-AFBF-CFF6B3027799}
+		{D1000001-0000-0000-0000-000000000001} = {A0000001-0000-0000-0000-000000000001}
 	EndGlobalSection
 EndGlobal

@@ -6,18 +6,20 @@
 
 ## 今日焦點
 
-**分支：** `refactor/foundation-and-behavior`（✅ B0–B8 重構全部完成）
-**下一方向：** MachinePageDesigner 功能 + DesignRuntime 穩定性
+**分支：** `refactor/foundation-and-behavior`（✅ B0–B9 重構全部完成）
+**下一方向：** MODEL-S 業務開發實戰 + MachinePageDesigner 功能優化
 
 ### 重構最終主旨
 > 讓不懂 XAML 的工程師或設計師，也能為 PLC 工業機台做出符合 FDA 21 CFR Part 11 稽核要求的監控介面。
 
 ---
 
-## 重構成果（B0–B8 ✅ 全部完成）
+## 重構成果（B0–B9 ✅ 全部完成）
 
 | 階段 | Commit | 重點 |
 |---|---|---|
+| **B9** | `49d4109` | Designer Schema 對齊 + Scaffold 腳本升級 (PLC 狀態列) |
+
 | B0 底層校正 | `01a903c` | 盤點文件，0 動程式碼 |
 | B1+B2 基類+事件匯流 | `b0e424d` | PlcControlBase + PlcEventContext.ControlValueChanged |
 | B3 Shell 策略化 | `70b919f` | IShellStrategy + FreeCanvas/SinglePage/Standard |

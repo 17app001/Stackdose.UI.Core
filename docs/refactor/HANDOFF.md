@@ -81,9 +81,9 @@
 
 ---
 
-## 現在的狀態（2026-04-22，給接手 AI 快速定位）
+## 現在的狀態（2026-04-21，給接手 AI 快速定位）
 
-**已完成：B0 → B6（commit `f314dcf`）**
+**已完成：B0 → B7（B7 commit 待 push）**
 
 | 階段 | Commit | 重點 |
 |---|---|---|
@@ -93,16 +93,19 @@
 | B4 | `4a8cc13` | BehaviorEvent/Condition/Action POCO + events[] |
 | B5 | `34d9c1f` | BehaviorEngine + 6 Handler + SecuredButton click 接線 |
 | B6 | `f314dcf` | PropertyPanel → TabControl + EventsPanel（事件編輯 UI） |
+| B7 | pending | PageDefinition + DesignDocument.pages[] + Standard 多頁導覽接線 |
 
-**下一步：B7 Standard 模式收尾**
+**下一步：B8 docs 全面對齊**
 
-B7 要做的事（詳見 `PLAN.md` B7 段落）：
-- `StandardShellStrategy` 頁面導航真正接線（`BehaviorEngine.NavigateDelegate` 目前是空委派 `_ => { }`）
-- AppHeader 連線按鈕、BottomBar 狀態列在 Standard 模式下的行為
-- `Navigate` 動作（json `"action": "Navigate"`, `"page": "..."`) 在 DesignRuntime 能實際切換頁面
+B8 要做的事（詳見 `PLAN.md` B8 段落）：
+- `docs/kb/behavior-system.md`（B4/B5 對外教學）
+- `docs/kb/foundation-base-classes.md`（B1 基類使用指南）
+- `controls-reference.md`、`architecture.md` 更新
+- `index.html` 首頁卡片
+- auto-memory 更新
 
 **分支：** `refactor/foundation-and-behavior`
-**最後 commit：** `f314dcf`
+**最後 commit：** `f314dcf`（B7 待 commit）
 
 > **警告**：`dotnet build Stackdose.Designer.sln` 會看到 `FeiyangWrapper.vcxproj` 的 MSB4278 error（C++ 專案、需 VS MSBuild）— 這是**預期失敗**，不是我們造成的。所有 C# 專案必須 0 errors。
 

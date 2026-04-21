@@ -29,6 +29,14 @@ public sealed class DesignDocument
     [JsonPropertyName("shellMode")]
     public string ShellMode { get; set; } = "FreeCanvas";
 
+    /// <summary>
+    /// Standard 模式多頁面定義。<br/>
+    /// 非空時，DesignRuntime 以此建立 LeftNav 並忽略根層 canvasItems。
+    /// 空清單時退回單頁模式（向後相容）。
+    /// </summary>
+    [JsonPropertyName("pages")]
+    public List<PageDefinition> Pages { get; set; } = [];
+
     /// <summary>畫布邏輯寬度（px），預設 1200</summary>
     [JsonPropertyName("canvasWidth")]
     public double CanvasWidth { get; set; } = 1200;

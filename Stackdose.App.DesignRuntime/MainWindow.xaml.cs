@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,6 +11,9 @@ using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.Tools.MachinePageDesigner.Services;
 using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Models;
+using Stackdose.UI.Templates.Controls;
+using Stackdose.UI.Templates.Shell;
 
 namespace Stackdose.App.DesignRuntime;
 
@@ -211,14 +215,18 @@ public partial class MainWindow : Window
         ShowStatus(status, error: errorCount > 0);
 
         // 套用 Shell 策略（FreeCanvas / SinglePage / Standard）
-        ApplyShellStrategy(doc);
+        bool multiPageHandled = ApplyShellStrategy(doc);
 
-        // 綁定 BehaviorEngine：建立 id→control 對照表
-        var controlMap = runtimeCanvas.Children
-            .OfType<FrameworkElement>()
-            .Where(fe => fe.Tag is ControlRuntimeTag)
-            .Select(fe => KeyValuePair.Create(((ControlRuntimeTag)fe.Tag!).Id, fe));
-        _behaviorEngine.BindDocument(doc.CanvasItems, controlMap);
+        if (!multiPageHandled)
+        {
+            // 單頁模式：從 runtimeCanvas 建立 id→control 對照表
+            var controlMap = runtimeCanvas.Children
+                .OfType<FrameworkElement>()
+                .Where(fe => fe.Tag is ControlRuntimeTag)
+                .Select(fe => KeyValuePair.Create(((ControlRuntimeTag)fe.Tag!).Id, fe));
+            _behaviorEngine.BindDocument(doc.CanvasItems, controlMap);
+            _behaviorEngine.Navigator = null;
+        }
 
         // 等所有 PlcLabel 的 Loaded 事件執行完後，刷新 Monitor 讓新地址加入掃描清單
         Dispatcher.BeginInvoke(
@@ -229,40 +237,134 @@ public partial class MainWindow : Window
     /// <summary>
     /// 根據 DesignDocument.ShellMode 選擇策略，切換 Row 2 的顯示模式。
     /// FreeCanvas：原始 ScrollViewer + Canvas，保留縮放功能。
-    /// SinglePage / Standard：將 canvasHost 遷移進 Shell 容器後顯示。
+    /// SinglePage / Standard（單頁）：將 canvasHost 遷移進 Shell 容器後顯示。
+    /// Standard（多頁）：建立 MainContainer + LeftNav，各頁面各自建立 Canvas，回傳 true。
     /// </summary>
-    private void ApplyShellStrategy(DesignDocument doc)
+    /// <returns>true 表示多頁模式已自行處理 BehaviorEngine 綁定，呼叫端不須再 BindDocument。</returns>
+    private bool ApplyShellStrategy(DesignDocument doc)
     {
         var strategy = ShellStrategyFactory.Select(doc.ShellMode);
         lblShellMode.Text = $"Shell: {strategy.LayoutMode}";
 
         if (strategy is FreeCanvasShellStrategy)
         {
-            // 確保 canvasHost 回到 scrollViewerCanvas（可能前次已被遷移）
             if (!ReferenceEquals(scrollViewerCanvas.Content, canvasHost))
                 scrollViewerCanvas.Content = canvasHost;
 
             scrollViewerCanvas.Visibility = Visibility.Visible;
             shellPreviewHost.Content      = null;
             shellPreviewHost.Visibility   = Visibility.Collapsed;
+            return false;
         }
-        else
+
+        // Standard 多頁模式
+        if (strategy is StandardShellStrategy && doc.Pages.Count > 0)
         {
-            // 將 canvasHost 從 scrollViewerCanvas 遷移出，放入新的 ScrollViewer
-            scrollViewerCanvas.Content = null;
-            var innerScroller = new ScrollViewer
+            scrollViewerCanvas.Visibility = Visibility.Collapsed;
+
+            var container = new MainContainer
+            {
+                PageTitle        = doc.Meta.Title,
+                HeaderDeviceName = string.IsNullOrWhiteSpace(doc.Meta.MachineId) ? "DEVICE" : doc.Meta.MachineId,
+            };
+
+            shellPreviewHost.Content    = container;
+            shellPreviewHost.Visibility = Visibility.Visible;
+
+            SetupMultiPageNavigation(container, doc);
+            return true;
+        }
+
+        // 單頁 Shell（SinglePage / Standard 無 pages[]）
+        scrollViewerCanvas.Content = null;
+        var innerScroller = new ScrollViewer
+        {
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility   = ScrollBarVisibility.Auto,
+            Background = new SolidColorBrush(Color.FromRgb(0x12, 0x12, 0x1E)),
+            Padding    = new Thickness(40),
+            Content    = canvasHost,
+        };
+
+        shellPreviewHost.Content      = strategy.Wrap(innerScroller, doc.Meta.Title, doc.Meta.MachineId);
+        shellPreviewHost.Visibility   = Visibility.Visible;
+        scrollViewerCanvas.Visibility = Visibility.Collapsed;
+        return false;
+    }
+
+    /// <summary>
+    /// Standard 多頁模式：為每個 PageDefinition 建立獨立 Canvas，
+    /// 設定 MainContainer.NavigationItems，並接線 BehaviorEngine.Navigator。
+    /// </summary>
+    private void SetupMultiPageNavigation(MainContainer container, DesignDocument doc)
+    {
+        var pageViews   = new Dictionary<string, UIElement>();
+        var allItems    = new List<IControlWithBehaviors>();
+        var allControls = new List<KeyValuePair<string, FrameworkElement>>();
+
+        foreach (var page in doc.Pages)
+        {
+            var canvas = new Canvas
+            {
+                Width         = doc.CanvasWidth,
+                Height        = doc.CanvasHeight,
+                Background    = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x32)),
+                ClipToBounds  = true,
+                SnapsToDevicePixels = true,
+            };
+
+            foreach (var def in page.CanvasItems)
+            {
+                UIElement ctrl;
+                try   { ctrl = RuntimeControlFactory.Create(def); }
+                catch (Exception ex) { ctrl = MakeErrorPlaceholder(def, ex.Message); }
+
+                if (ctrl is FrameworkElement fe)
+                {
+                    fe.Width  = def.Width;
+                    fe.Height = def.Height;
+                    if (fe.Tag is ControlRuntimeTag tag)
+                        allControls.Add(KeyValuePair.Create(tag.Id, fe));
+                }
+                Canvas.SetLeft(ctrl, def.X);
+                Canvas.SetTop(ctrl, def.Y);
+                canvas.Children.Add(ctrl);
+            }
+
+            allItems.AddRange(page.CanvasItems);
+
+            pageViews[page.Id] = new ScrollViewer
             {
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
                 VerticalScrollBarVisibility   = ScrollBarVisibility.Auto,
                 Background = new SolidColorBrush(Color.FromRgb(0x12, 0x12, 0x1E)),
                 Padding    = new Thickness(40),
-                Content    = canvasHost,
+                Content    = canvas,
             };
-
-            shellPreviewHost.Content    = strategy.Wrap(innerScroller, doc.Meta.Title, doc.Meta.MachineId);
-            shellPreviewHost.Visibility = Visibility.Visible;
-            scrollViewerCanvas.Visibility = Visibility.Collapsed;
         }
+
+        container.NavigationItems = new ObservableCollection<NavigationItem>(
+            doc.Pages.Select(p => new NavigationItem
+            {
+                Title            = p.Title,
+                NavigationTarget = p.Id,
+            }));
+
+        void Navigate(string pageId)
+        {
+            if (!pageViews.TryGetValue(pageId, out var view)) return;
+            var page = doc.Pages.FirstOrDefault(p => p.Id == pageId);
+            container.ShellContent = view;
+            container.PageTitle    = page?.Title ?? pageId;
+            container.SelectNavigationTarget(pageId);
+        }
+
+        container.NavigationRequested += (_, pageId) => Navigate(pageId);
+        _behaviorEngine.Navigator = Navigate;
+        _behaviorEngine.BindDocument(allItems, allControls);
+
+        if (doc.Pages.Count > 0)
+            Navigate(doc.Pages[0].Id);
     }
 
     private static UIElement MakeErrorPlaceholder(DesignerItemDefinition def, string message)

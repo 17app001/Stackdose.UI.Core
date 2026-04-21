@@ -124,9 +124,18 @@ if ($requiresCsprojSave) {
 # ─────────────────────────────────────────────────────────────────────────────
 if ($JsonDrivenApp) {
 
-    # -- 1. Patch csproj: 加入四個 ProjectReference ----------------------------
+    # -- 1. Patch csproj: 鎖 net8.0-windows + 加入四個 ProjectReference -------
     [xml]$jdXml = Get-Content -Path $projectFile -Raw
     $jdProject   = $jdXml.Project
+
+    # 強制鎖 net8.0-windows（dotnet new wpf 可能產生 net10.0-windows）
+    $tfNode = $jdXml.SelectSingleNode('/Project/PropertyGroup[1]/TargetFramework')
+    if ($null -ne $tfNode -and $tfNode.InnerText -ne "net8.0-windows") {
+        $tfNode.InnerText = "net8.0-windows"
+        $jdXml.Save($projectFile)
+        [xml]$jdXml = Get-Content -Path $projectFile -Raw
+        $jdProject   = $jdXml.Project
+    }
     $uiCoreRef    = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "Stackdose.UI.Core\Stackdose.UI.Core.csproj")
     $templatesRef = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "Stackdose.UI.Templates\Stackdose.UI.Templates.csproj")
     $shellRef     = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "Stackdose.App.ShellShared\Stackdose.App.ShellShared.csproj")
@@ -674,7 +683,7 @@ public static class RuntimeControlFactory
             Background = new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0x55, 0x00)),
             Child = new TextBlock
             {
-                Text = string.Concat("未知類型：", type), Foreground = Brushes.OrangeRed,
+                Text = string.Concat("Unknown: ", type), Foreground = Brushes.OrangeRed,
                 FontSize = 11, Margin = new Thickness(6), TextWrapping = TextWrapping.Wrap,
                 VerticalAlignment = VerticalAlignment.Center,
             }

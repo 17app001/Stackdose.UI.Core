@@ -14,8 +14,7 @@
 | **B2** 事件能力收斂 | ✅ 完成 | 2026-04-21 | `b0e424d` | PlcEventContext + ControlValueChanged event bus（與 B1 同 commit） |
 | **B3** Templates/Shell 策略化 | ✅ 完成 | 2026-04-21 | `70b919f` | IShellStrategy + FreeCanvas/SinglePage/Standard |
 | **B4** Behavior Schema | ✅ 完成 | 2026-04-21 | `4a8cc13` | BehaviorEvent/Condition/Action POCO + events[] |
-| **B5** Behavior Engine | ⚪ 待命 | — | — | — |
-| **B5** Behavior Engine | ⚪ 待命 | — | — | — |
+| **B5** Behavior Engine | ✅ 完成 | 2026-04-22 | `34d9c1f` | BehaviorEngine + 6 Handler + SecuredButton click + DesignRuntime 接線 |
 | **B6** Designer UI | ⚪ 待命 | — | — | — |
 | **B7** Standard 模式收尾 | ⚪ 待命 | — | — | — |
 | **B8** docs 全面對齊 | ⚪ 待命 | — | — | — |
@@ -55,40 +54,40 @@
 
 > 接手 AI：從這裡開始做事。
 
-**現在在做：** 🛑 **等待使用者授權** B4（B3 Shell 策略化已完成並 commit `70b919f`）
+**現在在做：** 🛑 **等待使用者授權** B6（B5 Behavior Engine 已完成並 commit `34d9c1f`）
 
-**B3 產出：**
-- 新增：`ShellShared/Services/IShellStrategy.cs`（介面 + 說明）
-- 新增：`ShellShared/Services/ShellStrategyFactory.cs`（依 shellMode 字串選策略）
-- 新增：`FreeCanvasShellStrategy` / `SinglePageShellStrategy` / `StandardShellStrategy`
-- 修改：`DesignDocument.cs` 加 `ShellMode` 欄位（預設 `"FreeCanvas"`，向後相容）
-- 修改：`DesignRuntime.csproj` 加入 ShellShared 參考
-- 修改：`MainWindow.xaml` Row 2 加 `shellPreviewHost`；狀態列加 Shell 模式指示
-- 修改：`MainWindow.xaml.cs` 加 `ApplyShellStrategy()` — 載入文件後自動切換外殼
+**B5 產出：**
+- 新增：`UI.Core/Models/BehaviorModels.cs`（移入 UI.Core，打破循環依賴）
+- 新增：`UI.Core/Models/IControlWithBehaviors.cs`（介面：BehaviorEngine 不依賴具體類別）
+- 新增：`UI.Core/Helpers/BehaviorEventBus.cs`（靜態事件匯流排，解耦 SecuredButton → Engine）
+- 新增：`ShellShared/Behaviors/BehaviorEngine.cs`（核心：訂閱 PLC + click，評估條件，派發 Handler）
+- 新增：`ShellShared/Behaviors/IBehaviorActionHandler.cs` + `BehaviorActionContext.cs` + `ControlRuntimeTag.cs`
+- 新增：6 個 Handler（SetProp / WritePlc / LogAudit / ShowDialog / Navigate / SetStatus）
+- 修改：`SecuredButton.xaml.cs`（BehaviorId DP + 驗證後 Fire BehaviorEventBus）
+- 修改：`RuntimeControlFactory.cs`（AttachBehaviorTag + BuildPropSetters）
+- 修改：`MainWindow.xaml.cs`（BehaviorEngine 欄位、BindDocument、PlcManager 接線、Closing Dispose）
+- 修改：`DesignerItemDefinition.cs`（implements IControlWithBehaviors）
+
+**事件流程：**
+```
+PLC 值變 → PlcEventContext.ControlValueChanged
+SecuredButton 點擊 → BehaviorEventBus.ControlEventFired
+                     ↓
+             BehaviorEngine.DispatchCore
+                     ↓
+           評估 when 條件 → 執行 do 動作
+```
 
 **已完成的 commits：**
 | Commit | 內容 |
 |---|---|
 | `b0e424d` | B1+B2：5 個控件遷移 PlcControlBase、PlcEventContext 事件匯流 |
-| `8e363f7` | docs：PROGRESS.md + devlog B1+B2 記錄 |
-| `623335f` | fix(sln)：VisualStudioVersion 18→17.14、移除 inline # 注釋、加入 App.Monitor 至 UI.Core.sln |
-| `238881b` | docs：sln 修復記入 PROGRESS + devlog |
-| `468b60c` | docs(CLAUDE.md)：加入重構 reading order 入口 |
-| `6b6636e` | fix(runtime)：PlcLabel circle DataTriggers、StaticLabel 支援、connect 按鈕 disabled 樣式 |
-| `c3d2ba5` | fix(runtime)：StaticLabel 正確 key、ClipToBounds、VerticalAlignment |
-| `0d4a639` | fix(runtime)：PlcLabel factory 補齊 5 個 display props |
-| `8494b36` | feat(runtime)：ValueChanged 事件監測 ToggleButton |
-| `13b9e13` | fix(factory)：PlcText 補 showSuccessMessage/enableAuditTrail；docs 補齊 |
 | `70b919f` | B3：IShellStrategy + 三策略 + DesignRuntime 接線 |
+| `4a8cc13` | B4：BehaviorEvent/Condition/Action POCO + events[] |
+| `e497a93` | docs：B4 designer-system.md + PROGRESS + devlog |
+| `34d9c1f` | B5：BehaviorEngine + Handlers + SecuredButton click + DesignRuntime 接線 |
 
-**B1+B2 產出總覽：**
-- 新增：`Stackdose.UI.Core/Helpers/PlcValueChangedEventArgs.cs`
-- 修改：`PlcControlBase.cs`（ValueChanged event bus、OnPlcConnected/OnPlcDataUpdated 抽象方法）
-- 修改：`PlcEventContext.cs`（ControlValueChanged + PublishControlValueChanged）
-- 遷移：PlcLabel / PlcText / PlcStatusIndicator / AlarmViewer / SensorViewer（全部改用 PlcControlBase 覆寫模式）
-- 編譯：0 errors、0 warnings（UI.Core + DeviceFramework + Tests + MachinePageDesigner 全過）
-
-**下一步（需使用者授權後才能做）：** B3 Shell 策略化。
+**下一步（需使用者授權後才能做）：** B6 Designer UI（在 MachinePageDesigner 中加入 events 編輯 UI）。
 
 ---
 

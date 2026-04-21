@@ -15,7 +15,7 @@
 | **B3** Templates/Shell 策略化 | ✅ 完成 | 2026-04-21 | `70b919f` | IShellStrategy + FreeCanvas/SinglePage/Standard |
 | **B4** Behavior Schema | ✅ 完成 | 2026-04-21 | `4a8cc13` | BehaviorEvent/Condition/Action POCO + events[] |
 | **B5** Behavior Engine | ✅ 完成 | 2026-04-22 | `34d9c1f` | BehaviorEngine + 6 Handler + SecuredButton click + DesignRuntime 接線 |
-| **B6** Designer UI | ⚪ 待命 | — | — | — |
+| **B6** Designer UI | ✅ 完成 | 2026-04-22 | pending | PropertyPanel → TabControl + EventsPanel 事件編輯 UI |
 | **B7** Standard 模式收尾 | ⚪ 待命 | — | — | — |
 | **B8** docs 全面對齊 | ⚪ 待命 | — | — | — |
 
@@ -54,29 +54,14 @@
 
 > 接手 AI：從這裡開始做事。
 
-**現在在做：** 🛑 **等待使用者授權** B6（B5 Behavior Engine 已完成並 commit `34d9c1f`）
+**現在在做：** 🛑 **等待使用者授權** B7（B6 Designer UI 已完成）
 
-**B5 產出：**
-- 新增：`UI.Core/Models/BehaviorModels.cs`（移入 UI.Core，打破循環依賴）
-- 新增：`UI.Core/Models/IControlWithBehaviors.cs`（介面：BehaviorEngine 不依賴具體類別）
-- 新增：`UI.Core/Helpers/BehaviorEventBus.cs`（靜態事件匯流排，解耦 SecuredButton → Engine）
-- 新增：`ShellShared/Behaviors/BehaviorEngine.cs`（核心：訂閱 PLC + click，評估條件，派發 Handler）
-- 新增：`ShellShared/Behaviors/IBehaviorActionHandler.cs` + `BehaviorActionContext.cs` + `ControlRuntimeTag.cs`
-- 新增：6 個 Handler（SetProp / WritePlc / LogAudit / ShowDialog / Navigate / SetStatus）
-- 修改：`SecuredButton.xaml.cs`（BehaviorId DP + 驗證後 Fire BehaviorEventBus）
-- 修改：`RuntimeControlFactory.cs`（AttachBehaviorTag + BuildPropSetters）
-- 修改：`MainWindow.xaml.cs`（BehaviorEngine 欄位、BindDocument、PlcManager 接線、Closing Dispose）
-- 修改：`DesignerItemDefinition.cs`（implements IControlWithBehaviors）
-
-**事件流程：**
-```
-PLC 值變 → PlcEventContext.ControlValueChanged
-SecuredButton 點擊 → BehaviorEventBus.ControlEventFired
-                     ↓
-             BehaviorEngine.DispatchCore
-                     ↓
-           評估 when 條件 → 執行 do 動作
-```
+**B6 產出：**
+- 新增：`MachinePageDesigner/ViewModels/BehaviorEventViewModel.cs`（包裝 BehaviorEvent POCO，ObservableCollection<BehaviorActionViewModel>，靜態 OnTypes/WhenOps）
+- 新增：`MachinePageDesigner/ViewModels/BehaviorActionViewModel.cs`（包裝 BehaviorAction POCO，ShowTarget/ShowProp/ShowValue 可見性屬性，Summary 顯示字串）
+- 新增：`MachinePageDesigner/Views/EventsPanel.xaml` + `.cs`（3 層 Master-Detail：事件清單 → 詳情 → 動作清單 → 動作詳情，_suppressHandlers 防回饋迴圈）
+- 修改：`MachinePageDesigner/ViewModels/DesignerItemViewModel.cs`（加 Events ObservableCollection + AddEvent/RemoveEvent + BuildEventsCollection 同步）
+- 修改：`MachinePageDesigner/Views/PropertyPanel.xaml`（最外層 ScrollViewer → TabControl，"屬性" 頁 + "事件 ⚡" 頁）
 
 **已完成的 commits：**
 | Commit | 內容 |
@@ -87,7 +72,7 @@ SecuredButton 點擊 → BehaviorEventBus.ControlEventFired
 | `e497a93` | docs：B4 designer-system.md + PROGRESS + devlog |
 | `34d9c1f` | B5：BehaviorEngine + Handlers + SecuredButton click + DesignRuntime 接線 |
 
-**下一步（需使用者授權後才能做）：** B6 Designer UI（在 MachinePageDesigner 中加入 events 編輯 UI）。
+**下一步（需使用者授權後才能做）：** B7 Standard 模式收尾（IShellStrategy + 頁面導航 + AppHeader 連線按鈕）。
 
 ---
 

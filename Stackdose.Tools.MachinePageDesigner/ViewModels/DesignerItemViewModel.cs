@@ -2,6 +2,7 @@
 using System.Windows;
 using Stackdose.Tools.MachinePageDesigner.Controls;
 using Stackdose.Tools.MachinePageDesigner.Models;
+using Stackdose.UI.Core.Models;
 
 namespace Stackdose.Tools.MachinePageDesigner.ViewModels;
 
@@ -13,6 +14,7 @@ public sealed class DesignerItemViewModel : ObservableObject
     private readonly DesignerItemDefinition _definition;
     private bool _isSelected;
     private UIElement? _preview;
+    private ObservableCollection<BehaviorEventViewModel>? _events;
 
     public DesignerItemViewModel(DesignerItemDefinition definition)
     {
@@ -352,7 +354,42 @@ public sealed class DesignerItemViewModel : ObservableObject
         Preview = DesignTimeControlFactory.Create(_definition);
     }
 
-    // 嚙緩嚙緩 嚙論出 嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩
+    // ── Events（B6 行為編輯器）─────────────────────────────────────────────
+
+    /// <summary>
+    /// 當前控制項的行為事件清單。延遲初始化，改動直接寫回 _definition.Events。
+    /// </summary>
+    public ObservableCollection<BehaviorEventViewModel> Events
+        => _events ??= BuildEventsCollection();
+
+    private ObservableCollection<BehaviorEventViewModel> BuildEventsCollection()
+    {
+        var col = new ObservableCollection<BehaviorEventViewModel>(
+            _definition.Events.Select(e => new BehaviorEventViewModel(e)));
+        col.CollectionChanged += (_, _) =>
+        {
+            // 保持 _definition.Events 與 VM 集合同步
+            _definition.Events.Clear();
+            foreach (var vm in col)
+                _definition.Events.Add(vm.ToModel());
+        };
+        return col;
+    }
+
+    public void AddEvent()
+    {
+        var model = new BehaviorEvent { On = "valueChanged" };
+        _definition.Events.Add(model);
+        Events.Add(new BehaviorEventViewModel(model));
+    }
+
+    public void RemoveEvent(BehaviorEventViewModel vm)
+    {
+        _definition.Events.Remove(vm.ToModel());
+        Events.Remove(vm);
+    }
+
+    // ── Export ───────────────────────────────────────────────────────────
     public DesignerItemDefinition ToDefinition() => _definition;
 
     // 嚙緩嚙緩 嚙踝蕭雃W嚙踝蕭 嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩

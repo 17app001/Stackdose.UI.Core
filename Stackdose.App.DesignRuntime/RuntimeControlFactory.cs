@@ -31,6 +31,7 @@ public static class RuntimeControlFactory
             "LiveLog"            => CreateLiveLog(),
             "AlarmViewer"        => CreateAlarmViewer(def),
             "SensorViewer"       => CreateSensorViewer(def),
+            "StaticLabel"        => CreateStaticLabel(def),
             _ => MakeUnknownPlaceholder(def.Type),
         };
     }
@@ -236,6 +237,30 @@ public static class RuntimeControlFactory
         if (!string.IsNullOrWhiteSpace(configFile))
             viewer.ConfigFile = configFile;
         return viewer;
+    }
+
+    // ── StaticLabel ───────────────────────────────────────────────────────
+
+    private static UIElement CreateStaticLabel(DesignerItemDefinition def)
+    {
+        var p = def.Props;
+        var text     = p.GetString("text",     p.GetString("label", ""));
+        var fontSize = p.GetDouble("fontSize", 13);
+        var color    = p.GetString("foreground", "#E2E2F0");
+
+        SolidColorBrush brush;
+        try { brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color)); }
+        catch { brush = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)); }
+
+        return new TextBlock
+        {
+            Text                = text,
+            FontSize            = fontSize,
+            Foreground          = brush,
+            FontFamily          = new System.Windows.Media.FontFamily("Microsoft JhengHei"),
+            VerticalAlignment   = VerticalAlignment.Center,
+            TextWrapping        = TextWrapping.Wrap,
+        };
     }
 
     // ── 未知類型佔位符 ────────────────────────────────────────────────────

@@ -44,17 +44,17 @@
                 <Setter Property="Padding" Value="10,6"/>
                 
                 <Style.Triggers>
-                    <DataTrigger Binding="{Binding FrameBackground, RelativeSource={RelativeSource Self}}" Value="Default">
+                    <DataTrigger Binding="{Binding FrameBackground, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Default">
                         <Setter Property="Background" Value="{DynamicResource Plc.Bg.Main}"/>
                     </DataTrigger>
                     
-                    <DataTrigger Binding="{Binding ShowFrame, RelativeSource={RelativeSource Self}}" Value="False">
+                    <DataTrigger Binding="{Binding ShowFrame, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
                         <Setter Property="BorderThickness" Value="0"/>
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="Padding" Value="0"/>
                     </DataTrigger>
                     
-                    <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource Self}}" Value="Circle">
+                    <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Circle">
                         <Setter Property="CornerRadius" Value="500"/>
                         <Setter Property="Padding" Value="14"/>
                     </DataTrigger>
@@ -68,7 +68,7 @@
                 <Style TargetType="Grid">
                     <!-- 圓形時強制寬高相等 -->
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource Self}}" Value="Circle">
+                        <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Circle">
                             <Setter Property="Width" Value="{Binding ActualHeight, RelativeSource={RelativeSource Self}}"/>
                         </DataTrigger>
                     </Style.Triggers>
@@ -94,7 +94,7 @@
                     <Style TargetType="TextBlock">
                         <!-- 圓形時自動置中 -->
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource Self}}" Value="Circle">
+                            <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Circle">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
                             </DataTrigger>
                         </Style.Triggers>
@@ -116,7 +116,7 @@
                         <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
 
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource Self}}" Value="Circle">
+                            <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Circle">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
                             </DataTrigger>
                             
@@ -152,7 +152,7 @@
                     <Style TargetType="TextBlock">
                         <!-- 圓形時自動置中並縮小 -->
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource Self}}" Value="Circle">
+                            <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Circle">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
                                 <Setter Property="FontSize" Value="8"/>
                             </DataTrigger>

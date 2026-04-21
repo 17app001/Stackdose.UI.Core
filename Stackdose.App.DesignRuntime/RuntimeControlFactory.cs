@@ -243,23 +243,42 @@ public static class RuntimeControlFactory
 
     private static UIElement CreateStaticLabel(DesignerItemDefinition def)
     {
-        var p = def.Props;
-        var text     = p.GetString("text",     p.GetString("label", ""));
-        var fontSize = p.GetDouble("fontSize", 13);
-        var color    = p.GetString("foreground", "#E2E2F0");
+        var p          = def.Props;
+        var text       = p.GetString("staticText",       p.GetString("text", p.GetString("label", "")));
+        var fontSize   = p.GetDouble("staticFontSize",   p.GetDouble("fontSize", 13));
+        var fontWeight = p.GetString("staticFontWeight", "Normal");
+        var textAlign  = p.GetString("staticTextAlign",  p.GetString("textAlign", "Left"));
+        var color      = p.GetString("staticForeground", p.GetString("foreground", "#E2E2F0"));
 
         SolidColorBrush brush;
         try { brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color)); }
         catch { brush = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)); }
 
+        var weight = fontWeight.ToLowerInvariant() switch
+        {
+            "bold"      => FontWeights.Bold,
+            "semibold"  => FontWeights.SemiBold,
+            "light"     => FontWeights.Light,
+            _           => FontWeights.Normal,
+        };
+
+        var align = textAlign.ToLowerInvariant() switch
+        {
+            "center" => TextAlignment.Center,
+            "right"  => TextAlignment.Right,
+            _        => TextAlignment.Left,
+        };
+
         return new TextBlock
         {
-            Text                = text,
-            FontSize            = fontSize,
-            Foreground          = brush,
-            FontFamily          = new System.Windows.Media.FontFamily("Microsoft JhengHei"),
-            VerticalAlignment   = VerticalAlignment.Center,
-            TextWrapping        = TextWrapping.Wrap,
+            Text              = text,
+            FontSize          = fontSize,
+            FontWeight        = weight,
+            TextAlignment     = align,
+            Foreground        = brush,
+            FontFamily        = new System.Windows.Media.FontFamily("Microsoft JhengHei"),
+            VerticalAlignment = VerticalAlignment.Center,
+            TextWrapping      = TextWrapping.Wrap,
         };
     }
 

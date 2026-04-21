@@ -35,6 +35,7 @@
     </FrameworkElement.Resources>
 
     <Border x:Name="FrameBorder"
+             ClipToBounds="True"
              Background="{Binding FrameBackground, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ColorThemeConverter}}">
         <Border.Style>
             <Style TargetType="Border">
@@ -63,7 +64,7 @@
         </Border.Style>
         
         <!-- 使用 Viewbox 確保圓形時內容自適應 -->
-        <Grid x:Name="ContentGrid">
+        <Grid x:Name="ContentGrid" VerticalAlignment="Center">
             <Grid.Style>
                 <Style TargetType="Grid">
                     <!-- 圓形時強制寬高相等 -->

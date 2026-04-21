@@ -52,14 +52,29 @@ public static class RuntimeControlFactory
             ShowAddress  = false,
         };
 
-        if (p.GetDouble("valueFontSize", 0) is > 0 and var fs)
-            label.ValueFontSize = fs;
+        if (p.GetDouble("valueFontSize", 0) is > 0 and var vfs)
+            label.ValueFontSize = vfs;
+
+        if (p.GetDouble("labelFontSize", 0) is > 0 and var lfs)
+            label.LabelFontSize = lfs;
+
+        if (Enum.TryParse<HorizontalAlignment>(p.GetString("valueAlignment", ""), true, out var vAlign))
+            label.ValueAlignment = vAlign;
+
+        if (Enum.TryParse<HorizontalAlignment>(p.GetString("labelAlignment", ""), true, out var lAlign))
+            label.LabelAlignment = lAlign;
 
         if (Enum.TryParse<PlcLabelFrameShape>(p.GetString("frameShape", "Rectangle"), true, out var shape))
             label.FrameShape = shape;
 
-        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("valueColorTheme", "NeonBlue"), true, out var theme))
-            label.ValueForeground = theme;
+        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("valueColorTheme", "NeonBlue"), true, out var vTheme))
+            label.ValueForeground = vTheme;
+
+        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("labelForeground", ""), true, out var lTheme))
+            label.LabelForeground = lTheme;
+
+        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("frameBackground", ""), true, out var bgTheme))
+            label.FrameBackground = bgTheme;
 
         return label;
     }

@@ -17,7 +17,7 @@
 | **B5** Behavior Engine | ✅ 完成 | 2026-04-22 | `34d9c1f` | BehaviorEngine + 6 Handler + SecuredButton click + DesignRuntime 接線 |
 | **B6** Designer UI | ✅ 完成 | 2026-04-22 | `f314dcf` | PropertyPanel → TabControl + EventsPanel 事件編輯 UI |
 | **B7** Standard 模式收尾 | ✅ 完成 | 2026-04-21 | `d7c185a` | PageDefinition + pages[] + SetupMultiPageNavigation + Navigator 接線 |
-| **B8** docs 全面對齊 | ✅ 完成 | 2026-04-21 | pending | — |
+| **B8** docs 全面對齊 | ✅ 完成 | 2026-04-21 | `b11398a` | kb/ 新增 behavior-system + foundation-base-classes；architecture/controls 更新 |
 
 圖例：⚪ 待命 / 🟡 進行中 / ✅ 完成 / ⛔ 擱置
 

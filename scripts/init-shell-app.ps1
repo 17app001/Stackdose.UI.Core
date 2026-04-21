@@ -18,7 +18,13 @@ param(
     [int]$DesignerSplitLeftWeight = 3,
 
     [ValidateRange(1, 20)]
-    [int]$DesignerSplitRightWeight = 2
+    [int]$DesignerSplitRightWeight = 2,
+
+    # JSON-driven mode: app reads .machinedesign.json at runtime
+    [switch]$JsonDrivenApp,
+
+    [ValidateSet("SinglePage", "Standard")]
+    [string]$JsonDrivenShellMode = "SinglePage"
 )
 
 Set-StrictMode -Version Latest
@@ -109,6 +115,663 @@ if ($null -eq $configCopyNode) {
 
 if ($requiresCsprojSave) {
     $baseCsprojXml.Save($projectFile)
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# JSON-Driven App Mode
+# 產生一個獨立機型專案，會在啟動時讀 Config/*.machinedesign.json
+# 使用 BehaviorEngine 執行 events[]，並可在 Handlers/ 放機型專屬 C# 邏輯
+# ─────────────────────────────────────────────────────────────────────────────
+if ($JsonDrivenApp) {
+
+    # -- 1. Patch csproj: 加入四個 ProjectReference ----------------------------
+    [xml]$jdXml = Get-Content -Path $projectFile -Raw
+    $jdProject   = $jdXml.Project
+    $uiCoreRef    = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "Stackdose.UI.Core\Stackdose.UI.Core.csproj")
+    $templatesRef = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "Stackdose.UI.Templates\Stackdose.UI.Templates.csproj")
+    $shellRef     = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "Stackdose.App.ShellShared\Stackdose.App.ShellShared.csproj")
+    $designerRef  = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "Stackdose.Tools.MachinePageDesigner\Stackdose.Tools.MachinePageDesigner.csproj")
+    $refGroup = $jdXml.CreateElement("ItemGroup")
+    foreach ($r in @($uiCoreRef, $templatesRef, $shellRef, $designerRef)) {
+        $n = $jdXml.CreateElement("ProjectReference")
+        $n.SetAttribute("Include", $r)
+        $refGroup.AppendChild($n) | Out-Null
+    }
+    $jdProject.AppendChild($refGroup) | Out-Null
+    $jdXml.Save($projectFile)
+
+    # -- 2. App.xaml -----------------------------------------------------------
+@"
+<Application x:Class="$AppName.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Application.Resources />
+</Application>
+"@ | Set-Content -Path (Join-Path $projectDir "App.xaml") -Encoding UTF8
+
+    # -- 3. App.xaml.cs --------------------------------------------------------
+@"
+using Stackdose.UI.Templates.Helpers;
+using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Models;
+using System.Windows;
+
+namespace $AppName;
+
+public partial class App : Application
+{
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        AppThemeBootstrapper.Apply(this);
+        SecurityContext.QuickLogin(AccessLevel.SuperAdmin);
+        base.OnStartup(e);
+        var mainWindow = new MainWindow();
+        MainWindow = mainWindow;
+        mainWindow.Show();
+    }
+}
+"@ | Set-Content -Path (Join-Path $projectDir "App.xaml.cs") -Encoding UTF8
+
+    # -- 4. MainWindow.xaml ----------------------------------------------------
+    if ($JsonDrivenShellMode -eq "Standard") {
+        $shellXml = @"
+<Window x:Class="$AppName.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:Templates="http://schemas.stackdose.com/templates"
+        Title="$AppName"
+        Height="900" Width="1800"
+        WindowState="Maximized" WindowStyle="None" ResizeMode="CanResize">
+    <!-- Standard 模式：MainContainer 由 MainWindow.xaml.cs 動態建立 -->
+    <ContentPresenter x:Name="RootContent" />
+</Window>
+"@
+    } else {
+        $shellXml = @"
+<Window x:Class="$AppName.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:Templates="http://schemas.stackdose.com/templates"
+        Title="$AppName"
+        Height="900" Width="1800"
+        WindowState="Maximized" WindowStyle="None" ResizeMode="CanResize">
+    <Templates:SinglePageContainer x:Name="Shell"
+        CloseRequested="Shell_OnCloseRequested"
+        MinimizeRequested="Shell_OnMinimizeRequested"
+        LogoutRequested="Shell_OnLogoutRequested" />
+</Window>
+"@
+    }
+    $shellXml | Set-Content -Path (Join-Path $projectDir "MainWindow.xaml") -Encoding UTF8
+
+    # -- 5. MainWindow.xaml.cs -------------------------------------------------
+    if ($JsonDrivenShellMode -eq "Standard") {
+        $mainWindowCs = @"
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using Stackdose.App.ShellShared.Behaviors;
+using Stackdose.App.ShellShared.Services;
+using Stackdose.Tools.MachinePageDesigner.Models;
+using Stackdose.Tools.MachinePageDesigner.Services;
+using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Models;
+using Stackdose.UI.Templates.Controls;
+using Stackdose.UI.Templates.Shell;
+
+namespace $AppName;
+
+public partial class MainWindow : Window
+{
+    private readonly BehaviorEngine _behaviorEngine;
+
+    public MainWindow()
+    {
+        InitializeComponent();
+        _behaviorEngine = new BehaviorEngine
+        {
+            AuditLogger = msg => ComplianceContext.LogSystem(msg, Abstractions.Logging.LogLevel.Info),
+        };
+        Closing += (_, _) => _behaviorEngine.Dispose();
+        Loaded += OnLoaded;
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        var configDir = Path.Combine(AppContext.BaseDirectory, "Config");
+        var jsonFile  = Directory.EnumerateFiles(configDir, "*.machinedesign.json").FirstOrDefault();
+        if (jsonFile == null) { MessageBox.Show("找不到 Config/*.machinedesign.json", "啟動失敗"); return; }
+        var doc = DesignFileService.Load(jsonFile);
+        RenderDocument(doc);
+    }
+
+    private void RenderDocument(DesignDocument doc)
+    {
+        var container = new MainContainer
+        {
+            PageTitle        = doc.Meta.Title,
+            HeaderDeviceName = string.IsNullOrWhiteSpace(doc.Meta.MachineId) ? "DEVICE" : doc.Meta.MachineId,
+        };
+        container.CloseRequested    += (_, _) => Close();
+        container.MinimizeRequested += (_, _) => WindowState = WindowState.Minimized;
+        container.LogoutRequested   += (_, _) => SecurityContext.Logout();
+
+        RootContent.Content = container;
+        SetupMultiPageNavigation(container, doc);
+    }
+
+    private void SetupMultiPageNavigation(MainContainer container, DesignDocument doc)
+    {
+        var pageViews   = new Dictionary<string, UIElement>();
+        var allItems    = new List<IControlWithBehaviors>();
+        var allControls = new List<KeyValuePair<string, System.Windows.FrameworkElement>>();
+
+        foreach (var page in doc.Pages)
+        {
+            var canvas = new Canvas
+            {
+                Width = doc.CanvasWidth, Height = doc.CanvasHeight, ClipToBounds = true,
+                Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x32)),
+            };
+            foreach (var def in page.CanvasItems)
+            {
+                UIElement ctrl;
+                try   { ctrl = RuntimeControlFactory.Create(def); }
+                catch (Exception ex) { ctrl = MakeErrorPlaceholder(def, ex.Message); }
+                if (ctrl is System.Windows.FrameworkElement fe)
+                {
+                    fe.Width = def.Width; fe.Height = def.Height;
+                    if (fe.Tag is ControlRuntimeTag tag) allControls.Add(KeyValuePair.Create(tag.Id, fe));
+                }
+                Canvas.SetLeft(ctrl, def.X); Canvas.SetTop(ctrl, def.Y);
+                canvas.Children.Add(ctrl);
+            }
+            allItems.AddRange(page.CanvasItems);
+            pageViews[page.Id] = new ScrollViewer
+            {
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollBarVisibility   = ScrollBarVisibility.Auto,
+                Padding = new Thickness(20), Content = canvas,
+            };
+        }
+
+        container.NavigationItems = new ObservableCollection<NavigationItem>(
+            doc.Pages.Select(p => new NavigationItem { Title = p.Title, NavigationTarget = p.Id }));
+
+        void Navigate(string pageId)
+        {
+            if (!pageViews.TryGetValue(pageId, out var view)) return;
+            var page = doc.Pages.FirstOrDefault(p => p.Id == pageId);
+            container.ShellContent = view;
+            container.PageTitle    = page?.Title ?? pageId;
+            container.SelectNavigationTarget(pageId);
+        }
+
+        container.NavigationRequested += (_, pageId) => Navigate(pageId);
+        _behaviorEngine.Navigator = Navigate;
+        RegisterCustomHandlers();
+        _behaviorEngine.BindDocument(allItems, allControls);
+        if (doc.Pages.Count > 0) Navigate(doc.Pages[0].Id);
+    }
+
+    // 在這裡注入機型專屬 Handler
+    private void RegisterCustomHandlers()
+    {
+        // 範例：_behaviorEngine.Register(new Handlers.ModelSStartCycleHandler());
+    }
+
+    private static UIElement MakeErrorPlaceholder(DesignerItemDefinition def, string message) =>
+        new Border
+        {
+            Width = def.Width, Height = def.Height,
+            BorderBrush = System.Windows.Media.Brushes.OrangeRed, BorderThickness = new Thickness(1),
+            Child = new TextBlock
+            {
+                Text = string.Concat("[", def.Type, "] ", message),
+                Foreground = System.Windows.Media.Brushes.OrangeRed, FontSize = 10,
+                TextWrapping = TextWrapping.Wrap, Margin = new Thickness(4),
+            }
+        };
+}
+"@
+    } else {
+        # SinglePage mode
+        $mainWindowCs = @"
+using System.Collections.Generic;
+using System.IO;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using Stackdose.App.ShellShared.Behaviors;
+using Stackdose.Tools.MachinePageDesigner.Models;
+using Stackdose.Tools.MachinePageDesigner.Services;
+using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Models;
+
+namespace $AppName;
+
+public partial class MainWindow : Window
+{
+    private readonly BehaviorEngine _behaviorEngine;
+
+    public MainWindow()
+    {
+        InitializeComponent();
+        _behaviorEngine = new BehaviorEngine
+        {
+            AuditLogger = msg => ComplianceContext.LogSystem(msg, Abstractions.Logging.LogLevel.Info),
+        };
+        Closing += (_, _) => _behaviorEngine.Dispose();
+        Loaded  += OnLoaded;
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        var configDir = Path.Combine(AppContext.BaseDirectory, "Config");
+        var jsonFile  = Directory.EnumerateFiles(configDir, "*.machinedesign.json").FirstOrDefault();
+        if (jsonFile == null) { MessageBox.Show("找不到 Config/*.machinedesign.json", "啟動失敗"); return; }
+        var doc = DesignFileService.Load(jsonFile);
+        RenderDocument(doc);
+    }
+
+    private void RenderDocument(DesignDocument doc)
+    {
+        Shell.PageTitle        = doc.Meta.Title;
+        Shell.HeaderDeviceName = string.IsNullOrWhiteSpace(doc.Meta.MachineId) ? "DEVICE" : doc.Meta.MachineId;
+
+        var canvas = new Canvas
+        {
+            Width = doc.CanvasWidth, Height = doc.CanvasHeight, ClipToBounds = true,
+            Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x32)),
+        };
+
+        var controlMap = new List<KeyValuePair<string, System.Windows.FrameworkElement>>();
+
+        foreach (var def in doc.CanvasItems)
+        {
+            UIElement ctrl;
+            try   { ctrl = RuntimeControlFactory.Create(def); }
+            catch (Exception ex) { ctrl = MakeErrorPlaceholder(def, ex.Message); }
+
+            if (ctrl is System.Windows.FrameworkElement fe)
+            {
+                fe.Width = def.Width; fe.Height = def.Height;
+                if (fe.Tag is ControlRuntimeTag tag) controlMap.Add(KeyValuePair.Create(tag.Id, fe));
+            }
+
+            Canvas.SetLeft(ctrl, def.X);
+            Canvas.SetTop(ctrl, def.Y);
+            canvas.Children.Add(ctrl);
+        }
+
+        Shell.ShellContent = new ScrollViewer
+        {
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility   = ScrollBarVisibility.Auto,
+            Padding = new Thickness(20),
+            Content = canvas,
+        };
+
+        RegisterCustomHandlers();
+        _behaviorEngine.BindDocument(doc.CanvasItems, controlMap);
+    }
+
+    // 在這裡注入機型專屬 Handler
+    private void RegisterCustomHandlers()
+    {
+        // 範例：_behaviorEngine.Register(new Handlers.ModelSStartCycleHandler());
+    }
+
+    private static UIElement MakeErrorPlaceholder(DesignerItemDefinition def, string message) =>
+        new Border
+        {
+            Width = def.Width, Height = def.Height,
+            BorderBrush = System.Windows.Media.Brushes.OrangeRed, BorderThickness = new Thickness(1),
+            Child = new TextBlock
+            {
+                Text = string.Concat("[", def.Type, "] ", message),
+                Foreground = System.Windows.Media.Brushes.OrangeRed, FontSize = 10,
+                TextWrapping = TextWrapping.Wrap, Margin = new Thickness(4),
+            }
+        };
+
+    private void Shell_OnCloseRequested(object? sender, EventArgs e)    => Close();
+    private void Shell_OnMinimizeRequested(object? sender, EventArgs e) => WindowState = WindowState.Minimized;
+    private void Shell_OnLogoutRequested(object? sender, EventArgs e)   => SecurityContext.Logout();
+}
+"@
+    }
+    $mainWindowCs | Set-Content -Path (Join-Path $projectDir "MainWindow.xaml.cs") -Encoding UTF8
+
+    # -- 6. RuntimeControlFactory.cs -------------------------------------------
+@'
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Shapes;
+using System.Windows.Threading;
+using Stackdose.App.ShellShared.Behaviors;
+using Stackdose.Tools.MachinePageDesigner.Models;
+using Stackdose.UI.Core.Controls;
+using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Models;
+
+namespace NAMESPACE_PLACEHOLDER;
+
+public static class RuntimeControlFactory
+{
+    public static UIElement Create(DesignerItemDefinition def)
+    {
+        var control = def.Type switch
+        {
+            "PlcLabel"           => CreatePlcLabel(def),
+            "PlcText"            => CreatePlcText(def),
+            "PlcStatusIndicator" => CreateBitIndicator(def),
+            "SecuredButton"      => CreateSecuredButton(def),
+            "Spacer"             => CreateGroupBox(def),
+            "LiveLog"            => new LiveLogViewer(),
+            "AlarmViewer"        => CreateAlarmViewer(def),
+            "SensorViewer"       => CreateSensorViewer(def),
+            "StaticLabel"        => CreateStaticLabel(def),
+            _                   => MakeUnknownPlaceholder(def.Type),
+        };
+        AttachBehaviorTag(def, control);
+        return control;
+    }
+
+    private static void AttachBehaviorTag(DesignerItemDefinition def, UIElement control)
+    {
+        if (control is not FrameworkElement fe) return;
+        var tag = new ControlRuntimeTag { Id = def.Id, PropSetters = BuildPropSetters(fe) };
+        fe.Tag = tag;
+        if (fe is SecuredButton btn) btn.BehaviorId = def.Id;
+    }
+
+    private static Dictionary<string, Action<string>> BuildPropSetters(FrameworkElement fe)
+    {
+        var s = new Dictionary<string, Action<string>>(StringComparer.OrdinalIgnoreCase);
+        if (fe is System.Windows.Controls.Control ctrl)
+        {
+            s["background"] = v => { try { ctrl.Background = ParseBrush(v); } catch { } };
+            s["foreground"] = v => { try { ctrl.Foreground = ParseBrush(v); } catch { } };
+        }
+        switch (fe)
+        {
+            case PlcLabel lbl:    s["label"] = v => lbl.Label   = v; break;
+            case SecuredButton b: s["label"] = v => b.Content   = v; break;
+            case TextBlock tb:    s["text"]  = v => tb.Text     = v;
+                                  s["foreground"] = v => { try { tb.Foreground = ParseBrush(v); } catch { } }; break;
+        }
+        return s;
+    }
+
+    private static SolidColorBrush ParseBrush(string v)
+        => new((Color)ColorConverter.ConvertFromString(v));
+
+    private static UIElement CreatePlcLabel(DesignerItemDefinition def)
+    {
+        var p = def.Props;
+        var label = new PlcLabel
+        {
+            Label        = p.GetString("label",        "Label"),
+            Address      = p.GetString("address",      "D100"),
+            DefaultValue = p.GetString("defaultValue", "0"),
+            Divisor      = p.GetDouble("divisor",      1),
+            StringFormat = p.GetString("stringFormat", "F0"),
+            ShowAddress  = false,
+        };
+        if (p.GetDouble("valueFontSize", 0) is > 0 and var vfs) label.ValueFontSize = vfs;
+        if (p.GetDouble("labelFontSize", 0) is > 0 and var lfs) label.LabelFontSize = lfs;
+        if (Enum.TryParse<HorizontalAlignment>(p.GetString("valueAlignment", ""), true, out var va)) label.ValueAlignment = va;
+        if (Enum.TryParse<HorizontalAlignment>(p.GetString("labelAlignment", ""), true, out var la)) label.LabelAlignment = la;
+        if (Enum.TryParse<PlcLabelFrameShape>(p.GetString("frameShape", "Rectangle"), true, out var sh)) label.FrameShape = sh;
+        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("valueColorTheme", "NeonBlue"), true, out var vt)) label.ValueForeground = vt;
+        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("labelForeground", ""), true, out var lt)) label.LabelForeground = lt;
+        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("frameBackground", ""), true, out var bg)) label.FrameBackground = bg;
+        return label;
+    }
+
+    private static UIElement CreatePlcText(DesignerItemDefinition def)
+    {
+        var p = def.Props;
+        return new PlcText
+        {
+            Label              = p.GetString("label",              "Parameter"),
+            Address            = p.GetString("address",            "D100"),
+            ShowSuccessMessage = p.GetBool  ("showSuccessMessage", true),
+            EnableAuditTrail   = p.GetBool  ("enableAuditTrail",   true),
+        };
+    }
+
+    private static UIElement CreateBitIndicator(DesignerItemDefinition def)
+    {
+        var p       = def.Props;
+        var address = p.GetString("displayAddress", "M100");
+        var label   = p.GetString("label",          address);
+        var root    = new Border
+        {
+            Background      = new SolidColorBrush(Color.FromRgb(0x31, 0x31, 0x45)),
+            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x5A)),
+            BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(4), Padding = new Thickness(8),
+        };
+        var dot   = new Ellipse { Width = 12, Height = 12, Fill = Brushes.Gray, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
+        var text  = new TextBlock { Text = string.Concat(label, "  [", address, "]"), Foreground = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)), VerticalAlignment = VerticalAlignment.Center };
+        var stack = new StackPanel { Orientation = Orientation.Horizontal };
+        stack.Children.Add(dot); stack.Children.Add(text);
+        root.Child = stack;
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+        timer.Tick += (_, _) =>
+        {
+            try
+            {
+                var mgr = PlcContext.GlobalStatus?.CurrentManager;
+                if (mgr == null || !mgr.IsConnected) { dot.Fill = Brushes.Gray; return; }
+                int? val = address.StartsWith("M", StringComparison.OrdinalIgnoreCase)
+                    ? (mgr.ReadBit(address) == true ? 1 : 0) : mgr.ReadWord(address);
+                dot.Fill = val is > 0
+                    ? new SolidColorBrush(Color.FromRgb(0x4E, 0xC9, 0x94))
+                    : new SolidColorBrush(Color.FromRgb(0x66, 0x66, 0x88));
+            }
+            catch { dot.Fill = Brushes.OrangeRed; }
+        };
+        root.Loaded   += (_, _) => timer.Start();
+        root.Unloaded += (_, _) => timer.Stop();
+        return root;
+    }
+
+    private static UIElement CreateSecuredButton(DesignerItemDefinition def)
+    {
+        var p     = def.Props;
+        var label = p.GetString("label", "Command");
+        var theme = p.GetString("theme", "Primary").ToLowerInvariant() switch
+        {
+            "danger"  or "red"    or "error"  => ButtonTheme.Error,
+            "success" or "green"              => ButtonTheme.Success,
+            "warning" or "orange"             => ButtonTheme.Warning,
+            "info"    or "cyan"               => ButtonTheme.Info,
+            "normal"  or "gray"               => ButtonTheme.Normal,
+            _                                 => ButtonTheme.Primary,
+        };
+        return new SecuredButton { Content = label, Theme = theme, OperationName = label, MinWidth = 80 };
+    }
+
+    private static UIElement CreateGroupBox(DesignerItemDefinition def)
+    {
+        var title = def.Props.GetString("title", "Group");
+        var root  = new Grid();
+        root.Children.Add(new Border
+        {
+            BorderBrush = new SolidColorBrush(Color.FromRgb(0x6C, 0x8E, 0xEF)),
+            BorderThickness = new Thickness(1.5),
+            Background = new SolidColorBrush(Color.FromArgb(0x18, 0x6C, 0x8E, 0xEF)),
+            CornerRadius = new CornerRadius(4), IsHitTestVisible = false,
+        });
+        var header = new Border
+        {
+            Background = new SolidColorBrush(Color.FromArgb(0xCC, 0x3A, 0x56, 0xA8)),
+            CornerRadius = new CornerRadius(2, 2, 0, 0), Padding = new Thickness(10, 4, 10, 4),
+        };
+        header.Child = new TextBlock
+        {
+            Text = string.IsNullOrWhiteSpace(title) ? "Group" : title,
+            Foreground = Brushes.White, FontSize = 12, FontWeight = FontWeights.SemiBold,
+        };
+        var dock = new DockPanel { LastChildFill = true, Background = null };
+        DockPanel.SetDock(header, Dock.Top);
+        dock.Children.Add(header); dock.Children.Add(new Border { Background = null });
+        root.Children.Add(dock);
+        return root;
+    }
+
+    private static UIElement CreateAlarmViewer(DesignerItemDefinition def)
+    {
+        var viewer = new AlarmViewer();
+        var cfg = def.Props.GetString("configFile", "");
+        if (!string.IsNullOrWhiteSpace(cfg)) viewer.ConfigFile = cfg;
+        return viewer;
+    }
+
+    private static UIElement CreateSensorViewer(DesignerItemDefinition def)
+    {
+        var viewer = new SensorViewer();
+        var cfg = def.Props.GetString("configFile", "");
+        if (!string.IsNullOrWhiteSpace(cfg)) viewer.ConfigFile = cfg;
+        return viewer;
+    }
+
+    private static UIElement CreateStaticLabel(DesignerItemDefinition def)
+    {
+        var p    = def.Props;
+        var text = p.GetString("staticText", p.GetString("text", p.GetString("label", "")));
+        SolidColorBrush brush;
+        try { brush = ParseBrush(p.GetString("staticForeground", p.GetString("foreground", "#E2E2F0"))); }
+        catch { brush = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)); }
+        var weight = p.GetString("staticFontWeight", "Normal").ToLowerInvariant() switch
+        {
+            "bold"     => FontWeights.Bold, "semibold" => FontWeights.SemiBold,
+            "light"    => FontWeights.Light, _         => FontWeights.Normal,
+        };
+        var align = p.GetString("staticTextAlign", p.GetString("textAlign", "Left")).ToLowerInvariant() switch
+        {
+            "center" => TextAlignment.Center, "right" => TextAlignment.Right, _ => TextAlignment.Left,
+        };
+        return new TextBlock
+        {
+            Text = text, FontSize = p.GetDouble("staticFontSize", p.GetDouble("fontSize", 13)),
+            FontWeight = weight, TextAlignment = align, Foreground = brush,
+            FontFamily = new System.Windows.Media.FontFamily("Microsoft JhengHei"),
+            VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap,
+        };
+    }
+
+    private static UIElement MakeUnknownPlaceholder(string type) =>
+        new Border
+        {
+            BorderBrush = Brushes.OrangeRed, BorderThickness = new Thickness(1),
+            Background = new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0x55, 0x00)),
+            Child = new TextBlock
+            {
+                Text = string.Concat("未知類型：", type), Foreground = Brushes.OrangeRed,
+                FontSize = 11, Margin = new Thickness(6), TextWrapping = TextWrapping.Wrap,
+                VerticalAlignment = VerticalAlignment.Center,
+            }
+        };
+}
+'@ -replace "NAMESPACE_PLACEHOLDER", $AppName |
+    Set-Content -Path (Join-Path $projectDir "RuntimeControlFactory.cs") -Encoding UTF8
+
+    # -- 7. Handlers/ ----------------------------------------------------------
+    $handlersDir = Join-Path $projectDir "Handlers"
+    New-Item -ItemType Directory -Path $handlersDir -Force | Out-Null
+
+@"
+using Stackdose.App.ShellShared.Behaviors;
+
+namespace $AppName.Handlers;
+
+/// <summary>
+/// 機型專屬 Handler 範例。
+/// 在 MainWindow.RegisterCustomHandlers() 呼叫 _behaviorEngine.Register(new SampleCustomHandler()) 啟用。
+/// 對應 JSON events[].do[] 中 "type": "Custom.Sample"。
+/// </summary>
+public sealed class SampleCustomHandler : IBehaviorActionHandler
+{
+    public string ActionType => "Custom.Sample";
+
+    public void Execute(BehaviorActionContext ctx)
+    {
+        var msg = ctx.Action.Message ?? "SampleCustomHandler executed";
+        System.Windows.MessageBox.Show(msg, "Custom Action");
+    }
+}
+"@ | Set-Content -Path (Join-Path $handlersDir "SampleCustomHandler.cs") -Encoding UTF8
+
+    # -- 8. Config/ ------------------------------------------------------------
+    $jdConfigDir = Join-Path $projectDir "Config"
+    New-Item -ItemType Directory -Path $jdConfigDir -Force | Out-Null
+
+@"
+{
+  "machine": { "id": "M1", "name": "$AppName" },
+  "plc": { "ip": "192.168.22.39", "port": 3000, "pollIntervalMs": 150, "autoConnect": false }
+}
+"@ | Set-Content -Path (Join-Path $jdConfigDir "Machine1.config.json") -Encoding UTF8
+
+    $shellModeValue = if ($JsonDrivenShellMode -eq "Standard") { "Standard" } else { "SinglePage" }
+@"
+{
+  "meta": { "title": "$AppName", "machineId": "M1" },
+  "shellMode": "$shellModeValue",
+  "canvasWidth": 1280,
+  "canvasHeight": 720,
+  "canvasItems": [
+    {
+      "id": "lbl-001", "type": "StaticLabel",
+      "x": 40, "y": 40, "width": 400, "height": 48,
+      "props": { "staticText": "歡迎使用 $AppName", "staticFontSize": 28, "staticFontWeight": "Bold" },
+      "events": []
+    }
+  ],
+  "pages": []
+}
+"@ | Set-Content -Path (Join-Path $jdConfigDir "$AppName.machinedesign.json") -Encoding UTF8
+
+    # -- 9. README -------------------------------------------------------------
+@"
+# $AppName — JSON-Driven App ($JsonDrivenShellMode 模式)
+
+## 開始使用
+
+1. 用 **MachinePageDesigner** 設計 UI → 存成 `Config/$AppName.machinedesign.json`
+2. 在 `MainWindow.RegisterCustomHandlers()` 注入機型專屬 Handler（參考 `Handlers/SampleCustomHandler.cs`）
+3. 修改 `Config/Machine1.config.json` 設定 PLC IP / Port
+4. 編譯並執行
+
+## 目錄說明
+
+| 目錄/檔案 | 說明 |
+|---|---|
+| `Config/*.machinedesign.json` | Designer 輸出，app 啟動時自動讀取 |
+| `Config/Machine1.config.json` | PLC 連線設定 |
+| `Handlers/` | 機型專屬 IBehaviorActionHandler |
+| `RuntimeControlFactory.cs` | JSON 控件類型 → WPF 控件的映射 |
+| `MainWindow.xaml.cs` | JSON 讀取 + BehaviorEngine 接線 |
+
+## Shell 模式
+
+目前模式：**$JsonDrivenShellMode**
+
+- `SinglePage`：SinglePageContainer（Header + 單一畫布，無 LeftNav）
+- `Standard`：MainContainer（Header + LeftNav 多頁導覽）
+
+重新 scaffold 切換模式：`-JsonDrivenApp -JsonDrivenShellMode Standard`
+"@ | Set-Content -Path (Join-Path $projectDir "QUICKSTART.md") -Encoding UTF8
+
+    Write-Host "[init-shell-app] Done (JsonDrivenApp / $JsonDrivenShellMode). Generated: $projectDir"
+    exit 0
 }
 
 $singlePageMode = $SinglePageDesigner -or $SinglePageDesignerLocalEditable

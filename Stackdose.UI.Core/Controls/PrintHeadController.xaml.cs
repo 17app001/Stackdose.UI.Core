@@ -563,7 +563,7 @@ namespace Stackdose.UI.Core.Controls
             }
         }
 
-        private void CancelTaskButton_Click(object sender, RoutedEventArgs e)
+        private async void CancelTaskButton_Click(object sender, RoutedEventArgs e)
         {
             // 更新活動時間
             SecurityContext.UpdateActivity();
@@ -592,7 +592,7 @@ namespace Stackdose.UI.Core.Controls
                         }
 
                         string name = kvp.Key;
-                        bool ok = printHead.StopPrint();
+                        bool ok = await printHead.StopPrintAsync();
 
                         if (ok)
                         {
@@ -638,7 +638,7 @@ namespace Stackdose.UI.Core.Controls
             }
         }
 
-        private void LoadImageButton_Click(object sender, RoutedEventArgs e)
+        private async void LoadImageButton_Click(object sender, RoutedEventArgs e)
         {
             // 更新活動時間
             SecurityContext.UpdateActivity();
@@ -714,7 +714,7 @@ namespace Stackdose.UI.Core.Controls
                                 showInUi: true
                             );
 
-                            printHead.StartPrint();
+                            await printHead.StartPrintAsync();
                         }
                         else
                         {

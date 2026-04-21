@@ -7,17 +7,17 @@
 
 ---
 
-## 基類現況（重要）
+## 基類現況（✅ B1 已完成遷移）
 
-`Stackdose.UI.Core/Controls/Base/` 下有三個預先寫好的基類，但**目前沒有任何控件實際繼承它們**（已規劃、尚未遷移；B1 重構階段會逐一遷移）。
+`Stackdose.UI.Core/Controls/Base/` 下三個基類，**PlcLabel / PlcText / PlcStatusIndicator / SensorViewer / AlarmViewer 已全數遷移**。
 
-| 類別 | 位置 | 用途（已寫成但未被使用） |
+| 類別 | 位置 | 用途 |
 |---|---|---|
-| `CyberControlBase` | `Controls/Base/` | `UserControl + IThemeAware + IDisposable`；Loaded/Unloaded lifecycle、ThemeManager 自動註冊 |
-| `PlcControlBase` | `Controls/Base/` | 繼承 `CyberControlBase`；加 PlcManager DP、`OnPlcConnected/OnPlcDataUpdated` hook |
-| `CyberTabControl` | `Controls/Base/` | 繼承 `TabControl`，用途待確認 |
+| `CyberControlBase` | `Controls/Base/` | `UserControl + IThemeAware`；ThemeManager WeakRef 自動登錄、`OnThemeChanged` 虛擬方法 |
+| `PlcControlBase` | `Controls/Base/` | 繼承 `CyberControlBase`；統一 PlcContext 訂閱、`ValueChanged` event、`OnPlcConnected/OnPlcDataUpdated` hook |
+| `CyberTabControl` | `Controls/Base/` | 繼承 `TabControl`，主題支援 |
 
-目前所有 Plc* 控件仍直接繼承 `UserControl`，自己實作 PLC 訂閱。B1 遷移完成後本段會改寫。
+詳見 `docs/kb/foundation-base-classes.md`。
 
 ---
 
@@ -108,7 +108,7 @@
 | `MainContainer` | 13 DP；`NavigationRequested`、`LogoutRequested`、`CloseRequested`、`MinimizeRequested`、`MachineSelectionRequested` | 完整 Shell：AppHeader + LeftNavigation + AppBottomBar + ShellContent |
 | `SinglePageContainer` | 6 DP；`LogoutRequested`、`CloseRequested`、`MinimizeRequested` | 簡化 Shell：單頁面無 LeftNav |
 
-> **現況備註：** DesignPlayer 的 Dashboard 模式目前**未使用** 這兩個 Container，視窗樣式是 DesignPlayer 內部 hardcode。B3 階段會抽 `IShellStrategy` 接上。
+> **使用方式：** DesignRuntime 根據 `shellMode`（FreeCanvas / SinglePage / Standard）自動選擇 Shell 策略包裝畫布。Standard + `pages[]` 時 `MainContainer` 自動接線 LeftNavigation。
 
 ---
 

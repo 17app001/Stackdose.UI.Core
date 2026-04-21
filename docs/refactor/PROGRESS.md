@@ -17,7 +17,7 @@
 | **B5** Behavior Engine | ✅ 完成 | 2026-04-22 | `34d9c1f` | BehaviorEngine + 6 Handler + SecuredButton click + DesignRuntime 接線 |
 | **B6** Designer UI | ✅ 完成 | 2026-04-22 | `f314dcf` | PropertyPanel → TabControl + EventsPanel 事件編輯 UI |
 | **B7** Standard 模式收尾 | ✅ 完成 | 2026-04-21 | `d7c185a` | PageDefinition + pages[] + SetupMultiPageNavigation + Navigator 接線 |
-| **B8** docs 全面對齊 | ⚪ 待命 | — | — | — |
+| **B8** docs 全面對齊 | ✅ 完成 | 2026-04-21 | pending | — |
 
 圖例：⚪ 待命 / 🟡 進行中 / ✅ 完成 / ⛔ 擱置
 
@@ -54,7 +54,7 @@
 
 > 接手 AI：從這裡開始做事。
 
-**現在在做：** 🛑 **等待使用者授權** B8（B7 Standard 模式收尾已完成）
+**現在在做：** ✅ **B0–B8 全部完成**（`refactor/foundation-and-behavior` 重構結束）
 
 **B7 產出：**
 - 新增：`Stackdose.Tools.MachinePageDesigner/Models/PageDefinition.cs`（id / title / canvasItems[]）
@@ -78,7 +78,7 @@
 | `e497a93` | docs：B4 designer-system.md + PROGRESS + devlog |
 | `34d9c1f` | B5：BehaviorEngine + Handlers + SecuredButton click + DesignRuntime 接線 |
 
-**下一步（需使用者授權後才能做）：** B8 docs 全面對齊（kb/ 回灌、behavior-system.md、foundation-base-classes.md、index.html 首頁卡片）。
+**下一步：** 重構完成，合併分支至 master 或繼續 MachinePageDesigner / DesignRuntime 功能開發。
 
 ---
 

@@ -6,30 +6,26 @@
 
 ## 今日焦點
 
-**分支：** `refactor/foundation-and-behavior`
-**主要工作：** 底層基礎 + Behavior Engine 重構（B0–B8）
-**當前階段：** B0 底層現況校正（進行中 → 完成後停手等 B1 許可）
-**路線圖：** 見 [`docs/refactor/README.md`](docs/refactor/README.md)
+**分支：** `refactor/foundation-and-behavior`（✅ B0–B8 重構全部完成）
+**下一方向：** MachinePageDesigner 功能 + DesignRuntime 穩定性
 
 ### 重構最終主旨
 > 讓不懂 XAML 的工程師或設計師，也能為 PLC 工業機台做出符合 FDA 21 CFR Part 11 稽核要求的監控介面。
 
 ---
 
-## 重構進行中（B0–B8）
+## 重構成果（B0–B8 ✅ 全部完成）
 
-接手 AI 先讀：
-1. [`docs/refactor/HANDOFF.md`](docs/refactor/HANDOFF.md) — 接手指引
-2. [`docs/refactor/PLAN.md`](docs/refactor/PLAN.md) — 完整 9 階段計畫
-3. [`docs/refactor/PROGRESS.md`](docs/refactor/PROGRESS.md) — 目前進度 / 下一步
-
-| 階段 | 狀態 |
-|---|---|
-| B0 底層現況校正 | ✅ 完成（commit `01a903c`） |
-| B1 抽共用基類 | ⚪ 等 B0 回報後授權 |
-| B2–B8 | ⚪ 待命 |
-
-**鐵律：** 每階段完成後停手回報，不自行連跑下一階段。
+| 階段 | Commit | 重點 |
+|---|---|---|
+| B0 底層校正 | `01a903c` | 盤點文件，0 動程式碼 |
+| B1+B2 基類+事件匯流 | `b0e424d` | PlcControlBase + PlcEventContext.ControlValueChanged |
+| B3 Shell 策略化 | `70b919f` | IShellStrategy + FreeCanvas/SinglePage/Standard |
+| B4 Behavior Schema | `4a8cc13` | BehaviorEvent/Condition/Action POCO + events[] |
+| B5 Behavior Engine | `34d9c1f` | BehaviorEngine + 6 Handler |
+| B6 Designer UI | `f314dcf` | PropertyPanel → TabControl + EventsPanel |
+| B7 Standard 多頁導覽 | `d7c185a` | PageDefinition + LeftNav 接線 + Navigator |
+| B8 docs 對齊 | pending | kb/ 全面更新 |
 
 ---
 

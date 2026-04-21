@@ -56,12 +56,18 @@
 
 **現在在做：** 🛑 **等待使用者授權** B3（B1+B2+sln 修復全部完成並已 commit）
 
-**已完成的三筆 commits（本次對話）：**
+**已完成的 commits：**
 | Commit | 內容 |
 |---|---|
 | `b0e424d` | B1+B2：5 個控件遷移 PlcControlBase、PlcEventContext 事件匯流 |
 | `8e363f7` | docs：PROGRESS.md + devlog B1+B2 記錄 |
 | `623335f` | fix(sln)：VisualStudioVersion 18→17.14、移除 inline # 注釋、加入 App.Monitor 至 UI.Core.sln |
+| `238881b` | docs：sln 修復記入 PROGRESS + devlog |
+| `468b60c` | docs(CLAUDE.md)：加入重構 reading order 入口 |
+| `6b6636e` | fix(runtime)：PlcLabel circle DataTriggers、StaticLabel 支援、connect 按鈕 disabled 樣式 |
+| `c3d2ba5` | fix(runtime)：StaticLabel 正確 key、ClipToBounds、VerticalAlignment |
+| `0d4a639` | fix(runtime)：PlcLabel factory 補齊 5 個 display props |
+| `8494b36` | feat(runtime)：ValueChanged 事件監測 ToggleButton |
 
 **B1+B2 產出總覽：**
 - 新增：`Stackdose.UI.Core/Helpers/PlcValueChangedEventArgs.cs`

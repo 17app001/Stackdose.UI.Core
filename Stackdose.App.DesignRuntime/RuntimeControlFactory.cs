@@ -86,8 +86,10 @@ public static class RuntimeControlFactory
         var p = def.Props;
         return new PlcText
         {
-            Label   = p.GetString("label",   "Parameter"),
-            Address = p.GetString("address", "D100"),
+            Label               = p.GetString("label",              "Parameter"),
+            Address             = p.GetString("address",            "D100"),
+            ShowSuccessMessage  = p.GetBool  ("showSuccessMessage", true),
+            EnableAuditTrail    = p.GetBool  ("enableAuditTrail",   true),
         };
     }
 

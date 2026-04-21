@@ -740,7 +740,7 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler
     {
       "id": "lbl-001", "type": "StaticLabel",
       "x": 40, "y": 40, "width": 400, "height": 48,
-      "props": { "staticText": "歡迎使用 $AppName", "staticFontSize": 28, "staticFontWeight": "Bold" },
+      "props": { "staticText": "Welcome - $AppName", "staticFontSize": 28, "staticFontWeight": "Bold" },
       "events": []
     }
   ],

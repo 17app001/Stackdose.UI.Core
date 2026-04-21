@@ -51,6 +51,12 @@
 - **主題入口：** `Themes/Theme.xaml`
 - **語意 Token 規則：** `Surface.*`（背景）、`Text.*`（文字）、`Action.*`（按鈕/操作）
 
+### 2.6 PlcEventContext
+- **職責：** 控件事件匯流排雛形（目前僅服務 `PlcEventTrigger` 的 bit edge 事件）
+- **位置：** `Stackdose.UI.Core/Helpers/PlcEventContext.cs`
+- **關鍵方法：** `Register`、`Unregister`、`NotifyEventTriggered`
+- **現況：** 僅有 bit 邊緣觸發來源。B2 規劃升級為統一匯流排（加上 value 條件、控件屬性變化）
+
 ---
 
 ## 3. JSON 驅動配置系統
@@ -85,6 +91,7 @@ AppController.Start()
 
 ## 4. Shell 導航系統
 
+### 4.1 DeviceFramework Shell 契約
 ```
 ShellRouteCatalog
   → Overview / Detail / Log / User / Settings
@@ -92,6 +99,13 @@ NavigationOrchestrator — 統一頁面切換
 IShellAppProfile — 定義 App metadata（標題、圖示、導航項目）
 ShellNavigationService — 導航契約介面（多 App 複用）
 ```
+
+### 4.2 Templates Shell 實作現況
+`Stackdose.UI.Templates/Shell/` 提供兩個 Shell 容器：
+- `MainContainer` — 完整 Shell（AppHeader + LeftNavigation + AppBottomBar + ShellContent）
+- `SinglePageContainer` — 簡化 Shell（無 LeftNav）
+
+**已知缺口：** DesignPlayer 的 Dashboard 模式目前**未使用**這兩個 Container；視窗樣式由 DesignPlayer 內部 hardcode。B3 規劃抽 `IShellStrategy` 策略化，讓 Dashboard / Standard / Kiosk 模式能共用 Templates Shell。
 
 ---
 
@@ -102,8 +116,12 @@ ShellNavigationService — 導航契約介面（多 App 複用）
 IPlcMonitor.Start()
   → 定期 BatchRead（可設定 intervalMs）
   → WordChanged / BitChanged 事件
-  → PlcLabel / PlcStatus 控制項訂閱更新
+    → PlcStatus 控件（連線單例）橋接
+      → 觸發 PlcStatus.ScanUpdated
+        → PlcLabel / PlcText / PlcStatusIndicator / SensorViewer / AlarmViewer 訂閱更新
 ```
+
+> **說明：** 各 Plc* 控件**不直接**訂閱 `IPlcMonitor.WordChanged/BitChanged`；而是透過 `PlcStatus`（連線單例）的 `ScanUpdated` 中繼事件。
 
 ### 命令執行
 ```
@@ -124,19 +142,32 @@ ComplianceContext.LogXxx(...)
 
 ---
 
-## 6. 控制項基類體系
+## 6. 控制項基類體系（⚠️ 規劃中，B1 執行）
+
+### 目前實況（2026-04-21）
+
+`Stackdose.UI.Core/Controls/Base/` 下三個基類**已寫好但零控件使用**：
+- `CyberControlBase : UserControl, IThemeAware, IDisposable`
+- `PlcControlBase : CyberControlBase`（加 PlcManager DP、`OnPlcConnected/OnPlcDataUpdated` hook）
+- `CyberTabControl : TabControl`（用途待 B1 確認）
+
+**所有 Plc* 控件目前仍直接 `: UserControl`**，自己實作 `PlcContext` 訂閱與 `ScanUpdated` 處理，有大量重複程式碼。
+
+### B1 規劃（遷移目標）
 
 ```
 CyberControlBase
-  └── PlcControlBase
+  └── PlcControlBase（含統一 ValueChanged 事件）
         ├── PlcLabel
         ├── PlcText
-        ├── PlcStatus
-        └── PlcStatusIndicator
+        ├── PlcStatusIndicator
+        ├── SensorViewer
+        └── AlarmViewer
+
+PlcStatus 不遷（它是 PLC 連線單例，不是 consumer）
 ```
 
-- `CyberControlBase`：主題、WeakReference 登錄
-- `PlcControlBase`：PLC 附加屬性綁定、`ScanUpdated` 訂閱
+詳細遷移清單與優先度見 [`docs/refactor/B0-control-inventory.md §6`](../refactor/B0-control-inventory.md)。
 
 ---
 

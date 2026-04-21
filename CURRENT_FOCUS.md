@@ -6,13 +6,34 @@
 
 ## 今日焦點
 
-**開啟方案：** `Stackdose.Designer.sln`
-**Startup Project：** `Stackdose.App.DesignRuntime`
-**主要工作：** DesignRuntime 穩定性 + PLC 連線 + JSON 熱更新
+**分支：** `refactor/foundation-and-behavior`
+**主要工作：** 底層基礎 + Behavior Engine 重構（B0–B8）
+**當前階段：** B0 底層現況校正（進行中 → 完成後停手等 B1 許可）
+**路線圖：** 見 [`docs/refactor/README.md`](docs/refactor/README.md)
+
+### 重構最終主旨
+> 讓不懂 XAML 的工程師或設計師，也能為 PLC 工業機台做出符合 FDA 21 CFR Part 11 稽核要求的監控介面。
 
 ---
 
-## 進行中的工作項目
+## 重構進行中（B0–B8）
+
+接手 AI 先讀：
+1. [`docs/refactor/HANDOFF.md`](docs/refactor/HANDOFF.md) — 接手指引
+2. [`docs/refactor/PLAN.md`](docs/refactor/PLAN.md) — 完整 9 階段計畫
+3. [`docs/refactor/PROGRESS.md`](docs/refactor/PROGRESS.md) — 目前進度 / 下一步
+
+| 階段 | 狀態 |
+|---|---|
+| B0 底層現況校正 | 🟡 進行中 |
+| B1 抽共用基類 | ⚪ 等 B0 回報後授權 |
+| B2–B8 | ⚪ 待命 |
+
+**鐵律：** 每階段完成後停手回報，不自行連跑下一階段。
+
+---
+
+## 暫停的工作（重構完再回來）
 
 - [ ] DesignRuntime：JSON 熱更新（修改 JSON 後自動重新載入畫布）
 - [ ] DesignRuntime：PLC 連線斷線重連穩定性

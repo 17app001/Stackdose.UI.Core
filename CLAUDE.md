@@ -16,8 +16,8 @@
 ### 核心庫（穩定）
 | 專案 | 路徑 | 說明 |
 |---|---|---|
-| `Stackdose.UI.Core` | `./Stackdose.UI.Core/` | 26+ 自定義WPF控制項、Context管理、SQLiteLogger |
-| `Stackdose.UI.Templates` | `./Stackdose.UI.Templates/` | Shell布局：AppHeader、LeftNavigation、AppBottomBar |
+| `Stackdose.UI.Core` | `./Stackdose.UI.Core/` | 26 個 WPF 元件（20 UserControl + 6 Window，含 2 個 Feature/ 進階）、Context 系統、SQLiteLogger |
+| `Stackdose.UI.Templates` | `./Stackdose.UI.Templates/` | 16 個 Shell/Page 元件（MainContainer / SinglePageContainer、AppHeader / LeftNav / BottomBar、6 Pages） |
 | `Stackdose.App.ShellShared` | `./Stackdose.App.ShellShared/` | 多App共用Shell服務層 |
 
 ### 框架與應用

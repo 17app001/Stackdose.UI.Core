@@ -49,11 +49,17 @@ Stackdose.UI.Core.sln
 │   ├── → Stackdose.App.ShellShared
 │   └── → Stackdose.App.DeviceFramework
 │
-├── Stackdose.App.DesignRuntime     ← PLC連線真實執行環境 [開發中]
+├── Stackdose.App.DesignRuntime     ← PLC連線真實執行環境 [開發驗證]
 │   ├── → Stackdose.UI.Core
 │   ├── → Stackdose.UI.Templates
 │   ├── → Stackdose.App.DeviceFramework
 │   └── → Stackdose.Tools.MachinePageDesigner
+│
+├── Stackdose.App.DesignPlayer      ← 量產交付：JSON + PLC + 登入管控 [✅ 完整]
+│   ├── → Stackdose.UI.Core
+│   ├── → Stackdose.UI.Templates
+│   ├── → Stackdose.App.ShellShared
+│   └── → Stackdose.App.DeviceFramework
 │
 ├── Stackdose.Tools.MachinePageDesigner  ← 自由畫布設計器 [主力開發]
 │   ├── → Stackdose.UI.Core

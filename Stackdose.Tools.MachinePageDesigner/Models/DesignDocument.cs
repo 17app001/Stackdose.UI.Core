@@ -22,6 +22,13 @@ public sealed class DesignDocument
     [JsonPropertyName("canvasItems")]
     public List<DesignerItemDefinition> CanvasItems { get; set; } = [];
 
+    /// <summary>
+    /// Shell 外殼模式：FreeCanvas（預設）/ SinglePage / Standard。
+    /// 決定 DesignRuntime / DesignPlayer 載入此文件時使用哪種 Shell 策略包裝畫布。
+    /// </summary>
+    [JsonPropertyName("shellMode")]
+    public string ShellMode { get; set; } = "FreeCanvas";
+
     /// <summary>畫布邏輯寬度（px），預設 1200</summary>
     [JsonPropertyName("canvasWidth")]
     public double CanvasWidth { get; set; } = 1200;

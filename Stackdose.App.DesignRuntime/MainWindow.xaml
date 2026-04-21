@@ -153,30 +153,38 @@
             </WrapPanel>
         </Border>
 
-        <!-- ── Row 2：執行畫布 ── -->
-        <ScrollViewer Grid.Row="2"
-                      HorizontalScrollBarVisibility="Auto"
-                      VerticalScrollBarVisibility="Auto"
-                      Background="#12121E"
-                      Padding="40">
-            <Grid x:Name="canvasHost" HorizontalAlignment="Left" VerticalAlignment="Top">
-                <Grid.LayoutTransform>
-                    <ScaleTransform x:Name="canvasScale"/>
-                </Grid.LayoutTransform>
+        <!-- ── Row 2：執行畫布（FreeCanvas 裸畫布 / Shell 外殼切換） ── -->
+        <Grid Grid.Row="2">
 
-                <!-- 主畫布：ClipToBounds 確保元件不超出邊界 -->
-                <Canvas x:Name="runtimeCanvas"
-                        Background="#1E1E32"
-                        ClipToBounds="True"
-                        SnapsToDevicePixels="True"/>
+            <!-- FreeCanvas 模式：原始 ScrollViewer + Canvas（預設可見） -->
+            <ScrollViewer x:Name="scrollViewerCanvas"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto"
+                          Background="#12121E"
+                          Padding="40">
+                <Grid x:Name="canvasHost" HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <Grid.LayoutTransform>
+                        <ScaleTransform x:Name="canvasScale"/>
+                    </Grid.LayoutTransform>
 
-                <!-- 邊框（純視覺）-->
-                <Border x:Name="canvasBorder"
-                        BorderBrush="#3A3A6A"
-                        BorderThickness="1"
-                        IsHitTestVisible="False"/>
-            </Grid>
-        </ScrollViewer>
+                    <!-- 主畫布：ClipToBounds 確保元件不超出邊界 -->
+                    <Canvas x:Name="runtimeCanvas"
+                            Background="#1E1E32"
+                            ClipToBounds="True"
+                            SnapsToDevicePixels="True"/>
+
+                    <!-- 邊框（純視覺）-->
+                    <Border x:Name="canvasBorder"
+                            BorderBrush="#3A3A6A"
+                            BorderThickness="1"
+                            IsHitTestVisible="False"/>
+                </Grid>
+            </ScrollViewer>
+
+            <!-- Shell 預覽模式（SinglePage / Standard）：預設隱藏 -->
+            <ContentControl x:Name="shellPreviewHost" Visibility="Collapsed"/>
+
+        </Grid>
 
         <!-- ── Row 3：狀態列 ── -->
         <Border Grid.Row="3"
@@ -185,6 +193,12 @@
                 BorderThickness="0,1,0,0"
                 Padding="10,4">
             <DockPanel>
+                <TextBlock x:Name="lblShellMode"
+                           Text="Shell: FreeCanvas"
+                           DockPanel.Dock="Right"
+                           Foreground="#7070A0" FontSize="11"
+                           Margin="0,0,16,0"
+                           VerticalAlignment="Center"/>
                 <TextBlock x:Name="lblItemCount" Text="" Foreground="#7070A0" FontSize="11" DockPanel.Dock="Right" Margin="0,0,16,0"/>
                 <!-- ValueChanged 事件監視 -->
                 <ToggleButton x:Name="btnWatchEvents"

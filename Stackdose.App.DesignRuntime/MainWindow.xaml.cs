@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Microsoft.Win32;
+using Stackdose.App.ShellShared.Services;
 using Stackdose.Hardware.Plc;
 using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.Tools.MachinePageDesigner.Services;
@@ -197,10 +198,52 @@ public partial class MainWindow : Window
         if (errorCount > 0) status += $"，{errorCount} 個建立失敗（橘框標示）";
         ShowStatus(status, error: errorCount > 0);
 
+        // 套用 Shell 策略（FreeCanvas / SinglePage / Standard）
+        ApplyShellStrategy(doc);
+
         // 等所有 PlcLabel 的 Loaded 事件執行完後，刷新 Monitor 讓新地址加入掃描清單
         Dispatcher.BeginInvoke(
             () => _plcStatus?.RefreshMonitors(),
             System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    /// <summary>
+    /// 根據 DesignDocument.ShellMode 選擇策略，切換 Row 2 的顯示模式。
+    /// FreeCanvas：原始 ScrollViewer + Canvas，保留縮放功能。
+    /// SinglePage / Standard：將 canvasHost 遷移進 Shell 容器後顯示。
+    /// </summary>
+    private void ApplyShellStrategy(DesignDocument doc)
+    {
+        var strategy = ShellStrategyFactory.Select(doc.ShellMode);
+        lblShellMode.Text = $"Shell: {strategy.LayoutMode}";
+
+        if (strategy is FreeCanvasShellStrategy)
+        {
+            // 確保 canvasHost 回到 scrollViewerCanvas（可能前次已被遷移）
+            if (!ReferenceEquals(scrollViewerCanvas.Content, canvasHost))
+                scrollViewerCanvas.Content = canvasHost;
+
+            scrollViewerCanvas.Visibility = Visibility.Visible;
+            shellPreviewHost.Content      = null;
+            shellPreviewHost.Visibility   = Visibility.Collapsed;
+        }
+        else
+        {
+            // 將 canvasHost 從 scrollViewerCanvas 遷移出，放入新的 ScrollViewer
+            scrollViewerCanvas.Content = null;
+            var innerScroller = new ScrollViewer
+            {
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollBarVisibility   = ScrollBarVisibility.Auto,
+                Background = new SolidColorBrush(Color.FromRgb(0x12, 0x12, 0x1E)),
+                Padding    = new Thickness(40),
+                Content    = canvasHost,
+            };
+
+            shellPreviewHost.Content    = strategy.Wrap(innerScroller, doc.Meta.Title, doc.Meta.MachineId);
+            shellPreviewHost.Visibility = Visibility.Visible;
+            scrollViewerCanvas.Visibility = Visibility.Collapsed;
+        }
     }
 
     private static UIElement MakeErrorPlaceholder(DesignerItemDefinition def, string message)

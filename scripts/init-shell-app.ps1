@@ -139,9 +139,8 @@ if ($JsonDrivenApp) {
     $uiCoreRef    = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "Stackdose.UI.Core\Stackdose.UI.Core.csproj")
     $templatesRef = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "Stackdose.UI.Templates\Stackdose.UI.Templates.csproj")
     $shellRef     = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "Stackdose.App.ShellShared\Stackdose.App.ShellShared.csproj")
-    $designerRef  = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "Stackdose.Tools.MachinePageDesigner\Stackdose.Tools.MachinePageDesigner.csproj")
     $refGroup = $jdXml.CreateElement("ItemGroup")
-    foreach ($r in @($uiCoreRef, $templatesRef, $shellRef, $designerRef)) {
+    foreach ($r in @($uiCoreRef, $templatesRef, $shellRef)) {
         $n = $jdXml.CreateElement("ProjectReference")
         $n.SetAttribute("Include", $r)
         $refGroup.AppendChild($n) | Out-Null
@@ -262,41 +261,54 @@ public partial class MainWindow : Window
         {
             AuditLogger = msg => ComplianceContext.LogSystem(msg, Abstractions.Logging.LogLevel.Info),
         };
-        Closing += (_, _) => _behaviorEngine.Dispose();
+
+        // 在 Loaded 觸發前設定 PlcStatus 屬性，否則 PlcStatus.Loaded 先跑時讀到預設值
+        ApplyPlcConfig();
+
+        Closing += (_, _) => { _behaviorEngine.Dispose(); LiveRecordContext.Stop(); SqliteLogger.Shutdown(); };
         Loaded += OnLoaded;
+    }
+
+    private void ApplyPlcConfig()
+    {
+        var appConfigPath = Path.Combine(AppContext.BaseDirectory, "Config", "app-config.json");
+        if (!File.Exists(appConfigPath)) return;
+
+        using var doc  = JsonDocument.Parse(File.ReadAllText(appConfigPath));
+        var root = doc.RootElement;
+
+        if (root.TryGetProperty("plc", out var plc))
+        {
+            PlcStatusBar.IpAddress    = plc.TryGetProperty("ip",             out var ip)   ? ip.GetString()   ?? "127.0.0.1" : "127.0.0.1";
+            PlcStatusBar.Port         = plc.TryGetProperty("port",           out var port) ? port.GetInt32()                : 3000;
+            PlcStatusBar.ScanInterval = plc.TryGetProperty("pollIntervalMs", out var scan) ? scan.GetInt32()                : 200;
+            PlcStatusBar.AutoConnect  = !plc.TryGetProperty("autoConnect",   out var auto) || auto.GetBoolean();
+        }
+
+        int liveIntervalSec = root.TryGetProperty("liveRecordIntervalSec", out var li) ? li.GetInt32() : 5;
+        SqliteLogger.Initialize();
+        LiveRecordContext.Start(liveIntervalSec);
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        var configDir = Path.Combine(AppContext.BaseDirectory, "Config");
+        var configDir     = Path.Combine(AppContext.BaseDirectory, "Config");
         var appConfigPath = Path.Combine(configDir, "app-config.json");
-        
+
         if (!File.Exists(appConfigPath)) { MessageBox.Show("找不到 Config/app-config.json", "啟動失敗"); return; }
-        
-        var appConfigJson = File.ReadAllText(appConfigPath);
-        using var appDoc = JsonDocument.Parse(appConfigJson);
+
+        using var appDoc = JsonDocument.Parse(File.ReadAllText(appConfigPath));
         var root = appDoc.RootElement;
-        
-        // 設定 PLC
-        if (root.TryGetProperty("plc", out var plc)) {
-            PlcStatusBar.IpAddress = plc.TryGetProperty("ip", out var ip) ? ip.GetString() ?? "127.0.0.1" : "127.0.0.1";
-            PlcStatusBar.Port = plc.TryGetProperty("port", out var port) ? port.GetInt32() : 3000;
-            PlcStatusBar.ScanInterval = plc.TryGetProperty("pollIntervalMs", out var scan) ? scan.GetInt32() : 200;
-            PlcStatusBar.AutoConnect = !plc.TryGetProperty("autoConnect", out var auto) || auto.GetBoolean();
-        }
-        
-        // 讀取設計檔
-        var designFile = root.TryGetProperty("designFile", out var df) ? df.GetString() : null;
-        if (string.IsNullOrEmpty(designFile)) {
-             designFile = Directory.EnumerateFiles(configDir, "*.machinedesign.json").FirstOrDefault();
-        } else {
-             designFile = Path.Combine(AppContext.BaseDirectory, designFile);
-        }
+
+        string? designFile = root.TryGetProperty("designFile", out var df) ? df.GetString() : null;
+        if (string.IsNullOrEmpty(designFile))
+            designFile = Directory.EnumerateFiles(configDir, "*.machinedesign.json").FirstOrDefault();
+        else
+            designFile = Path.Combine(AppContext.BaseDirectory, designFile);
 
         if (designFile == null || !File.Exists(designFile)) { MessageBox.Show("找不到設計檔", "啟動失敗"); return; }
-        
-        var doc = DesignFileService.Load(designFile);
-        RenderDocument(doc);
+
+        RenderDocument(DesignFileService.Load(designFile));
     }
 
     private void RenderDocument(DesignDocument doc)
@@ -415,41 +427,54 @@ public partial class MainWindow : Window
         {
             AuditLogger = msg => ComplianceContext.LogSystem(msg, Abstractions.Logging.LogLevel.Info),
         };
-        Closing += (_, _) => _behaviorEngine.Dispose();
+
+        // 在 Loaded 觸發前設定 PlcStatus 屬性，否則 PlcStatus.Loaded 先跑時讀到預設值
+        ApplyPlcConfig();
+
+        Closing += (_, _) => { _behaviorEngine.Dispose(); LiveRecordContext.Stop(); SqliteLogger.Shutdown(); };
         Loaded  += OnLoaded;
+    }
+
+    private void ApplyPlcConfig()
+    {
+        var appConfigPath = Path.Combine(AppContext.BaseDirectory, "Config", "app-config.json");
+        if (!File.Exists(appConfigPath)) return;
+
+        using var doc  = JsonDocument.Parse(File.ReadAllText(appConfigPath));
+        var root = doc.RootElement;
+
+        if (root.TryGetProperty("plc", out var plc))
+        {
+            PlcStatusBar.IpAddress    = plc.TryGetProperty("ip",             out var ip)   ? ip.GetString()   ?? "127.0.0.1" : "127.0.0.1";
+            PlcStatusBar.Port         = plc.TryGetProperty("port",           out var port) ? port.GetInt32()                : 3000;
+            PlcStatusBar.ScanInterval = plc.TryGetProperty("pollIntervalMs", out var scan) ? scan.GetInt32()                : 200;
+            PlcStatusBar.AutoConnect  = !plc.TryGetProperty("autoConnect",   out var auto) || auto.GetBoolean();
+        }
+
+        int liveIntervalSec = root.TryGetProperty("liveRecordIntervalSec", out var li) ? li.GetInt32() : 5;
+        SqliteLogger.Initialize();
+        LiveRecordContext.Start(liveIntervalSec);
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        var configDir = Path.Combine(AppContext.BaseDirectory, "Config");
+        var configDir     = Path.Combine(AppContext.BaseDirectory, "Config");
         var appConfigPath = Path.Combine(configDir, "app-config.json");
-        
-        if (!File.Exists(appConfigPath)) { MessageBox.Show("找不到 Config/app-config.json", "啟動失敗"); return; }
-        
-        var appConfigJson = File.ReadAllText(appConfigPath);
-        using var appDoc = JsonDocument.Parse(appConfigJson);
-        var root = appDoc.RootElement;
-        
-        // 設定 PLC
-        if (root.TryGetProperty("plc", out var plc)) {
-            PlcStatusBar.IpAddress = plc.TryGetProperty("ip", out var ip) ? ip.GetString() ?? "127.0.0.1" : "127.0.0.1";
-            PlcStatusBar.Port = plc.TryGetProperty("port", out var port) ? port.GetInt32() : 3000;
-            PlcStatusBar.ScanInterval = plc.TryGetProperty("pollIntervalMs", out var scan) ? scan.GetInt32() : 200;
-            PlcStatusBar.AutoConnect = !plc.TryGetProperty("autoConnect", out var auto) || auto.GetBoolean();
-        }
 
-        // 讀取設計檔
-        var designFile = root.TryGetProperty("designFile", out var df) ? df.GetString() : null;
-        if (string.IsNullOrEmpty(designFile)) {
-             designFile = Directory.EnumerateFiles(configDir, "*.machinedesign.json").FirstOrDefault();
-        } else {
-             designFile = Path.Combine(AppContext.BaseDirectory, designFile);
-        }
+        if (!File.Exists(appConfigPath)) { MessageBox.Show("找不到 Config/app-config.json", "啟動失敗"); return; }
+
+        using var appDoc = JsonDocument.Parse(File.ReadAllText(appConfigPath));
+        var root = appDoc.RootElement;
+
+        string? designFile = root.TryGetProperty("designFile", out var df) ? df.GetString() : null;
+        if (string.IsNullOrEmpty(designFile))
+            designFile = Directory.EnumerateFiles(configDir, "*.machinedesign.json").FirstOrDefault();
+        else
+            designFile = Path.Combine(AppContext.BaseDirectory, designFile);
 
         if (designFile == null || !File.Exists(designFile)) { MessageBox.Show("找不到設計檔", "啟動失敗"); return; }
-        
-        var doc = DesignFileService.Load(designFile);
-        RenderDocument(doc);
+
+        RenderDocument(DesignFileService.Load(designFile));
     }
 
     private void RenderDocument(DesignDocument doc)
@@ -605,6 +630,7 @@ public static class RuntimeControlFactory
         if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("valueColorTheme", "NeonBlue"), true, out var vt)) label.ValueForeground = vt;
         if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("labelForeground", ""), true, out var lt)) label.LabelForeground = lt;
         if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("frameBackground", ""), true, out var bg)) label.FrameBackground = bg;
+        label.EnableLiveRecord = p.GetBool("enableLiveRecord", true);
         return label;
     }
 
@@ -798,6 +824,7 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler
     "pollIntervalMs": 150,
     "autoConnect": true
   },
+  "liveRecordIntervalSec": 5,
   "designFile": "Config/$AppName.machinedesign.json"
 }
 "@ | Set-Content -Path (Join-Path $jdConfigDir "app-config.json") -Encoding UTF8

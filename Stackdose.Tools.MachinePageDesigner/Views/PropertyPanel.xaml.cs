@@ -58,6 +58,7 @@ public class PropertyPanelTemplateSelector : DataTemplateSelector
     public DataTemplate? PlcTextTemplate { get; set; }
     public DataTemplate? PlcStatusIndicatorTemplate { get; set; }
     public DataTemplate? SecuredButtonTemplate { get; set; }
+    public DataTemplate? StaticLabelTemplate { get; set; }
     public DataTemplate? SpacerTemplate { get; set; }
     public DataTemplate? EmptyTemplate { get; set; }
 
@@ -71,6 +72,7 @@ public class PropertyPanelTemplateSelector : DataTemplateSelector
             "PlcLabel" => PlcLabelTemplate,
             "PlcText" => PlcTextTemplate,
             "PlcStatusIndicator" => PlcStatusIndicatorTemplate,
+            "StaticLabel" => StaticLabelTemplate,
             "SecuredButton" => SecuredButtonTemplate,
             "Spacer" => SpacerTemplate,
             _ => EmptyTemplate,

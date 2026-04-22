@@ -134,6 +134,8 @@ public static class RuntimeControlFactory
         if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("frameBackground", ""), true, out var bgTheme))
             label.FrameBackground = bgTheme;
 
+        label.EnableLiveRecord = p.GetBool("enableLiveRecord", true);
+
         return label;
     }
 

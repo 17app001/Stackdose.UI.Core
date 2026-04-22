@@ -52,7 +52,8 @@
       "Bash(grep -v \"^bin$\")",
       "Bash(dir \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\" /b)",
       "Bash(findstr /i \"design App\\\\.\")",
-      "Bash(dir *)"
+      "Bash(dir *)",
+      "Skill(update-config)"
     ]
   }
 }

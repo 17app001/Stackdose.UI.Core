@@ -4,17 +4,26 @@
 
 ---
 
-## ⚠️ 重構進行中 — 必讀
+## 現狀三行摘要
 
-目前在 **`refactor/foundation-and-behavior`** 分支執行 B0–B8 底層重構。
+- **分支：** `refactor/foundation-and-behavior`｜B0–B9 重構全部完成，待合併至 master
+- **主力工作：** MachinePageDesigner 功能開發 + DesignRuntime PLC 連線端
+- **未解問題：** 見 `docs/refactor/PROGRESS.md` 底部 ⚠️ 區塊
 
-**若你在這條分支上，進來後必須按以下順序讀：**
-1. 本文件（你正在讀）
-2. **`docs/refactor/HANDOFF.md`** ← 接手指引，給 AI 讀的，告訴你怎麼接手
-3. **`docs/refactor/PROGRESS.md`** ← 看現在停在哪、下一步做什麼
-4. `docs/refactor/PLAN.md` ← 掌握 B0–B8 全部路線
+---
 
-**不要跳過 HANDOFF.md。** 那份文件有鐵律、用戶偏好、遇到問題怎麼辦。
+## 開發狀態快速確認
+
+> 當前進度以 `docs/refactor/PROGRESS.md` 為唯一真相。AI 接手必讀 `docs/refactor/HANDOFF.md`（含鐵律與用戶偏好）。
+
+**常用方案 / Startup 對照**
+
+| 工作內容 | 開啟方案 | Startup Project |
+|---|---|---|
+| 設計器 / 執行環境 / 預覽 | `Stackdose.Designer.sln` | `Stackdose.App.DesignRuntime` |
+| 框架核心 / DeviceFramework | `Stackdose.UI.Core.sln` | `Stackdose.App.UbiDemo` |
+| 專案產生器 | `Stackdose.UI.Core.sln` | `Stackdose.Tools.ProjectGeneratorUI` |
+| 全局修改 / 跨多個專案 | `Stackdose.UI.Core.sln` | — |
 
 ---
 
@@ -90,8 +99,26 @@
 
 ---
 
-## 核心架構規則（勿違反）
+## AI 行為規則
 
+### 優先順序（衝突時依此裁決）
+1. **穩定性** — 不破壞現有功能
+2. **正確性** — 行為符合規格
+3. **最小改動** — 只動必須動的
+4. **可讀性** — 清楚優於聰明
+5. **重構** — 只在被要求時才做
+
+### 每次任務回應格式
+```
+**摘要：** 做了什麼（一句話）
+**異動檔案：** 列出所有改動的檔案
+**改了什麼：** 具體變更內容
+**為什麼：** 決策理由
+**風險：** 可能的副作用或假設
+**下一步：** 建議的後續動作
+```
+
+### 核心架構規則（勿違反）
 1. 不在 `Controls/*.xaml` 寫硬編碼色碼，用語意 Token（`Surface.*`、`Text.*`、`Action.*`）
 2. 不繞過 `ComplianceContext` 散落寫日誌，關閉前必須呼叫 `ComplianceContext.Shutdown()`
 3. App 特屬邏輯不耦合進 `UI.Core`

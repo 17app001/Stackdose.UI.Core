@@ -383,6 +383,16 @@ namespace Stackdose.UI.Core.Controls
             set { SetValue(FrameBackgroundProperty, value); }
         }
 
+        // 22. 是否啟用即時數據記錄
+        public static readonly DependencyProperty EnableLiveRecordProperty =
+            DependencyProperty.Register("EnableLiveRecord", typeof(bool), typeof(PlcLabel), new PropertyMetadata(true));
+
+        public bool EnableLiveRecord
+        {
+            get { return (bool)GetValue(EnableLiveRecordProperty); }
+            set { SetValue(EnableLiveRecordProperty, value); }
+        }
+
         #endregion
 
         #region PlcControlBase Overrides
@@ -396,6 +406,7 @@ namespace Stackdose.UI.Core.Controls
             if (!_isRegistered)
             {
                 PlcLabelContext.Register(this);
+                LiveRecordContext.Register(this);
                 _isRegistered = true;
             }
 
@@ -405,6 +416,7 @@ namespace Stackdose.UI.Core.Controls
         protected override void OnPlcControlUnloaded()
         {
             PlcLabelContext.Unregister(this);
+            LiveRecordContext.Unregister(this);
             _isRegistered = false;
 
             #if DEBUG

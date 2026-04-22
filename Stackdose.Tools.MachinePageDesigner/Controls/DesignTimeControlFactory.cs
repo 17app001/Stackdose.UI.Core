@@ -19,6 +19,7 @@ public static class DesignTimeControlFactory
         {
             "PlcLabel"           => CreatePlcLabel(def),
             "PlcText"            => CreatePlcText(def),
+            "StaticLabel"        => CreateStaticLabel(def),
             "PlcStatusIndicator" => CreatePlcStatusIndicator(def),
             "SecuredButton"      => CreateSecuredButton(def),
             "Spacer"             => CreateGroupBox(def),
@@ -45,21 +46,30 @@ public static class DesignTimeControlFactory
             Address = p.GetString("address", "D100"),
             DefaultValue = p.GetString("defaultValue", "0"),
             ValueFontSize = p.GetDouble("valueFontSize", 20),
+            LabelFontSize = p.GetDouble("labelFontSize", 12),
             Divisor = p.GetDouble("divisor", 1),
             StringFormat = p.GetString("stringFormat", "F0"),
             ShowAddress = false,
-            IsHitTestVisible = false,  // 設計時不可互動
+            IsHitTestVisible = false,
         };
 
-        // FrameShape
-        var shapeStr = p.GetString("frameShape", "Rectangle");
-        if (Enum.TryParse<PlcLabelFrameShape>(shapeStr, true, out var shape))
+        if (Enum.TryParse<PlcLabelFrameShape>(p.GetString("frameShape", "Rectangle"), true, out var shape))
             label.FrameShape = shape;
 
-        // ValueColorTheme → ValueForeground
-        var colorStr = p.GetString("valueColorTheme", "NeonBlue");
-        if (Enum.TryParse<PlcLabelColorTheme>(colorStr, true, out var colorTheme))
-            label.ValueForeground = colorTheme;
+        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("valueColorTheme", "NeonBlue"), true, out var valueFg))
+            label.ValueForeground = valueFg;
+
+        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("labelForeground", "Default"), true, out var labelFg))
+            label.LabelForeground = labelFg;
+
+        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("frameBackground", "DarkBlue"), true, out var frameBg))
+            label.FrameBackground = frameBg;
+
+        if (Enum.TryParse<HorizontalAlignment>(p.GetString("labelAlignment", "Left"), true, out var labelAlign))
+            label.LabelAlignment = labelAlign;
+
+        if (Enum.TryParse<HorizontalAlignment>(p.GetString("valueAlignment", "Right"), true, out var valueAlign))
+            label.ValueAlignment = valueAlign;
 
         return label;
     }
@@ -74,6 +84,42 @@ public static class DesignTimeControlFactory
             IsHitTestVisible = false,
         };
         return plcText;
+    }
+
+    private static UIElement CreateStaticLabel(DesignerItemDefinition def)
+    {
+        var p = def.Props;
+        var text = p.GetString("staticText", "Label");
+        var fontSize = p.GetDouble("staticFontSize", 16);
+        var fontWeightStr = p.GetString("staticFontWeight", "Normal");
+        var textAlignStr = p.GetString("staticTextAlign", "Left");
+        var foregroundStr = p.GetString("staticForeground", "#E2E2F0");
+
+        var fontWeight = fontWeightStr.Equals("Bold", StringComparison.OrdinalIgnoreCase)
+            ? FontWeights.Bold : FontWeights.Normal;
+
+        var textAlign = textAlignStr.ToLowerInvariant() switch
+        {
+            "center" => TextAlignment.Center,
+            "right"  => TextAlignment.Right,
+            _        => TextAlignment.Left,
+        };
+
+        Brush foreground;
+        try { foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(foregroundStr)); }
+        catch { foreground = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)); }
+
+        return new TextBlock
+        {
+            Text = text,
+            FontSize = fontSize,
+            FontWeight = fontWeight,
+            TextAlignment = textAlign,
+            Foreground = foreground,
+            TextWrapping = TextWrapping.Wrap,
+            VerticalAlignment = VerticalAlignment.Center,
+            IsHitTestVisible = false,
+        };
     }
 
     private static UIElement CreatePlcStatusIndicator(DesignerItemDefinition def)

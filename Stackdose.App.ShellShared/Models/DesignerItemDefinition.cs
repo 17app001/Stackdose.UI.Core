@@ -1,4 +1,4 @@
-﻿using Stackdose.UI.Core.Models;
+using Stackdose.UI.Core.Models;
 using System.Text.Json.Serialization;
 
 namespace Stackdose.Tools.MachinePageDesigner.Models;
@@ -85,7 +85,6 @@ public static class PropsExtensions
     {
         if (props.TryGetValue(key, out var val) && val is not null)
         {
-            // System.Text.Json 會把 string 反序列化為 JsonElement
             if (val is System.Text.Json.JsonElement je && je.ValueKind == System.Text.Json.JsonValueKind.String)
                 return je.GetString() ?? fallback;
             return val.ToString() ?? fallback;

@@ -63,8 +63,7 @@
             </Style>
         </Border.Style>
         
-        <!-- 使用 Viewbox 確保圓形時內容自適應 -->
-        <Grid x:Name="ContentGrid" VerticalAlignment="Center">
+        <Grid x:Name="ContentGrid">
             <Grid.Style>
                 <Style TargetType="Grid">
                     <!-- 圓形時強制寬高相等 -->
@@ -75,25 +74,24 @@
                     </Style.Triggers>
                 </Style>
             </Grid.Style>
-            
+
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
+            <!-- Label：上半區垂直置中 -->
             <TextBlock Grid.Row="0"
-                       Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='Label'}" 
+                       Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='Label'}"
                        Foreground="{Binding LabelForeground, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ColorThemeConverter}}"
                        FontSize="{Binding LabelFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        FontFamily="Microsoft JhengHei"
                        HorizontalAlignment="{Binding LabelAlignment, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                       TextTrimming="CharacterEllipsis" 
                        VerticalAlignment="Center"
-                       Margin="0,0,0,2">
+                       TextTrimming="CharacterEllipsis">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
-                        <!-- 圓形時自動置中 -->
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Circle">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -103,13 +101,13 @@
                 </TextBlock.Style>
             </TextBlock>
 
-            <!-- 數值顯示 (第二行) -->
-            <TextBlock Grid.Row="1" 
+            <!-- Value：下半區垂直置中 -->
+            <TextBlock Grid.Row="1"
                        Foreground="{Binding ValueForeground, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ColorThemeConverter}}"
-                       FontSize="{Binding ValueFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                       FontWeight="Bold" 
+                       FontSize="{Binding ValueFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                       FontWeight="Bold"
                        FontFamily="Consolas"
-                       HorizontalAlignment="{Binding ValueAlignment, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                       HorizontalAlignment="{Binding ValueAlignment, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        VerticalAlignment="Center">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
@@ -120,7 +118,7 @@
                             <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Circle">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
                             </DataTrigger>
-                            
+
                             <DataTrigger Binding="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="-">
                                 <Setter Property="Text" Value="{Binding DefaultValue, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                 <Setter Property="Opacity" Value="0.5"/>
@@ -141,17 +139,15 @@
             </TextBlock>
 
             <TextBlock Grid.Row="2"
-                       Text="{Binding Address, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='D0'}" 
-                       Foreground="{DynamicResource Plc.Text.Default}" 
-                       FontSize="9" 
+                       Text="{Binding Address, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='D0'}"
+                       Foreground="{DynamicResource Plc.Text.Default}"
+                       FontSize="9"
                        FontFamily="Consolas"
-                       VerticalAlignment="Center" 
                        HorizontalAlignment="Left"
                        Margin="0,2,0,0"
                        Opacity="0.7">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
-                        <!-- 圓形時自動置中並縮小 -->
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Circle">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>

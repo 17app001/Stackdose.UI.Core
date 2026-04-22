@@ -267,7 +267,7 @@ namespace Stackdose.UI.Core.Helpers
         ///  PendingEventLogs: 待寫入 EventLogs 數量,
         ///  PendingPeriodicData: 待寫入 PeriodicData 數量)
         /// </returns>
-        public static (long DataLogs, long AuditLogs, long OperationLogs, long EventLogs, long PeriodicDataLogs, long BatchFlushes, int PendingDataLogs, int PendingAuditLogs, int PendingOperationLogs, int PendingEventLogs, int PendingPeriodicData) GetBatchStatistics()
+        public static (long DataLogs, long AuditLogs, long OperationLogs, long EventLogs, long PeriodicDataLogs, long LiveRecords, long BatchFlushes, int PendingDataLogs, int PendingAuditLogs, int PendingOperationLogs, int PendingEventLogs, int PendingPeriodicData, int PendingLiveRecords) GetBatchStatistics()
         {
             return SqliteLogger.GetStatistics();
         }

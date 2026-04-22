@@ -1,4 +1,4 @@
-﻿namespace Stackdose.Tools.MachinePageDesigner.Models;
+namespace Stackdose.Tools.MachinePageDesigner.Models;
 
 /// <summary>
 /// Toolbox item descriptor
@@ -58,6 +58,19 @@ public sealed class ToolboxItemDescriptor
                 ["theme"] = "Primary"
             }
         },
+        "StaticLabel" => new DesignerItemDefinition
+        {
+            Type = "StaticLabel",
+            Props = new()
+            {
+                ["staticText"] = "Label",
+                ["staticFontSize"] = 16.0,
+                ["staticFontWeight"] = "Normal",
+                ["staticTextAlign"] = "Left",
+                ["staticForeground"] = "#E2E2F0"
+            },
+            Width = 200, Height = 36
+        },
         "Spacer" => new DesignerItemDefinition
         {
             Type = "Spacer",
@@ -92,6 +105,7 @@ public sealed class ToolboxItemDescriptor
         new() { Type = "PlcStatusIndicator", DisplayName = "PlcStatusIndicator", Category = "PLC",    Icon = "\u25CF" },
         new() { Type = "SecuredButton",      DisplayName = "SecuredButton",      Category = "Button", Icon = "\u25A3" },
         new() { Type = "Spacer",             DisplayName = "Spacer",             Category = "Layout", Icon = "\u25A1" },
+        new() { Type = "StaticLabel",        DisplayName = "StaticLabel",        Category = "Layout", Icon = "T" },
         new() { Type = "LiveLog",            DisplayName = "LiveLog",            Category = "Viewer", Icon = "\u2637" },
         new() { Type = "AlarmViewer",        DisplayName = "AlarmViewer",        Category = "Viewer", Icon = "\u26A0" },
         new() { Type = "SensorViewer",       DisplayName = "SensorViewer",       Category = "Viewer", Icon = "\u26A1" },

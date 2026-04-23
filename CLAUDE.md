@@ -6,8 +6,30 @@
 
 ## 現狀三行摘要
 
-- **分支：** `refactor/foundation-and-behavior`｜B0–B9 重構完成 + Dashboard 模式功能開發完成（2026-04-23）
-- **主力工作：** MachinePageDesigner 功能開發 + DesignRuntime Dashboard 執行模式
+- **分支：** `master`｜B0–B9 重構完成 + Dashboard 模式 & 行為引擎範例強化（2026-04-23）
+- **主力工作：** MachinePageDesigner 行為事件配置 + App 自定義邏輯實作
+
+---
+
+## 常用指令
+
+### 1. 建立新設備 App (Scaffolding)
+```powershell
+# 建立 Dashboard 模式專案 (生產環境推薦，無邊框全螢幕)
+.\scripts\new-app.ps1 -AppName "MyProject" -Mode Dashboard
+
+# 建立 Standard 模式專案 (多頁導航，含側邊欄)
+.\scripts\new-app.ps1 -AppName "MyProject" -Mode Standard
+```
+
+### 2. 編譯與執行
+```powershell
+# 編譯整個方案
+dotnet build Stackdose.UI.Core.sln
+
+# 執行設計器
+# 開啟 Stackdose.Designer.sln 並執行 MachinePageDesigner 專案
+```
 - **未解問題：** 見 `docs/refactor/PROGRESS.md` 底部 ⚠️ 區塊；分支尚未合併至 master
 
 ---

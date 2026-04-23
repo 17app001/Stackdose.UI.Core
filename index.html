@@ -1419,7 +1419,7 @@
 <footer class="site-footer">
   <div class="container" style="display:flex; align-items:center; justify-content:space-between; width:100%;">
     <span>Stackdose.UI.Core · .NET 8 WPF · Windows x64</span>
-    <span>更新：2026-04-22</span>
+    <span>更新：2026-04-23</span>
   </div>
 </footer>
 
@@ -1932,6 +1932,23 @@ document.addEventListener('keydown', function(e) {
   var today = new Date().toISOString().slice(0, 10);
   var saved = localStorage.getItem(DATE_KEY);
   if (saved && saved !== today) {
+    var old = localStorage.getItem('stackdose_daily_plan');
+    if (old) localStorage.setItem('stackdose_daily_plan_archived_' + saved, old);
+    localStorage.setItem('stackdose_daily_plan', JSON.stringify({ tasks: [], notes: '' }));
+  }
+  localStorage.setItem(DATE_KEY, today);
+})();
+
+</script>
+
+
+<div class="kbd-hint-bar">
+  <span class="kbd-hint"><span class="kbd">1</span>&ndash;<span class="kbd">5</span>&nbsp;切換分頁</span>
+  <span class="kbd-hint"><span class="kbd">/</span>&nbsp;搜尋文件</span>
+</div>
+</body>
+</html>
+& saved !== today) {
     var old = localStorage.getItem('stackdose_daily_plan');
     if (old) localStorage.setItem('stackdose_daily_plan_archived_' + saved, old);
     localStorage.setItem('stackdose_daily_plan', JSON.stringify({ tasks: [], notes: '' }));

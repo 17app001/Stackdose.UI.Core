@@ -1,29 +1,45 @@
 # Shell App 快速上手（3 步驟）
 
-當你需要快速建立新的機台型 App，又不想先深入框架細節時，請先用這份文件。
+當你需要快速建立新的機台型 App 時，請先用這份文件。
 
-## 0) 用 new-app.ps1 快速產生 JSON 驅動 App（推薦）
+## 步驟 1：一行命令建立專案 (推薦)
 
-`new-app.ps1` 是 `init-shell-app.ps1 -JsonDrivenApp` 的薄包裝，支援三種模式：
+使用 `new-app.ps1` 腳本，這是最快速且錯誤率最低的方式。
 
 ```powershell
-# SinglePage — 單頁設計稿執行（DesignRuntime 載入 .machinedesign.json）
-powershell -NoProfile -File .\scripts\new-app.ps1 -AppName "Stackdose.App.MyMonitor" -Mode SinglePage -DestinationRoot .
+# Dashboard — 無邊框看板模式（生產環境推薦）
+.\scripts\new-app.ps1 -AppName "Stackdose.App.MyDashboard" -Mode Dashboard
 
-# Standard — 多頁 LeftNav + BehaviorEngine
-powershell -NoProfile -File .\scripts\new-app.ps1 -AppName "Stackdose.App.MyMonitor" -Mode Standard -DestinationRoot .
+# Standard — 多頁導覽模式（管理後台推薦）
+.\scripts\new-app.ps1 -AppName "Stackdose.App.MyStandard" -Mode Standard
 
-# Dashboard — 無邊框固定視窗，自動連線 PLC，適合機台旁看板
-powershell -NoProfile -File .\scripts\new-app.ps1 -AppName "Stackdose.App.MyMonitor" -Mode Dashboard -DestinationRoot .
+# SinglePage — 最精簡單頁模式
+.\scripts\new-app.ps1 -AppName "Stackdose.App.MySimple" -Mode SinglePage
 ```
 
-Dashboard 模式的 App 特性：
-- 視窗無標題列（`WindowStyle="None"`），大小自動符合設計稿畫布尺寸
-- 底部細條：可拖動視窗 + IP:Port 連線燈號（綠=已連線 / 紅=未連線）+ X 關閉按鈕
-- 啟動時自動讀取 `app-config.json` 並連線 PLC（`PlcIp` / `PlcPort` / `ScanInterval`）
-- 在 MachinePageDesigner 選擇 `Layout: Dashboard` 後，會顯示 PLC IP / Port / ScanInterval 欄位
+### 模式選擇指南：
 
-## 1) 產生新專案（舊式 init-shell-app.ps1）
+- **Dashboard**：視窗無標題列（`WindowStyle="None"`），大小自動符合畫布尺寸。適合觸控螢幕看板，具備自動連線 PLC、視窗拖動條、IP 連線燈號。
+- **Standard**：提供左側選單、頁首（含權限狀態）、頁尾。支援多頁面導航，會自動將設計器中的多個頁籤轉為導覽項目。
+- **SinglePage**：不含任何導航元素，僅顯示畫布。適合嵌入式或簡單的監視畫面。
+
+## 步驟 2：設計頁面 (MachinePageDesigner)
+
+1. 開啟方案 `Stackdose.Designer.sln`。
+2. 啟動 `MachinePageDesigner` 專案。
+3. 拖放控制項、設定 PLC Tag。
+4. 點擊 **「事件 ⚡」** 分頁配置反應式行為（Behavior Engine）。
+5. 存檔為 `.machinedesign.json`。
+
+## 步驟 3：部署與執行 (C# 邏輯擴充)
+
+1. 將設計稿 JSON 放進專案的 `Config/` 目錄下。
+2. 若有複雜邏輯 (>=100 等)，開啟專案下的 `Handlers/SampleCustomHandler.cs` 撰寫 C#。
+3. 編譯並執行：
+   ```powershell
+   dotnet run --project .\Stackdose.App.MyDashboard\Stackdose.App.MyDashboard.csproj
+   ```
+
 
 ```powershell
 powershell -NoProfile -File .\scripts\init-shell-app.ps1 -AppName "Stackdose.App.YourMachine" -DestinationRoot . -IncludeSecondDemoSampleConfigs

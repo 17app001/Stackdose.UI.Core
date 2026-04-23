@@ -48,10 +48,43 @@ public partial class FreeCanvas : UserControl
     private bool _isRubberBanding;
     private Point _rubberOrigin;
 
+    // ── Keyboard: arrow keys move selected items ─────────────────────────
+
+    internal void FocusCanvas() => Focus();
+
+    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        var vm = MainVm;
+        if (vm == null) return;
+
+        double step = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? 10 : 1;
+
+        double dx = 0, dy = 0;
+        switch (e.Key)
+        {
+            case Key.Left:  dx = -step; break;
+            case Key.Right: dx =  step; break;
+            case Key.Up:    dy = -step; break;
+            case Key.Down:  dy =  step; break;
+            default: return;
+        }
+
+        var selected = vm.Canvas.SelectedItem;
+        if (selected == null) return;
+
+        e.Handled = true;
+
+        if (dx != 0) selected.X += dx;
+        if (dy != 0) selected.Y += dy;
+    }
+
+    // ── Background Click → Deselect / Rubber-band ───────────────────────
+
     private void OnCanvasMouseDown(object sender, MouseButtonEventArgs e)
     {
         if (!ReferenceEquals(e.Source, designCanvas)) return;
 
+        Focus();
         MainVm?.Canvas.ClearSelection();
 
         _rubberOrigin = e.GetPosition(designCanvas);

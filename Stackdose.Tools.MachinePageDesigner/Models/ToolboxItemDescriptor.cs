@@ -46,6 +46,7 @@ public sealed class ToolboxItemDescriptor
             {
                 ["displayAddress"] = "M100"
             }
+        },
         "SecuredButton" => new DesignerItemDefinition
         {
             Type = "SecuredButton",
@@ -58,7 +59,6 @@ public sealed class ToolboxItemDescriptor
             },
             Width = 180, Height = 48
         },
-
         "StaticLabel" => new DesignerItemDefinition
         {
             Type = "StaticLabel",

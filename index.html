@@ -1190,6 +1190,7 @@
           <div class="tl-item tl-highlight"><span class="tl-date">4月20日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ Dashboard 模式 — DesignPlayer 自動切換無邊框固定尺寸視窗 + 32px TopBar；DesignRuntime 同步支援預覽（黃色 Banner + 🙈 隱藏工具列切換 + 退出預覽）；一鍵封裝 Dashboard App（self-contained publish + 複製設計稿至 Config/ + app-config 路徑修正）；設計器畫布最小尺寸 100×100；方向鍵移動控件（Arrow=1px / Shift+Arrow=10px，多選同步）</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月21日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ 底層重構 B0–B8 完成 — PlcControlBase 統一基類（5 控件）；IShellStrategy 三策略；BehaviorEngine（JSON events[] + 6 Handler，FDA 稽核自動記錄）；Designer PropertyPanel → 事件 ⚡ Tab；Standard 多頁 LeftNav + BehaviorEngine.Navigator 接線；docs/kb/ 全面更新</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月22日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ Models 搬移至 ShellShared；LiveRecord 即時數據記錄（LiveRecordContext + SqliteLogger LiveRecords 表 + PlcLabel EnableLiveRecord DP）；DesignTimeControlFactory 補齊 StaticLabel + PlcLabel 5 個屬性；PropertyPanel 補齊對應 UI + StaticLabel 屬性面板；new-app.ps1 簡化建立指令</span></div>
+          <div class="tl-item tl-highlight"><span class="tl-date">4月23日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ B9 重構完成（B0–B9 全部完成）；Dashboard 模式全功能（DashboardShellStrategy + new-app.ps1 -Mode Dashboard scaffold + 無邊框 SizeToContent 視窗 + 底部拖移條 + IP:Port 連線燈號 + X 關閉 + DesignRuntime 自動連線）；設計器 Layout 下拉加入 Dashboard + PLC IP/Port/ScanInterval 欄位；方向鍵微調從 feature/copilot 補入（Arrow=1px / Shift+Arrow=10px）；移除畫布尺寸 clamp</span></div>
         </div>
       </div>
     </div>
@@ -1250,7 +1251,7 @@
         <div style="background:var(--bg-card); border:2px solid #16a34a44; border-radius:10px; padding:20px;">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px;">
             <div style="display:flex; align-items:center; gap:8px;">
-              <span style="background:#16a34a22; color:var(--green); font-size:11px; font-weight:600; padding:2px 8px; border-radius:4px; border:1px solid #16a34a44;">✅ 完成 — 4/20</span>
+              <span style="background:#16a34a22; color:var(--green); font-size:11px; font-weight:600; padding:2px 8px; border-radius:4px; border:1px solid #16a34a44;">✅ 完成 — 4/23</span>
               <span style="font-weight:600;">Dashboard 模式</span>
             </div>
             <a href="docs/kb/designer-system.md" class="doc-card"
@@ -1259,14 +1260,14 @@
             </a>
           </div>
           <ul style="padding-left:18px; font-size:13px; color:var(--text-secondary); line-height:1.9;">
-            <li>設計器 Layout 下拉選 <code>Dashboard</code> → 存檔即生效</li>
-            <li>DesignPlayer 自動偵測 <code>layout.mode: "Dashboard"</code> 並切換模式</li>
-            <li>視窗固定尺寸 = canvas 寬 × (canvas 高 + 32px)，置中顯示，只可最小化</li>
-            <li>32px TopBar：PLC 狀態燈 + 設備名稱 + 時鐘 + 最小化 / 關閉</li>
-            <li>完全隱藏：Shell Header / LeftNav / BottomBar / 頁籤列</li>
-            <li>DesignRuntime 黃色 Banner 預覽模式（🙈 隱藏工具列 + 退出預覽）</li>
-            <li><strong>📦 一鍵封裝</strong>：設計器「封裝 App」按鈕 → <code>dotnet publish --self-contained true</code> + 複製設計稿與 app-config 至 <code>Config/</code> → streaming log + 開啟資料夾</li>
-            <li><strong>🎛 設計器體驗</strong>：畫布最小尺寸 100×100；方向鍵移動控件（Arrow=1px / Shift+Arrow=10px，多選同步，Undo/Redo 整合）</li>
+            <li>設計器 Layout 下拉選 <code>Dashboard</code> → PLC IP / Port / ScanInterval 欄位顯示 → 存檔即生效</li>
+            <li><code>new-app.ps1 -Mode Dashboard</code> 一鍵產生 Dashboard scaffold 專案</li>
+            <li>DesignRuntime 自動偵測 <code>layout.mode: "Dashboard"</code>，套用 <code>DashboardShellStrategy</code></li>
+            <li>視窗無標題列（WindowStyle=None），大小自動符合畫布尺寸（SizeToContent）</li>
+            <li>底部細條：拖移視窗 + IP:Port 連線燈號（綠=已連線 / 紅=未連線）+ X 關閉</li>
+            <li>啟動時自動讀取 <code>app-config.json</code> 連線 PLC（PlcIp / PlcPort / ScanInterval）</li>
+            <li>完全隱藏：Shell Header / LeftNav / BottomBar / 頁籤列 / 開發者面板</li>
+            <li><strong>🎛 設計器體驗</strong>：方向鍵微調控件（Arrow=1px / Shift+Arrow=10px）</li>
           </ul>
         </div>
 

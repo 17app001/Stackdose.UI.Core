@@ -91,6 +91,11 @@
 | `e497a93` | docs：B4 designer-system.md + PROGRESS + devlog |
 | `34d9c1f` | B5：BehaviorEngine + Handlers + SecuredButton click + DesignRuntime 接線 |
 
+**2026-04-23 補齊：**
+- 恢復方向鍵微調（Arrow=1px / Shift+Arrow=10px），從 feature/copilot 補入
+- 移除畫布尺寸 clamp（400–4000 / 300–3000）
+- Dashboard 模式：scaffold 視窗可拖移 + IP:Port 燈號 + X 關閉
+
 **下一步：** 重構完成，合併分支至 master 或繼續 MachinePageDesigner / DesignRuntime 功能開發。
 
 ---

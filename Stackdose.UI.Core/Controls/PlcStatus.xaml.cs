@@ -16,6 +16,7 @@ namespace Stackdose.UI.Core.Controls
     {
         private const int RetryDelayMs = 2000;
         private const int WatchdogPollingIntervalMs = 3000;
+        private const int ReconnectCooldownMs = 30_000;
 
         private IPlcManager? _plcManager;
         private bool _isBusy = false;
@@ -489,7 +490,23 @@ namespace Stackdose.UI.Core.Controls
                 CancelWatchdog();
             });
 
-            await ConnectAsync();
+            while (true)
+            {
+                await ConnectAsync();
+                if (_plcManager?.IsConnected == true) return;
+
+                // All retry attempts failed; cool down before next burst.
+                // Reuse _watchdogCts so Dispose() can interrupt the wait.
+                _watchdogCts = new CancellationTokenSource();
+                var cooldownToken = _watchdogCts.Token;
+                try
+                {
+                    await Dispatcher.InvokeAsync(() => StatusText.Text = "WAIT RETRY...");
+                    await Task.Delay(ReconnectCooldownMs, cooldownToken);
+                }
+                catch (OperationCanceledException) { return; }
+                _watchdogCts = null;
+            }
         }
 
         private void CancelWatchdog()

@@ -417,7 +417,7 @@ namespace Stackdose.UI.Core.Controls
                     showInUi: true
                 );
 
-                var (printModeSuccess, printModeMsg) = await Task.Run(() => _printHead.ConfigurePrintMode());
+                var (printModeSuccess, printModeMsg) = await _printHead.ConfigurePrintModeAsync();
                 
                 if (!printModeSuccess)
                 {

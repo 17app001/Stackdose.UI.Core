@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Stackdose.Tools.MachinePageDesigner.Models;
 
@@ -18,4 +18,13 @@ public sealed class DesignMeta
 
     [JsonPropertyName("modifiedAt")]
     public DateTime ModifiedAt { get; set; } = DateTime.UtcNow;
+
+    [JsonPropertyName("plcIp")]
+    public string PlcIp { get; set; } = string.Empty;
+
+    [JsonPropertyName("plcPort")]
+    public int PlcPort { get; set; } = 3000;
+
+    [JsonPropertyName("scanInterval")]
+    public int ScanInterval { get; set; } = 200;
 }

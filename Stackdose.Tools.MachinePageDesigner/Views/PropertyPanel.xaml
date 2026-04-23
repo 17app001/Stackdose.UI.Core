@@ -40,9 +40,48 @@
                 </StackPanel>
 
                 <!-- ValueColorTheme -->
-                <TextBlock Text="色彩主題" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBlock Text="數值顏色" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.ColorThemes}"
                           SelectedItem="{Binding ValueColorTheme}" Margin="0,0,0,8"/>
+
+                <!-- ValueAlignment -->
+                <TextBlock Text="數值對齊" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <RadioButton Content="左" Margin="0,0,10,0"
+                                 IsChecked="{Binding ValueAlignment, Converter={local:StringEqualityConverter}, ConverterParameter=Left}"/>
+                    <RadioButton Content="中" Margin="0,0,10,0"
+                                 IsChecked="{Binding ValueAlignment, Converter={local:StringEqualityConverter}, ConverterParameter=Center}"/>
+                    <RadioButton Content="右"
+                                 IsChecked="{Binding ValueAlignment, Converter={local:StringEqualityConverter}, ConverterParameter=Right}"/>
+                </StackPanel>
+
+                <!-- LabelFontSize -->
+                <TextBlock Style="{StaticResource FieldLabel}" Margin="0,0,0,2">
+                    <Run Text="標籤字體大小："/><Run Text="{Binding LabelFontSize, StringFormat=F0, Mode=OneWay}"/>
+                </TextBlock>
+                <Slider Value="{Binding LabelFontSize}" Minimum="8" Maximum="48" TickFrequency="1"
+                        IsSnapToTickEnabled="True" Margin="0,0,0,8"/>
+
+                <!-- LabelForeground -->
+                <TextBlock Text="標籤顏色" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.ColorThemes}"
+                          SelectedItem="{Binding LabelForeground}" Margin="0,0,0,8"/>
+
+                <!-- LabelAlignment -->
+                <TextBlock Text="標籤對齊" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <RadioButton Content="左" Margin="0,0,10,0"
+                                 IsChecked="{Binding LabelAlignment, Converter={local:StringEqualityConverter}, ConverterParameter=Left}"/>
+                    <RadioButton Content="中" Margin="0,0,10,0"
+                                 IsChecked="{Binding LabelAlignment, Converter={local:StringEqualityConverter}, ConverterParameter=Center}"/>
+                    <RadioButton Content="右"
+                                 IsChecked="{Binding LabelAlignment, Converter={local:StringEqualityConverter}, ConverterParameter=Right}"/>
+                </StackPanel>
+
+                <!-- FrameBackground -->
+                <TextBlock Text="框架背景色" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.ColorThemes}"
+                          SelectedItem="{Binding FrameBackground}" Margin="0,0,0,8"/>
 
                 <!-- Divisor -->
                 <TextBlock Text="除數 (Divisor)" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
@@ -52,6 +91,12 @@
                 <TextBlock Text="數值格式" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.StringFormats}"
                           SelectedItem="{Binding StringFormat}" Margin="0,0,0,8"/>
+
+                <!-- EnableLiveRecord -->
+                <CheckBox Content="啟用即時紀錄 (Live Record)"
+                          IsChecked="{Binding EnableLiveRecord}"
+                          Foreground="{StaticResource TextPrimaryBrush}"
+                          Margin="0,4,0,8"/>
             </StackPanel>
         </DataTemplate>
 
@@ -75,6 +120,43 @@
             <StackPanel Margin="0,4">
                 <TextBlock Text="顯示位址" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding DisplayAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- ════════════════════════════════════════════════════════
+             StaticLabel 屬性面板
+             ════════════════════════════════════════════════════════ -->
+        <DataTemplate x:Key="StaticLabelTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
+            <StackPanel Margin="0,4">
+                <TextBlock Text="文字內容" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding StaticText, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <TextBlock Style="{StaticResource FieldLabel}" Margin="0,0,0,2">
+                    <Run Text="字體大小："/><Run Text="{Binding StaticFontSize, StringFormat=F0, Mode=OneWay}"/>
+                </TextBlock>
+                <Slider Value="{Binding StaticFontSize}" Minimum="8" Maximum="72" TickFrequency="1"
+                        IsSnapToTickEnabled="True" Margin="0,0,0,8"/>
+
+                <TextBlock Text="字體粗細" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <RadioButton Content="Normal" Margin="0,0,12,0"
+                                 IsChecked="{Binding StaticFontWeight, Converter={local:StringEqualityConverter}, ConverterParameter=Normal}"/>
+                    <RadioButton Content="Bold"
+                                 IsChecked="{Binding StaticFontWeight, Converter={local:StringEqualityConverter}, ConverterParameter=Bold}"/>
+                </StackPanel>
+
+                <TextBlock Text="文字對齊" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <RadioButton Content="左" Margin="0,0,10,0"
+                                 IsChecked="{Binding StaticTextAlign, Converter={local:StringEqualityConverter}, ConverterParameter=Left}"/>
+                    <RadioButton Content="中" Margin="0,0,10,0"
+                                 IsChecked="{Binding StaticTextAlign, Converter={local:StringEqualityConverter}, ConverterParameter=Center}"/>
+                    <RadioButton Content="右"
+                                 IsChecked="{Binding StaticTextAlign, Converter={local:StringEqualityConverter}, ConverterParameter=Right}"/>
+                </StackPanel>
+
+                <TextBlock Text="文字顏色 (Hex)" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding StaticForeground, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
             </StackPanel>
         </DataTemplate>
 
@@ -127,6 +209,7 @@
             PlcLabelTemplate="{StaticResource PlcLabelTemplate}"
             PlcTextTemplate="{StaticResource PlcTextTemplate}"
             PlcStatusIndicatorTemplate="{StaticResource PlcStatusIndicatorTemplate}"
+            StaticLabelTemplate="{StaticResource StaticLabelTemplate}"
             SecuredButtonTemplate="{StaticResource SecuredButtonTemplate}"
             SpacerTemplate="{StaticResource SpacerTemplate}"
             EmptyTemplate="{StaticResource EmptyTemplate}"/>
@@ -146,61 +229,85 @@
             <TextBlock Text="&#x25C6; Properties" Style="{StaticResource SectionHeader}" FontSize="13"/>
         </Border>
 
-        <!-- Content -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="10,6">
-            <StackPanel>
-                <!-- 鎖定 -->
-                <CheckBox Content="鎖定（防止移動/縮放）"
-                          IsChecked="{Binding IsLocked}"
-                          Foreground="{StaticResource TextPrimaryBrush}"
-                          Margin="0,4,0,10"/>
+        <!-- TabControl: Properties / Events -->
+        <TabControl Grid.Row="1"
+                    Background="{StaticResource SurfaceBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0">
+            <TabControl.Resources>
+                <Style TargetType="TabItem">
+                    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                    <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+                    <Setter Property="Padding" Value="10,4"/>
+                    <Setter Property="FontSize" Value="12"/>
+                </Style>
+            </TabControl.Resources>
 
-                <!-- 位置與大小 -->
-                <StackPanel x:Name="canvasPosSection">
+            <!-- ── Properties Tab ── -->
+            <TabItem Header="屬性">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10,6">
+                    <StackPanel>
+                        <!-- 鎖定 -->
+                        <CheckBox Content="鎖定（防止移動/縮放）"
+                                  IsChecked="{Binding IsLocked}"
+                                  Foreground="{StaticResource TextPrimaryBrush}"
+                                  Margin="0,4,0,10"/>
 
-                    <TextBlock Text="位置 / 大小" Style="{StaticResource SectionHeader}" Margin="0,4,0,6"/>
+                        <!-- 位置與大小 -->
+                        <StackPanel x:Name="canvasPosSection">
 
-                    <Grid Margin="0,0,0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="8"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="6"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+                            <TextBlock Text="位置 / 大小" Style="{StaticResource SectionHeader}" Margin="0,4,0,6"/>
 
-                        <StackPanel Grid.Row="0" Grid.Column="0">
-                            <TextBlock Text="X" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                            <TextBox Text="{Binding X, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
-                                     PreviewKeyDown="OnNumericKeyDown"/>
+                            <Grid Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="6"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Grid.Column="0">
+                                    <TextBlock Text="X" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                                    <TextBox Text="{Binding X, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
+                                             PreviewKeyDown="OnNumericKeyDown"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="0" Grid.Column="2">
+                                    <TextBlock Text="Y" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                                    <TextBox Text="{Binding Y, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
+                                             PreviewKeyDown="OnNumericKeyDown"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="2" Grid.Column="0">
+                                    <TextBlock Text="寬度 W" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                                    <TextBox Text="{Binding Width, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
+                                             PreviewKeyDown="OnNumericKeyDown"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="2" Grid.Column="2">
+                                    <TextBlock Text="高度 H" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                                    <TextBox Text="{Binding Height, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
+                                             PreviewKeyDown="OnNumericKeyDown"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <Separator Margin="0,4,0,8"/>
                         </StackPanel>
-                        <StackPanel Grid.Row="0" Grid.Column="2">
-                            <TextBlock Text="Y" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                            <TextBox Text="{Binding Y, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
-                                     PreviewKeyDown="OnNumericKeyDown"/>
-                        </StackPanel>
-                        <StackPanel Grid.Row="2" Grid.Column="0">
-                            <TextBlock Text="寬度 W" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                            <TextBox Text="{Binding Width, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
-                                     PreviewKeyDown="OnNumericKeyDown"/>
-                        </StackPanel>
-                        <StackPanel Grid.Row="2" Grid.Column="2">
-                            <TextBlock Text="高度 H" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                            <TextBox Text="{Binding Height, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
-                                     PreviewKeyDown="OnNumericKeyDown"/>
-                        </StackPanel>
-                    </Grid>
 
-                    <Separator Margin="0,4,0,8"/>
-                </StackPanel>
+                        <!-- 型態專屬屬性 -->
+                        <ContentControl Content="{Binding}"
+                                        ContentTemplateSelector="{StaticResource PropSelector}"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
 
-                <!-- 型態專屬屬性 -->
-                <ContentControl Content="{Binding}"
-                                ContentTemplateSelector="{StaticResource PropSelector}"/>
-            </StackPanel>
-        </ScrollViewer>
+            <!-- ── Events Tab ── -->
+            <TabItem Header="事件 ⚡">
+                <local:EventsPanel DataContext="{Binding}" Margin="8,6"/>
+            </TabItem>
+
+        </TabControl>
     </Grid>
 </UserControl>
+

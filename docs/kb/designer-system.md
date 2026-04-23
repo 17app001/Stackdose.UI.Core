@@ -52,30 +52,74 @@ MachinePageDesigner        DesignViewer              DesignRuntime
 ```json
 {
   "version": "2.0",
+  "shellMode": "FreeCanvas",
   "meta": {
     "title": "頁面標題",
-    "machineId": "M1",
-    "canvasWidth": 1280,
-    "canvasHeight": 720
+    "machineId": "M1"
   },
-  "items": [
+  "canvasWidth": 1280,
+  "canvasHeight": 720,
+  "canvasItems": [
     {
+      "id": "a1b2c3d4",
       "type": "PlcLabel",
       "x": 100, "y": 200,
       "width": 120, "height": 80,
-      "zIndex": 0,
+      "order": 0,
       "locked": false,
-      "properties": {
+      "props": {
         "label": "溫度",
         "address": "D100",
         "colorTheme": "NeonBlue",
-        "shape": "Rectangle"
-      }
+        "shape": "Circle"
+      },
+      "events": [
+        {
+          "on": "valueChanged",
+          "when": { "op": ">", "value": 100 },
+          "do": [
+            { "action": "SetProp", "target": "self", "prop": "background", "value": "Red" },
+            { "action": "LogAudit", "message": "溫度超標: {value}" },
+            { "action": "ShowDialog", "title": "警告", "message": "溫度超過 100°C！" }
+          ]
+        }
+      ]
     }
-  ],
-  "groups": [...]
+  ]
 }
 ```
+
+#### shellMode 可選值
+| 值 | 說明 |
+|---|---|
+| `FreeCanvas`（預設） | 裸畫布，無外殼包裝 |
+| `SinglePage` | 包裝進 SinglePageContainer（Header only） |
+| `Standard` | 包裝進 MainContainer（Header + LeftNav + BottomBar，B7 接線） |
+
+#### events 欄位（B4 新增）
+
+每個控制項可定義行為事件清單，實現「無 XAML 反應式 UI」：
+
+| 欄位 | 型別 | 說明 |
+|---|---|---|
+| `on` | string | 觸發來源：`valueChanged` / `click` / `connected` / `disconnected` |
+| `when` | 物件（可省略） | 比較條件；省略時無條件觸發 |
+| `when.op` | string | 運算子：`>` / `>=` / `<` / `<=` / `==` / `!=` |
+| `when.value` | number | 比較基準值 |
+| `do` | 陣列 | 依序執行的動作清單 |
+
+#### 支援的動作（B5 Engine 實作）
+
+| `action` | 必填欄位 | 說明 |
+|---|---|---|
+| `SetProp` | `target`, `prop`, `value` | 修改控制項 props（`"self"` = 觸發控制項） |
+| `WritePlc` | `target`(位址), `value` | 寫入 PLC 暫存器 |
+| `LogAudit` | `message` | 寫入 FDA 稽核日誌 |
+| `ShowDialog` | `title`, `message` | 顯示警告對話框 |
+| `Navigate` | `page` | 切換頁面（Standard Shell） |
+| `SetStatus` | `value` | 設定機器狀態 |
+
+`message` / `value` 支援 `{value}` 佔位符（運行時替換為實際 PLC 值）。
 
 ### 2.4 支援控制項
 
@@ -87,7 +131,48 @@ MachinePageDesigner        DesignViewer              DesignRuntime
 | `SecuredButton` | 需權限驗證的操作按鈕 |
 | `Spacer` | 空白佔位元素 |
 
-### 2.5 快捷鍵
+### 2.7 PropertyPanel — 事件（⚡）Tab（B6 新增）
+
+`MachinePageDesigner/Views/PropertyPanel.xaml` 現在是一個 TabControl，有兩個 Tab：
+
+| Tab | 內容 |
+|---|---|
+| **屬性** | 原有的控件屬性設定（Label、Address、Shape…） |
+| **事件 ⚡** | `EventsPanel`：事件行為編輯 UI |
+
+#### EventsPanel 結構
+
+3 層 Master-Detail：
+
+```
+事件清單（ListBox）
+  ├── 每筆：On 觸發類型 + 觸發說明 Summary
+  ├── [新增] / [移除] 按鈕
+  └── 選取某事件後展開「事件詳情」
+        ├── On：下拉（valueChanged / click / connected / disconnected）
+        ├── When：勾選框（有無條件）→ 運算子 + 基準值
+        └── Do（動作清單 ListBox）
+              ├── 每筆：動作 Summary
+              ├── [新增動作] / [移除動作] 按鈕
+              └── 選取某動作後展開「動作詳情」
+                    ├── ActionType 下拉（SetProp / WritePlc / LogAudit…）
+                    └── 依 ActionType 動態顯示欄位（Target/Prop/Value/Message/Title/Page）
+```
+
+#### 相關 ViewModel
+
+| 類別 | 說明 |
+|---|---|
+| `BehaviorEventViewModel` | 包裝 `BehaviorEvent` POCO；`Actions` = ObservableCollection；靜態 `OnTypes`/`WhenOps` 供 ComboBox |
+| `BehaviorActionViewModel` | 包裝 `BehaviorAction` POCO；`ShowTarget/Prop/Value/Message/Title/Page` 可見性；`Summary` 顯示字串 |
+
+`DesignerItemViewModel.Events`（ObservableCollection）由 `BuildEventsCollection()` 初始化並 CollectionChanged 同步回 `_definition.Events`（POCO 清單）。
+
+#### 注意：_suppressHandlers 機制
+
+`EventsPanel.xaml.cs` 中 `ShowEventDetail()` / `ShowActionDetail()` 使用 `_suppressHandlers = true/false` 包裹程式碼寫 UI 的段落，防止 ComboBox.SelectionChanged 等事件在程式更新 UI 時觸發回寫邏輯，造成資料損毀。
+
+
 
 | 快捷鍵 | 功能 |
 |---|---|
@@ -152,7 +237,7 @@ Stackdose.Tools.DesignViewer
 ```
 Stackdose.App.DesignRuntime
 ├── → Stackdose.UI.Core
-├── → Stackdose.UI.Templates
+├── → Stackdose.App.ShellShared（B3：Shell 策略）
 ├── → Stackdose.App.DeviceFramework
 └── → Stackdose.Tools.MachinePageDesigner（載入 JSON 渲染）
 ```

@@ -4,6 +4,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Stackdose.App.DeviceFramework.Services;
+using Stackdose.App.ShellShared.Behaviors;
 using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Helpers;
@@ -21,7 +22,7 @@ public static class RuntimeControlFactory
 
     public static UIElement Create(DesignerItemDefinition def)
     {
-        return def.Type switch
+        var control = def.Type switch
         {
             "PlcLabel"           => CreatePlcLabel(def),
             "PlcText"            => CreatePlcText(def),
@@ -31,9 +32,67 @@ public static class RuntimeControlFactory
             "LiveLog"            => CreateLiveLog(),
             "AlarmViewer"        => CreateAlarmViewer(def),
             "SensorViewer"       => CreateSensorViewer(def),
+            "StaticLabel"        => CreateStaticLabel(def),
             _ => MakeUnknownPlaceholder(def.Type),
         };
+
+        // 附加 BehaviorTag — 讓 BehaviorEngine 能識別控制項並執行 SetProp
+        AttachBehaviorTag(def, control);
+        return control;
     }
+
+    /// <summary>
+    /// 將 ControlRuntimeTag 設定至控制項 Tag 屬性，並為 SecuredButton 設定 BehaviorId。
+    /// </summary>
+    private static void AttachBehaviorTag(DesignerItemDefinition def, UIElement control)
+    {
+        if (control is not FrameworkElement fe) return;
+
+        var tag = new ControlRuntimeTag
+        {
+            Id          = def.Id,
+            PropSetters = BuildPropSetters(fe),
+        };
+        fe.Tag = tag;
+
+        if (fe is SecuredButton btn)
+            btn.BehaviorId = def.Id;
+    }
+
+    /// <summary>
+    /// 依控制項類型建立 prop 名稱 → setter 字典（閉包捕捉控制項實體）。
+    /// </summary>
+    private static Dictionary<string, Action<string>> BuildPropSetters(FrameworkElement fe)
+    {
+        var s = new Dictionary<string, Action<string>>(StringComparer.OrdinalIgnoreCase);
+
+        // 通用（Control 有 Background / Foreground）
+        if (fe is System.Windows.Controls.Control ctrl)
+        {
+            s["background"] = v => { try { ctrl.Background = ParseBrush(v); } catch { } };
+            s["foreground"] = v => { try { ctrl.Foreground = ParseBrush(v); } catch { } };
+        }
+
+        // 控制項特定
+        switch (fe)
+        {
+            case PlcLabel lbl:
+                s["label"] = v => lbl.Label = v;
+                break;
+            case SecuredButton btn:
+                s["label"] = v => btn.Content = v;
+                break;
+            case TextBlock tb:
+                s["text"]       = v => tb.Text = v;
+                s["foreground"] = v => { try { tb.Foreground = ParseBrush(v); } catch { } };
+                break;
+        }
+
+        return s;
+    }
+
+    private static SolidColorBrush ParseBrush(string colorStr)
+        => new((Color)ColorConverter.ConvertFromString(colorStr));
 
     // ── PlcLabel ─────────────────────────────────────────────────────────
 
@@ -51,14 +110,31 @@ public static class RuntimeControlFactory
             ShowAddress  = false,
         };
 
-        if (p.GetDouble("valueFontSize", 0) is > 0 and var fs)
-            label.ValueFontSize = fs;
+        if (p.GetDouble("valueFontSize", 0) is > 0 and var vfs)
+            label.ValueFontSize = vfs;
+
+        if (p.GetDouble("labelFontSize", 0) is > 0 and var lfs)
+            label.LabelFontSize = lfs;
+
+        if (Enum.TryParse<HorizontalAlignment>(p.GetString("valueAlignment", ""), true, out var vAlign))
+            label.ValueAlignment = vAlign;
+
+        if (Enum.TryParse<HorizontalAlignment>(p.GetString("labelAlignment", ""), true, out var lAlign))
+            label.LabelAlignment = lAlign;
 
         if (Enum.TryParse<PlcLabelFrameShape>(p.GetString("frameShape", "Rectangle"), true, out var shape))
             label.FrameShape = shape;
 
-        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("valueColorTheme", "NeonBlue"), true, out var theme))
-            label.ValueForeground = theme;
+        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("valueColorTheme", "NeonBlue"), true, out var vTheme))
+            label.ValueForeground = vTheme;
+
+        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("labelForeground", ""), true, out var lTheme))
+            label.LabelForeground = lTheme;
+
+        if (Enum.TryParse<PlcLabelColorTheme>(p.GetString("frameBackground", ""), true, out var bgTheme))
+            label.FrameBackground = bgTheme;
+
+        label.EnableLiveRecord = p.GetBool("enableLiveRecord", true);
 
         return label;
     }
@@ -70,8 +146,10 @@ public static class RuntimeControlFactory
         var p = def.Props;
         return new PlcText
         {
-            Label   = p.GetString("label",   "Parameter"),
-            Address = p.GetString("address", "D100"),
+            Label               = p.GetString("label",              "Parameter"),
+            Address             = p.GetString("address",            "D100"),
+            ShowSuccessMessage  = p.GetBool  ("showSuccessMessage", true),
+            EnableAuditTrail    = p.GetBool  ("enableAuditTrail",   true),
         };
     }
 
@@ -236,6 +314,49 @@ public static class RuntimeControlFactory
         if (!string.IsNullOrWhiteSpace(configFile))
             viewer.ConfigFile = configFile;
         return viewer;
+    }
+
+    // ── StaticLabel ───────────────────────────────────────────────────────
+
+    private static UIElement CreateStaticLabel(DesignerItemDefinition def)
+    {
+        var p          = def.Props;
+        var text       = p.GetString("staticText",       p.GetString("text", p.GetString("label", "")));
+        var fontSize   = p.GetDouble("staticFontSize",   p.GetDouble("fontSize", 13));
+        var fontWeight = p.GetString("staticFontWeight", "Normal");
+        var textAlign  = p.GetString("staticTextAlign",  p.GetString("textAlign", "Left"));
+        var color      = p.GetString("staticForeground", p.GetString("foreground", "#E2E2F0"));
+
+        SolidColorBrush brush;
+        try { brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color)); }
+        catch { brush = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)); }
+
+        var weight = fontWeight.ToLowerInvariant() switch
+        {
+            "bold"      => FontWeights.Bold,
+            "semibold"  => FontWeights.SemiBold,
+            "light"     => FontWeights.Light,
+            _           => FontWeights.Normal,
+        };
+
+        var align = textAlign.ToLowerInvariant() switch
+        {
+            "center" => TextAlignment.Center,
+            "right"  => TextAlignment.Right,
+            _        => TextAlignment.Left,
+        };
+
+        return new TextBlock
+        {
+            Text              = text,
+            FontSize          = fontSize,
+            FontWeight        = weight,
+            TextAlignment     = align,
+            Foreground        = brush,
+            FontFamily        = new System.Windows.Media.FontFamily("Microsoft JhengHei"),
+            VerticalAlignment = VerticalAlignment.Center,
+            TextWrapping      = TextWrapping.Wrap,
+        };
     }
 
     // ── 未知類型佔位符 ────────────────────────────────────────────────────

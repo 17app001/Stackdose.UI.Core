@@ -49,7 +49,11 @@
       "Bash(git -C \"D:/工作區/Project/Stackdose.Platform\" log --oneline --format=\"%ad %h %s\" --date=short)",
       "Bash(git:*)",
       "Bash(grep -v \"^obj$\")",
-      "Bash(grep -v \"^bin$\")"
+      "Bash(grep -v \"^bin$\")",
+      "Bash(dir \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\" /b)",
+      "Bash(findstr /i \"design App\\\\.\")",
+      "Bash(dir *)",
+      "Skill(update-config)"
     ]
   }
 }

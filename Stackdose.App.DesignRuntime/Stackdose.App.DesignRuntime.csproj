@@ -14,6 +14,10 @@
   <ItemGroup>
     <!-- UI 控制項（PlcLabel / PlcText / SecuredButton / PlcStatus 等） -->
     <ProjectReference Include="..\Stackdose.UI.Core\Stackdose.UI.Core.csproj" />
+    <!-- Shell 容器（MainContainer / NavigationItem，Standard 多頁導覽用） -->
+    <ProjectReference Include="..\Stackdose.UI.Templates\Stackdose.UI.Templates.csproj" />
+    <!-- Shell 策略（IShellStrategy / FreeCanvas / SinglePage / Standard） -->
+    <ProjectReference Include="..\Stackdose.App.ShellShared\Stackdose.App.ShellShared.csproj" />
     <!-- DeviceFramework（ProcessCommandService / PlcContext 等） -->
     <ProjectReference Include="..\Stackdose.App.DeviceFramework\Stackdose.App.DeviceFramework.csproj" />
     <!-- MachinePageDesigner（DesignFileService / DesignerItemDefinition 等模型） -->

@@ -1,15 +1,9 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 18
-# 聚焦方案：設計器系統開發（每日開發用）
-# 包含：MachinePageDesigner + DesignRuntime + DesignViewer + 必要依賴
-# 不含：ProjectGeneratorUI、UbiDemo、Platform 個別專案（透過 UI.Core 間接引用）
-VisualStudioVersion = 18.4.11626.88
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36705.20
 MinimumVisualStudioVersion = 10.0.40219.1
 
-# ═══════════════════════════════════════════════════════
-#  🚀  開發中（今天要動的）
-# ═══════════════════════════════════════════════════════
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "🚀 開發中", "🚀 開發中", "{B0000001-0000-0000-0000-000000000001}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Tools.MachinePageDesigner", "Stackdose.Tools.MachinePageDesigner\Stackdose.Tools.MachinePageDesigner.csproj", "{282E6333-E3C7-4AA4-8929-BA69C92C67FD}"
@@ -19,9 +13,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Tools.DesignViewer", "Stackdose.Tools.DesignViewer\Stackdose.Tools.DesignViewer.csproj", "{656757FC-966E-490D-8A76-C177DFC1652C}"
 EndProject
 
-# ═══════════════════════════════════════════════════════
-#  🏗  框架依賴（需要但通常不改）
-# ═══════════════════════════════════════════════════════
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "🏗 框架依賴", "🏗 框架依賴", "{B0000002-0000-0000-0000-000000000002}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.UI.Core", "Stackdose.UI.Core\Stackdose.UI.Core.csproj", "{45B8429F-B530-4B17-9477-BBE36E386E09}"
@@ -33,20 +24,17 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.App.DeviceFramework", "Stackdose.App.DeviceFramework\Stackdose.App.DeviceFramework.csproj", "{8C56CF1C-CB8C-44C8-ACD5-651E3E770D61}"
 EndProject
 
-# ═══════════════════════════════════════════════════════
-#  ⚙  外部依賴 Platform（另一個 Repo）
-# ═══════════════════════════════════════════════════════
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "⚙ 外部依賴 Platform", "⚙ 外部依賴 Platform", "{B0000003-0000-0000-0000-000000000003}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Abstractions", "..\Stackdose.Platform\Stackdose.Abstractions\Stackdose.Abstractions.csproj", "{42A359B4-B96E-6F41-729B-E8E9655118B7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Abstractions", "..\Stackdose.Platform\src\Stackdose.Abstractions\Stackdose.Abstractions.csproj", "{42A359B4-B96E-6F41-729B-E8E9655118B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Core", "..\Stackdose.Platform\Stackdose.Core\Stackdose.Core.csproj", "{4AF2FF94-2D44-813E-8137-7730BB7BAD85}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Core", "..\Stackdose.Platform\src\Stackdose.Core\Stackdose.Core.csproj", "{4AF2FF94-2D44-813E-8137-7730BB7BAD85}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Hardware", "..\Stackdose.Platform\Stackdose.Hardware\Stackdose.Hardware.csproj", "{2C085A15-6152-AFEC-F925-676C705527D4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Hardware", "..\Stackdose.Platform\src\Stackdose.Hardware\Stackdose.Hardware.csproj", "{2C085A15-6152-AFEC-F925-676C705527D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Plc", "..\Stackdose.Platform\Stackdose.Plc\Stackdose.Plc.csproj", "{AD27C021-4D83-4715-BF2F-02F4B8C2A771}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Plc", "..\Stackdose.Platform\src\Stackdose.Plc\Stackdose.Plc.csproj", "{AD27C021-4D83-4715-BF2F-02F4B8C2A771}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.PrintHead", "..\Stackdose.Platform\Stackdose.PrintHead\Stackdose.PrintHead.csproj", "{6D1AF2F1-BF31-7231-72EF-18823B146A70}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.PrintHead", "..\Stackdose.Platform\src\Stackdose.PrintHead\Stackdose.PrintHead.csproj", "{6D1AF2F1-BF31-7231-72EF-18823B146A70}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FeiyangWrapper", "..\Sdk\FeiyangWrapper\FeiyangWrapper\FeiyangWrapper.vcxproj", "{0EA55D76-D882-4C31-0F9D-32712C8F24C7}"
 EndProject

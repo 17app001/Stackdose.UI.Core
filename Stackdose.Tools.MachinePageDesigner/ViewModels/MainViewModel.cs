@@ -38,6 +38,9 @@ public sealed class MainViewModel : ObservableObject
     // ── Meta ─────────────────────────────────────────────────────────
     private string _docTitle;
     private string _machineId;
+    private string _plcIp;
+    private int    _plcPort;
+    private int    _scanInterval;
 
     // ── Clipboard ────────────────────────────────────────────────────
     private List<DesignerItemDefinition> _clipboard = [];
@@ -61,8 +64,11 @@ public sealed class MainViewModel : ObservableObject
         _showLiveLog = _document.Layout.ShowLiveLog;
         _showAlarmViewer = _document.Layout.ShowAlarmViewer;
         _showSensorViewer = _document.Layout.ShowSensorViewer;
-        _docTitle = _document.Meta.Title;
-        _machineId = _document.Meta.MachineId;
+        _docTitle     = _document.Meta.Title;
+        _machineId    = _document.Meta.MachineId;
+        _plcIp        = _document.Meta.PlcIp;
+        _plcPort      = _document.Meta.PlcPort;
+        _scanInterval = _document.Meta.ScanInterval;
 
         // 初始化 Commands
         NewCmd = new RelayCommand(_ => NewDocument());
@@ -156,9 +162,8 @@ public sealed class MainViewModel : ObservableObject
         get => Canvas.CanvasWidth;
         set
         {
-            var v = Math.Max(400, Math.Min(value, 4000));
-            if (Canvas.CanvasWidth == v) return;
-            Canvas.CanvasWidth = v;
+            if (Canvas.CanvasWidth == value) return;
+            Canvas.CanvasWidth = value;
             N();
             MarkDirty();
         }
@@ -169,9 +174,8 @@ public sealed class MainViewModel : ObservableObject
         get => Canvas.CanvasHeight;
         set
         {
-            var v = Math.Max(300, Math.Min(value, 3000));
-            if (Canvas.CanvasHeight == v) return;
-            Canvas.CanvasHeight = v;
+            if (Canvas.CanvasHeight == value) return;
+            Canvas.CanvasHeight = value;
             N();
             MarkDirty();
         }
@@ -182,8 +186,10 @@ public sealed class MainViewModel : ObservableObject
     public string LayoutMode
     {
         get => _layoutMode;
-        set { if (Set(ref _layoutMode, value)) MarkDirty(); }
+        set { if (Set(ref _layoutMode, value)) { MarkDirty(); N(nameof(IsDashboardMode)); } }
     }
+
+    public bool IsDashboardMode => _layoutMode == "Dashboard";
 
     public int LeftCommandWidthPx
     {
@@ -227,7 +233,25 @@ public sealed class MainViewModel : ObservableObject
         set { if (Set(ref _machineId, value)) MarkDirty(); }
     }
 
-    public string[] LayoutModes { get; } = ["SplitRight", "Standard", "SplitBottom"];
+    public string PlcIp
+    {
+        get => _plcIp;
+        set { if (Set(ref _plcIp, value)) MarkDirty(); }
+    }
+
+    public int PlcPort
+    {
+        get => _plcPort;
+        set { if (Set(ref _plcPort, value)) MarkDirty(); }
+    }
+
+    public int ScanInterval
+    {
+        get => _scanInterval;
+        set { if (Set(ref _scanInterval, value)) MarkDirty(); }
+    }
+
+    public string[] LayoutModes { get; } = ["SplitRight", "Standard", "SplitBottom", "Dashboard"];
 
     public bool SnapToGrid
     {
@@ -643,10 +667,14 @@ public sealed class MainViewModel : ObservableObject
         _showLiveLog = _document.Layout.ShowLiveLog;
         _showAlarmViewer = _document.Layout.ShowAlarmViewer;
         _showSensorViewer = _document.Layout.ShowSensorViewer;
-        _docTitle = _document.Meta.Title;
-        _machineId = _document.Meta.MachineId;
+        _docTitle     = _document.Meta.Title;
+        _machineId    = _document.Meta.MachineId;
+        _plcIp        = _document.Meta.PlcIp;
+        _plcPort      = _document.Meta.PlcPort;
+        _scanInterval = _document.Meta.ScanInterval;
 
         N(nameof(LayoutMode));
+        N(nameof(IsDashboardMode));
         N(nameof(LeftCommandWidthPx));
         N(nameof(RightColumnWidthStar));
         N(nameof(ShowLiveLog));
@@ -654,6 +682,9 @@ public sealed class MainViewModel : ObservableObject
         N(nameof(ShowSensorViewer));
         N(nameof(DocTitle));
         N(nameof(MachineId));
+        N(nameof(PlcIp));
+        N(nameof(PlcPort));
+        N(nameof(ScanInterval));
 
         Canvas.LoadFromDocument(_document);
         // 通知代理屬性更新（Canvas.LoadFromDocument 直接設值，MainVM 需手動通知）
@@ -663,8 +694,11 @@ public sealed class MainViewModel : ObservableObject
 
     private void SyncUIToDocument()
     {
-        _document.Meta.Title = DocTitle;
-        _document.Meta.MachineId = MachineId;
+        _document.Meta.Title        = DocTitle;
+        _document.Meta.MachineId    = MachineId;
+        _document.Meta.PlcIp        = PlcIp;
+        _document.Meta.PlcPort      = PlcPort;
+        _document.Meta.ScanInterval = ScanInterval;
 
         _document.Layout.Mode = LayoutMode;
         _document.Layout.LeftCommandWidthPx = LeftCommandWidthPx;

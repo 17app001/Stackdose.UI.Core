@@ -4,6 +4,29 @@
 
 ---
 
+## 現狀三行摘要
+
+- **分支：** `refactor/foundation-and-behavior`｜B0–B9 重構完成 + Dashboard 模式功能開發完成（2026-04-23）
+- **主力工作：** MachinePageDesigner 功能開發 + DesignRuntime Dashboard 執行模式
+- **未解問題：** 見 `docs/refactor/PROGRESS.md` 底部 ⚠️ 區塊；分支尚未合併至 master
+
+---
+
+## 開發狀態快速確認
+
+> 當前進度以 `docs/refactor/PROGRESS.md` 為唯一真相。AI 接手必讀 `docs/refactor/HANDOFF.md`（含鐵律與用戶偏好）。
+
+**常用方案 / Startup 對照**
+
+| 工作內容 | 開啟方案 | Startup Project |
+|---|---|---|
+| 設計器 / 執行環境 / 預覽 | `Stackdose.Designer.sln` | `Stackdose.App.DesignRuntime` |
+| 框架核心 / DeviceFramework | `Stackdose.UI.Core.sln` | `Stackdose.App.UbiDemo` |
+| 專案產生器 | `Stackdose.UI.Core.sln` | `Stackdose.Tools.ProjectGeneratorUI` |
+| 全局修改 / 跨多個專案 | `Stackdose.UI.Core.sln` | — |
+
+---
+
 ## 專案定位
 
 企業級 WPF 工業設備 UI 框架（.NET 8 Windows-only，x64），目標讓設備廠商快速建立符合 **FDA 21 CFR Part 11** 稽核要求的操作介面。
@@ -16,8 +39,8 @@
 ### 核心庫（穩定）
 | 專案 | 路徑 | 說明 |
 |---|---|---|
-| `Stackdose.UI.Core` | `./Stackdose.UI.Core/` | 26+ 自定義WPF控制項、Context管理、SQLiteLogger |
-| `Stackdose.UI.Templates` | `./Stackdose.UI.Templates/` | Shell布局：AppHeader、LeftNavigation、AppBottomBar |
+| `Stackdose.UI.Core` | `./Stackdose.UI.Core/` | 26 個 WPF 元件（20 UserControl + 6 Window，含 2 個 Feature/ 進階）、Context 系統、SQLiteLogger |
+| `Stackdose.UI.Templates` | `./Stackdose.UI.Templates/` | 16 個 Shell/Page 元件（MainContainer / SinglePageContainer、AppHeader / LeftNav / BottomBar、6 Pages） |
 | `Stackdose.App.ShellShared` | `./Stackdose.App.ShellShared/` | 多App共用Shell服務層 |
 
 ### 框架與應用
@@ -70,14 +93,33 @@
 
 ## 目前主力開發方向
 
-1. **MachinePageDesigner（自由畫布設計器）** — 已完成 FreeCanvas 模式、Snap、Z-Order、框選、鎖定、複製貼上、GroupBox、對齊分配
-2. **DesignRuntime** — 真實 PLC 連線執行環境，有未提交變更（`MainWindow.xaml` / `MainWindow.xaml.cs`）
-3. **DesignViewer** — 拖入 JSON 即時預覽工具
+1. **MachinePageDesigner（自由畫布設計器）** — 已完成 FreeCanvas 模式、Snap、Z-Order、框選、鎖定、複製貼上、GroupBox、對齊分配、方向鍵微調、Dashboard PLC 欄位設定
+2. **DesignRuntime** — 真實 PLC 連線執行環境，支援 FreeCanvas / SinglePage / Standard / **Dashboard** 四種 Shell 策略
+3. **Shell 模式體系** — `DashboardShellStrategy`（精簡生產模式，畫布全螢幕貼合，自動連線 PLC）完成；`scripts/new-app.ps1 -Mode Dashboard` 可一鍵 scaffold
+4. **DesignViewer** — 拖入 JSON 即時預覽工具
 
 ---
 
-## 核心架構規則（勿違反）
+## AI 行為規則
 
+### 優先順序（衝突時依此裁決）
+1. **穩定性** — 不破壞現有功能
+2. **正確性** — 行為符合規格
+3. **最小改動** — 只動必須動的
+4. **可讀性** — 清楚優於聰明
+5. **重構** — 只在被要求時才做
+
+### 每次任務回應格式
+```
+**摘要：** 做了什麼（一句話）
+**異動檔案：** 列出所有改動的檔案
+**改了什麼：** 具體變更內容
+**為什麼：** 決策理由
+**風險：** 可能的副作用或假設
+**下一步：** 建議的後續動作
+```
+
+### 核心架構規則（勿違反）
 1. 不在 `Controls/*.xaml` 寫硬編碼色碼，用語意 Token（`Surface.*`、`Text.*`、`Action.*`）
 2. 不繞過 `ComplianceContext` 散落寫日誌，關閉前必須呼叫 `ComplianceContext.Shutdown()`
 3. App 特屬邏輯不耦合進 `UI.Core`

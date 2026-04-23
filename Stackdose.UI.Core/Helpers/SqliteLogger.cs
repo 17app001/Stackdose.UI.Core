@@ -30,6 +30,7 @@ namespace Stackdose.UI.Core.Helpers
         private static readonly ConcurrentQueue<OperationLogEntry> _operationLogQueue = new();
         private static readonly ConcurrentQueue<EventLogEntry> _eventLogQueue = new();
         private static readonly ConcurrentQueue<PeriodicDataLogEntry> _periodicDataQueue = new();
+        private static readonly ConcurrentQueue<LiveRecordEntry> _liveRecordQueue = new();
 
         // Flush timer
         private static System.Threading.Timer? _flushTimer;
@@ -51,6 +52,7 @@ namespace Stackdose.UI.Core.Helpers
                                                     VALUES (@Timestamp, @BatchId, @EventType, @EventCode, @EventDescription, @Severity, @CurrentState, @UserId, @Message)";
         private const string InsertPeriodicDataLogsSql = @"INSERT INTO PeriodicDataLogs (Timestamp, BatchId, UserId, PredryTemp, DryTemp, CdaInletPressure)
                                                            VALUES (@Timestamp, @BatchId, @UserId, @PredryTemp, @DryTemp, @CdaInletPressure)";
+        private const string InsertLiveRecordsSql = "INSERT INTO LiveRecords (Timestamp, Address, Label, Value, IntervalSec) VALUES (@Timestamp, @Address, @Label, @Value, @IntervalSec)";
 
         // Statistics
         private static long _totalDataLogs = 0;
@@ -59,6 +61,7 @@ namespace Stackdose.UI.Core.Helpers
         private static long _totalEventLogs = 0;
         private static long _totalPeriodicDataLogs = 0;
         private static long _batchFlushCount = 0;
+        private static long _totalLiveRecords = 0;
 
         #endregion
 
@@ -155,6 +158,15 @@ namespace Stackdose.UI.Core.Helpers
             public double CdaInletPressure { get; set; }
         }
 
+        private class LiveRecordEntry
+        {
+            public DateTime Timestamp { get; set; }
+            public string Address { get; set; } = "";
+            public string Label { get; set; } = "";
+            public string Value { get; set; } = "";
+            public int IntervalSec { get; set; }
+        }
+
         #endregion
 
         #region Initialization
@@ -233,6 +245,17 @@ namespace Stackdose.UI.Core.Helpers
                         PredryTemp REAL,
                         DryTemp REAL,
                         CdaInletPressure REAL
+                    );");
+
+                // 6. LiveRecords (即時數據記錄)
+                conn.Execute(@"
+                    CREATE TABLE IF NOT EXISTS LiveRecords (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        Address TEXT,
+                        Label TEXT,
+                        Value TEXT,
+                        IntervalSec INTEGER
                     );");
 
                 // 🔥 FDA 21 CFR Part 11 合規性修正
@@ -503,6 +526,30 @@ namespace Stackdose.UI.Core.Helpers
             }
         }
 
+        /// <summary>
+        /// 記錄即時數據（批次模式）
+        /// </summary>
+        public static void EnqueueLiveRecord(string address, string label, string value, int intervalSec)
+        {
+            try
+            {
+                _liveRecordQueue.Enqueue(new LiveRecordEntry
+                {
+                    Timestamp = DateTime.Now,
+                    Address = address,
+                    Label = label,
+                    Value = value,
+                    IntervalSec = intervalSec
+                });
+                if (_liveRecordQueue.Count >= _batchSize)
+                    FlushLiveRecords();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SqliteLogger] EnqueueLiveRecord Error: {ex.Message}");
+            }
+        }
+
         #endregion
 
         #region Flush Methods
@@ -517,6 +564,7 @@ namespace Stackdose.UI.Core.Helpers
             FlushOperationLogs();
             FlushEventLogs();
             FlushPeriodicDataLogs();
+            FlushLiveRecords();
         }
 
         /// <summary>
@@ -613,6 +661,24 @@ namespace Stackdose.UI.Core.Helpers
                 onError: ex => System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FlushPeriodicDataLogs Error: {ex.Message}"));
         }
 
+        /// <summary>
+        /// 刷新 LiveRecords 佇列
+        /// </summary>
+        private static void FlushLiveRecords()
+        {
+            TryFlushQueue(
+                queue: _liveRecordQueue,
+                writeEntry: (conn, transaction, entry) => conn.Execute(InsertLiveRecordsSql, entry, transaction),
+                onSuccess: count =>
+                {
+                    _totalLiveRecords += count;
+                    #if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[SqliteLogger] LiveRecords 批次寫入: {count} 筆 (累計: {_totalLiveRecords})");
+                    #endif
+                },
+                onError: ex => System.Diagnostics.Debug.WriteLine($"[SqliteLogger] FlushLiveRecords Error: {ex.Message}"));
+        }
+
         #endregion
 
         #region Statistics
@@ -620,7 +686,7 @@ namespace Stackdose.UI.Core.Helpers
         /// <summary>
         /// 取得統計資訊
         /// </summary>
-        public static (long DataLogs, long AuditLogs, long OperationLogs, long EventLogs, long PeriodicDataLogs, long BatchFlushes, int PendingDataLogs, int PendingAuditLogs, int PendingOperationLogs, int PendingEventLogs, int PendingPeriodicData) GetStatistics()
+        public static (long DataLogs, long AuditLogs, long OperationLogs, long EventLogs, long PeriodicDataLogs, long LiveRecords, long BatchFlushes, int PendingDataLogs, int PendingAuditLogs, int PendingOperationLogs, int PendingEventLogs, int PendingPeriodicData, int PendingLiveRecords) GetStatistics()
         {
             return (
                 DataLogs: _totalDataLogs,
@@ -628,12 +694,14 @@ namespace Stackdose.UI.Core.Helpers
                 OperationLogs: _totalOperationLogs,
                 EventLogs: _totalEventLogs,
                 PeriodicDataLogs: _totalPeriodicDataLogs,
+                LiveRecords: _totalLiveRecords,
                 BatchFlushes: _batchFlushCount,
                 PendingDataLogs: _dataLogQueue.Count,
                 PendingAuditLogs: _auditLogQueue.Count,
                 PendingOperationLogs: _operationLogQueue.Count,
                 PendingEventLogs: _eventLogQueue.Count,
-                PendingPeriodicData: _periodicDataQueue.Count
+                PendingPeriodicData: _periodicDataQueue.Count,
+                PendingLiveRecords: _liveRecordQueue.Count
             );
         }
 
@@ -647,6 +715,7 @@ namespace Stackdose.UI.Core.Helpers
             _totalOperationLogs = 0;
             _totalEventLogs = 0;
             _totalPeriodicDataLogs = 0;
+            _totalLiveRecords = 0;
             _batchFlushCount = 0;
         }
 

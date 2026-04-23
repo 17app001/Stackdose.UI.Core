@@ -1,13 +1,19 @@
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Microsoft.Win32;
+using Stackdose.App.ShellShared.Behaviors;
+using Stackdose.App.ShellShared.Services;
 using Stackdose.Hardware.Plc;
 using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.Tools.MachinePageDesigner.Services;
 using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Models;
+using Stackdose.UI.Templates.Controls;
+using Stackdose.UI.Templates.Shell;
 
 namespace Stackdose.App.DesignRuntime;
 
@@ -15,10 +21,19 @@ public partial class MainWindow : Window
 {
     private PlcStatus? _plcStatus;
     private CancellationTokenSource? _simCts;
+    private readonly BehaviorEngine _behaviorEngine;
 
     public MainWindow()
     {
         InitializeComponent();
+
+        _behaviorEngine = new BehaviorEngine
+        {
+            AuditLogger = msg => ComplianceContext.LogSystem(
+                msg, Abstractions.Logging.LogLevel.Info),
+        };
+
+        Closing += (_, _) => _behaviorEngine.Dispose();
     }
 
     // ── PLC 連線 ──────────────────────────────────────────────────────────
@@ -56,6 +71,7 @@ public partial class MainWindow : Window
         {
             Dispatcher.BeginInvoke(() =>
             {
+                _behaviorEngine.PlcManager = mgr;
                 ShowStatus($"PLC 已連線：{ip}:{port}");
                 btnConnect.IsEnabled = false;
                 btnDisconnect.IsEnabled = true;
@@ -82,10 +98,40 @@ public partial class MainWindow : Window
         _plcStatus?.Dispose();
         plcStatusHost.Child = null;
         _plcStatus = null;
+        _behaviorEngine.PlcManager = null;
 
         btnConnect.IsEnabled = true;
         btnDisconnect.IsEnabled = false;
         ShowStatus("已斷線");
+    }
+
+    // ── Dashboard 自動連線 ────────────────────────────────────────────────
+
+    private void AutoConnectDashboard(string ip, int port, int scan)
+    {
+        if (_plcStatus != null)
+        {
+            _plcStatus.Dispose();
+            plcStatusHost.Child    = null;
+            dashboardPlcHost.Child = null;
+            _plcStatus             = null;
+            _behaviorEngine.PlcManager = null;
+        }
+
+        _plcStatus = new PlcStatus
+        {
+            IpAddress    = ip,
+            Port         = port,
+            AutoConnect  = true,
+            IsGlobal     = true,
+            ScanInterval = scan,
+            ShowBorder   = false,
+        };
+
+        _plcStatus.ConnectionEstablished += mgr =>
+            Dispatcher.BeginInvoke(() => _behaviorEngine.PlcManager = mgr);
+
+        dashboardPlcHost.Child = _plcStatus;
     }
 
     // ── 開啟 JSON ─────────────────────────────────────────────────────────
@@ -197,10 +243,231 @@ public partial class MainWindow : Window
         if (errorCount > 0) status += $"，{errorCount} 個建立失敗（橘框標示）";
         ShowStatus(status, error: errorCount > 0);
 
+        // 套用 Shell 策略（FreeCanvas / SinglePage / Standard）
+        bool multiPageHandled = ApplyShellStrategy(doc);
+
+        if (!multiPageHandled)
+        {
+            // 單頁模式：從 runtimeCanvas 建立 id→control 對照表
+            var controlMap = runtimeCanvas.Children
+                .OfType<FrameworkElement>()
+                .Where(fe => fe.Tag is ControlRuntimeTag)
+                .Select(fe => KeyValuePair.Create(((ControlRuntimeTag)fe.Tag!).Id, fe));
+            _behaviorEngine.BindDocument(doc.CanvasItems, controlMap);
+            _behaviorEngine.Navigator = null;
+        }
+
         // 等所有 PlcLabel 的 Loaded 事件執行完後，刷新 Monitor 讓新地址加入掃描清單
         Dispatcher.BeginInvoke(
             () => _plcStatus?.RefreshMonitors(),
             System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    /// <summary>
+    /// 根據 DesignDocument.ShellMode 選擇策略，切換 Row 2 的顯示模式。
+    /// FreeCanvas：原始 ScrollViewer + Canvas，保留縮放功能。
+    /// SinglePage / Standard（單頁）：將 canvasHost 遷移進 Shell 容器後顯示。
+    /// Standard（多頁）：建立 MainContainer + LeftNav，各頁面各自建立 Canvas，回傳 true。
+    /// </summary>
+    /// <returns>true 表示多頁模式已自行處理 BehaviorEngine 綁定，呼叫端不須再 BindDocument。</returns>
+    private bool ApplyShellStrategy(DesignDocument doc)
+    {
+        var strategy = ShellStrategyFactory.Select(doc.ShellMode);
+        lblShellMode.Text = $"Shell: {strategy.LayoutMode}";
+
+        // ── Dashboard 模式 ───────────────────────────────────────────────────
+        if (strategy is DashboardShellStrategy)
+        {
+            // 隱藏開發者面板
+            plcConfigBorder.Visibility = Visibility.Collapsed;
+            toolbarBorder.Visibility   = Visibility.Collapsed;
+
+            // 底部只留連線燈
+            lblShellMode.Visibility   = Visibility.Collapsed;
+            lblItemCount.Visibility   = Visibility.Collapsed;
+            btnWatchEvents.Visibility = Visibility.Collapsed;
+            lblEventLog.Visibility    = Visibility.Collapsed;
+            lblStatus.Visibility      = Visibility.Collapsed;
+
+            // 畫布：無邊距、無 ScrollBar、無裝飾框
+            scrollViewerCanvas.Padding = new Thickness(0);
+            scrollViewerCanvas.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+            scrollViewerCanvas.VerticalScrollBarVisibility   = ScrollBarVisibility.Disabled;
+            scrollViewerCanvas.Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x32));
+            canvasBorder.Visibility   = Visibility.Collapsed;
+            canvasScale.ScaleX        = 1.0;
+            canvasScale.ScaleY        = 1.0;
+
+            if (!ReferenceEquals(scrollViewerCanvas.Content, canvasHost))
+                scrollViewerCanvas.Content = canvasHost;
+            scrollViewerCanvas.Visibility = Visibility.Visible;
+            shellPreviewHost.Content      = null;
+            shellPreviewHost.Visibility   = Visibility.Collapsed;
+
+            // 視窗大小自動貼合畫布（Row 2 改為 Auto，讓 SizeToContent 生效）
+            var rootGrid = (Grid)Content;
+            rootGrid.RowDefinitions[2].Height = GridLength.Auto;
+            SizeToContent = SizeToContent.WidthAndHeight;
+            ResizeMode    = ResizeMode.NoResize;
+
+            // 自動連線（若 meta 有設定 IP）
+            if (!string.IsNullOrWhiteSpace(doc.Meta.PlcIp))
+            {
+                var port = doc.Meta.PlcPort > 0 ? doc.Meta.PlcPort : 3000;
+                var scan = doc.Meta.ScanInterval > 0 ? doc.Meta.ScanInterval : 200;
+                AutoConnectDashboard(doc.Meta.PlcIp, port, scan);
+                dashboardPlcHost.Visibility = Visibility.Visible;
+            }
+
+            return false;
+        }
+
+        // ── 非 Dashboard：還原開發者 UI（若曾切換過 Dashboard）────────────
+        plcConfigBorder.Visibility = Visibility.Visible;
+        toolbarBorder.Visibility   = Visibility.Visible;
+        lblShellMode.Visibility    = Visibility.Visible;
+        lblItemCount.Visibility    = Visibility.Visible;
+        btnWatchEvents.Visibility  = Visibility.Visible;
+        lblStatus.Visibility       = Visibility.Visible;
+        dashboardPlcHost.Visibility = Visibility.Collapsed;
+        if (dashboardPlcHost.Child != null)
+        {
+            _plcStatus?.Dispose();
+            dashboardPlcHost.Child     = null;
+            plcStatusHost.Child        = null;
+            _plcStatus                 = null;
+            _behaviorEngine.PlcManager = null;
+        }
+        canvasBorder.Visibility   = Visibility.Visible;
+        scrollViewerCanvas.Padding = new Thickness(40);
+        scrollViewerCanvas.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+        scrollViewerCanvas.VerticalScrollBarVisibility   = ScrollBarVisibility.Auto;
+        scrollViewerCanvas.Background = new SolidColorBrush(Color.FromRgb(0x12, 0x12, 0x1E));
+        var grid = (Grid)Content;
+        grid.RowDefinitions[2].Height = new GridLength(1, GridUnitType.Star);
+        SizeToContent = SizeToContent.Manual;
+        ResizeMode    = ResizeMode.CanResize;
+
+        // ── FreeCanvas ───────────────────────────────────────────────────────
+        if (strategy is FreeCanvasShellStrategy)
+        {
+            if (!ReferenceEquals(scrollViewerCanvas.Content, canvasHost))
+                scrollViewerCanvas.Content = canvasHost;
+
+            scrollViewerCanvas.Visibility = Visibility.Visible;
+            shellPreviewHost.Content      = null;
+            shellPreviewHost.Visibility   = Visibility.Collapsed;
+            return false;
+        }
+
+        // Standard 多頁模式
+        if (strategy is StandardShellStrategy && doc.Pages.Count > 0)
+        {
+            scrollViewerCanvas.Visibility = Visibility.Collapsed;
+
+            var container = new MainContainer
+            {
+                PageTitle        = doc.Meta.Title,
+                HeaderDeviceName = string.IsNullOrWhiteSpace(doc.Meta.MachineId) ? "DEVICE" : doc.Meta.MachineId,
+            };
+
+            shellPreviewHost.Content    = container;
+            shellPreviewHost.Visibility = Visibility.Visible;
+
+            SetupMultiPageNavigation(container, doc);
+            return true;
+        }
+
+        // 單頁 Shell（SinglePage / Standard 無 pages[]）
+        scrollViewerCanvas.Content = null;
+        var innerScroller = new ScrollViewer
+        {
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility   = ScrollBarVisibility.Auto,
+            Background = new SolidColorBrush(Color.FromRgb(0x12, 0x12, 0x1E)),
+            Padding    = new Thickness(40),
+            Content    = canvasHost,
+        };
+
+        shellPreviewHost.Content      = strategy.Wrap(innerScroller, doc.Meta.Title, doc.Meta.MachineId);
+        shellPreviewHost.Visibility   = Visibility.Visible;
+        scrollViewerCanvas.Visibility = Visibility.Collapsed;
+        return false;
+    }
+
+    /// <summary>
+    /// Standard 多頁模式：為每個 PageDefinition 建立獨立 Canvas，
+    /// 設定 MainContainer.NavigationItems，並接線 BehaviorEngine.Navigator。
+    /// </summary>
+    private void SetupMultiPageNavigation(MainContainer container, DesignDocument doc)
+    {
+        var pageViews   = new Dictionary<string, UIElement>();
+        var allItems    = new List<IControlWithBehaviors>();
+        var allControls = new List<KeyValuePair<string, FrameworkElement>>();
+
+        foreach (var page in doc.Pages)
+        {
+            var canvas = new Canvas
+            {
+                Width         = doc.CanvasWidth,
+                Height        = doc.CanvasHeight,
+                Background    = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x32)),
+                ClipToBounds  = true,
+                SnapsToDevicePixels = true,
+            };
+
+            foreach (var def in page.CanvasItems)
+            {
+                UIElement ctrl;
+                try   { ctrl = RuntimeControlFactory.Create(def); }
+                catch (Exception ex) { ctrl = MakeErrorPlaceholder(def, ex.Message); }
+
+                if (ctrl is FrameworkElement fe)
+                {
+                    fe.Width  = def.Width;
+                    fe.Height = def.Height;
+                    if (fe.Tag is ControlRuntimeTag tag)
+                        allControls.Add(KeyValuePair.Create(tag.Id, fe));
+                }
+                Canvas.SetLeft(ctrl, def.X);
+                Canvas.SetTop(ctrl, def.Y);
+                canvas.Children.Add(ctrl);
+            }
+
+            allItems.AddRange(page.CanvasItems);
+
+            pageViews[page.Id] = new ScrollViewer
+            {
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollBarVisibility   = ScrollBarVisibility.Auto,
+                Background = new SolidColorBrush(Color.FromRgb(0x12, 0x12, 0x1E)),
+                Padding    = new Thickness(40),
+                Content    = canvas,
+            };
+        }
+
+        container.NavigationItems = new ObservableCollection<NavigationItem>(
+            doc.Pages.Select(p => new NavigationItem
+            {
+                Title            = p.Title,
+                NavigationTarget = p.Id,
+            }));
+
+        void Navigate(string pageId)
+        {
+            if (!pageViews.TryGetValue(pageId, out var view)) return;
+            var page = doc.Pages.FirstOrDefault(p => p.Id == pageId);
+            container.ShellContent = view;
+            container.PageTitle    = page?.Title ?? pageId;
+            container.SelectNavigationTarget(pageId);
+        }
+
+        container.NavigationRequested += (_, pageId) => Navigate(pageId);
+        _behaviorEngine.Navigator = Navigate;
+        _behaviorEngine.BindDocument(allItems, allControls);
+
+        if (doc.Pages.Count > 0)
+            Navigate(doc.Pages[0].Id);
     }
 
     private static UIElement MakeErrorPlaceholder(DesignerItemDefinition def, string message)
@@ -304,6 +571,29 @@ public partial class MainWindow : Window
             catch (TaskCanceledException) { break; }
             catch { break; }   // 連線中斷等意外，跳出
         }
+    }
+
+    // ── ValueChanged 事件監視 ─────────────────────────────────────────────
+
+    private void OnWatchEventsToggled(object sender, RoutedEventArgs e)
+    {
+        if (btnWatchEvents.IsChecked == true)
+        {
+            lblEventLog.Visibility = Visibility.Visible;
+            PlcEventContext.ControlValueChanged += OnControlValueChanged;
+            lblEventLog.Text = "等待值變化…";
+        }
+        else
+        {
+            PlcEventContext.ControlValueChanged -= OnControlValueChanged;
+            lblEventLog.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private void OnControlValueChanged(object? sender, PlcValueChangedEventArgs e)
+    {
+        Dispatcher.BeginInvoke(() =>
+            lblEventLog.Text = $"⚡ {e.Address} = {e.DisplayText}");
     }
 
     // ── 狀態列 ────────────────────────────────────────────────────────

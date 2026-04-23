@@ -1,11 +1,12 @@
-﻿using System.Text.Json.Serialization;
+using Stackdose.UI.Core.Models;
+using System.Text.Json.Serialization;
 
 namespace Stackdose.Tools.MachinePageDesigner.Models;
 
 /// <summary>
 /// 單一控制項定義（type + props）
 /// </summary>
-public sealed class DesignerItemDefinition
+public sealed class DesignerItemDefinition : IControlWithBehaviors
 {
     [JsonPropertyName("id")]
     public string Id { get; set; } = Guid.NewGuid().ToString("N")[..8];
@@ -36,6 +37,14 @@ public sealed class DesignerItemDefinition
     public Dictionary<string, object?> Props { get; set; } = [];
 
     /// <summary>
+    /// 行為事件清單（B4 新增）。<br/>
+    /// 每個事件定義：觸發來源 <c>on</c>、條件 <c>when</c>、動作 <c>do</c>。<br/>
+    /// 省略時為空清單，舊 JSON 完全向後相容。
+    /// </summary>
+    [JsonPropertyName("events")]
+    public List<BehaviorEvent> Events { get; set; } = [];
+
+    /// <summary>
     /// 深複製，產生新 Id，可指定位移
     /// </summary>
     public DesignerItemDefinition Clone(double offsetX = 0, double offsetY = 0) => new()
@@ -49,6 +58,21 @@ public sealed class DesignerItemDefinition
         Height   = Height,
         IsLocked = false,
         Props    = new Dictionary<string, object?>(Props),
+        Events   = Events.Select(e => new BehaviorEvent
+        {
+            On   = e.On,
+            When = e.When is null ? null : new BehaviorCondition { Op = e.When.Op, Value = e.When.Value },
+            Do   = e.Do.Select(a => new BehaviorAction
+            {
+                Action  = a.Action,
+                Target  = a.Target,
+                Prop    = a.Prop,
+                Value   = a.Value,
+                Message = a.Message,
+                Title   = a.Title,
+                Page    = a.Page,
+            }).ToList(),
+        }).ToList(),
     };
 }
 
@@ -61,7 +85,6 @@ public static class PropsExtensions
     {
         if (props.TryGetValue(key, out var val) && val is not null)
         {
-            // System.Text.Json 會把 string 反序列化為 JsonElement
             if (val is System.Text.Json.JsonElement je && je.ValueKind == System.Text.Json.JsonValueKind.String)
                 return je.GetString() ?? fallback;
             return val.ToString() ?? fallback;

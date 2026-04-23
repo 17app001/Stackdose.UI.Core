@@ -11,6 +11,10 @@
         <vm:MainViewModel/>
     </Window.DataContext>
 
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Window.Resources>
+
     <Window.InputBindings>
         <KeyBinding Key="N" Modifiers="Ctrl"       Command="{Binding NewCmd}"/>
         <KeyBinding Key="O" Modifiers="Ctrl"       Command="{Binding OpenCmd}"/>
@@ -97,10 +101,10 @@
 
                 <TextBlock Text="Canvas:" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"/>
                 <TextBox Text="{Binding CanvasWidth, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
-                         Width="56" Margin="0,0,2,0" ToolTip="畫布寬度（px，400–4000）"/>
+                         Width="56" Margin="0,0,2,0" ToolTip="畫布寬度（px）"/>
                 <TextBlock Text="×" Style="{StaticResource FieldLabel}" Margin="0,0,2,0"/>
                 <TextBox Text="{Binding CanvasHeight, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
-                         Width="56" Margin="0,0,16,0" ToolTip="畫布高度（px，300–3000）"/>
+                         Width="56" Margin="0,0,16,0" ToolTip="畫布高度（px）"/>
 
                 <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
 
@@ -111,7 +115,26 @@
                 <TextBox Text="{Binding DocTitle, UpdateSourceTrigger=PropertyChanged}" Width="160" Margin="0,0,12,0"/>
 
                 <TextBlock Text="Machine ID:" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"/>
-                <TextBox Text="{Binding MachineId, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
+                <TextBox Text="{Binding MachineId, UpdateSourceTrigger=PropertyChanged}" Width="80" Margin="0,0,12,0"/>
+
+                <!-- Dashboard 模式專屬：PLC 連線設定 -->
+                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"
+                           Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                <TextBlock Text="PLC IP:" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"
+                           Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                <TextBox Text="{Binding PlcIp, UpdateSourceTrigger=PropertyChanged}" Width="120" Margin="0,0,8,0"
+                         ToolTip="Dashboard 自動連線 IP"
+                         Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                <TextBlock Text="Port:" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"
+                           Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                <TextBox Text="{Binding PlcPort, UpdateSourceTrigger=LostFocus}" Width="52" Margin="0,0,8,0"
+                         ToolTip="PLC Port（預設 3000）"
+                         Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                <TextBlock Text="Scan(ms):" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"
+                           Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                <TextBox Text="{Binding ScanInterval, UpdateSourceTrigger=LostFocus}" Width="52"
+                         ToolTip="PLC 掃描間隔 ms（預設 200）"
+                         Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
             </WrapPanel>
         </Border>
 

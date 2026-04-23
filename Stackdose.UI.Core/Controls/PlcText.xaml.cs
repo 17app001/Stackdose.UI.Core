@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using Stackdose.UI.Core.Controls.Base;
 using Stackdose.Abstractions.Hardware;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.Abstractions.Logging;
@@ -25,12 +26,11 @@ namespace Stackdose.UI.Core.Controls
     /// <item>✅ 自動連線管理</item>
     /// </list>
     /// </remarks>
-    public partial class PlcText : UserControl
+    public partial class PlcText : PlcControlBase
     {
         #region Private Fields
 
         /// <summary>追蹤訂閱的 PlcStatus 實例</summary>
-        private PlcStatus? _subscribedStatus;
         
         /// <summary>記錄舊值，用於 Audit Trail</summary>
         private string _previousValue = "0";
@@ -42,8 +42,6 @@ namespace Stackdose.UI.Core.Controls
         public PlcText()
         {
             InitializeComponent();
-            Loaded += PlcText_Loaded;
-            Unloaded += PlcText_Unloaded;
         }
 
         #endregion
@@ -127,97 +125,33 @@ namespace Stackdose.UI.Core.Controls
 
         #region Lifecycle
 
-        private void PlcText_Loaded(object sender, RoutedEventArgs e)
+        protected override void OnPlcControlLoaded()
         {
             System.Diagnostics.Debug.WriteLine($"[PlcText] Loaded: {Label} ({Address})");
-            
-            SubscribeToGlobalStatus();
-            
             if (!string.IsNullOrEmpty(Address))
-            {
                 ReadFromPlc();
-            }
         }
 
-        private void PlcText_Unloaded(object sender, RoutedEventArgs e)
+        protected override void OnPlcControlUnloaded()
         {
             System.Diagnostics.Debug.WriteLine($"[PlcText] Unloaded: {Label} ({Address})");
-            UnsubscribeFromStatus();
         }
 
-        #endregion
-
-        #region PLC Management
-
-        private void SubscribeToGlobalStatus()
+        protected override void OnPlcConnected(IPlcManager manager)
         {
-            UnsubscribeFromStatus();
-            
-            var globalStatus = PlcContext.GlobalStatus;
-            if (globalStatus != null)
+            if (!string.IsNullOrEmpty(Address))
             {
-                _subscribedStatus = globalStatus;
-                _subscribedStatus.ConnectionEstablished += OnPlcConnectionEstablished;
-                _subscribedStatus.ScanUpdated += OnScanUpdated;
-                
-                System.Diagnostics.Debug.WriteLine($"[PlcText] Subscribed to PlcStatus: {Label} ({Address}), IsConnected={globalStatus.CurrentManager?.IsConnected}");
+                System.Diagnostics.Debug.WriteLine($"[PlcText] Connection established, reading: {Label} ({Address})");
+                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(ReadFromPlc));
             }
         }
 
-        private void UnsubscribeFromStatus()
-        {
-            if (_subscribedStatus != null)
-            {
-                _subscribedStatus.ConnectionEstablished -= OnPlcConnectionEstablished;
-                _subscribedStatus.ScanUpdated -= OnScanUpdated;
-                _subscribedStatus = null;
-            }
-        }
-
-        private void OnPlcConnectionEstablished(IPlcManager manager)
-        {
-            SafeInvoke(() =>
-            {
-                if (!string.IsNullOrEmpty(Address))
-                {
-                    System.Diagnostics.Debug.WriteLine($"[PlcText] Connection established, reading value: {Label} ({Address})");
-                    ReadFromPlc();
-                }
-            });
-        }
-
-        private void OnScanUpdated(IPlcManager manager)
-        {
-            // PlcText 通常不需要每次掃描都更新
-        }
+        protected override void OnPlcDataUpdated(IPlcManager manager) { }
 
         #endregion
+
 
         #region Helper Methods
-
-        /// <summary>
-        /// 安全執行 UI 操作（自動切換到 UI 執行緒）
-        /// </summary>
-        private void SafeInvoke(Action action)
-        {
-            try
-            {
-                if (Dispatcher.HasShutdownStarted) return;
-                
-                if (Dispatcher.CheckAccess())
-                {
-                    action();
-                }
-                else
-                {
-                    Dispatcher.Invoke(action);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[PlcText] SafeInvoke error: {ex.Message}");
-            }
-        }
 
         private static object CoerceValue(DependencyObject d, object baseValue)
         {

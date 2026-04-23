@@ -2,7 +2,28 @@
 
 當你需要快速建立新的機台型 App，又不想先深入框架細節時，請先用這份文件。
 
-## 1) 產生新專案
+## 0) 用 new-app.ps1 快速產生 JSON 驅動 App（推薦）
+
+`new-app.ps1` 是 `init-shell-app.ps1 -JsonDrivenApp` 的薄包裝，支援三種模式：
+
+```powershell
+# SinglePage — 單頁設計稿執行（DesignRuntime 載入 .machinedesign.json）
+powershell -NoProfile -File .\scripts\new-app.ps1 -AppName "Stackdose.App.MyMonitor" -Mode SinglePage -DestinationRoot .
+
+# Standard — 多頁 LeftNav + BehaviorEngine
+powershell -NoProfile -File .\scripts\new-app.ps1 -AppName "Stackdose.App.MyMonitor" -Mode Standard -DestinationRoot .
+
+# Dashboard — 無邊框固定視窗，自動連線 PLC，適合機台旁看板
+powershell -NoProfile -File .\scripts\new-app.ps1 -AppName "Stackdose.App.MyMonitor" -Mode Dashboard -DestinationRoot .
+```
+
+Dashboard 模式的 App 特性：
+- 視窗無標題列（`WindowStyle="None"`），大小自動符合設計稿畫布尺寸
+- 底部細條：可拖動視窗 + IP:Port 連線燈號（綠=已連線 / 紅=未連線）+ X 關閉按鈕
+- 啟動時自動讀取 `app-config.json` 並連線 PLC（`PlcIp` / `PlcPort` / `ScanInterval`）
+- 在 MachinePageDesigner 選擇 `Layout: Dashboard` 後，會顯示 PLC IP / Port / ScanInterval 欄位
+
+## 1) 產生新專案（舊式 init-shell-app.ps1）
 
 ```powershell
 powershell -NoProfile -File .\scripts\init-shell-app.ps1 -AppName "Stackdose.App.YourMachine" -DestinationRoot . -IncludeSecondDemoSampleConfigs

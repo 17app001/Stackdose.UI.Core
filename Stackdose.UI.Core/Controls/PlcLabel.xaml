@@ -1,15 +1,15 @@
-﻿<UserControl x:Class="Stackdose.UI.Core.Controls.PlcLabel"
+﻿<base:PlcControlBase x:Class="Stackdose.UI.Core.Controls.PlcLabel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:converters="clr-namespace:Stackdose.UI.Core.Converters"
+             xmlns:base="clr-namespace:Stackdose.UI.Core.Controls.Base"
              mc:Ignorable="d" 
              d:DesignHeight="60" d:DesignWidth="200"
-             x:Name="Root"
              Foreground="{DynamicResource Plc.Text.Value}">
 
-    <UserControl.ToolTip>
+    <FrameworkElement.ToolTip>
         <ToolTip Background="#1A1E2A"
                  BorderBrush="{DynamicResource Plc.Border}"
                  BorderThickness="1"
@@ -28,13 +28,14 @@
                            FontFamily="Consolas" />
             </StackPanel>
         </ToolTip>
-    </UserControl.ToolTip>
+    </FrameworkElement.ToolTip>
 
-    <UserControl.Resources>
+    <FrameworkElement.Resources>
         <converters:PlcLabelColorThemeToBrushConverter x:Key="ColorThemeConverter"/>
-    </UserControl.Resources>
+    </FrameworkElement.Resources>
 
     <Border x:Name="FrameBorder"
+             ClipToBounds="True"
              Background="{Binding FrameBackground, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ColorThemeConverter}}">
         <Border.Style>
             <Style TargetType="Border">
@@ -44,17 +45,17 @@
                 <Setter Property="Padding" Value="10,6"/>
                 
                 <Style.Triggers>
-                    <DataTrigger Binding="{Binding FrameBackground, ElementName=Root}" Value="Default">
+                    <DataTrigger Binding="{Binding FrameBackground, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Default">
                         <Setter Property="Background" Value="{DynamicResource Plc.Bg.Main}"/>
                     </DataTrigger>
                     
-                    <DataTrigger Binding="{Binding ShowFrame, ElementName=Root}" Value="False">
+                    <DataTrigger Binding="{Binding ShowFrame, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
                         <Setter Property="BorderThickness" Value="0"/>
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="Padding" Value="0"/>
                     </DataTrigger>
                     
-                    <DataTrigger Binding="{Binding FrameShape, ElementName=Root}" Value="Circle">
+                    <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Circle">
                         <Setter Property="CornerRadius" Value="500"/>
                         <Setter Property="Padding" Value="14"/>
                     </DataTrigger>
@@ -62,39 +63,37 @@
             </Style>
         </Border.Style>
         
-        <!-- 使用 Viewbox 確保圓形時內容自適應 -->
         <Grid x:Name="ContentGrid">
             <Grid.Style>
                 <Style TargetType="Grid">
                     <!-- 圓形時強制寬高相等 -->
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding FrameShape, ElementName=Root}" Value="Circle">
+                        <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Circle">
                             <Setter Property="Width" Value="{Binding ActualHeight, RelativeSource={RelativeSource Self}}"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </Grid.Style>
-            
+
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
+            <!-- Label：上半區垂直置中 -->
             <TextBlock Grid.Row="0"
-                       Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='Label'}" 
+                       Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='Label'}"
                        Foreground="{Binding LabelForeground, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ColorThemeConverter}}"
                        FontSize="{Binding LabelFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        FontFamily="Microsoft JhengHei"
                        HorizontalAlignment="{Binding LabelAlignment, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                       TextTrimming="CharacterEllipsis" 
                        VerticalAlignment="Center"
-                       Margin="0,0,0,2">
+                       TextTrimming="CharacterEllipsis">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
-                        <!-- 圓形時自動置中 -->
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding FrameShape, ElementName=Root}" Value="Circle">
+                            <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Circle">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
                             </DataTrigger>
                         </Style.Triggers>
@@ -102,13 +101,13 @@
                 </TextBlock.Style>
             </TextBlock>
 
-            <!-- 數值顯示 (第二行) -->
-            <TextBlock Grid.Row="1" 
+            <!-- Value：下半區垂直置中 -->
+            <TextBlock Grid.Row="1"
                        Foreground="{Binding ValueForeground, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ColorThemeConverter}}"
-                       FontSize="{Binding ValueFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                       FontWeight="Bold" 
+                       FontSize="{Binding ValueFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                       FontWeight="Bold"
                        FontFamily="Consolas"
-                       HorizontalAlignment="{Binding ValueAlignment, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                       HorizontalAlignment="{Binding ValueAlignment, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        VerticalAlignment="Center">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
@@ -116,10 +115,10 @@
                         <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
 
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding FrameShape, ElementName=Root}" Value="Circle">
+                            <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Circle">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
                             </DataTrigger>
-                            
+
                             <DataTrigger Binding="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="-">
                                 <Setter Property="Text" Value="{Binding DefaultValue, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                 <Setter Property="Opacity" Value="0.5"/>
@@ -140,19 +139,17 @@
             </TextBlock>
 
             <TextBlock Grid.Row="2"
-                       Text="{Binding Address, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='D0'}" 
-                       Foreground="{DynamicResource Plc.Text.Default}" 
-                       FontSize="9" 
+                       Text="{Binding Address, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue='D0'}"
+                       Foreground="{DynamicResource Plc.Text.Default}"
+                       FontSize="9"
                        FontFamily="Consolas"
-                       VerticalAlignment="Center" 
                        HorizontalAlignment="Left"
                        Margin="0,2,0,0"
                        Opacity="0.7">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
-                        <!-- 圓形時自動置中並縮小 -->
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding FrameShape, ElementName=Root}" Value="Circle">
+                            <DataTrigger Binding="{Binding FrameShape, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Circle">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
                                 <Setter Property="FontSize" Value="8"/>
                             </DataTrigger>
@@ -169,4 +166,4 @@
             </TextBlock>
         </Grid>
     </Border>
-</UserControl>
+</base:PlcControlBase>

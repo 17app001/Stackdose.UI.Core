@@ -2,6 +2,7 @@
 using System.Windows;
 using Stackdose.Tools.MachinePageDesigner.Controls;
 using Stackdose.Tools.MachinePageDesigner.Models;
+using Stackdose.UI.Core.Models;
 
 namespace Stackdose.Tools.MachinePageDesigner.ViewModels;
 
@@ -13,6 +14,7 @@ public sealed class DesignerItemViewModel : ObservableObject
     private readonly DesignerItemDefinition _definition;
     private bool _isSelected;
     private UIElement? _preview;
+    private ObservableCollection<BehaviorEventViewModel>? _events;
 
     public DesignerItemViewModel(DesignerItemDefinition definition)
     {
@@ -122,6 +124,17 @@ public sealed class DesignerItemViewModel : ObservableObject
             "theme" => nameof(Theme),
             "isLocked" => nameof(IsLocked),
             "title" => nameof(GroupTitle),
+            "labelFontSize" => nameof(LabelFontSize),
+            "labelAlignment" => nameof(LabelAlignment),
+            "valueAlignment" => nameof(ValueAlignment),
+            "labelForeground" => nameof(LabelForeground),
+            "frameBackground" => nameof(FrameBackground),
+            "staticText" => nameof(StaticText),
+            "staticFontSize" => nameof(StaticFontSize),
+            "staticFontWeight" => nameof(StaticFontWeight),
+            "staticTextAlign" => nameof(StaticTextAlign),
+            "staticForeground" => nameof(StaticForeground),
+            "enableLiveRecord" => nameof(EnableLiveRecord),
             _ => null
         };
         if (propName != null) N(propName);
@@ -287,6 +300,139 @@ public sealed class DesignerItemViewModel : ObservableObject
         }
     }
 
+    public double LabelFontSize
+    {
+        get => GetPropDouble("labelFontSize", 12);
+        set
+        {
+            var old = GetPropDouble("labelFontSize", 12);
+            if (old == value) return;
+            SetPropDirect("labelFontSize", value);
+            PropCommitted?.Invoke("labelFontSize", old, value);
+        }
+    }
+
+    public string LabelAlignment
+    {
+        get => GetProp("labelAlignment", "Left");
+        set
+        {
+            var old = GetProp("labelAlignment", "Left");
+            if (old == value) return;
+            SetPropDirect("labelAlignment", value);
+            PropCommitted?.Invoke("labelAlignment", old, value);
+        }
+    }
+
+    public string ValueAlignment
+    {
+        get => GetProp("valueAlignment", "Right");
+        set
+        {
+            var old = GetProp("valueAlignment", "Right");
+            if (old == value) return;
+            SetPropDirect("valueAlignment", value);
+            PropCommitted?.Invoke("valueAlignment", old, value);
+        }
+    }
+
+    public string LabelForeground
+    {
+        get => GetProp("labelForeground", "Default");
+        set
+        {
+            var old = GetProp("labelForeground", "Default");
+            if (old == value) return;
+            SetPropDirect("labelForeground", value);
+            PropCommitted?.Invoke("labelForeground", old, value);
+        }
+    }
+
+    public string FrameBackground
+    {
+        get => GetProp("frameBackground", "DarkBlue");
+        set
+        {
+            var old = GetProp("frameBackground", "DarkBlue");
+            if (old == value) return;
+            SetPropDirect("frameBackground", value);
+            PropCommitted?.Invoke("frameBackground", old, value);
+        }
+    }
+
+    public string StaticText
+    {
+        get => GetProp("staticText", "Label");
+        set
+        {
+            var old = GetProp("staticText", "Label");
+            if (old == value) return;
+            SetPropDirect("staticText", value);
+            N(nameof(DisplayName));
+            PropCommitted?.Invoke("staticText", old, value);
+        }
+    }
+
+    public double StaticFontSize
+    {
+        get => GetPropDouble("staticFontSize", 16);
+        set
+        {
+            var old = GetPropDouble("staticFontSize", 16);
+            if (old == value) return;
+            SetPropDirect("staticFontSize", value);
+            PropCommitted?.Invoke("staticFontSize", old, value);
+        }
+    }
+
+    public string StaticFontWeight
+    {
+        get => GetProp("staticFontWeight", "Normal");
+        set
+        {
+            var old = GetProp("staticFontWeight", "Normal");
+            if (old == value) return;
+            SetPropDirect("staticFontWeight", value);
+            PropCommitted?.Invoke("staticFontWeight", old, value);
+        }
+    }
+
+    public string StaticTextAlign
+    {
+        get => GetProp("staticTextAlign", "Left");
+        set
+        {
+            var old = GetProp("staticTextAlign", "Left");
+            if (old == value) return;
+            SetPropDirect("staticTextAlign", value);
+            PropCommitted?.Invoke("staticTextAlign", old, value);
+        }
+    }
+
+    public string StaticForeground
+    {
+        get => GetProp("staticForeground", "#E2E2F0");
+        set
+        {
+            var old = GetProp("staticForeground", "#E2E2F0");
+            if (old == value) return;
+            SetPropDirect("staticForeground", value);
+            PropCommitted?.Invoke("staticForeground", old, value);
+        }
+    }
+
+    public bool EnableLiveRecord
+    {
+        get => _definition.Props.GetBool("enableLiveRecord", true);
+        set
+        {
+            var old = _definition.Props.GetBool("enableLiveRecord", true);
+            if (old == value) return;
+            SetPropDirect("enableLiveRecord", value);
+            PropCommitted?.Invoke("enableLiveRecord", old, value);
+        }
+    }
+
     // ── 自由畫布空間屬性 ──────────────────────────────────────────────────
     public double X
     {
@@ -352,7 +498,42 @@ public sealed class DesignerItemViewModel : ObservableObject
         Preview = DesignTimeControlFactory.Create(_definition);
     }
 
-    // 嚙緩嚙緩 嚙論出 嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩
+    // ── Events（B6 行為編輯器）─────────────────────────────────────────────
+
+    /// <summary>
+    /// 當前控制項的行為事件清單。延遲初始化，改動直接寫回 _definition.Events。
+    /// </summary>
+    public ObservableCollection<BehaviorEventViewModel> Events
+        => _events ??= BuildEventsCollection();
+
+    private ObservableCollection<BehaviorEventViewModel> BuildEventsCollection()
+    {
+        var col = new ObservableCollection<BehaviorEventViewModel>(
+            _definition.Events.Select(e => new BehaviorEventViewModel(e)));
+        col.CollectionChanged += (_, _) =>
+        {
+            // 保持 _definition.Events 與 VM 集合同步
+            _definition.Events.Clear();
+            foreach (var vm in col)
+                _definition.Events.Add(vm.ToModel());
+        };
+        return col;
+    }
+
+    public void AddEvent()
+    {
+        var model = new BehaviorEvent { On = "valueChanged" };
+        _definition.Events.Add(model);
+        Events.Add(new BehaviorEventViewModel(model));
+    }
+
+    public void RemoveEvent(BehaviorEventViewModel vm)
+    {
+        _definition.Events.Remove(vm.ToModel());
+        Events.Remove(vm);
+    }
+
+    // ── Export ───────────────────────────────────────────────────────────
     public DesignerItemDefinition ToDefinition() => _definition;
 
     // 嚙緩嚙緩 嚙踝蕭雃W嚙踝蕭 嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩
@@ -363,6 +544,7 @@ public sealed class DesignerItemViewModel : ObservableObject
         "PlcStatusIndicator" => $"StatusIndicator [{DisplayAddress}]",
         "SecuredButton" => $"Button [{Label}]",
         "Spacer" => "Spacer",
+        "StaticLabel" => $"StaticLabel [{StaticText}]",
         _ => ItemType
     };
 

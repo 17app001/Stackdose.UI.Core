@@ -124,6 +124,8 @@ public partial class FreeCanvasItem : UserControl
 
         e.Handled = true;
 
+        FindFreeCanvas()?.FocusCanvas();
+
         if (Item.IsLocked) { MainVm?.Canvas.SelectSingle(Item); return; }
 
         var parentCanvas = FindParentCanvas();
@@ -510,6 +512,17 @@ public partial class FreeCanvasItem : UserControl
         while (parent != null)
         {
             if (parent is Canvas c) return c;
+            parent = VisualTreeHelper.GetParent(parent);
+        }
+        return null;
+    }
+
+    private FreeCanvas? FindFreeCanvas()
+    {
+        DependencyObject? parent = VisualTreeHelper.GetParent(this);
+        while (parent != null)
+        {
+            if (parent is FreeCanvas fc) return fc;
             parent = VisualTreeHelper.GetParent(parent);
         }
         return null;

@@ -19,7 +19,8 @@
         </Grid.RowDefinitions>
 
         <!-- ── Row 0：PLC 連線設定 ── -->
-        <Border Grid.Row="0"
+        <Border x:Name="plcConfigBorder"
+                Grid.Row="0"
                 Background="#1E2040"
                 BorderBrush="#3A3A6A"
                 BorderThickness="0,0,0,1"
@@ -45,7 +46,36 @@
                         Click="OnConnectClick"
                         Padding="12,5" Margin="0,0,12,0"
                         Background="#4CAF50" Foreground="White"
-                        BorderThickness="0" Cursor="Hand" FontWeight="SemiBold"/>
+                        BorderThickness="0" Cursor="Hand" FontWeight="SemiBold">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#4CAF50"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                Padding="{TemplateBinding Padding}"
+                                                CornerRadius="3">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter Property="Background" Value="#2D6E30"/>
+                                                <Setter Property="Foreground" Value="#88AA88"/>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#43A047"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
 
                 <Button x:Name="btnDisconnect" Content="&#x26D4; 斷線"
                         Click="OnDisconnectClick"
@@ -75,7 +105,8 @@
         </Border>
 
         <!-- ── Row 1：檔案 + 縮放工具列 ── -->
-        <Border Grid.Row="1"
+        <Border x:Name="toolbarBorder"
+                Grid.Row="1"
                 Background="#252540"
                 BorderBrush="#3A3A5A"
                 BorderThickness="0,0,0,1"
@@ -124,30 +155,38 @@
             </WrapPanel>
         </Border>
 
-        <!-- ── Row 2：執行畫布 ── -->
-        <ScrollViewer Grid.Row="2"
-                      HorizontalScrollBarVisibility="Auto"
-                      VerticalScrollBarVisibility="Auto"
-                      Background="#12121E"
-                      Padding="40">
-            <Grid x:Name="canvasHost" HorizontalAlignment="Left" VerticalAlignment="Top">
-                <Grid.LayoutTransform>
-                    <ScaleTransform x:Name="canvasScale"/>
-                </Grid.LayoutTransform>
+        <!-- ── Row 2：執行畫布（FreeCanvas 裸畫布 / Shell 外殼切換） ── -->
+        <Grid Grid.Row="2">
 
-                <!-- 主畫布：ClipToBounds 確保元件不超出邊界 -->
-                <Canvas x:Name="runtimeCanvas"
-                        Background="#1E1E32"
-                        ClipToBounds="True"
-                        SnapsToDevicePixels="True"/>
+            <!-- FreeCanvas 模式：原始 ScrollViewer + Canvas（預設可見） -->
+            <ScrollViewer x:Name="scrollViewerCanvas"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto"
+                          Background="#12121E"
+                          Padding="40">
+                <Grid x:Name="canvasHost" HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <Grid.LayoutTransform>
+                        <ScaleTransform x:Name="canvasScale"/>
+                    </Grid.LayoutTransform>
 
-                <!-- 邊框（純視覺）-->
-                <Border x:Name="canvasBorder"
-                        BorderBrush="#3A3A6A"
-                        BorderThickness="1"
-                        IsHitTestVisible="False"/>
-            </Grid>
-        </ScrollViewer>
+                    <!-- 主畫布：ClipToBounds 確保元件不超出邊界 -->
+                    <Canvas x:Name="runtimeCanvas"
+                            Background="#1E1E32"
+                            ClipToBounds="True"
+                            SnapsToDevicePixels="True"/>
+
+                    <!-- 邊框（純視覺）-->
+                    <Border x:Name="canvasBorder"
+                            BorderBrush="#3A3A6A"
+                            BorderThickness="1"
+                            IsHitTestVisible="False"/>
+                </Grid>
+            </ScrollViewer>
+
+            <!-- Shell 預覽模式（SinglePage / Standard）：預設隱藏 -->
+            <ContentControl x:Name="shellPreviewHost" Visibility="Collapsed"/>
+
+        </Grid>
 
         <!-- ── Row 3：狀態列 ── -->
         <Border Grid.Row="3"
@@ -156,7 +195,37 @@
                 BorderThickness="0,1,0,0"
                 Padding="10,4">
             <DockPanel>
+                <!-- Dashboard 模式：僅顯示此連線燈，其餘元件隱藏 -->
+                <Border x:Name="dashboardPlcHost"
+                        DockPanel.Dock="Left"
+                        Visibility="Collapsed"
+                        VerticalAlignment="Center"
+                        Margin="0,0,8,0"/>
+                <TextBlock x:Name="lblShellMode"
+                           Text="Shell: FreeCanvas"
+                           DockPanel.Dock="Right"
+                           Foreground="#7070A0" FontSize="11"
+                           Margin="0,0,16,0"
+                           VerticalAlignment="Center"/>
                 <TextBlock x:Name="lblItemCount" Text="" Foreground="#7070A0" FontSize="11" DockPanel.Dock="Right" Margin="0,0,16,0"/>
+                <!-- ValueChanged 事件監視 -->
+                <ToggleButton x:Name="btnWatchEvents"
+                              Content="📡 偵測值變化"
+                              DockPanel.Dock="Right"
+                              Padding="8,2" Margin="0,0,8,0"
+                              Background="#2A3A5A" Foreground="#7090C0"
+                              BorderThickness="1" BorderBrush="#3A5A8A"
+                              FontSize="11" Cursor="Hand"
+                              Checked="OnWatchEventsToggled"
+                              Unchecked="OnWatchEventsToggled"/>
+                <TextBlock x:Name="lblEventLog"
+                           Text=""
+                           DockPanel.Dock="Right"
+                           Foreground="#5DE2FF" FontSize="11"
+                           FontFamily="Consolas"
+                           VerticalAlignment="Center"
+                           Margin="0,0,16,0"
+                           Visibility="Collapsed"/>
                 <TextBlock x:Name="lblStatus"
                            Text="就緒 — 請先設定 PLC 連線，再開啟 .machinedesign.json"
                            Foreground="#7070A0" FontSize="11"/>

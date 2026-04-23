@@ -1,5 +1,6 @@
 ﻿using Stackdose.Abstractions.Hardware;
 using Stackdose.Abstractions.Logging;
+using Stackdose.UI.Core.Controls.Base;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
 using System;
@@ -27,31 +28,6 @@ namespace Stackdose.UI.Core.Controls
         Float
     }
 
-    /// <summary>
-    /// PLC 數值變更事件參數
-    /// </summary>
-    /// <remarks>
-    /// 當 PlcLabel 的值發生變化時，會透過此事件參數傳遞新值和顯示文字
-    /// </remarks>
-    public class PlcValueChangedEventArgs : EventArgs
-    {
-        /// <summary>原始數值</summary>
-        public object? Value { get; }
-        
-        /// <summary>格式化後的顯示文字</summary>
-        public string DisplayText { get; }
-        
-        /// <summary>
-        /// 建構函數
-        /// </summary>
-        /// <param name="value">原始數值</param>
-        /// <param name="displayText">顯示文字</param>
-        public PlcValueChangedEventArgs(object? value, string displayText)
-        {
-            Value = value;
-            DisplayText = displayText;
-        }
-    }
 
     /// <summary>
     /// PLC 數據顯示標籤控制項
@@ -83,30 +59,15 @@ namespace Stackdose.UI.Core.Controls
     ///     FrameShape="Circle" /&gt;
     /// </code>
     /// </example>
-    public partial class PlcLabel : UserControl, IThemeAware
+    public partial class PlcLabel : PlcControlBase, IThemeAware
     {
         #region Private Fields
-
-        /// <summary>已綁定的 PlcStatus 實例</summary>
-        private PlcStatus? _boundStatus;
 
         /// <summary>快取的主題檢測結果（避免重複檢查）</summary>
         private bool? _cachedLightThemeResult;
 
-        /// <summary>🔥 追蹤是否已註冊到 Context（避免 Tab 切換重複註冊）</summary>
+        /// <summary>追蹤是否已註冊到 Context（避免 Tab 切換重複註冊）</summary>
         private bool _isRegistered = false;
-
-        #endregion
-
-        #region Events
-
-        /// <summary>
-        /// 數值變更事件
-        /// </summary>
-        /// <remarks>
-        /// 當 PLC 數據更新時觸發，可用於自訂邏輯處理
-        /// </remarks>
-        public event EventHandler<PlcValueChangedEventArgs>? ValueChanged;
 
         #endregion
 
@@ -120,11 +81,9 @@ namespace Stackdose.UI.Core.Controls
             #if DEBUG
             System.Diagnostics.Debug.WriteLine($"[PlcLabel] ===== Constructor CALLED =====");
             #endif
-            
+
             InitializeComponent();
-            this.Loaded += PlcLabel_Loaded;
-            this.Unloaded += PlcLabel_Unloaded;
-            
+
             #if DEBUG
             System.Diagnostics.Debug.WriteLine($"[PlcLabel] ===== Constructor END =====");
             #endif
@@ -138,7 +97,7 @@ namespace Stackdose.UI.Core.Controls
         /// 主題變更時的回呼方法（實作 IThemeAware）
         /// </summary>
         /// <param name="e">主題變更事件參數</param>
-        public void OnThemeChanged(ThemeChangedEventArgs e)
+        public override void OnThemeChanged(ThemeChangedEventArgs e)
         {
             // 清除快取，強制重新檢測主題
             _cachedLightThemeResult = null;
@@ -276,16 +235,6 @@ namespace Stackdose.UI.Core.Controls
         {
             get { return (int)GetValue(BitIndexProperty); }
             set { SetValue(BitIndexProperty, value); }
-        }
-
-        // 7. 綁定目標 PLC
-        public static readonly DependencyProperty TargetStatusProperty =
-            DependencyProperty.Register("TargetStatus", typeof(PlcStatus), typeof(PlcLabel),
-                new PropertyMetadata(null, OnTargetStatusChanged));
-        public PlcStatus TargetStatus
-        {
-            get { return (PlcStatus)GetValue(TargetStatusProperty); }
-            set { SetValue(TargetStatusProperty, value); }
         }
 
         // 8. 除數
@@ -434,140 +383,48 @@ namespace Stackdose.UI.Core.Controls
             set { SetValue(FrameBackgroundProperty, value); }
         }
 
-        #endregion
+        // 22. 是否啟用即時數據記錄
+        public static readonly DependencyProperty EnableLiveRecordProperty =
+            DependencyProperty.Register("EnableLiveRecord", typeof(bool), typeof(PlcLabel), new PropertyMetadata(true));
 
-        // ... (自動綁定與事件邏輯) ...
-        private static void OnTargetStatusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        public bool EnableLiveRecord
         {
-            if (d is PlcLabel label)
-            {
-                if (e.NewValue is PlcStatus newStatus)
-                {
-                    label.BindToStatus(newStatus);
-
-                    // 🔥 如果 PLC 已連線，立即用 BeginInvoke 刷新
-                    if (newStatus.CurrentManager != null && newStatus.CurrentManager.IsConnected)
-                    {
-                        var manager = newStatus.CurrentManager;
-                        label.Dispatcher.BeginInvoke(() =>
-                        {
-                            if (!label.Dispatcher.HasShutdownStarted)
-                                label.RefreshFrom(manager);
-                        });
-                    }
-                }
-                else
-                {
-                    label.TryResolveContextStatus();
-                }
-            }
+            get { return (bool)GetValue(EnableLiveRecordProperty); }
+            set { SetValue(EnableLiveRecordProperty, value); }
         }
 
-        private void PlcLabel_Loaded(object sender, RoutedEventArgs e)
+        #endregion
+
+        #region PlcControlBase Overrides
+
+        protected override void OnPlcControlLoaded()
         {
             #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[PlcLabel] ===== Loaded START ===== {Label} ({Address})");
+            System.Diagnostics.Debug.WriteLine($"[PlcLabel] OnPlcControlLoaded: {Label} ({Address})");
             #endif
-            
-            // 🔥 只在第一次載入時註冊到 PlcLabelContext（Avoid duplicate registration on tab switch）
+
             if (!_isRegistered)
             {
                 PlcLabelContext.Register(this);
+                LiveRecordContext.Register(this);
                 _isRegistered = true;
-                
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[PlcLabel] Registered to PlcLabelContext: {Label} ({Address})");
-                #endif
             }
 
-            // 🔥 註冊到 ThemeManager（自動接收主題變更通知）
-            ThemeManager.Register(this);
-
-            // 🔥 監聽全域 PlcStatus 變更，避免首次載入錯過綁定時機
-            PlcContext.GlobalStatusChanged -= OnGlobalStatusChanged;
-            PlcContext.GlobalStatusChanged += OnGlobalStatusChanged;
-
-            // 🔥 初始化底框顏色
             UpdateFrameBackground();
-            
-            // 🔥 重新綁定到 PlcStatus（優先使用明確 TargetStatus，再回退到 Context/Global）
-            var preferredStatus = TargetStatus ?? PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
-            
+        }
+
+        protected override void OnPlcControlUnloaded()
+        {
+            PlcLabelContext.Unregister(this);
+            LiveRecordContext.Unregister(this);
+            _isRegistered = false;
+
             #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[PlcLabel] preferredStatus: TargetStatus={TargetStatus != null}, Context={PlcContext.GetStatus(this) != null}, Global={PlcContext.GlobalStatus != null}");
-            System.Diagnostics.Debug.WriteLine($"[PlcLabel] preferredStatus.IsConnected: {preferredStatus?.CurrentManager?.IsConnected}");
-            #endif
-            
-            if (preferredStatus != null)
-            {
-                // 🔥 強制重新綁定，即使是同一個實例（確保事件訂閱正確）
-                ForceRebindToStatus(preferredStatus);
-            }
-            else
-            {
-                TryResolveContextStatus();
-            }
-            
-            #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[PlcLabel] ===== Loaded END ===== {Label} ({Address}), _boundStatus={_boundStatus != null}, IsConnected={_boundStatus?.CurrentManager?.IsConnected}");
+            System.Diagnostics.Debug.WriteLine($"[PlcLabel] OnPlcControlUnloaded: {Label} ({Address})");
             #endif
         }
 
-        private void TryResolveContextStatus()
-        {
-            var contextStatus = PlcContext.GetStatus(this) ?? PlcContext.GlobalStatus;
-            if (contextStatus != null) 
-            {
-                ForceRebindToStatus(contextStatus);
-                
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[PlcLabel] Bound to PlcStatus: {Label} ({Address}), IsConnected={contextStatus.CurrentManager?.IsConnected}");
-                #endif
-            }
-            else
-            {
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[PlcLabel] No PlcStatus available for: {Label} ({Address})");
-                #endif
-            }
-        }
-
-        /// <summary>
-        /// 🔥 強制重新綁定到 PlcStatus（即使是同一個實例）
-        /// </summary>
-        private void ForceRebindToStatus(PlcStatus? newStatus)
-        {
-            // 先取消舊的訂閱
-            if (_boundStatus != null)
-            {
-                _boundStatus.ScanUpdated -= OnScanUpdated;
-                _boundStatus.ConnectionEstablished -= OnConnectionEstablished;
-            }
-
-            _boundStatus = newStatus;
-
-            if (_boundStatus != null)
-            {
-                _boundStatus.ScanUpdated += OnScanUpdated;
-                _boundStatus.ConnectionEstablished += OnConnectionEstablished;
-
-                // 🔥 如果已連線，用 BeginInvoke 非同步刷新，避免死鎖
-                if (_boundStatus.CurrentManager != null && _boundStatus.CurrentManager.IsConnected)
-                {
-                    var manager = _boundStatus.CurrentManager;
-                    Dispatcher.BeginInvoke(() =>
-                    {
-                        if (!Dispatcher.HasShutdownStarted)
-                            RefreshFrom(manager);
-                    });
-                }
-            }
-        }
-
-        /// <summary>
-        /// 🔥 處理 PLC 連線建立事件
-        /// </summary>
-        private void OnConnectionEstablished(IPlcManager manager)
+        protected override void OnPlcConnected(IPlcManager manager)
         {
             Dispatcher.BeginInvoke(() =>
             {
@@ -575,67 +432,8 @@ namespace Stackdose.UI.Core.Controls
                     RefreshFrom(manager);
             });
         }
-        
-        private void BindToStatus(PlcStatus? newStatus)
-        {
-            // 🔥 移除「相同實例不重新綁定」的限制，因為頁面切換後事件可能已失效
-            // if (_boundStatus == newStatus) return;
-            
-            // 使用 ForceRebindToStatus 來確保重新綁定
-            ForceRebindToStatus(newStatus);
-        }
 
-        private void PlcLabel_Unloaded(object sender, RoutedEventArgs e)
-        {
-            PlcLabelContext.Unregister(this);
-
-            PlcContext.GlobalStatusChanged -= OnGlobalStatusChanged;
-            
-            // 🔥 註銷 ThemeManager（WeakReference 會自動處理，但手動註銷更安全）
-            ThemeManager.Unregister(this);
-            
-            if (_boundStatus != null)
-            {
-                _boundStatus.ScanUpdated -= OnScanUpdated;
-                _boundStatus.ConnectionEstablished -= OnConnectionEstablished;
-                _boundStatus = null;
-            }
-
-            _isRegistered = false;
-            
-            #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[PlcLabel] Unloaded: {Label} ({Address})");
-            #endif
-        }
-
-        private void OnGlobalStatusChanged(object? sender, PlcStatus? newStatus)
-        {
-            if (newStatus == null)
-            {
-                return;
-            }
-
-            // Explicit TargetStatus has highest priority; do not let global updates override it.
-            if (TargetStatus != null && !ReferenceEquals(TargetStatus, newStatus))
-            {
-                return;
-            }
-
-            if (!Dispatcher.CheckAccess())
-            {
-                Dispatcher.BeginInvoke(() => OnGlobalStatusChanged(sender, newStatus));
-                return;
-            }
-
-            BindToStatus(newStatus);
-
-            if (newStatus.CurrentManager is { IsConnected: true } manager)
-            {
-                RefreshFrom(manager);
-            }
-        }
-
-        private void OnScanUpdated(IPlcManager manager)
+        protected override void OnPlcDataUpdated(IPlcManager manager)
         {
             try
             {
@@ -648,9 +446,12 @@ namespace Stackdose.UI.Core.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PlcLabel] OnScanUpdated error: {Label} ({Address}), {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[PlcLabel] OnPlcDataUpdated error: {Label} ({Address}), {ex.Message}");
             }
         }
+
+        #endregion
+            
 
         private object? ReadValueFromManager(IPlcManager manager)
         {
@@ -717,7 +518,7 @@ namespace Stackdose.UI.Core.Controls
             string oldValueStr = Value;
             Value = newValueStr;
 
-            ValueChanged?.Invoke(this, new PlcValueChangedEventArgs(actualValue, newValueStr));
+            RaiseValueChanged(actualValue, newValueStr, Address);
             PlcLabelContext.NotifyValueChanged(this, actualValue ?? newValueStr);
 
             if (EnableDataLog && newValueStr != "-" && !string.IsNullOrEmpty(Label))

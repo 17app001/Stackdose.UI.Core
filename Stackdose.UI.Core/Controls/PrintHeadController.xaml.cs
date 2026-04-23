@@ -563,7 +563,7 @@ namespace Stackdose.UI.Core.Controls
             }
         }
 
-        private void CancelTaskButton_Click(object sender, RoutedEventArgs e)
+        private async void CancelTaskButton_Click(object sender, RoutedEventArgs e)
         {
             // 更新活動時間
             SecurityContext.UpdateActivity();
@@ -592,7 +592,7 @@ namespace Stackdose.UI.Core.Controls
                         }
 
                         string name = kvp.Key;
-                        bool ok = printHead.StopPrint();
+                        bool ok = await printHead.StopPrintAsync();
 
                         if (ok)
                         {
@@ -638,7 +638,7 @@ namespace Stackdose.UI.Core.Controls
             }
         }
 
-        private void LoadImageButton_Click(object sender, RoutedEventArgs e)
+        private async void LoadImageButton_Click(object sender, RoutedEventArgs e)
         {
             // 更新活動時間
             SecurityContext.UpdateActivity();
@@ -702,8 +702,7 @@ namespace Stackdose.UI.Core.Controls
 
                         string name = kvp.Key;
 
-                        // ⭐ 修正 3：呼叫實際具有傳輸圖片功能的 TransferBitmap 方法
-                        var (result, msg) = printHead.TransferBitmap(bitmap, startX, caliMM);
+                        var (result, msg) = await printHead.TransferBitmapAsync(bitmap, startX, caliMM);
 
                         if (result)
                         {
@@ -714,7 +713,7 @@ namespace Stackdose.UI.Core.Controls
                                 showInUi: true
                             );
 
-                            printHead.StartPrint();
+                            await printHead.StartPrintAsync();
                         }
                         else
                         {

@@ -51,6 +51,12 @@
 - **主題入口：** `Themes/Theme.xaml`
 - **語意 Token 規則：** `Surface.*`（背景）、`Text.*`（文字）、`Action.*`（按鈕/操作）
 
+### 2.6 PlcEventContext（✅ B2 升級完成）
+- **職責：** 控件事件統一匯流排，BehaviorEngine 的事件來源
+- **位置：** `Stackdose.UI.Core/Helpers/PlcEventContext.cs`
+- **B2 新增：** `ControlValueChanged` 靜態事件 + `PublishControlValueChanged()`，由 `PlcControlBase` 在每次 `ScanUpdated` 後呼叫
+- **原有：** bit edge 觸發（`PlcEventTrigger` 使用），完全向後相容
+
 ---
 
 ## 3. JSON 驅動配置系統
@@ -85,6 +91,7 @@ AppController.Start()
 
 ## 4. Shell 導航系統
 
+### 4.1 DeviceFramework Shell 契約
 ```
 ShellRouteCatalog
   → Overview / Detail / Log / User / Settings
@@ -92,6 +99,18 @@ NavigationOrchestrator — 統一頁面切換
 IShellAppProfile — 定義 App metadata（標題、圖示、導航項目）
 ShellNavigationService — 導航契約介面（多 App 複用）
 ```
+
+### 4.2 Templates Shell 實作現況（✅ B3 完成接線）
+`Stackdose.UI.Templates/Shell/` 提供兩個 Shell 容器：
+- `MainContainer` — 完整 Shell（AppHeader + LeftNavigation + AppBottomBar + ShellContent）
+- `SinglePageContainer` — 簡化 Shell（無 LeftNav）
+
+**Shell 策略模式（B3）：** `Stackdose.App.ShellShared/Services/IShellStrategy`
+- `FreeCanvasShellStrategy` — 裸畫布（DesignRuntime 預設）
+- `SinglePageShellStrategy` → `SinglePageContainer`
+- `StandardShellStrategy` → `MainContainer`（B7：pages[] 時自動接線 LeftNav + Navigator）
+
+DesignRuntime / DesignPlayer 根據 `shellMode` JSON 欄位自動選擇策略。
 
 ---
 
@@ -102,8 +121,12 @@ ShellNavigationService — 導航契約介面（多 App 複用）
 IPlcMonitor.Start()
   → 定期 BatchRead（可設定 intervalMs）
   → WordChanged / BitChanged 事件
-  → PlcLabel / PlcStatus 控制項訂閱更新
+    → PlcStatus 控件（連線單例）橋接
+      → 觸發 PlcStatus.ScanUpdated
+        → PlcLabel / PlcText / PlcStatusIndicator / SensorViewer / AlarmViewer 訂閱更新
 ```
+
+> **說明：** 各 Plc* 控件**不直接**訂閱 `IPlcMonitor.WordChanged/BitChanged`；而是透過 `PlcStatus`（連線單例）的 `ScanUpdated` 中繼事件。
 
 ### 命令執行
 ```
@@ -124,23 +147,47 @@ ComplianceContext.LogXxx(...)
 
 ---
 
-## 6. 控制項基類體系
+## 6. 控制項基類體系（✅ B1 完成）
 
 ```
 CyberControlBase
-  └── PlcControlBase
+  └── PlcControlBase（統一 ValueChanged 事件 + PlcContext 訂閱）
         ├── PlcLabel
         ├── PlcText
-        ├── PlcStatus
-        └── PlcStatusIndicator
+        ├── PlcStatusIndicator
+        ├── SensorViewer
+        └── AlarmViewer
+
+PlcStatus — 不遷（連線單例，其他控件訂閱它）
 ```
 
-- `CyberControlBase`：主題、WeakReference 登錄
-- `PlcControlBase`：PLC 附加屬性綁定、`ScanUpdated` 訂閱
+`PlcControlBase.ValueChanged` 每次觸發同時呼叫 `PlcEventContext.PublishControlValueChanged()`，BehaviorEngine 由此接收事件。
+
+詳見 `docs/kb/foundation-base-classes.md`。
 
 ---
 
-## 7. 已知技術債
+## 7. Behavior Engine（✅ B4/B5 完成）
+
+JSON-driven 觸發反應系統，讓設計師不寫 C# 就能設定控件行為。
+
+```
+PlcControlBase.ValueChanged / BehaviorEventBus.RaiseControlEventFired（SecuredButton）
+  → PlcEventContext.ControlValueChanged
+  → BehaviorEngine.Dispatch
+    → 評估 events[].when 條件
+    → 依序執行 do[] → 每個 action 寫稽核
+```
+
+- `BehaviorEngine`（ShellShared）：BindDocument + Dispose
+- 6 個內建 Handler：SetProp / WritePlc / LogAudit / ShowDialog / Navigate / SetStatus
+- Standard 多頁模式：`BehaviorEngine.Navigator` 由 DesignRuntime 注入，`Navigate` action 可切換頁面
+
+詳見 `docs/kb/behavior-system.md`。
+
+---
+
+## 8. 已知技術債
 
 | 問題 | 位置 | 影響 |
 |---|---|---|

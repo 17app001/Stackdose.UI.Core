@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Stackdose.Tools.MachinePageDesigner.Models;
@@ -46,7 +46,9 @@ public static class DesignTimeControlFactory
         var indicator = new ProcessStatusIndicator
         {
             BatchNumber = p.GetString("label", ""),
-            IsHitTestVisible = false
+            IsHitTestVisible = false,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
         };
 
         if (Enum.TryParse<ProcessState>(p.GetString("processState", "Running"), true, out var state))
@@ -61,7 +63,9 @@ public static class DesignTimeControlFactory
         return new PlcDeviceEditor
         {
             Address = p.GetString("address", "D100"),
-            IsHitTestVisible = false
+            IsHitTestVisible = false,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
         };
     }
 
@@ -80,6 +84,8 @@ public static class DesignTimeControlFactory
             StringFormat = p.GetString("stringFormat", "F0"),
             ShowAddress = false,
             IsHitTestVisible = false,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
         };
 
         if (Enum.TryParse<PlcLabelFrameShape>(p.GetString("frameShape", "Rectangle"), true, out var shape))
@@ -111,6 +117,8 @@ public static class DesignTimeControlFactory
             Label = p.GetString("label", "Parameter"),
             Address = p.GetString("address", "D100"),
             IsHitTestVisible = false,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
         };
         return plcText;
     }
@@ -165,8 +173,15 @@ public static class DesignTimeControlFactory
             CornerRadius = new CornerRadius(4),
             Padding = new Thickness(8),
             MinHeight = 40,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
         };
-        var stack = new StackPanel { Orientation = Orientation.Horizontal };
+        var stack = new StackPanel 
+        { 
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
         stack.Children.Add(new System.Windows.Shapes.Ellipse
         {
             Width = 12,
@@ -193,7 +208,8 @@ public static class DesignTimeControlFactory
             Content = p.GetString("label", "Command"),
             IsHitTestVisible = false,
             MinWidth = 80,
-            Height = 36,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
             FontWeight = FontWeights.SemiBold,
         };
 

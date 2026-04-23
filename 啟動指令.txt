@@ -1,0 +1,8 @@
+\scripts\new-app.ps1 -AppName "Stackdose.App.DashboardTest" -Mode Dashboard
+  -DestinationRoot .
+
+
+  1. 自動讀 CLAUDE.md（hook 強制）→ 知道分支、目前狀態、架構規則
+  2. 讀 docs/refactor/PROGRESS.md 底部→ 知道上次做到哪
+  3. 讀 docs/devlog/2026-04.md 最上面→ 知道今天做了什麼
+  4. git log --oneline -10 → 確認一致

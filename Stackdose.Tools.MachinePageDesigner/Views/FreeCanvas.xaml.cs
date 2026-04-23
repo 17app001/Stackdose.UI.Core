@@ -26,6 +26,20 @@ public partial class FreeCanvas : UserControl
         e.Handled = true;
     }
 
+    private void OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+        {
+            var vm = MainVm?.Canvas;
+            if (vm == null) return;
+
+            if (e.Delta > 0) vm.ZoomIn();
+            else vm.ZoomOut();
+
+            e.Handled = true;
+        }
+    }
+
     private void OnDrop(object sender, DragEventArgs e)
     {
         if (e.Data.GetData("ToolboxItem") is not ToolboxItemDescriptor desc) return;
@@ -44,8 +58,7 @@ public partial class FreeCanvas : UserControl
     }
 
     // ── Background Click → Deselect / Rubber-band ───────────────────────
-
-    private bool _isRubberBanding;
+    private bool  _isRubberBanding;
     private Point _rubberOrigin;
 
     // ── Keyboard: arrow keys move selected items ─────────────────────────

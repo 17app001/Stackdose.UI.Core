@@ -60,6 +60,8 @@ public class PropertyPanelTemplateSelector : DataTemplateSelector
     public DataTemplate? SecuredButtonTemplate { get; set; }
     public DataTemplate? StaticLabelTemplate { get; set; }
     public DataTemplate? SpacerTemplate { get; set; }
+    public DataTemplate? AlarmViewerTemplate { get; set; }
+    public DataTemplate? SensorViewerTemplate { get; set; }
     public DataTemplate? EmptyTemplate { get; set; }
 
     public override DataTemplate? SelectTemplate(object? item, DependencyObject container)
@@ -75,6 +77,8 @@ public class PropertyPanelTemplateSelector : DataTemplateSelector
             "StaticLabel" => StaticLabelTemplate,
             "SecuredButton" => SecuredButtonTemplate,
             "Spacer" => SpacerTemplate,
+            "AlarmViewer" => AlarmViewerTemplate,
+            "SensorViewer" => SensorViewerTemplate,
             _ => EmptyTemplate,
         };
     }

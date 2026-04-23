@@ -166,7 +166,22 @@
                 BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="0,1,0,0"
                 Padding="10,4">
-            <TextBlock Text="{Binding StatusText}" Style="{StaticResource FieldLabel}" FontSize="11"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="{Binding StatusText}" Style="{StaticResource FieldLabel}" FontSize="11" VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <TextBlock Text="Zoom:" Style="{StaticResource FieldLabel}" FontSize="11" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <Button Content="&#x2212;" Click="OnZoomOutClick" Style="{StaticResource ToolbarButton}" Width="24" Height="20" Padding="0" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding Canvas.ZoomDisplay}" Width="40" TextAlignment="Center" Style="{StaticResource FieldLabel}" FontSize="11" VerticalAlignment="Center" Margin="4,0"/>
+                    <Button Content="+" Click="OnZoomInClick" Style="{StaticResource ToolbarButton}" Width="24" Height="20" Padding="0" VerticalAlignment="Center"/>
+                    <Button Content="100%" Click="OnZoomResetClick" Style="{StaticResource ToolbarButton}" Margin="8,0,0,0" Padding="4,0" Height="20" FontSize="10" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
         </Border>
     </Grid>
 </Window>

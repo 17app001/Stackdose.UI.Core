@@ -298,10 +298,13 @@ public static class RuntimeControlFactory
 
     private static UIElement CreateAlarmViewer(DesignerItemDefinition def)
     {
-        var configFile = def.Props.GetString("configFile", "");
+        var p      = def.Props;
         var viewer = new AlarmViewer();
-        if (!string.IsNullOrWhiteSpace(configFile))
-            viewer.ConfigFile = configFile;
+        var cf     = p.GetString("configFile", "");
+        if (!string.IsNullOrWhiteSpace(cf)) viewer.ConfigFile = cf;
+        var title  = p.GetString("viewerTitle", "");
+        if (!string.IsNullOrWhiteSpace(title)) viewer.Title = title;
+        viewer.DefaultShowActiveOnly = p.GetBool("defaultShowActiveOnly", false);
         return viewer;
     }
 
@@ -309,10 +312,14 @@ public static class RuntimeControlFactory
 
     private static UIElement CreateSensorViewer(DesignerItemDefinition def)
     {
-        var configFile = def.Props.GetString("configFile", "");
+        var p      = def.Props;
         var viewer = new SensorViewer();
-        if (!string.IsNullOrWhiteSpace(configFile))
-            viewer.ConfigFile = configFile;
+        var cf     = p.GetString("configFile", "");
+        if (!string.IsNullOrWhiteSpace(cf)) viewer.ConfigFile = cf;
+        var title  = p.GetString("viewerTitle", "");
+        if (!string.IsNullOrWhiteSpace(title)) viewer.Title = title;
+        viewer.EnableGrouping        = p.GetBool("enableGrouping", false);
+        viewer.DefaultShowActiveOnly = p.GetBool("defaultShowActiveOnly", false);
         return viewer;
     }
 

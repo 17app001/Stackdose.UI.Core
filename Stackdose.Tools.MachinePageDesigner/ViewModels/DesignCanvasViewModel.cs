@@ -143,4 +143,27 @@ public sealed class DesignCanvasViewModel : ObservableObject
     /// </summary>
     public List<DesignerItemDefinition> ExportCanvasItems()
         => CanvasItems.Select(vm => vm.ToDefinition()).ToList();
+
+    // ── Zoom ─────────────────────────────────────────────────────────────
+
+    private double _zoomLevel = 1.0;
+
+    public double ZoomLevel
+    {
+        get => _zoomLevel;
+        set
+        {
+            var clamped = Math.Max(0.1, Math.Min(5.0, value));
+            if (Set(ref _zoomLevel, clamped))
+            {
+                N(nameof(ZoomDisplay));
+            }
+        }
+    }
+
+    public string ZoomDisplay => $"{(int)Math.Round(_zoomLevel * 100)}%";
+
+    public void ZoomIn() => ZoomLevel += 0.1;
+    public void ZoomOut() => ZoomLevel -= 0.1;
+    public void ResetZoom() => ZoomLevel = 1.0;
 }

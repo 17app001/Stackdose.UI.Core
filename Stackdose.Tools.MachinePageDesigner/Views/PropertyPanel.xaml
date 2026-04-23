@@ -118,6 +118,9 @@
              ════════════════════════════════════════════════════════ -->
         <DataTemplate x:Key="PlcStatusIndicatorTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
             <StackPanel Margin="0,4">
+                <TextBlock Text="標籤名稱" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
                 <TextBlock Text="顯示位址" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding DisplayAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
             </StackPanel>
@@ -195,6 +198,47 @@
         </DataTemplate>
 
         <!-- ════════════════════════════════════════════════════════
+             AlarmViewer 屬性面板
+             ════════════════════════════════════════════════════════ -->
+        <DataTemplate x:Key="AlarmViewerTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
+            <StackPanel Margin="0,4">
+                <TextBlock Text="標題" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding ViewerTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <TextBlock Text="設定檔路徑 (ConfigFile)" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding ConfigFile, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <CheckBox Content="預設只顯示活躍警報"
+                          IsChecked="{Binding DefaultShowActiveOnly}"
+                          Foreground="{StaticResource TextPrimaryBrush}"
+                          Margin="0,4,0,8"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- ════════════════════════════════════════════════════════
+             SensorViewer 屬性面板
+             ════════════════════════════════════════════════════════ -->
+        <DataTemplate x:Key="SensorViewerTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
+            <StackPanel Margin="0,4">
+                <TextBlock Text="標題" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding ViewerTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <TextBlock Text="設定檔路徑 (ConfigFile)" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding ConfigFile, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <CheckBox Content="啟用分組顯示"
+                          IsChecked="{Binding EnableGrouping}"
+                          Foreground="{StaticResource TextPrimaryBrush}"
+                          Margin="0,4,0,4"/>
+
+                <CheckBox Content="預設只顯示活躍感測器"
+                          IsChecked="{Binding DefaultShowActiveOnly}"
+                          Foreground="{StaticResource TextPrimaryBrush}"
+                          Margin="0,0,0,8"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- ════════════════════════════════════════════════════════
              空白（未選取任何項目）
              ════════════════════════════════════════════════════════ -->
         <DataTemplate x:Key="EmptyTemplate">
@@ -212,6 +256,8 @@
             StaticLabelTemplate="{StaticResource StaticLabelTemplate}"
             SecuredButtonTemplate="{StaticResource SecuredButtonTemplate}"
             SpacerTemplate="{StaticResource SpacerTemplate}"
+            AlarmViewerTemplate="{StaticResource AlarmViewerTemplate}"
+            SensorViewerTemplate="{StaticResource SensorViewerTemplate}"
             EmptyTemplate="{StaticResource EmptyTemplate}"/>
     </UserControl.Resources>
 

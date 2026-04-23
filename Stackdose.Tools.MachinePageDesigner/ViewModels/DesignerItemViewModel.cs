@@ -135,6 +135,10 @@ public sealed class DesignerItemViewModel : ObservableObject
             "staticTextAlign" => nameof(StaticTextAlign),
             "staticForeground" => nameof(StaticForeground),
             "enableLiveRecord" => nameof(EnableLiveRecord),
+            "viewerTitle" => nameof(ViewerTitle),
+            "configFile" => nameof(ConfigFile),
+            "defaultShowActiveOnly" => nameof(DefaultShowActiveOnly),
+            "enableGrouping" => nameof(EnableGrouping),
             _ => null
         };
         if (propName != null) N(propName);
@@ -430,6 +434,56 @@ public sealed class DesignerItemViewModel : ObservableObject
             if (old == value) return;
             SetPropDirect("enableLiveRecord", value);
             PropCommitted?.Invoke("enableLiveRecord", old, value);
+        }
+    }
+
+    // ── AlarmViewer / SensorViewer ────────────────────────────────────────
+
+    public string ViewerTitle
+    {
+        get => GetProp("viewerTitle", "");
+        set
+        {
+            var old = GetProp("viewerTitle", "");
+            if (old == value) return;
+            SetPropDirect("viewerTitle", value);
+            PropCommitted?.Invoke("viewerTitle", old, value);
+        }
+    }
+
+    public string ConfigFile
+    {
+        get => GetProp("configFile", "");
+        set
+        {
+            var old = GetProp("configFile", "");
+            if (old == value) return;
+            SetPropDirect("configFile", value);
+            PropCommitted?.Invoke("configFile", old, value);
+        }
+    }
+
+    public bool DefaultShowActiveOnly
+    {
+        get => _definition.Props.GetBool("defaultShowActiveOnly", false);
+        set
+        {
+            var old = _definition.Props.GetBool("defaultShowActiveOnly", false);
+            if (old == value) return;
+            SetPropDirect("defaultShowActiveOnly", value);
+            PropCommitted?.Invoke("defaultShowActiveOnly", old, value);
+        }
+    }
+
+    public bool EnableGrouping
+    {
+        get => _definition.Props.GetBool("enableGrouping", false);
+        set
+        {
+            var old = _definition.Props.GetBool("enableGrouping", false);
+            if (old == value) return;
+            SetPropDirect("enableGrouping", value);
+            PropCommitted?.Invoke("enableGrouping", old, value);
         }
     }
 

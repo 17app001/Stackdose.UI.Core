@@ -1,83 +1,84 @@
 # 接手指引 — 給下一位 AI / 下一次對話
 
-> 你如果剛接手這個重構分支，從這份開始讀。讀完這份你就能繼續。
+> 你如果剛接手這個分支，從這份開始讀。讀完這份你就能繼續。
 
 ---
 
 ## 你是誰
 
-你是 Claude（或其他 LLM），使用者請你接手 `refactor/foundation-and-behavior` 分支的重構工作。上一次對話的我（同樣是 Claude）因為上下文限制、工作時間結束、或用戶切換對話而暫停。你現在要做的是**從中斷處繼續，不要重新規劃**。
+你是 Claude（或其他 LLM），使用者請你接手 `refactor/foundation-and-behavior` 分支的工作。
+**B0–B9 重構已全部完成**（2026-04-21～23）。現在是功能開發階段，不是重構。
 
 ---
 
-## 讀檔順序（照這個順序來，不要跳）
+## 讀檔順序（照這個順序，不要跳）
 
-1. **`CLAUDE.md`**（專案根目錄）— 了解專案定位與核心架構規則
-2. **`docs/refactor/README.md`** — 了解這個重構要做什麼、為什麼
-3. **`docs/refactor/PLAN.md`** — 掌握 B0–B8 全部路線
-4. **`docs/refactor/PROGRESS.md`** — 看現在停在哪、下一步做什麼
-5. 若 PROGRESS 指向某個 B0-*.md 產出檔，讀那份
-6. **開工前的最後一步**：跑 `git log --oneline -20` 看最近 commits，確認程式碼狀態與 PROGRESS 是否一致
+1. **`CLAUDE.md`**（根目錄）— 專案定位、技術棧、核心規則
+2. **`docs/refactor/PROGRESS.md`**（底部「當前焦點」段落）— 上次做到哪、下一步是什麼
+3. **`docs/devlog/2026-04.md`**（最上面的日期區塊）— 最近實際做了什麼
+4. `git log --oneline -10` — 確認 commits 與文件一致
 
 ---
 
-## 最終主旨（貼身記住）
+## 最終主旨
 
 > 讓不懂 XAML 的工程師或設計師，也能為 PLC 工業機台做出符合 FDA 21 CFR Part 11 稽核要求的監控介面。
 
-每做一個決定都問自己：這個改動有沒有讓「設計師拖控件設反應 → 封裝 → 部署」這條路徑更順？若無，再三思。
+「設計師拖控件設反應 → 封裝 → 部署」這條路徑要持續順暢。
 
 ---
 
-## 用戶對這個重構的關鍵授權 / 偏好
+## 目前功能完成狀態（2026-04-23）
 
-（以下都是使用者明確說過的話，不是我猜的）
+| 功能 | 狀態 |
+|---|---|
+| B0–B9 重構（基類/事件/Shell策略/BehaviorEngine） | ✅ 完成 |
+| MachinePageDesigner FreeCanvas 全功能 | ✅ 完成 |
+| BehaviorEngine + EventsPanel | ✅ 完成 |
+| Dashboard Shell 模式（含 scaffold） | ✅ 完成 |
+| Designer 方向鍵微調（Arrow=1px / Shift=10px） | ✅ 完成 |
+| DesignRuntime 四種 Shell 策略 | ✅ 完成 |
+| `new-app.ps1 -Mode Dashboard/Standard/SinglePage` | ✅ 完成 |
+| 分支合併至 master | ⏳ 待執行 |
 
-1. **可以移除舊控件、可以無視 UbiDemo 和測試專案編譯**（B1 抽基類時適用）
-2. **每階段完成後要停手回報**，不要自己連跑下一階段
-3. **文件要寫好讓其他 AI 能接手**（這份 HANDOFF 就是回應這句話）
-4. **底層先整好才做上層**（B0–B3 是底層，別跳到 B4 以後）
-5. **B0 要全部徹底完成才回報**，B0 內部不要停
+---
+
+## 用戶偏好（已確認的）
+
+1. **每階段完成後要停手回報**，不要自己連跑下一步
+2. **文件要更新**：每次任務結束更新 `PROGRESS.md` + `devlog`
+3. **commit 前要確認沒帶入不相關檔案**（`.sln` 測試專案、`context.md`、本地 txt）
+4. **不要加未被要求的功能或抽象層**
+5. **push 前主動告知，不擅自 force push**
 
 ---
 
 ## 不可違反的鐵律
 
-1. 🚫 **不要跳過 B0 直接做 B1**。用戶明確規定 B0 全部完成才能繼續。
-2. 🚫 **不要動 `docs/kb/` 以外的舊文件來「中途對齊」**，除非是 B0 或 B8 的任務。
-3. 🚫 **不要回到 Phase 1 Standard 模式思路**（舊計畫），現在走的是 B0–B8 底層優先路線。
-4. 🚫 **不要改動 Platform repo（`../Stackdose.Platform/`）或 FeiyangWrapper**，除非用戶授權。
-5. 🚫 **不要擅自 commit 到 master** 或 push 到 origin，除非用戶明確說可以。
+1. 🚫 **不改動 `../Stackdose.Platform/`** 或 FeiyangWrapper，除非用戶授權
+2. 🚫 **不擅自 merge 到 master** 或 push 到 origin（除非用戶明確說可以）
+3. 🚫 **不在 `Controls/*.xaml` 寫硬編碼色碼**，用語意 Token
+4. 🚫 **不繞過 `ComplianceContext`** 散落寫日誌
+5. 🚫 **XAML template 裡不用非 ASCII Unicode 字元**（如 ✕）— 會導致 PS 生成檔編碼損壞（前例：commit `100fe98`、本次 Dashboard X 按鈕）
 
 ---
 
-## 遇到問題時怎麼辦
+## 遇到問題時
 
-| 情況 | 怎麼做 |
+| 情況 | 做法 |
 |---|---|
-| PROGRESS 顯示的下一步看起來不合理 | 先讀 PLAN.md 同一階段的詳細設計；若仍不合理，**問用戶**，不要自行決定 |
-| 現有文件和程式碼不一致（新的） | 記錄在 `B0-findings.md`，不要擅自修碼 |
-| 編譯失敗追不到原因 | 看 `docs/kb/platform-contracts.md`；確認 Platform repo 是否存在 |
-| 某個 B 階段技術細節缺 | 看 PLAN.md 該階段段落；若沒寫就**問用戶**，不要發明規範 |
-| 用戶說「繼續」但沒說繼續哪一步 | 按 PROGRESS 的「當前焦點 / 下一步」那一段繼續 |
+| 編譯失敗 | 先確認 `../Stackdose.Platform/` 各專案與 `FeiyangWrapper.dll` 存在 |
+| `dotnet build Stackdose.Designer.sln` 有 MSB4278 | 預期失敗（C++ vcxproj 需 VS MSBuild），不是我們造成的 |
+| 不確定規格或設計決策 | 問用戶，不要自行發明 |
+| 發現 feature/copilot 有功能未合入 | 用 `git show <sha>` 確認 diff，cherry-pick 或手動 port，不要整分支 merge |
 
 ---
 
-## 工具使用提醒
+## 架構關鍵知識
 
-- **TaskCreate / TaskList / TaskUpdate**：用於當前對話的進度追蹤。不會跨對話保留。
-- **PROGRESS.md**：跨對話、跨 AI 的真實進度來源。**每完成一步都要更新這份**。
-- **auto-memory**（`memory/`）：作者個人偏好、跨對話的事實，**不寫任務進度**。
-
----
-
-## 完成任一階段的標準流程
-
-1. 在 PROGRESS.md 打勾 + 填日期
-2. `git add` 相關檔案（只加你真的動過的）
-3. commit（訊息規範：見最近 devlog 或 git log 範例）
-4. 若是 B 大階段（非子任務）完成 → 更新 `docs/devlog/2026-04.md`
-5. 回報用戶並停手
-
-
-> **警告**：`dotnet build Stackdose.Designer.sln` 會看到 `FeiyangWrapper.vcxproj` 的 MSB4278 error（C++ 專案、需 VS MSBuild）— 這是**預期失敗**，不是我們造成的。所有 C# 專案必須 0 errors。
+- `DesignDocument.ShellMode` = `Layout.Mode`（同一欄位）→ 傳給 `ShellStrategyFactory.Select()` 決定策略
+- `DashboardShellStrategy.Wrap()` 直接回傳 viewport（不包 Shell Chrome）
+- Dashboard 自動連線靠 `DesignMeta.PlcIp / PlcPort / ScanInterval`
+- Designer 工具列 PLC 欄位只在 `IsDashboardMode = true` 時顯示
+- `EnableLiveRecord` 預設 `true`，JSON 裡沒這個欄位 = 啟用（正常）
+- `scripts/new-app.ps1` 是 `init-shell-app.ps1 -JsonDrivenApp` 的薄包裝

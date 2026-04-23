@@ -6,9 +6,9 @@
 
 ## 現狀三行摘要
 
-- **分支：** `refactor/foundation-and-behavior`｜B0–B9 重構全部完成，待合併至 master
-- **主力工作：** MachinePageDesigner 功能開發 + DesignRuntime PLC 連線端
-- **未解問題：** 見 `docs/refactor/PROGRESS.md` 底部 ⚠️ 區塊
+- **分支：** `refactor/foundation-and-behavior`｜B0–B9 重構完成 + Dashboard 模式功能開發完成（2026-04-23）
+- **主力工作：** MachinePageDesigner 功能開發 + DesignRuntime Dashboard 執行模式
+- **未解問題：** 見 `docs/refactor/PROGRESS.md` 底部 ⚠️ 區塊；分支尚未合併至 master
 
 ---
 
@@ -93,9 +93,10 @@
 
 ## 目前主力開發方向
 
-1. **MachinePageDesigner（自由畫布設計器）** — 已完成 FreeCanvas 模式、Snap、Z-Order、框選、鎖定、複製貼上、GroupBox、對齊分配
-2. **DesignRuntime** — 真實 PLC 連線執行環境，有未提交變更（`MainWindow.xaml` / `MainWindow.xaml.cs`）
-3. **DesignViewer** — 拖入 JSON 即時預覽工具
+1. **MachinePageDesigner（自由畫布設計器）** — 已完成 FreeCanvas 模式、Snap、Z-Order、框選、鎖定、複製貼上、GroupBox、對齊分配、方向鍵微調、Dashboard PLC 欄位設定
+2. **DesignRuntime** — 真實 PLC 連線執行環境，支援 FreeCanvas / SinglePage / Standard / **Dashboard** 四種 Shell 策略
+3. **Shell 模式體系** — `DashboardShellStrategy`（精簡生產模式，畫布全螢幕貼合，自動連線 PLC）完成；`scripts/new-app.ps1 -Mode Dashboard` 可一鍵 scaffold
+4. **DesignViewer** — 拖入 JSON 即時預覽工具
 
 ---
 

@@ -203,28 +203,39 @@ public static class DesignTimeControlFactory
     private static UIElement CreateSecuredButton(DesignerItemDefinition def)
     {
         var p = def.Props;
-        var btn = new Button
+        var label = p.GetString("label", "Command");
+        var theme = p.GetString("theme", "Primary").ToLowerInvariant();
+
+        var bgColor = theme switch
         {
-            Content = p.GetString("label", "Command"),
-            IsHitTestVisible = false,
-            MinWidth = 80,
+            "danger" or "red" => Color.FromRgb(0xEF, 0x53, 0x50),
+            "success" or "green" => Color.FromRgb(0x4E, 0xC9, 0x94),
+            "warning" or "orange" => Color.FromRgb(0xFF, 0xB7, 0x4D),
+            _ => Color.FromRgb(0x6C, 0x8E, 0xEF), // Primary
+        };
+
+        var border = new Border
+        {
+            Background = new SolidColorBrush(bgColor),
+            CornerRadius = new CornerRadius(4),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
-            FontWeight = FontWeights.SemiBold,
+            IsHitTestVisible = false
         };
 
-        var theme = p.GetString("theme", "Primary").ToLowerInvariant();
-        btn.Background = theme switch
+        border.Child = new TextBlock
         {
-            "danger" or "red" => new SolidColorBrush(Color.FromRgb(0xEF, 0x53, 0x50)),
-            "success" or "green" => new SolidColorBrush(Color.FromRgb(0x4E, 0xC9, 0x94)),
-            "warning" or "orange" => new SolidColorBrush(Color.FromRgb(0xFF, 0xB7, 0x4D)),
-            _ => new SolidColorBrush(Color.FromRgb(0x6C, 0x8E, 0xEF)), // Primary
+            Text = label,
+            Foreground = Brushes.White,
+            FontWeight = FontWeights.SemiBold,
+            FontSize = 13,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            TextWrapping = TextWrapping.Wrap,
+            TextAlignment = TextAlignment.Center
         };
-        btn.Foreground = Brushes.White;
-        btn.BorderThickness = new Thickness(0);
 
-        return btn;
+        return border;
     }
 
     private static UIElement CreateGroupBox(DesignerItemDefinition def)

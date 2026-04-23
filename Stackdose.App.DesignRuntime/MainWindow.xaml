@@ -19,7 +19,8 @@
         </Grid.RowDefinitions>
 
         <!-- ── Row 0：PLC 連線設定 ── -->
-        <Border Grid.Row="0"
+        <Border x:Name="plcConfigBorder"
+                Grid.Row="0"
                 Background="#1E2040"
                 BorderBrush="#3A3A6A"
                 BorderThickness="0,0,0,1"
@@ -104,7 +105,8 @@
         </Border>
 
         <!-- ── Row 1：檔案 + 縮放工具列 ── -->
-        <Border Grid.Row="1"
+        <Border x:Name="toolbarBorder"
+                Grid.Row="1"
                 Background="#252540"
                 BorderBrush="#3A3A5A"
                 BorderThickness="0,0,0,1"
@@ -193,6 +195,12 @@
                 BorderThickness="0,1,0,0"
                 Padding="10,4">
             <DockPanel>
+                <!-- Dashboard 模式：僅顯示此連線燈，其餘元件隱藏 -->
+                <Border x:Name="dashboardPlcHost"
+                        DockPanel.Dock="Left"
+                        Visibility="Collapsed"
+                        VerticalAlignment="Center"
+                        Margin="0,0,8,0"/>
                 <TextBlock x:Name="lblShellMode"
                            Text="Shell: FreeCanvas"
                            DockPanel.Dock="Right"

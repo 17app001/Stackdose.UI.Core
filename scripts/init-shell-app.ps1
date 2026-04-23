@@ -23,7 +23,7 @@ param(
     # JSON-driven mode: app reads .machinedesign.json at runtime
     [switch]$JsonDrivenApp,
 
-    [ValidateSet("SinglePage", "Standard")]
+    [ValidateSet("SinglePage", "Standard", "Dashboard")]
     [string]$JsonDrivenShellMode = "SinglePage"
 )
 
@@ -202,6 +202,42 @@ public partial class App : Application
     </Grid>
 </Window>
 "@
+    } elseif ($JsonDrivenShellMode -eq "Dashboard") {
+        $shellXml = @"
+<Window x:Class="$AppName.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="$AppName"
+        WindowStyle="None" ResizeMode="NoResize" SizeToContent="WidthAndHeight">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="28"/>
+        </Grid.RowDefinitions>
+        <ContentPresenter x:Name="DashboardHost" Grid.Row="0" />
+        <Border x:Name="dashboardPlcHost" Grid.Row="0"
+                Width="1" Height="1" Opacity="0" IsHitTestVisible="False"
+                HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <Border Grid.Row="1" Background="#12121E" MouseLeftButtonDown="OnBarDrag">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                    <Ellipse x:Name="plcDot" Width="8" Height="8" Fill="#CC4444"
+                             Margin="0,0,6,0" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="plcLabel" Text="---" Foreground="#777788"
+                               FontSize="11" FontFamily="Consolas" VerticalAlignment="Center"/>
+                </StackPanel>
+                <Button Grid.Column="1" Content="X" Width="28" Height="28"
+                        Background="Transparent" Foreground="#777788" BorderThickness="0"
+                        FontSize="12" Cursor="Hand" Click="OnCloseClick"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
+"@
     } else {
         $shellXml = @"
 <Window x:Class="$AppName.MainWindow"
@@ -230,7 +266,151 @@ public partial class App : Application
     $shellXml | Set-Content -Path (Join-Path $projectDir "MainWindow.xaml") -Encoding UTF8
 
     # -- 5. MainWindow.xaml.cs -------------------------------------------------
-    if ($JsonDrivenShellMode -eq "Standard") {
+    if ($JsonDrivenShellMode -eq "Dashboard") {
+        $mainWindowCs = @"
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using Stackdose.App.ShellShared.Behaviors;
+using Stackdose.Tools.MachinePageDesigner.Models;
+using Stackdose.Tools.MachinePageDesigner.Services;
+using Stackdose.UI.Core.Controls;
+using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Models;
+
+namespace $AppName;
+
+public partial class MainWindow : Window
+{
+    private readonly BehaviorEngine _behaviorEngine;
+    private PlcStatus? _plcStatus;
+
+    public MainWindow()
+    {
+        InitializeComponent();
+        _behaviorEngine = new BehaviorEngine
+        {
+            AuditLogger = msg => ComplianceContext.LogSystem(msg, Abstractions.Logging.LogLevel.Info),
+        };
+
+        Closing += (_, _) => { _behaviorEngine.Dispose(); LiveRecordContext.Stop(); SqliteLogger.Shutdown(); };
+        Loaded += OnLoaded;
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        var configDir     = Path.Combine(AppContext.BaseDirectory, "Config");
+        var appConfigPath = Path.Combine(configDir, "app-config.json");
+
+        if (!File.Exists(appConfigPath)) { MessageBox.Show("找不到 Config/app-config.json", "啟動失敗"); return; }
+
+        using var appDoc = JsonDocument.Parse(File.ReadAllText(appConfigPath));
+        var root = appDoc.RootElement;
+
+        string? designFile = root.TryGetProperty("designFile", out var df) ? df.GetString() : null;
+        if (string.IsNullOrEmpty(designFile))
+            designFile = Directory.EnumerateFiles(configDir, "*.machinedesign.json").FirstOrDefault();
+        else
+            designFile = Path.Combine(AppContext.BaseDirectory, designFile);
+
+        if (designFile == null || !File.Exists(designFile)) { MessageBox.Show("找不到設計檔", "啟動失敗"); return; }
+
+        int liveIntervalSec = root.TryGetProperty("liveRecordIntervalSec", out var li) ? li.GetInt32() : 5;
+        SqliteLogger.Initialize();
+        LiveRecordContext.Start(liveIntervalSec);
+
+        if (root.TryGetProperty("plc", out var plc))
+        {
+            var ip   = plc.TryGetProperty("ip",             out var ipEl)   ? ipEl.GetString()   ?? "127.0.0.1" : "127.0.0.1";
+            var port = plc.TryGetProperty("port",           out var portEl) ? portEl.GetInt32()                : 3000;
+            var scan = plc.TryGetProperty("pollIntervalMs", out var scanEl) ? scanEl.GetInt32()                : 200;
+            var auto = !plc.TryGetProperty("autoConnect",   out var autoEl) || autoEl.GetBoolean();
+
+            plcLabel.Text = ip + ":" + port;
+
+            if (auto)
+            {
+                _plcStatus = new PlcStatus
+                {
+                    IpAddress    = ip,
+                    Port         = port,
+                    AutoConnect  = true,
+                    IsGlobal     = true,
+                    ScanInterval = scan,
+                    ShowBorder   = false,
+                };
+                _plcStatus.ConnectionEstablished += mgr =>
+                    Dispatcher.BeginInvoke(() =>
+                    {
+                        _behaviorEngine.PlcManager = mgr;
+                        plcDot.Fill       = new SolidColorBrush(Color.FromRgb(0x4E, 0xC9, 0x94));
+                        plcLabel.Foreground = new SolidColorBrush(Color.FromRgb(0x4E, 0xC9, 0x94));
+                    });
+                dashboardPlcHost.Child = _plcStatus;
+            }
+        }
+
+        RenderDocument(DesignFileService.Load(designFile));
+    }
+
+    private void OnBarDrag(object sender, System.Windows.Input.MouseButtonEventArgs e) => DragMove();
+    private void OnCloseClick(object sender, RoutedEventArgs e) => Close();
+
+    private void RenderDocument(DesignDocument doc)
+    {
+        var canvas = new Canvas
+        {
+            Width        = doc.CanvasWidth,
+            Height       = doc.CanvasHeight,
+            ClipToBounds = true,
+            Background   = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x32)),
+        };
+
+        var controlMap = new List<KeyValuePair<string, FrameworkElement>>();
+
+        foreach (var def in doc.CanvasItems)
+        {
+            UIElement ctrl;
+            try   { ctrl = RuntimeControlFactory.Create(def); }
+            catch (Exception ex) { ctrl = MakeErrorPlaceholder(def, ex.Message); }
+
+            if (ctrl is FrameworkElement fe)
+            {
+                fe.Width = def.Width; fe.Height = def.Height;
+                if (fe.Tag is ControlRuntimeTag tag) controlMap.Add(KeyValuePair.Create(tag.Id, fe));
+            }
+            Canvas.SetLeft(ctrl, def.X); Canvas.SetTop(ctrl, def.Y);
+            canvas.Children.Add(ctrl);
+        }
+
+        DashboardHost.Content = canvas;
+        RegisterCustomHandlers();
+        _behaviorEngine.BindDocument(doc.CanvasItems, controlMap);
+    }
+
+    private void RegisterCustomHandlers()
+    {
+        // 範例：_behaviorEngine.Register(new Handlers.ModelSStartCycleHandler());
+    }
+
+    private static UIElement MakeErrorPlaceholder(DesignerItemDefinition def, string message) =>
+        new Border
+        {
+            Width = def.Width, Height = def.Height,
+            BorderBrush = System.Windows.Media.Brushes.OrangeRed, BorderThickness = new Thickness(1),
+            Child = new TextBlock
+            {
+                Text = string.Concat("[", def.Type, "] ", message),
+                Foreground = System.Windows.Media.Brushes.OrangeRed, FontSize = 10,
+                TextWrapping = TextWrapping.Wrap, Margin = new Thickness(4),
+            }
+        };
+}
+"@
+    } elseif ($JsonDrivenShellMode -eq "Standard") {
         $mainWindowCs = @"
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -829,7 +1009,7 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler
 }
 "@ | Set-Content -Path (Join-Path $jdConfigDir "app-config.json") -Encoding UTF8
 
-    $shellModeValue = if ($JsonDrivenShellMode -eq "Standard") { "Standard" } else { "SinglePage" }
+    $shellModeValue = if ($JsonDrivenShellMode -eq "Standard") { "Standard" } elseif ($JsonDrivenShellMode -eq "Dashboard") { "Dashboard" } else { "SinglePage" }
 @"
 {
   "version": "2.0",

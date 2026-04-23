@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "App 名稱，例如 Stackdose.App.ModelF")]
     [string]$AppName,
-    [ValidateSet("SinglePage", "Standard")]
+    [ValidateSet("SinglePage", "Standard", "Dashboard")]
     [string]$Mode = "SinglePage",
     [string]$DestinationRoot = (Join-Path $PSScriptRoot "..\..")
 )

@@ -12,6 +12,7 @@ public static class ShellStrategyFactory
     {
         "singlepage" => new SinglePageShellStrategy(),
         "standard"   => new StandardShellStrategy(),
+        "dashboard"  => new DashboardShellStrategy(),
         _            => new FreeCanvasShellStrategy(),
     };
 }

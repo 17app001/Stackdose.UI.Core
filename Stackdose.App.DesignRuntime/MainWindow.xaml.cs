@@ -105,6 +105,35 @@ public partial class MainWindow : Window
         ShowStatus("已斷線");
     }
 
+    // ── Dashboard 自動連線 ────────────────────────────────────────────────
+
+    private void AutoConnectDashboard(string ip, int port, int scan)
+    {
+        if (_plcStatus != null)
+        {
+            _plcStatus.Dispose();
+            plcStatusHost.Child    = null;
+            dashboardPlcHost.Child = null;
+            _plcStatus             = null;
+            _behaviorEngine.PlcManager = null;
+        }
+
+        _plcStatus = new PlcStatus
+        {
+            IpAddress    = ip,
+            Port         = port,
+            AutoConnect  = true,
+            IsGlobal     = true,
+            ScanInterval = scan,
+            ShowBorder   = false,
+        };
+
+        _plcStatus.ConnectionEstablished += mgr =>
+            Dispatcher.BeginInvoke(() => _behaviorEngine.PlcManager = mgr);
+
+        dashboardPlcHost.Child = _plcStatus;
+    }
+
     // ── 開啟 JSON ─────────────────────────────────────────────────────────
 
     private void OnOpenClick(object sender, RoutedEventArgs e)
@@ -246,6 +275,80 @@ public partial class MainWindow : Window
         var strategy = ShellStrategyFactory.Select(doc.ShellMode);
         lblShellMode.Text = $"Shell: {strategy.LayoutMode}";
 
+        // ── Dashboard 模式 ───────────────────────────────────────────────────
+        if (strategy is DashboardShellStrategy)
+        {
+            // 隱藏開發者面板
+            plcConfigBorder.Visibility = Visibility.Collapsed;
+            toolbarBorder.Visibility   = Visibility.Collapsed;
+
+            // 底部只留連線燈
+            lblShellMode.Visibility   = Visibility.Collapsed;
+            lblItemCount.Visibility   = Visibility.Collapsed;
+            btnWatchEvents.Visibility = Visibility.Collapsed;
+            lblEventLog.Visibility    = Visibility.Collapsed;
+            lblStatus.Visibility      = Visibility.Collapsed;
+
+            // 畫布：無邊距、無 ScrollBar、無裝飾框
+            scrollViewerCanvas.Padding = new Thickness(0);
+            scrollViewerCanvas.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+            scrollViewerCanvas.VerticalScrollBarVisibility   = ScrollBarVisibility.Disabled;
+            scrollViewerCanvas.Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x32));
+            canvasBorder.Visibility   = Visibility.Collapsed;
+            canvasScale.ScaleX        = 1.0;
+            canvasScale.ScaleY        = 1.0;
+
+            if (!ReferenceEquals(scrollViewerCanvas.Content, canvasHost))
+                scrollViewerCanvas.Content = canvasHost;
+            scrollViewerCanvas.Visibility = Visibility.Visible;
+            shellPreviewHost.Content      = null;
+            shellPreviewHost.Visibility   = Visibility.Collapsed;
+
+            // 視窗大小自動貼合畫布（Row 2 改為 Auto，讓 SizeToContent 生效）
+            var rootGrid = (Grid)Content;
+            rootGrid.RowDefinitions[2].Height = GridLength.Auto;
+            SizeToContent = SizeToContent.WidthAndHeight;
+            ResizeMode    = ResizeMode.NoResize;
+
+            // 自動連線（若 meta 有設定 IP）
+            if (!string.IsNullOrWhiteSpace(doc.Meta.PlcIp))
+            {
+                var port = doc.Meta.PlcPort > 0 ? doc.Meta.PlcPort : 3000;
+                var scan = doc.Meta.ScanInterval > 0 ? doc.Meta.ScanInterval : 200;
+                AutoConnectDashboard(doc.Meta.PlcIp, port, scan);
+                dashboardPlcHost.Visibility = Visibility.Visible;
+            }
+
+            return false;
+        }
+
+        // ── 非 Dashboard：還原開發者 UI（若曾切換過 Dashboard）────────────
+        plcConfigBorder.Visibility = Visibility.Visible;
+        toolbarBorder.Visibility   = Visibility.Visible;
+        lblShellMode.Visibility    = Visibility.Visible;
+        lblItemCount.Visibility    = Visibility.Visible;
+        btnWatchEvents.Visibility  = Visibility.Visible;
+        lblStatus.Visibility       = Visibility.Visible;
+        dashboardPlcHost.Visibility = Visibility.Collapsed;
+        if (dashboardPlcHost.Child != null)
+        {
+            _plcStatus?.Dispose();
+            dashboardPlcHost.Child     = null;
+            plcStatusHost.Child        = null;
+            _plcStatus                 = null;
+            _behaviorEngine.PlcManager = null;
+        }
+        canvasBorder.Visibility   = Visibility.Visible;
+        scrollViewerCanvas.Padding = new Thickness(40);
+        scrollViewerCanvas.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+        scrollViewerCanvas.VerticalScrollBarVisibility   = ScrollBarVisibility.Auto;
+        scrollViewerCanvas.Background = new SolidColorBrush(Color.FromRgb(0x12, 0x12, 0x1E));
+        var grid = (Grid)Content;
+        grid.RowDefinitions[2].Height = new GridLength(1, GridUnitType.Star);
+        SizeToContent = SizeToContent.Manual;
+        ResizeMode    = ResizeMode.CanResize;
+
+        // ── FreeCanvas ───────────────────────────────────────────────────────
         if (strategy is FreeCanvasShellStrategy)
         {
             if (!ReferenceEquals(scrollViewerCanvas.Content, canvasHost))

@@ -30,11 +30,7 @@ public sealed class DesignDocument
     [JsonPropertyName("shellMode")]
     public string ShellMode
     {
-        get => Layout.Mode switch
-        {
-            "Dashboard" => "FreeCanvas",
-            _ => Layout.Mode
-        };
+        get => Layout.Mode;
         set => Layout.Mode = value;
     }
 

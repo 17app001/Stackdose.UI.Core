@@ -56,7 +56,18 @@
 
 > 接手 AI：從這裡開始做事。
 
-**現在在做：** ✅ **B0–B8 全部完成**（`refactor/foundation-and-behavior` 重構結束）
+**現在在做：** ✅ **B0–B9 全部完成 + Dashboard 模式功能開發完成**（2026-04-23）
+
+**Dashboard 模式產出（2026-04-23）：**
+- 新增：`ShellShared/Services/DashboardShellStrategy.cs`（精簡生產模式，Wrap() 直接回傳 viewport）
+- 修改：`ShellShared/Services/ShellStrategyFactory.cs`（加 "dashboard" → DashboardShellStrategy）
+- 修改：`ShellShared/Models/DesignMeta.cs`（加 PlcIp / PlcPort / ScanInterval 欄位）
+- 修改：`ShellShared/Models/DesignDocument.cs`（更新 ShellMode 注釋）
+- 修改：`DesignRuntime/MainWindow.xaml(.cs)`（ApplyShellStrategy 加 Dashboard 分支：隱藏開發者面板、SizeToContent、AutoConnect、dashboardPlcHost）
+- 修改：`MachinePageDesigner/ViewModels/MainViewModel.cs`（LayoutModes 加 Dashboard；PlcIp/Port/ScanInterval 屬性；IsDashboardMode；畫布尺寸限制移除）
+- 修改：`MachinePageDesigner/Views/MainWindow.xaml`（Dashboard PLC 欄位，IsDashboardMode 條件顯示）
+- 修改：`scripts/init-shell-app.ps1`（Dashboard scaffold：XAML 無 Shell Chrome + 拖移條 + IP:Port 燈號 + X 關閉；CS 自動連 PLC）
+- 修改：`scripts/new-app.ps1`（ValidateSet 加 Dashboard）
 
 **B7 產出：**
 - 新增：`Stackdose.Tools.MachinePageDesigner/Models/PageDefinition.cs`（id / title / canvasItems[]）

@@ -139,22 +139,35 @@ public sealed class DesignerItemViewModel : ObservableObject
             "configFile" => nameof(ConfigFile),
             "defaultShowActiveOnly" => nameof(DefaultShowActiveOnly),
             "enableGrouping" => nameof(EnableGrouping),
+            "processState" => nameof(ProcessState),
             _ => null
         };
         if (propName != null) N(propName);
     }
 
-    // 嚙緩嚙緩 嚙窯嚙踝蕭嚙豎性快梧蕭嚙編嚙踝蕭 嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩嚙緩
+    // ── 屬性對應屬性包裝 ──────────────────────────────────────────────────────────
+
     public string Label
     {
         get => GetProp("label", ItemType);
         set
         {
-            var old = GetProp("label", ItemType);
+            var old = GetProp("label", "");
             if (old == value) return;
             SetPropDirect("label", value);
-            N(nameof(DisplayName));
             PropCommitted?.Invoke("label", old, value);
+        }
+    }
+
+    public string ProcessState
+    {
+        get => GetProp("processState", "Running");
+        set
+        {
+            var old = GetProp("processState", "");
+            if (old == value) return;
+            SetPropDirect("processState", value);
+            PropCommitted?.Invoke("processState", old, value);
         }
     }
 

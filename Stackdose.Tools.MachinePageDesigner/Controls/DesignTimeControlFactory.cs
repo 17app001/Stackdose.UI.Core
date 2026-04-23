@@ -4,6 +4,7 @@ using System.Windows.Media;
 using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Models;
+using Stackdose.UI.Templates.Controls;
 
 namespace Stackdose.Tools.MachinePageDesigner.Controls;
 
@@ -17,15 +18,18 @@ public static class DesignTimeControlFactory
     {
         return def.Type switch
         {
-            "PlcLabel"           => CreatePlcLabel(def),
-            "PlcText"            => CreatePlcText(def),
-            "StaticLabel"        => CreateStaticLabel(def),
-            "PlcStatusIndicator" => CreatePlcStatusIndicator(def),
-            "SecuredButton"      => CreateSecuredButton(def),
-            "Spacer"             => CreateGroupBox(def),
-            "LiveLog"            => CreateViewerPlaceholder("System Log",    "\u2637", Color.FromRgb(0x1A, 0x1A, 0x30)),
-            "AlarmViewer"        => CreateViewerPlaceholder("Alarm Viewer",  "\u26A0", Color.FromRgb(0x30, 0x18, 0x18)),
-            "SensorViewer"       => CreateViewerPlaceholder("Sensor Viewer", "\u26A1", Color.FromRgb(0x18, 0x28, 0x30)),
+            "PlcLabel"               => CreatePlcLabel(def),
+            "PlcText"                => CreatePlcText(def),
+            "StaticLabel"            => CreateStaticLabel(def),
+            "PlcStatusIndicator"     => CreatePlcStatusIndicator(def),
+            "SecuredButton"          => CreateSecuredButton(def),
+            "Spacer"                 => CreateGroupBox(def),
+            "ProcessStatusIndicator" => CreateProcessStatusIndicator(def),
+            "SystemClock"            => new SystemClock { IsHitTestVisible = false },
+            "PlcDeviceEditor"        => CreatePlcDeviceEditor(def),
+            "LiveLog"                => CreateViewerPlaceholder("System Log",    "\u2637", Color.FromRgb(0x1A, 0x1A, 0x30)),
+            "AlarmViewer"            => CreateViewerPlaceholder("Alarm Viewer",  "\u26A0", Color.FromRgb(0x30, 0x18, 0x18)),
+            "SensorViewer"           => CreateViewerPlaceholder("Sensor Viewer", "\u26A1", Color.FromRgb(0x18, 0x28, 0x30)),
             _ => new TextBlock
             {
                 Text = $"未知類型: {def.Type}",
@@ -33,6 +37,31 @@ public static class DesignTimeControlFactory
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center
             }
+        };
+    }
+
+    private static UIElement CreateProcessStatusIndicator(DesignerItemDefinition def)
+    {
+        var p = def.Props;
+        var indicator = new ProcessStatusIndicator
+        {
+            BatchNumber = p.GetString("label", ""),
+            IsHitTestVisible = false
+        };
+
+        if (Enum.TryParse<ProcessState>(p.GetString("processState", "Running"), true, out var state))
+            indicator.ProcessState = state;
+
+        return indicator;
+    }
+
+    private static UIElement CreatePlcDeviceEditor(DesignerItemDefinition def)
+    {
+        var p = def.Props;
+        return new PlcDeviceEditor
+        {
+            Address = p.GetString("address", "D100"),
+            IsHitTestVisible = false
         };
     }
 

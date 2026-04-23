@@ -15,6 +15,7 @@
     <ProjectReference Include="..\Stackdose.UI.Core\Stackdose.UI.Core.csproj" />
     <ProjectReference Include="..\Stackdose.App.DeviceFramework\Stackdose.App.DeviceFramework.csproj" />
     <ProjectReference Include="..\Stackdose.App.ShellShared\Stackdose.App.ShellShared.csproj" />
+    <ProjectReference Include="..\Stackdose.UI.Templates\Stackdose.UI.Templates.csproj" />
   </ItemGroup>
 
 </Project>

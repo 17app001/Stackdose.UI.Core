@@ -393,7 +393,7 @@ public partial class MainWindow : Window
 
     private void RegisterCustomHandlers()
     {
-        // 範例：_behaviorEngine.Register(new Handlers.ModelSStartCycleHandler());
+        _behaviorEngine.Register(new Handlers.SampleCustomHandler());
     }
 
     private static UIElement MakeErrorPlaceholder(DesignerItemDefinition def, string message) =>
@@ -562,7 +562,7 @@ public partial class MainWindow : Window
 
     private void RegisterCustomHandlers()
     {
-        // 範例：_behaviorEngine.Register(new Handlers.ModelSStartCycleHandler());
+        _behaviorEngine.Register(new Handlers.SampleCustomHandler());
     }
 
     private static UIElement MakeErrorPlaceholder(DesignerItemDefinition def, string message) =>
@@ -701,7 +701,7 @@ public partial class MainWindow : Window
 
     private void RegisterCustomHandlers()
     {
-        // 範例：_behaviorEngine.Register(new Handlers.ModelSStartCycleHandler());
+        _behaviorEngine.Register(new Handlers.SampleCustomHandler());
     }
 
     private static UIElement MakeErrorPlaceholder(DesignerItemDefinition def, string message) =>
@@ -969,25 +969,45 @@ public static class RuntimeControlFactory
 
 @"
 using Stackdose.App.ShellShared.Behaviors;
+using Stackdose.UI.Core.Helpers;
+using Stackdose.UI.Core.Models;
+using System.Windows;
 
 namespace $AppName.Handlers;
 
 /// <summary>
-/// 機型專屬 Handler 範例。
-/// 在 MainWindow.RegisterCustomHandlers() 呼叫 _behaviorEngine.Register(new SampleCustomHandler()) 啟用。
-/// 對應 JSON events[].do[] 中 "type": "Custom.Sample"。
+/// 機型專屬自定義行為範例 (Custom Behavior Handlers)
 /// </summary>
+/// <remarks>
+/// 這裡定義的邏輯可以在 MachinePageDesigner 的「事件」分頁中透過 Action 名稱直接調用。
+/// </remarks>
 public sealed class SampleCustomHandler : IBehaviorActionHandler
 {
-    public string ActionType => "Custom.Sample";
+    // 在設計器中 Do -> Action 填入以下任一名稱
+    public string ActionType => "Custom.Sample"; 
 
-    public void Execute(BehaviorActionContext ctx)
+    public void Execute(BehaviorAction action, PlcEventContext context)
     {
-        var msg = ctx.Action.Message ?? "SampleCustomHandler executed";
-        System.Windows.MessageBox.Show(msg, "Custom Action");
+        // 範例 1：條件判斷 (針對您提到的 >= 100 邏輯)
+        if (action.Action == "Custom.ThresholdCheck")
+        {
+            if (double.TryParse(context.NewValue?.ToString(), out var val) && val >= 100)
+            {
+                MessageBox.Show($"偵測到高壓/高溫數值: {val}，已超過安全門檻 100!", "安全警報", MessageBoxButton.OK, MessageBoxImage.Warning);
+                
+                // 範例 2：連鎖 PLC 控制 (偵測到異常時，自動寫入另一個地址停止馬達)
+                // PlcContext.GlobalStatus.CurrentManager.Write("M100", 1); 
+            }
+            return;
+        }
+
+        // 範例 3：基礎訊息顯示
+        var msg = action.Message ?? "自定義動作已執行";
+        var title = action.Title ?? "系統訊息";
+        MessageBox.Show(msg, title);
     }
 }
-"@ | Set-Content -Path (Join-Path $handlersDir "SampleCustomHandler.cs") -Encoding UTF8
+"@ | Out-String | % { [System.Text.Encoding]::UTF8.GetBytes(\$_) } | Set-Content -Path (Join-Path $handlersDir "SampleCustomHandler.cs") -NoNewline
 
     # -- 8. Config/ ------------------------------------------------------------
     $jdConfigDir = Join-Path $projectDir "Config"

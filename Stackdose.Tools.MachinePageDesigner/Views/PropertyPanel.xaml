@@ -239,7 +239,44 @@
         </DataTemplate>
 
         <!-- ════════════════════════════════════════════════════════
-             空白（未選取任何項目）
+             ProcessStatusIndicator 屬性面板
+             ════════════════════════════════════════════════════════ -->
+        <DataTemplate x:Key="ProcessStatusIndicatorTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
+            <StackPanel Margin="0,4">
+                <TextBlock Text="狀態標籤" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <TextBlock Text="當前狀態" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <StackPanel Margin="0,0,0,8">
+                    <RadioButton Content="Idle (閒置)" Margin="0,0,0,4"
+                                 IsChecked="{Binding ProcessState, Converter={local:StringEqualityConverter}, ConverterParameter=Idle}"/>
+                    <RadioButton Content="Initializing (初始化)" Margin="0,0,0,4"
+                                 IsChecked="{Binding ProcessState, Converter={local:StringEqualityConverter}, ConverterParameter=Initializing}"/>
+                    <RadioButton Content="Running (運行中)" Margin="0,0,0,4"
+                                 IsChecked="{Binding ProcessState, Converter={local:StringEqualityConverter}, ConverterParameter=Running}"/>
+                    <RadioButton Content="Paused (暫停)" Margin="0,0,0,4"
+                                 IsChecked="{Binding ProcessState, Converter={local:StringEqualityConverter}, ConverterParameter=Paused}"/>
+                    <RadioButton Content="Stopped (停止)"
+                                 IsChecked="{Binding ProcessState, Converter={local:StringEqualityConverter}, ConverterParameter=Stopped}"/>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- ════════════════════════════════════════════════════════
+             PlcDeviceEditor 屬性面板
+             ════════════════════════════════════════════════════════ -->
+        <DataTemplate x:Key="PlcDeviceEditorTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
+            <StackPanel Margin="0,4">
+                <TextBlock Text="測試 PLC 位址" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+                <TextBlock Text="※ 此元件僅供診斷與讀寫測試使用"
+                           Foreground="{StaticResource TextMutedBrush}"
+                           FontSize="10" TextWrapping="Wrap"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- ════════════════════════════════════════════════════════
+             空白（未選取任何項目或無屬性項目）
              ════════════════════════════════════════════════════════ -->
         <DataTemplate x:Key="EmptyTemplate">
             <TextBlock Text="請點選畫布中的控制項以編輯屬性"
@@ -258,6 +295,8 @@
             SpacerTemplate="{StaticResource SpacerTemplate}"
             AlarmViewerTemplate="{StaticResource AlarmViewerTemplate}"
             SensorViewerTemplate="{StaticResource SensorViewerTemplate}"
+            ProcessStatusIndicatorTemplate="{StaticResource ProcessStatusIndicatorTemplate}"
+            PlcDeviceEditorTemplate="{StaticResource PlcDeviceEditorTemplate}"
             EmptyTemplate="{StaticResource EmptyTemplate}"/>
     </UserControl.Resources>
 
@@ -282,10 +321,49 @@
                     BorderThickness="0">
             <TabControl.Resources>
                 <Style TargetType="TabItem">
-                    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
-                    <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
-                    <Setter Property="Padding" Value="10,4"/>
+                    <Setter Property="HeaderTemplate">
+                        <Setter.Value>
+                            <DataTemplate>
+                                <ContentPresenter Content="{TemplateBinding Content}"/>
+                            </DataTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Padding" Value="16,6"/>
                     <Setter Property="FontSize" Value="12"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="TabItem">
+                                <Border x:Name="Border"
+                                        Background="{StaticResource PanelBrush}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="0,0,1,1"
+                                        Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter x:Name="ContentSite"
+                                                      ContentSource="Header"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center">
+                                        <ContentPresenter.Resources>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+                                            </Style>
+                                        </ContentPresenter.Resources>
+                                    </ContentPresenter>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="Border" Property="Background" Value="{StaticResource SurfaceBrush}"/>
+                                        <Setter TargetName="Border" Property="BorderThickness" Value="0,0,0,0"/>
+                                        <Setter Property="Panel.ZIndex" Value="100"/>
+                                        <Setter TargetName="ContentSite" Property="TextBlock.Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                        <Setter TargetName="ContentSite" Property="TextBlock.FontWeight" Value="SemiBold"/>
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Border" Property="Background" Value="#35354A"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
                 </Style>
             </TabControl.Resources>
 

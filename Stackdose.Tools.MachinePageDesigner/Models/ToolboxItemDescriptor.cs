@@ -95,6 +95,31 @@ public sealed class ToolboxItemDescriptor
             Props = [],
             Width = 420, Height = 200
         },
+        "ProcessStatusIndicator" => new DesignerItemDefinition
+        {
+            Type = "ProcessStatusIndicator",
+            Props = new()
+            {
+                ["processState"] = "Running",
+                ["label"] = "System Running"
+            },
+            Width = 120, Height = 120
+        },
+        "SystemClock" => new DesignerItemDefinition
+        {
+            Type = "SystemClock",
+            Props = [],
+            Width = 150, Height = 40
+        },
+        "PlcDeviceEditor" => new DesignerItemDefinition
+        {
+            Type = "PlcDeviceEditor",
+            Props = new()
+            {
+                ["address"] = "D100"
+            },
+            Width = 300, Height = 160
+        },
         _ => new DesignerItemDefinition { Type = Type }
     };
 
@@ -103,9 +128,12 @@ public sealed class ToolboxItemDescriptor
         new() { Type = "PlcLabel",           DisplayName = "PlcLabel",           Category = "PLC",    Icon = "\u25C8" },
         new() { Type = "PlcText",            DisplayName = "PlcText",            Category = "PLC",    Icon = "\u270E" },
         new() { Type = "PlcStatusIndicator", DisplayName = "PlcStatusIndicator", Category = "PLC",    Icon = "\u25CF" },
+        new() { Type = "PlcDeviceEditor",    DisplayName = "PlcDeviceEditor",    Category = "PLC",    Icon = "\u2699" },
         new() { Type = "SecuredButton",      DisplayName = "SecuredButton",      Category = "Button", Icon = "\u25A3" },
         new() { Type = "Spacer",             DisplayName = "Spacer",             Category = "Layout", Icon = "\u25A1" },
         new() { Type = "StaticLabel",        DisplayName = "StaticLabel",        Category = "Layout", Icon = "T" },
+        new() { Type = "SystemClock",        DisplayName = "SystemClock",        Category = "Layout", Icon = "\u23F0" },
+        new() { Type = "ProcessStatusIndicator", DisplayName = "ProcessStatus",  Category = "Status", Icon = "\u231B" },
         new() { Type = "LiveLog",            DisplayName = "LiveLog",            Category = "Viewer", Icon = "\u2637" },
         new() { Type = "AlarmViewer",        DisplayName = "AlarmViewer",        Category = "Viewer", Icon = "\u26A0" },
         new() { Type = "SensorViewer",       DisplayName = "SensorViewer",       Category = "Viewer", Icon = "\u26A1" },

@@ -62,12 +62,13 @@ public class PropertyPanelTemplateSelector : DataTemplateSelector
     public DataTemplate? SpacerTemplate { get; set; }
     public DataTemplate? AlarmViewerTemplate { get; set; }
     public DataTemplate? SensorViewerTemplate { get; set; }
+    public DataTemplate? ProcessStatusIndicatorTemplate { get; set; }
+    public DataTemplate? PlcDeviceEditorTemplate { get; set; }
     public DataTemplate? EmptyTemplate { get; set; }
 
     public override DataTemplate? SelectTemplate(object? item, DependencyObject container)
     {
-        if (item is not DesignerItemViewModel vm)
-            return EmptyTemplate;
+        if (item is not DesignerItemViewModel vm) return EmptyTemplate;
 
         return vm.ItemType switch
         {
@@ -79,7 +80,10 @@ public class PropertyPanelTemplateSelector : DataTemplateSelector
             "Spacer" => SpacerTemplate,
             "AlarmViewer" => AlarmViewerTemplate,
             "SensorViewer" => SensorViewerTemplate,
+            "ProcessStatusIndicator" => ProcessStatusIndicatorTemplate,
+            "PlcDeviceEditor" => PlcDeviceEditorTemplate,
             _ => EmptyTemplate,
         };
     }
+
 }

@@ -19,6 +19,11 @@
                 <TextBlock Text="PLC 位址" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
+                <!-- DataType -->
+                <TextBlock Text="資料型別" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.DataTypes}"
+                          SelectedItem="{Binding DataType}" Margin="0,0,0,8"/>
+
                 <!-- DefaultValue -->
                 <TextBlock Text="預設值" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding DefaultValue, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>

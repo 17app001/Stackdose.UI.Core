@@ -106,6 +106,9 @@ public static class DesignTimeControlFactory
         if (Enum.TryParse<HorizontalAlignment>(p.GetString("valueAlignment", "Right"), true, out var valueAlign))
             label.ValueAlignment = valueAlign;
 
+        if (Enum.TryParse<PlcDataType>(p.GetString("dataType", "Word"), true, out var dataType))
+            label.DataType = dataType;
+
         return label;
     }
 

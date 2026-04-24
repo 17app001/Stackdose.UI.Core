@@ -196,6 +196,18 @@ public sealed class DesignerItemViewModel : ObservableObject
         }
     }
 
+    public string DataType
+    {
+        get => GetProp("dataType", "Word");
+        set
+        {
+            var old = GetProp("dataType", "Word");
+            if (old == value) return;
+            SetPropDirect("dataType", value);
+            PropCommitted?.Invoke("dataType", old, value);
+        }
+    }
+
     public double ValueFontSize
     {
         get => GetPropDouble("valueFontSize", 20);
@@ -621,6 +633,7 @@ public sealed class DesignerItemViewModel : ObservableObject
 
     public static readonly string[] FrameShapes = ["Rectangle", "Circle"];
     public static readonly string[] StringFormats = ["F0", "F1", "F2", "F3"];
+    public static readonly string[] DataTypes = ["Word", "DWord", "Float", "Bit"];
     public static readonly string[] ButtonThemes = ["Primary", "Success", "Danger", "Warning"];
     public static readonly string[] AccessLevels = ["Operator", "Instructor", "Supervisor", "Admin", "SuperAdmin"];
 }

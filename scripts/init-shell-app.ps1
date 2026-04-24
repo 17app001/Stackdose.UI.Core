@@ -277,6 +277,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Stackdose.Abstractions.Logging;
 using Stackdose.App.ShellShared.Behaviors;
 using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.Tools.MachinePageDesigner.Services;
@@ -296,7 +297,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         _behaviorEngine = new BehaviorEngine
         {
-            AuditLogger = msg => ComplianceContext.LogSystem(msg, Abstractions.Logging.LogLevel.Info),
+            AuditLogger = msg => ComplianceContext.LogSystem(msg, LogLevel.Info),
         };
 
         Closing += (_, _) => { _behaviorEngine.Dispose(); LiveRecordContext.Stop(); SqliteLogger.Shutdown(); };
@@ -422,6 +423,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Stackdose.Abstractions.Logging;
 using Stackdose.App.ShellShared.Behaviors;
 using Stackdose.App.ShellShared.Services;
 using Stackdose.Tools.MachinePageDesigner.Models;
@@ -442,7 +444,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         _behaviorEngine = new BehaviorEngine
         {
-            AuditLogger = msg => ComplianceContext.LogSystem(msg, Abstractions.Logging.LogLevel.Info),
+            AuditLogger = msg => ComplianceContext.LogSystem(msg, LogLevel.Info),
         };
 
         // 在 Loaded 觸發前設定 PlcStatus 屬性，否則 PlcStatus.Loaded 先跑時讀到預設值
@@ -591,6 +593,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Stackdose.Abstractions.Logging;
 using Stackdose.App.ShellShared.Behaviors;
 using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.Tools.MachinePageDesigner.Services;
@@ -608,7 +611,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         _behaviorEngine = new BehaviorEngine
         {
-            AuditLogger = msg => ComplianceContext.LogSystem(msg, Abstractions.Logging.LogLevel.Info),
+            AuditLogger = msg => ComplianceContext.LogSystem(msg, LogLevel.Info),
         };
 
         // 在 Loaded 觸發前設定 PlcStatus 屬性，否則 PlcStatus.Loaded 先跑時讀到預設值

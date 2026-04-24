@@ -6,8 +6,8 @@
 
 ## 現狀三行摘要
 
-- **分支：** `master`｜B0–B9 重構完成 + Dashboard 模式 & 行為引擎範例強化（2026-04-23）
-- **主力工作：** MachinePageDesigner 行為事件配置 + App 自定義邏輯實作
+- **分支：** `master`｜PlcLabel Float 支援、Designer DataType 選項、scaffold 編碼全修（2026-04-24）
+- **主力工作：** DesignRuntime 驗收測試、MachinePageDesigner 細節完善
 
 ---
 

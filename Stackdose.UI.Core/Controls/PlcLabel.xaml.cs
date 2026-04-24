@@ -502,7 +502,7 @@ namespace Stackdose.UI.Core.Controls
                 {
                     double finalVal = dVal / Divisor;
                     actualValue = finalVal;
-                    newValueStr = (DataType == PlcDataType.Float || Divisor != 1.0)
+                    newValueStr = !string.IsNullOrEmpty(StringFormat)
                         ? finalVal.ToString(StringFormat)
                         : finalVal.ToString();
                 }

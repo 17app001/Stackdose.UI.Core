@@ -1,5 +1,9 @@
-\scripts\new-app.ps1 -AppName "Stackdose.App.DashboardTest" -Mode Dashboard
-  -DestinationRoot .
+.\scripts\new-app.ps1 -AppName "Stackdose.App.DashboardTest1" -Mode Dashboard 
+-DestinationRoot .  (預設同一個目錄)
+
+
+
+
 
 
   1. 自動讀 CLAUDE.md（hook 強制）→ 知道分支、目前狀態、架構規則

@@ -723,7 +723,7 @@ public partial class MainWindow : Window
 }
 "@
     }
-    $mainWindowCs | Set-Content -Path (Join-Path $projectDir "MainWindow.xaml.cs") -Encoding UTF8
+    [System.IO.File]::WriteAllText((Join-Path $projectDir "MainWindow.xaml.cs"), $mainWindowCs, [System.Text.UTF8Encoding]::new($true))
 
     # -- 6. RuntimeControlFactory.cs -------------------------------------------
 @'
@@ -967,47 +967,39 @@ public static class RuntimeControlFactory
     $handlersDir = Join-Path $projectDir "Handlers"
     New-Item -ItemType Directory -Path $handlersDir -Force | Out-Null
 
-@"
+@'
 using Stackdose.App.ShellShared.Behaviors;
-using Stackdose.UI.Core.Helpers;
-using Stackdose.UI.Core.Models;
 using System.Windows;
 
-namespace $AppName.Handlers;
+namespace NAMESPACE_PLACEHOLDER.Handlers;
 
 /// <summary>
-/// 機型專屬自定義行為範例 (Custom Behavior Handlers)
+/// 機型專屬自定義行為範例。
+/// 在 MachinePageDesigner 的「事件」分頁中，Do -> Action 填入此類別的 ActionType 即可觸發。
 /// </summary>
-/// <remarks>
-/// 這裡定義的邏輯可以在 MachinePageDesigner 的「事件」分頁中透過 Action 名稱直接調用。
-/// </remarks>
 public sealed class SampleCustomHandler : IBehaviorActionHandler
 {
-    // 在設計器中 Do -> Action 填入以下任一名稱
-    public string ActionType => "Custom.Sample"; 
+    public string ActionType => "Custom.Sample";
 
-    public void Execute(BehaviorAction action, PlcEventContext context)
+    public void Execute(BehaviorActionContext ctx)
     {
-        // 範例 1：條件判斷 (針對您提到的 >= 100 邏輯)
-        if (action.Action == "Custom.ThresholdCheck")
+        // 範例 1：閾值判斷
+        if (ctx.Action.Action == "Custom.ThresholdCheck")
         {
-            if (double.TryParse(context.NewValue?.ToString(), out var val) && val >= 100)
-            {
-                MessageBox.Show($"偵測到高壓/高溫數值: {val}，已超過安全門檻 100!", "安全警報", MessageBoxButton.OK, MessageBoxImage.Warning);
-                
-                // 範例 2：連鎖 PLC 控制 (偵測到異常時，自動寫入另一個地址停止馬達)
-                // PlcContext.GlobalStatus.CurrentManager.Write("M100", 1); 
-            }
+            if (ctx.TriggerValue >= 100)
+                MessageBox.Show($"偵測到異常數值: {ctx.TriggerValue}，已超過安全門檻!", "安全警報",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
-        // 範例 3：基礎訊息顯示
-        var msg = action.Message ?? "自定義動作已執行";
-        var title = action.Title ?? "系統訊息";
-        MessageBox.Show(msg, title);
+        // 範例 2：顯示訊息（支援 {value} 佔位符）
+        var msg = ctx.Interpolate(ctx.Action.Message);
+        if (!string.IsNullOrEmpty(msg))
+            MessageBox.Show(msg, ctx.Action.Title ?? "系統訊息");
     }
 }
-"@ | Out-String | % { [System.Text.Encoding]::UTF8.GetBytes(\$_) } | Set-Content -Path (Join-Path $handlersDir "SampleCustomHandler.cs") -NoNewline
+'@ -replace 'NAMESPACE_PLACEHOLDER', $AppName |
+    Set-Content -Path (Join-Path $handlersDir "SampleCustomHandler.cs") -Encoding UTF8
 
     # -- 8. Config/ ------------------------------------------------------------
     $jdConfigDir = Join-Path $projectDir "Config"

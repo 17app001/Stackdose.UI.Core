@@ -1,4 +1,4 @@
-﻿using Stackdose.Abstractions.Logging;
+using Stackdose.Abstractions.Logging;
 using Stackdose.Abstractions.Print;
 using Stackdose.PrintHead.Feiyang;
 using Stackdose.UI.Core.Helpers;
@@ -22,11 +22,8 @@ namespace Stackdose.UI.Core.Controls
     {
         #region Dependency Properties
 
-        /// <summary>
-        /// 配置檔案路徑（例如：Config/feiyang_head1.json）
-        /// </summary>
         public static readonly DependencyProperty ConfigFilePathProperty =
-            DependencyProperty.Register("ConfigFilePath", typeof(string), typeof(PrintHeadStatus), 
+            DependencyProperty.Register("ConfigFilePath", typeof(string), typeof(PrintHeadStatus),
                 new PropertyMetadata("Config/feiyang_head1.json"));
 
         public string ConfigFilePath
@@ -36,7 +33,7 @@ namespace Stackdose.UI.Core.Controls
         }
 
         public static readonly DependencyProperty HeadNameProperty =
-            DependencyProperty.Register("HeadName", typeof(string), typeof(PrintHeadStatus), 
+            DependencyProperty.Register("HeadName", typeof(string), typeof(PrintHeadStatus),
                 new PropertyMetadata("PrintHead 1"));
 
         public string HeadName
@@ -56,7 +53,7 @@ namespace Stackdose.UI.Core.Controls
         }
 
         public static readonly DependencyProperty AutoConnectProperty =
-            DependencyProperty.Register("AutoConnect", typeof(bool), typeof(PrintHeadStatus), 
+            DependencyProperty.Register("AutoConnect", typeof(bool), typeof(PrintHeadStatus),
                 new PropertyMetadata(false));
 
         public bool AutoConnect
@@ -70,23 +67,16 @@ namespace Stackdose.UI.Core.Controls
         #region Fields
 
         private PrintHeadConfig? _config;
-        private FeiyangPrintHead? _printHead;
+        private IPrintHead? _printHead;
         private CancellationTokenSource? _temperatureMonitorCts;
         private bool _isConnected = false;
         private bool _isExpanded = false;
-        
+
         #endregion
 
         #region Events
 
-        /// <summary>
-        /// 連線成功事件
-        /// </summary>
         public event Action? ConnectionEstablished;
-
-        /// <summary>
-        /// 連線失敗或斷線事件
-        /// </summary>
         public event Action<string>? ConnectionLost;
 
         #endregion
@@ -97,48 +87,29 @@ namespace Stackdose.UI.Core.Controls
 
             this.Loaded += OnControlLoaded;
             this.Unloaded += OnControlUnloaded;
-
-            
         }
 
         #region 初始化
 
         private async void OnControlLoaded(object sender, RoutedEventArgs e)
         {
-                     
-            // 載入配置檔
             if (!LoadConfiguration())
-            {
                 return;
-            }
 
-            // ⭐ 初始化時顯示 N/A
             ResetStatusDisplay();
 
-            // 🔥 自動連線（只在第一次初始化時執行）
             if (AutoConnect && !_isConnected && _printHead == null)
             {
-                await Task.Delay(500); // 延遲確保 UI 完全載入
+                await Task.Delay(500);
                 await ConnectAsync();
             }
         }
 
         private void OnControlUnloaded(object sender, RoutedEventArgs e)
         {
-            // 🔥 不要停止監控（保持監控狀態，避免 Tab 切換重啟監控）
-            // StopTemperatureMonitoring();
-            
-            // 🔥 不要在 Unloaded 時斷線，保持 PrintHead 連線狀態
-            // 這樣 Tab 切換時不會重新連線
-            
-            #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[PrintHeadStatus] OnControlUnloaded called (keeping connection and monitoring)");
-            #endif
+            // 保持連線與監控，Tab 切換不重啟
         }
 
-        /// <summary>
-        /// 重置狀態顯示為 N/A
-        /// </summary>
         private void ResetStatusDisplay()
         {
             Dispatcher.Invoke(() =>
@@ -160,35 +131,24 @@ namespace Stackdose.UI.Core.Controls
 
         #region 展開/收合
 
-        /// <summary>
-        /// 展開/收合按鈕點擊事件
-        /// </summary>
         private void ExpandButton_Click(object sender, RoutedEventArgs e)
         {
             _isExpanded = !_isExpanded;
             AnimateExpand(_isExpanded);
         }
 
-        /// <summary>
-        /// 動畫展開/收合狀態面板
-        /// </summary>
         private void AnimateExpand(bool expand)
         {
-            // 旋轉箭頭圖示
             var rotateAnimation = new DoubleAnimation
             {
                 To = expand ? 180 : 0,
                 Duration = TimeSpan.FromMilliseconds(200),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             };
-            
-            var rotation = ExpandIcon.RenderTransform as RotateTransform;
-            if (rotation != null)
-            {
-                rotation.BeginAnimation(RotateTransform.AngleProperty, rotateAnimation);
-            }
 
-            // 顯示/隱藏狀態面板
+            var rotation = ExpandIcon.RenderTransform as RotateTransform;
+            rotation?.BeginAnimation(RotateTransform.AngleProperty, rotateAnimation);
+
             StatusDataPanel.Visibility = expand ? Visibility.Visible : Visibility.Collapsed;
         }
 
@@ -196,9 +156,6 @@ namespace Stackdose.UI.Core.Controls
 
         #region 配置載入
 
-        /// <summary>
-        /// 載入 JSON 配置檔
-        /// </summary>
         private bool LoadConfiguration()
         {
             try
@@ -216,7 +173,6 @@ namespace Stackdose.UI.Core.Controls
                     return false;
                 }
 
-                // 🔥 使用 UTF-8 編碼讀取（支援中文）
                 string jsonContent = File.ReadAllText(fullPath, System.Text.Encoding.UTF8);
                 _config = LoadSingleOrMultiHeadConfig(jsonContent);
 
@@ -227,11 +183,8 @@ namespace Stackdose.UI.Core.Controls
                 }
 
                 if (!string.IsNullOrWhiteSpace(_config.Waveform) && !Path.IsPathRooted(_config.Waveform))
-                {
                     _config.Waveform = ResolveWavePath(_config.Waveform);
-                }
 
-                // 更新 UI 顯示配置資訊（只顯示 IP:Port）
                 Dispatcher.Invoke(() =>
                 {
                     BoardAddressText.Text = $"{_config.BoardIP}:{_config.BoardPort}";
@@ -268,17 +221,13 @@ namespace Stackdose.UI.Core.Controls
 
             var single = JsonSerializer.Deserialize<PrintHeadConfig>(jsonContent, options);
             if (single != null && !string.IsNullOrWhiteSpace(single.BoardIP))
-            {
                 return single;
-            }
 
             var rootNode = JsonNode.Parse(jsonContent) as JsonObject;
             var commonNode = rootNode?["Common"] as JsonObject;
             var headsNode = rootNode?["Heads"] as JsonArray;
             if (headsNode == null || headsNode.Count == 0)
-            {
                 return null;
-            }
 
             JsonObject? selectedHead = null;
             if (!string.IsNullOrWhiteSpace(HeadName))
@@ -299,18 +248,17 @@ namespace Stackdose.UI.Core.Controls
                 .ElementAtOrDefault(Math.Clamp(HeadIndex, 0, headsNode.Count - 1));
 
             if (selectedHead == null)
-            {
                 return null;
-            }
 
             var normalized = new JsonObject
             {
-                ["Model"] = commonNode?["Model"]?.GetValue<string>() ?? "M1536",
-                ["Name"] = selectedHead["Name"]?.GetValue<string>() ?? $"Head-{HeadIndex + 1}",
-                ["BoardIP"] = selectedHead["BoardIP"]?.GetValue<string>() ?? string.Empty,
+                ["Model"]    = commonNode?["Model"]?.GetValue<string>() ?? "M1536",
+                ["Waveform"] = commonNode?["Waveform"]?.GetValue<string>() ?? string.Empty,
+                ["Name"]     = selectedHead["Name"]?.GetValue<string>() ?? $"Head-{HeadIndex + 1}",
+                ["BoardIP"]  = selectedHead["BoardIP"]?.GetValue<string>() ?? string.Empty,
                 ["BoardPort"] = selectedHead["BoardPort"]?.GetValue<int>() ?? 0,
-                ["PcIP"] = selectedHead["PcIP"]?.GetValue<string>() ?? string.Empty,
-                ["PcPort"] = selectedHead["PcPort"]?.GetValue<int>() ?? 0,
+                ["PcIP"]     = selectedHead["PcIP"]?.GetValue<string>() ?? string.Empty,
+                ["PcPort"]   = selectedHead["PcPort"]?.GetValue<int>() ?? 0,
                 ["Firmware"] = selectedHead["Firmware"]?.DeepClone(),
                 ["PrintMode"] = selectedHead["PrintMode"]?.DeepClone()
             };
@@ -332,9 +280,6 @@ namespace Stackdose.UI.Core.Controls
             DisconnectAsync();
         }
 
-        /// <summary>
-        /// 連線到 PrintHead
-        /// </summary>
         private async Task ConnectAsync()
         {
             if (_config == null)
@@ -363,24 +308,16 @@ namespace Stackdose.UI.Core.Controls
                     showInUi: true
                 );
 
-                // 🔥 使用完整路徑初始化 FeiyangPrintHead
                 string fullPath = ResolveConfigPath(ConfigFilePath);
+                var printHead = new FeiyangPrintHead(fullPath);
+                printHead.Log = (msg) => ComplianceContext.LogSystem(msg, LogLevel.Info, showInUi: false);
+                printHead.ConnectionStateChanged += OnPrintHeadStateChanged;
 
-                _printHead = new FeiyangPrintHead(fullPath);
-                
-                _printHead.Log = (msg) =>
-                {
-                    ComplianceContext.LogSystem(msg, LogLevel.Info, showInUi: false);
-                };
-                
-                // ⭐ 訂閱狀態變更事件
-                _printHead.ConnectionStateChanged += OnPrintHeadStateChanged;
-
-                bool connected = await _printHead.Connect();
+                bool connected = await printHead.Connect();
 
                 if (!connected)
                 {
-                    string errorMsg = _printHead.LastErrorMessage ?? "Unknown error";
+                    string errorMsg = printHead.LastErrorMessage ?? "Unknown error";
                     UpdateStatus(false);
                     ComplianceContext.LogSystem(
                         $"[PrintHead] Connection failed: {errorMsg}",
@@ -397,8 +334,8 @@ namespace Stackdose.UI.Core.Controls
                     showInUi: true
                 );
 
-                var (firmwareSuccess, firmwareMsg) = await Task.Run(() => _printHead.Setup());
-                
+                var (firmwareSuccess, firmwareMsg) = await Task.Run(() => printHead.Setup());
+
                 if (!firmwareSuccess)
                 {
                     UpdateStatus(false);
@@ -417,11 +354,10 @@ namespace Stackdose.UI.Core.Controls
                     showInUi: true
                 );
 
-                var (printModeSuccess, printModeMsg) = await _printHead.ConfigurePrintModeAsync();
-                
+                var (printModeSuccess, printModeMsg) = await printHead.ConfigurePrintModeAsync();
+
                 if (!printModeSuccess)
                 {
-                    UpdateStatus(false);
                     ComplianceContext.LogSystem(
                         $"[PrintHead] PrintMode config failed: {printModeMsg}",
                         LogLevel.Warning,
@@ -429,61 +365,49 @@ namespace Stackdose.UI.Core.Controls
                     );
                 }
 
+                _printHead = printHead;
                 _isConnected = true;
 
                 UpdateStatus(true);
 
                 ComplianceContext.LogSystem(
-                    $"[PrintHead] ✅ Connection established: {_config.Name}",
+                    $"[PrintHead] Connection established: {_config.Name}",
                     LogLevel.Success,
                     showInUi: true
                 );
 
                 PrintHeadContext.RegisterPrintHead(_config.Name, _printHead);
-
                 ConnectionEstablished?.Invoke();
-
                 StartTemperatureMonitoring();
             }
             catch (Exception ex)
             {
                 UpdateStatus(false);
-
                 ComplianceContext.LogSystem(
-                    $"[PrintHead] ❌ Connection error: {ex.Message}\nStack: {ex.StackTrace}",
+                    $"[PrintHead] Connection error: {ex.Message}\nStack: {ex.StackTrace}",
                     LogLevel.Error,
                     showInUi: true
                 );
-
                 ConnectionLost?.Invoke(ex.Message);
             }
             finally
             {
-                Dispatcher.Invoke(() =>
-                {
-                    PowerButton.IsEnabled = true;
-                });
+                Dispatcher.Invoke(() => PowerButton.IsEnabled = true);
             }
         }
 
         private static string ResolveConfigPath(string configPath)
         {
             if (Path.IsPathRooted(configPath) && File.Exists(configPath))
-            {
                 return configPath;
-            }
 
             var appRelative = Path.Combine(AppContext.BaseDirectory, configPath.Replace('/', Path.DirectorySeparatorChar));
             if (File.Exists(appRelative))
-            {
                 return appRelative;
-            }
 
             var resourcePath = ResourcePathHelper.GetResourceFilePath(configPath);
             if (File.Exists(resourcePath))
-            {
                 return resourcePath;
-            }
 
             return appRelative;
         }
@@ -492,35 +416,21 @@ namespace Stackdose.UI.Core.Controls
         {
             var normalized = waveformPath.Replace('/', Path.DirectorySeparatorChar);
             var fromBase = Path.Combine(AppContext.BaseDirectory, normalized);
-            if (File.Exists(fromBase))
-            {
-                return fromBase;
-            }
+            if (File.Exists(fromBase)) return fromBase;
 
             var fromConfigs = Path.Combine(AppContext.BaseDirectory, "Configs", normalized);
-            if (File.Exists(fromConfigs))
-            {
-                return fromConfigs;
-            }
+            if (File.Exists(fromConfigs)) return fromConfigs;
 
             var fromConfig = Path.Combine(AppContext.BaseDirectory, "Config", normalized);
-            if (File.Exists(fromConfig))
-            {
-                return fromConfig;
-            }
+            if (File.Exists(fromConfig)) return fromConfig;
 
             return fromConfigs;
         }
 
-        /// <summary>
-        /// 斷線
-        /// </summary>
         private void DisconnectAsync()
         {
             if (!_isConnected)
-            {
                 return;
-            }
 
             StopTemperatureMonitoring();
 
@@ -529,15 +439,12 @@ namespace Stackdose.UI.Core.Controls
                 _printHead?.Disconnect();
 
                 if (_config != null)
-                {
                     PrintHeadContext.UnregisterPrintHead(_config.Name);
-                }
 
+                _printHead = null;
                 _isConnected = false;
 
-                // ⭐ 斷線後重置顯示為 N/A
                 ResetStatusDisplay();
-
                 UpdateStatus(false);
 
                 ComplianceContext.LogSystem(
@@ -558,20 +465,17 @@ namespace Stackdose.UI.Core.Controls
 
         #endregion
 
-        #region 溫度監控
+        #region 狀態監控
 
-        /// <summary>
-        /// 啟動溫度監控
-        /// </summary>
         private void StartTemperatureMonitoring()
         {
-            StopTemperatureMonitoring(); // 確保沒有重複的監控執行緒
+            StopTemperatureMonitoring();
 
             _temperatureMonitorCts = new CancellationTokenSource();
             var token = _temperatureMonitorCts.Token;
 
             ComplianceContext.LogSystem(
-                "[PrintHead] 🌡️ Status monitoring started",
+                "[PrintHead] Status monitoring started",
                 LogLevel.Info,
                 showInUi: true
             );
@@ -586,56 +490,42 @@ namespace Stackdose.UI.Core.Controls
                 {
                     try
                     {
-                        // ⭐ 读取完整状态数据
-                        var status = _printHead?.GetStatus();
+                        if (_printHead == null) break;
 
-                        if (status != null)
+                        // 溫度透過介面方法取得（型別安全）
+                        var temps = _printHead.GetTemperatures();
+
+                        // 其餘狀態仍透過 GetStatus()（SDK 裸型，dynamic 不可避免）
+                        var rawStatus = _printHead.GetStatus();
+
+                        successCount++;
+
+                        if (!firstReadSuccess)
                         {
-                            successCount++;
-
-                            // ⭐ 只在第一次成功时记录日志
-                            if (!firstReadSuccess)
-                            {
-                                firstReadSuccess = true;
-                                ComplianceContext.LogSystem(
-                                    $"[PrintHead] ✅ First status read successful",
-                                    LogLevel.Success,
-                                    showInUi: true
-                                );
-                            }
-
-                            Dispatcher.Invoke(() =>
-                            {
-                                UpdateStatusDisplay(status);
-                            });
+                            firstReadSuccess = true;
+                            ComplianceContext.LogSystem(
+                                "[PrintHead] First status read successful",
+                                LogLevel.Success,
+                                showInUi: true
+                            );
                         }
-                        else
-                        {
-                            errorCount++;
-                            if (errorCount <= 3) // 只记录前 3 次错误
-                            {
-                                ComplianceContext.LogSystem(
-                                    $"[PrintHead] ⚠️ Status read returned null (error #{errorCount})",
-                                    LogLevel.Warning,
-                                    showInUi: true
-                                );
-                            }
-                        }
+
+                        Dispatcher.Invoke(() => UpdateStatusDisplay(temps, rawStatus));
                     }
                     catch (Exception ex)
                     {
                         errorCount++;
-                        if (errorCount <= 3) // 只记录前 3 次错误
+                        if (errorCount <= 3)
                         {
                             ComplianceContext.LogSystem(
-                                $"[PrintHead] ❌ Status read error #{errorCount}: {ex.Message}",
+                                $"[PrintHead] Status read error #{errorCount}: {ex.Message}",
                                 LogLevel.Warning,
                                 showInUi: true
                             );
                         }
                     }
 
-                    await Task.Delay(500, token); // 每 500ms 更新一次
+                    await Task.Delay(500, token);
                 }
 
                 ComplianceContext.LogSystem(
@@ -646,9 +536,6 @@ namespace Stackdose.UI.Core.Controls
             }, token);
         }
 
-        /// <summary>
-        /// 停止溫度監控
-        /// </summary>
         private void StopTemperatureMonitoring()
         {
             _temperatureMonitorCts?.Cancel();
@@ -656,60 +543,41 @@ namespace Stackdose.UI.Core.Controls
             _temperatureMonitorCts = null;
         }
 
-        /// <summary>
-        /// 更新状态显示（温度、电压、编码器、PrintIndex）
-        /// </summary>
-        private void UpdateStatusDisplay(dynamic status)
+        private void UpdateStatusDisplay(float[] temps, object? rawStatus)
         {
+            // 溫度 — 強型別
+            if (temps.Length > 0 && temps[0] >= 0 && temps[0] <= 100)
+                TemperatureText.Text = $"{temps[0]:F1}°C";
+
+            if (rawStatus == null) return;
+
+            // 電壓/編碼器/PrintIndex — SDK 裸型，dynamic 是唯一選項
             try
             {
-                // 1. 温度（墨水温度）
-                if (status.InkTemperatureA != null)
-                {
-                    float temp = (float)status.InkTemperatureA;
-                    if (temp >= 0 && temp <= 100)
-                    {
-                        TemperatureText.Text = $"{temp:F1}°C";
-                    }
-                }
+                dynamic d = rawStatus;
 
-                // 2. 电压（4个通道）- 假设有 VoltageA, VoltageB, VoltageC, VoltageD
                 var voltages = new System.Collections.Generic.List<string>();
-                if (status.VoltageActualA != null) 
+                if (d.VoltageActualA != null)
+                    voltages.Add($"V1: {(double)d.VoltageActualA:F1}V");
+                if (d.DriveVoltages != null && d.DriveVoltages.Length >= 4)
                 {
-                    double v = (double)status.VoltageActualA;
-                    voltages.Add($"V1: {v:F1}V");
+                    voltages.Add($"V2: {d.DriveVoltages[1]:F1}V");
+                    voltages.Add($"V3: {d.DriveVoltages[2]:F1}V");
+                    voltages.Add($"V4: {d.DriveVoltages[3]:F1}V");
                 }
-                if (status.DriveVoltages != null && status.DriveVoltages.Length >= 4)
-                {
-                    voltages.Add($"V2: {status.DriveVoltages[1]:F1}V");
-                    voltages.Add($"V3: {status.DriveVoltages[2]:F1}V");
-                    voltages.Add($"V4: {status.DriveVoltages[3]:F1}V");
-                }
-                
                 if (voltages.Count > 0)
-                {
                     VoltagesPanel.ItemsSource = voltages;
-                }
 
-                // 3. 编码器 (⭐ 修正：使用 GratingCount 而不是 EncoderDPI，因為 Reset 影響的是 Counter)
-                if (status.GratingCount != null)
-                {
-                    double gratingCount = (double)status.GratingCount;
-                    EncoderText.Text = gratingCount.ToString("F0");
-                }
+                if (d.GratingCount != null)
+                    EncoderText.Text = ((double)d.GratingCount).ToString("F0");
 
-                // 4. PrintIndex (⭐ 修正：使用 unsigned int，需要轉換)
-                if (status.PrintIndex != null)
-                {
-                    uint printIndex = (uint)status.PrintIndex;
-                    PrintIndexText.Text = printIndex.ToString();
-                }
+                if (d.PrintIndex != null)
+                    PrintIndexText.Text = ((uint)d.PrintIndex).ToString();
             }
             catch (Exception ex)
             {
                 ComplianceContext.LogSystem(
-                    $"[PrintHead] ⚠️ UpdateStatusDisplay error: {ex.Message}",
+                    $"[PrintHead] UpdateStatusDisplay error: {ex.Message}",
                     LogLevel.Warning,
                     showInUi: false
                 );
@@ -720,91 +588,48 @@ namespace Stackdose.UI.Core.Controls
 
         #region UI 更新
 
-        /// <summary>
-        /// 更新連線狀態（使用狀態燈號）
-        /// </summary>
         private void UpdateStatus(bool connected)
         {
             Dispatcher.Invoke(() =>
             {
                 _isConnected = connected;
-
-                Color statusColor = connected 
+                Color statusColor = connected
                     ? Color.FromRgb(46, 204, 113)
                     : Color.FromRgb(255, 71, 87);
-                
                 UpdateStatusLight(statusColor);
-
-                // 更新 PowerButton 狀態
                 PowerButton.IsChecked = connected;
             });
         }
 
-        /// <summary>
-        /// 更新狀態燈號顏色和光暈
-        /// </summary>
         private void UpdateStatusLight(Color color)
         {
             StatusLight.Fill = new SolidColorBrush(color);
-            
             if (StatusGlow != null)
-            {
                 StatusGlow.Color = color;
-            }
-        }      
-      
+        }
 
-        #endregion
-
-           
-        /// <summary>
-        /// ⭐ 新增：處理噴頭狀態變更事件
-        /// </summary>
         private void OnPrintHeadStateChanged(PrintHeadConnectionState newState)
         {
-            Dispatcher.Invoke(() =>
-            {
-                UpdateConnectionStateDisplay(newState);
-            });
+            Dispatcher.Invoke(() => UpdateConnectionStateDisplay(newState));
         }
-        
-        /// <summary>
-        /// ⭐ 新增：更新連線狀態文字顯示
-        /// </summary>
+
         private void UpdateConnectionStateDisplay(PrintHeadConnectionState state)
         {
-            // 找到狀態文字控制項
-            var stateText = this.FindName("StateText") as TextBlock;
-            if (stateText != null)
+            // StateText 是 XAML x:Name 產生的欄位，直接使用
+            (string text, Color color) = state switch
             {
-                switch (state)
-                {
-                    case PrintHeadConnectionState.Idle:
-                        stateText.Text = "IDLE";
-                        stateText.Foreground = new SolidColorBrush(Color.FromRgb(200, 200, 200));
-                        break;
-                    case PrintHeadConnectionState.Ready:
-                        stateText.Text = "READY";
-                        stateText.Foreground = new SolidColorBrush(Color.FromRgb(46, 204, 113));
-                        break;
-                    case PrintHeadConnectionState.Printing:
-                        stateText.Text = "PRINTING";
-                        stateText.Foreground = new SolidColorBrush(Color.FromRgb(0, 230, 118));
-                        break;
-                    case PrintHeadConnectionState.Spit:
-                        stateText.Text = "SPITTING";
-                        stateText.Foreground = new SolidColorBrush(Color.FromRgb(255, 235, 59));
-                        break;
-                    case PrintHeadConnectionState.Error:
-                        stateText.Text = "ERROR";
-                        stateText.Foreground = new SolidColorBrush(Color.FromRgb(244, 67, 54));
-                        break;
-                    default:
-                        stateText.Text = state.ToString().ToUpper();
-                        stateText.Foreground = new SolidColorBrush(Color.FromRgb(158, 158, 158));
-                        break;
-                }
-            }
+                PrintHeadConnectionState.Idle       => ("IDLE",     Color.FromRgb(200, 200, 200)),
+                PrintHeadConnectionState.Ready      => ("READY",    Color.FromRgb(46,  204, 113)),
+                PrintHeadConnectionState.Printing   => ("PRINTING", Color.FromRgb(0,   230, 118)),
+                PrintHeadConnectionState.Spit       => ("SPITTING", Color.FromRgb(255, 235,  59)),
+                PrintHeadConnectionState.Error      => ("ERROR",    Color.FromRgb(244,  67,  54)),
+                _                                   => (state.ToString().ToUpper(), Color.FromRgb(158, 158, 158)),
+            };
+
+            StateText.Text = text;
+            StateText.Foreground = new SolidColorBrush(color);
         }
+
+        #endregion
     }
 }

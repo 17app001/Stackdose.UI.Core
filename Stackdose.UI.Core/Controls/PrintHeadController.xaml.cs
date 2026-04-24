@@ -1,8 +1,7 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using Stackdose.Abstractions.Logging;
 using Stackdose.Abstractions.Models;
 using Stackdose.Abstractions.Print;
-using Stackdose.PrintHead.Feiyang;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
 using System.IO;
@@ -70,9 +69,7 @@ namespace Stackdose.UI.Core.Controls
         private static void OnMachineIdChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is PrintHeadController ctrl)
-            {
                 ctrl.HandleMachineSwitch(e.OldValue as string, e.NewValue as string);
-            }
         }
 
         #endregion
@@ -89,23 +86,15 @@ namespace Stackdose.UI.Core.Controls
 
         private void HandleMachineSwitch(string? oldMachineId, string? newMachineId)
         {
-            // 1. Save current UI state for old machine
             if (!string.IsNullOrWhiteSpace(oldMachineId))
-            {
                 SaveCurrentState(oldMachineId);
-            }
 
             _activeMachineId = newMachineId;
 
-            // 2. Restore UI state for new machine (or reset to default)
             if (!string.IsNullOrWhiteSpace(newMachineId) && _machineStates.TryGetValue(newMachineId, out var state))
-            {
                 RestoreState(state);
-            }
             else
-            {
                 ResetUiToDefault();
-            }
         }
 
         private void SaveCurrentState(string machineId)
@@ -145,9 +134,7 @@ namespace Stackdose.UI.Core.Controls
             YDpiText.Text = state.YDpi;
             ImageInfoText.Visibility = state.HasImage ? Visibility.Collapsed : Visibility.Visible;
             if (!state.HasImage)
-            {
                 ImageInfoText.Text = "尚未載入圖片";
-            }
         }
 
         private void ResetUiToDefault()
@@ -173,43 +160,26 @@ namespace Stackdose.UI.Core.Controls
 
         private void PrintHeadController_Loaded(object sender, RoutedEventArgs e)
         {
-            // 訂閱 PrintHead 連線/斷線事件
             PrintHeadContext.PrintHeadConnected += OnPrintHeadConnected;
             PrintHeadContext.PrintHeadDisconnected += OnPrintHeadDisconnected;
-
-            // 訂閱權限變更事件
             SecurityContext.AccessLevelChanged += OnAccessLevelChanged;
 
-            // 更新連接數量顯示
             UpdateConnectedCount();
-
-            // 更新按鈕權限狀態
             UpdateButtonPermissions();
         }
 
         private void PrintHeadController_Unloaded(object sender, RoutedEventArgs e)
         {
-            // 切換離開前先存檔
             if (!string.IsNullOrWhiteSpace(_activeMachineId))
-            {
                 SaveCurrentState(_activeMachineId);
-            }
 
-            // 取消訂閱
             PrintHeadContext.PrintHeadConnected -= OnPrintHeadConnected;
             PrintHeadContext.PrintHeadDisconnected -= OnPrintHeadDisconnected;
             SecurityContext.AccessLevelChanged -= OnAccessLevelChanged;
         }
 
-        private void OnPrintHeadConnected(string name)
-        {
-            Dispatcher.Invoke(() => UpdateConnectedCount());
-        }
-
-        private void OnPrintHeadDisconnected(string name)
-        {
-            Dispatcher.Invoke(() => UpdateConnectedCount());
-        }
+        private void OnPrintHeadConnected(string name) => Dispatcher.Invoke(UpdateConnectedCount);
+        private void OnPrintHeadDisconnected(string name) => Dispatcher.Invoke(UpdateConnectedCount);
 
         private void UpdateConnectedCount()
         {
@@ -222,39 +192,27 @@ namespace Stackdose.UI.Core.Controls
             Dispatcher.BeginInvoke(UpdateButtonPermissions);
         }
 
-        /// <summary>
-        /// 更新按鈕權限狀態
-        /// </summary>
         private void UpdateButtonPermissions()
         {
-            bool hasAdminAccess = SecurityContext.HasAccess(AccessLevel.Admin);
+            bool hasAccess = SecurityContext.HasAccess(AccessLevel.Admin);
 
-            // 圖片操作按鈕只有 Engineer 可以使用
-            BrowseImageButton.IsEnabled = hasAdminAccess;
-            LoadImageButton.IsEnabled = hasAdminAccess;
-            CancelTaskButton.IsEnabled = hasAdminAccess;
+            BrowseImageButton.IsEnabled = hasAccess;
+            LoadImageButton.IsEnabled = hasAccess;
+            CancelTaskButton.IsEnabled = hasAccess;
 
-            // 設置提示文字
-            if (!hasAdminAccess)
-            {
-                string tooltip = $"需要 Engineer 權限\n目前權限: {SecurityContext.CurrentSession.CurrentLevel}";
-                BrowseImageButton.ToolTip = tooltip;
-                LoadImageButton.ToolTip = tooltip;
-                CancelTaskButton.ToolTip = tooltip;
-            }
-            else
-            {
-                BrowseImageButton.ToolTip = "讀取圖片";
-                LoadImageButton.ToolTip = "載入任務";
-                CancelTaskButton.ToolTip = "取消任務";
-            }
+            string tooltip = hasAccess
+                ? string.Empty
+                : $"需要 Admin 權限\n目前權限: {SecurityContext.CurrentSession.CurrentLevel}";
+
+            BrowseImageButton.ToolTip = hasAccess ? "讀取圖片" : tooltip;
+            LoadImageButton.ToolTip   = hasAccess ? "載入任務" : tooltip;
+            CancelTaskButton.ToolTip  = hasAccess ? "取消任務" : tooltip;
         }
 
         #endregion
 
         private void EncoderReset_Click(object sender, EventArgs e)
         {
-            // 更新活動時間
             SecurityContext.UpdateActivity();
 
             if (!ValidatePrintHeads()) return;
@@ -265,7 +223,7 @@ namespace Stackdose.UI.Core.Controls
             try
             {
                 ComplianceContext.LogSystem(
-                    $"[PrintHeadController] Starting Encoder Reset on all heads (default:1000)",
+                    "[PrintHeadController] Starting Encoder Reset on all heads (default:1000)",
                     LogLevel.Info,
                     showInUi: true
                 );
@@ -273,33 +231,16 @@ namespace Stackdose.UI.Core.Controls
                 int successCount = 0;
                 int failCount = 0;
 
-                // 對所有已連接的噴头執行閃噴
                 foreach (var kvp in PrintHeadContext.ConnectedPrintHeads)
                 {
                     try
                     {
-                        // ⭐ 強制轉型為實際類型，方便 Debug 和 IntelliSense
-                        if (kvp.Value is not FeiyangPrintHead printHead)
-                        {
-                            ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {kvp.Key}: Invalid PrintHead type",
-                                LogLevel.Error,
-                                showInUi: true
-                            );
-                            failCount++;
-                            continue;
-                        }
-
-                        string name = kvp.Key;
-
-                        // 現在可以正常 Debug，有完整的 IntelliSense 支援
-                        bool result = printHead.GratingReset(1000);
-
+                        bool result = kvp.Value.GratingReset(1000);
                         if (result)
                         {
                             successCount++;
                             ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {name}:Encoder Reset successfully",
+                                $"[PrintHeadController] {kvp.Key}: Encoder Reset successfully",
                                 LogLevel.Success,
                                 showInUi: true
                             );
@@ -308,7 +249,7 @@ namespace Stackdose.UI.Core.Controls
                         {
                             failCount++;
                             ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {name}: :Encoder Rese failed",
+                                $"[PrintHeadController] {kvp.Key}: Encoder Reset failed",
                                 LogLevel.Error,
                                 showInUi: true
                             );
@@ -318,7 +259,7 @@ namespace Stackdose.UI.Core.Controls
                     {
                         failCount++;
                         ComplianceContext.LogSystem(
-                            $"[PrintHeadController] {kvp.Key}: :Encoder Rese error - {ex.Message}",
+                            $"[PrintHeadController] {kvp.Key}: Encoder Reset error - {ex.Message}",
                             LogLevel.Error,
                             showInUi: true
                         );
@@ -326,51 +267,34 @@ namespace Stackdose.UI.Core.Controls
                 }
 
                 ComplianceContext.LogSystem(
-                    $"[PrintHeadController] :Encoder Rese completed: {successCount} success, {failCount} failed",
+                    $"[PrintHeadController] Encoder Reset completed: {successCount} success, {failCount} failed",
                     successCount > 0 ? LogLevel.Success : LogLevel.Error,
                     showInUi: true
                 );
             }
             finally
             {
-                // 重新啟用按鈕
                 if (button != null) button.IsEnabled = true;
             }
         }
 
-
         public async Task Spit(string? overrideParams = null)
         {
-            if (string.IsNullOrWhiteSpace(overrideParams))
-            {
-                overrideParams = FrequencyBox.Text;
-            }
-
-            await ExecuteSpitAsync(overrideParams, null);
+            await ExecuteSpitAsync(string.IsNullOrWhiteSpace(overrideParams) ? FrequencyBox.Text : overrideParams, null);
         }
 
         private async void SpitButton_Click(object sender, RoutedEventArgs e)
         {
-            // 取得按鈕實例
-            var button = sender as Button;
-
-            // 取得 UI 上的設定值
-            string uiParams = FrequencyBox.Text;
-
-            // 呼叫核心邏輯
-            await ExecuteSpitAsync(uiParams, button);
+            await ExecuteSpitAsync(FrequencyBox.Text, sender as Button);
         }
-
 
         #region 閃噴控制 (Spit)
 
         private async Task ExecuteSpitAsync(string frequencyString, Button? sourceButton = null)
         {
-            // 更新活動時間
             SecurityContext.UpdateActivity();
 
             if (!ValidatePrintHeads()) return;
-
 
             var parts = frequencyString?.Trim().Split(',');
             if (parts == null || parts.Length != 4)
@@ -378,8 +302,6 @@ namespace Stackdose.UI.Core.Controls
                 ShowError("Frequency 必須是 4 個數字 (ex. 0.1,1,1,1)");
                 return;
             }
-
-            //double[] dataParams = frequencyText.Select(v => double.Parse(v.Trim())).ToArray();
 
             if (!double.TryParse(parts[0].Trim(), out double frequency) ||
                 !double.TryParse(parts[1].Trim(), out double workDuration) ||
@@ -398,9 +320,6 @@ namespace Stackdose.UI.Core.Controls
                 Drops = drops
             };
 
-
-            // 禁用按鈕
-
             if (sourceButton != null) sourceButton.IsEnabled = false;
 
             try
@@ -414,33 +333,16 @@ namespace Stackdose.UI.Core.Controls
                 int successCount = 0;
                 int failCount = 0;
 
-                // 對所有已連接的噴头執行閃噴
                 foreach (var kvp in PrintHeadContext.ConnectedPrintHeads)
                 {
                     try
                     {
-                        // ⭐ 強制轉型為實際類型，方便 Debug 和 IntelliSense
-                        if (kvp.Value is not FeiyangPrintHead printHead)
-                        {
-                            ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {kvp.Key}: Invalid PrintHead type",
-                                LogLevel.Error,
-                                showInUi: true
-                            );
-                            failCount++;
-                            continue;
-                        }
-
-                        string name = kvp.Key;
-
-                        // 現在可以正常 Debug，有完整的 IntelliSense 支援
-                        bool result = await printHead.Spit(spitParams);
-
+                        bool result = await kvp.Value.Spit(spitParams);
                         if (result)
                         {
                             successCount++;
                             ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {name}: Spit started successfully",
+                                $"[PrintHeadController] {kvp.Key}: Spit started successfully",
                                 LogLevel.Success,
                                 showInUi: true
                             );
@@ -449,7 +351,7 @@ namespace Stackdose.UI.Core.Controls
                         {
                             failCount++;
                             ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {name}: Spit failed",
+                                $"[PrintHeadController] {kvp.Key}: Spit failed",
                                 LogLevel.Error,
                                 showInUi: true
                             );
@@ -474,7 +376,6 @@ namespace Stackdose.UI.Core.Controls
             }
             finally
             {
-                // 重新啟用按鈕
                 if (sourceButton != null) sourceButton.IsEnabled = true;
             }
         }
@@ -485,14 +386,10 @@ namespace Stackdose.UI.Core.Controls
 
         private void BrowseImageButton_Click(object sender, RoutedEventArgs e)
         {
-            // 更新活動時間
             SecurityContext.UpdateActivity();
 
-            // 檢查權限
             if (!SecurityContext.CheckAccess(AccessLevel.Admin, "讀取圖片"))
-            {
                 return;
-            }
 
             var dialog = new OpenFileDialog
             {
@@ -513,26 +410,18 @@ namespace Stackdose.UI.Core.Controls
             {
                 using (var image = System.Drawing.Image.FromFile(imagePath))
                 {
-                    // Update dimensions
                     ImageWidthText.Text = image.Width.ToString();
                     ImageHeightText.Text = image.Height.ToString();
-
-                    // Update DPI
                     XDpiText.Text = ((int)image.HorizontalResolution).ToString();
                     YDpiText.Text = ((int)image.VerticalResolution).ToString();
+                    FilePathText.Text = Path.GetFileName(imagePath);
 
-                    // Update file info (底部狀態列)
-                    FilePathText.Text = $"{Path.GetFileName(imagePath)}";
-
-                    // Load preview
                     BitmapImage bitmap = new BitmapImage();
                     bitmap.BeginInit();
                     bitmap.UriSource = new Uri(imagePath);
                     bitmap.CacheOption = BitmapCacheOption.OnLoad;
                     bitmap.EndInit();
                     PreviewImage.Source = bitmap;
-
-                    // ? 圖片載入成功後隱藏提示文字
                     ImageInfoText.Visibility = Visibility.Collapsed;
 
                     ComplianceContext.LogSystem(
@@ -550,8 +439,6 @@ namespace Stackdose.UI.Core.Controls
                 YDpiText.Text = "-";
                 FilePathText.Text = "尚未選擇檔案";
                 PreviewImage.Source = null;
-
-                // ? 載入失敗時顯示錯誤提示
                 ImageInfoText.Text = "圖片載入失敗";
                 ImageInfoText.Visibility = Visibility.Visible;
 
@@ -565,7 +452,6 @@ namespace Stackdose.UI.Core.Controls
 
         private async void CancelTaskButton_Click(object sender, RoutedEventArgs e)
         {
-            // 更新活動時間
             SecurityContext.UpdateActivity();
 
             if (!ValidatePrintHeads()) return;
@@ -573,7 +459,7 @@ namespace Stackdose.UI.Core.Controls
             try
             {
                 ComplianceContext.LogSystem(
-                    $"[PrintHeadController] Aborting image transfer on all heads",
+                    "[PrintHeadController] Aborting image transfer on all heads",
                     LogLevel.Info,
                     showInUi: true
                 );
@@ -585,31 +471,22 @@ namespace Stackdose.UI.Core.Controls
                 {
                     try
                     {
-                        if (kvp.Value is not FeiyangPrintHead printHead)
-                        {
-                            failCount++;
-                            continue;
-                        }
-
-                        string name = kvp.Key;
-                        bool ok = await printHead.StopPrintAsync();
-
+                        bool ok = await kvp.Value.StopPrintAsync();
                         if (ok)
                         {
                             successCount++;
                             ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {name}: Task aborted successfully",
+                                $"[PrintHeadController] {kvp.Key}: Task aborted successfully",
                                 LogLevel.Success,
                                 showInUi: true
                             );
-
-                            printHead.SetState(PrintHeadConnectionState.Ready);
+                            kvp.Value.SetState(PrintHeadConnectionState.Ready);
                         }
                         else
                         {
                             failCount++;
                             ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {name}: Task abort failed",
+                                $"[PrintHeadController] {kvp.Key}: Task abort failed",
                                 LogLevel.Error,
                                 showInUi: true
                             );
@@ -640,14 +517,10 @@ namespace Stackdose.UI.Core.Controls
 
         private async void LoadImageButton_Click(object sender, RoutedEventArgs e)
         {
-            // 更新活動時間
             SecurityContext.UpdateActivity();
 
-            // 檢查權限
             if (!SecurityContext.CheckAccess(AccessLevel.Admin, "載入任務"))
-            {
                 return;
-            }
 
             if (!ValidatePrintHeads()) return;
 
@@ -674,11 +547,9 @@ namespace Stackdose.UI.Core.Controls
                     showInUi: true
                 );
 
-                // ⭐ 修正 1：解析 UI 上的列印參數
                 if (!float.TryParse(StartXBox.Text, out float startX)) startX = 0;
                 if (!float.TryParse(CaliMMBox.Text, out float caliMM)) caliMM = 0;
 
-                // ⭐ 修正 2：讀取圖片物件 (注意：System.Drawing.Bitmap 需要正確釋放)
                 using var bitmap = new System.Drawing.Bitmap(_currentImagePath);
 
                 int successCount = 0;
@@ -688,38 +559,22 @@ namespace Stackdose.UI.Core.Controls
                 {
                     try
                     {
-                        // ⭐ 強制轉型為實際類型，方便 Debug 和 IntelliSense
-                        if (kvp.Value is not FeiyangPrintHead printHead)
-                        {
-                            ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {kvp.Key}: Invalid PrintHead type",
-                                LogLevel.Error,
-                                showInUi: true
-                            );
-                            failCount++;
-                            continue;
-                        }
-
-                        string name = kvp.Key;
-
-                        var (result, msg) = await printHead.TransferBitmapAsync(bitmap, startX, caliMM);
-
+                        var (result, msg) = await kvp.Value.TransferBitmapAsync(bitmap, startX, caliMM);
                         if (result)
                         {
                             successCount++;
                             ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {name}: Image loaded successfully",
+                                $"[PrintHeadController] {kvp.Key}: Image loaded successfully",
                                 LogLevel.Success,
                                 showInUi: true
                             );
-
-                            await printHead.StartPrintAsync();
+                            await kvp.Value.StartPrintAsync();
                         }
                         else
                         {
                             failCount++;
                             ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {name}: Image load failed - {msg}",
+                                $"[PrintHeadController] {kvp.Key}: Image load failed - {msg}",
                                 LogLevel.Error,
                                 showInUi: true
                             );
@@ -759,7 +614,6 @@ namespace Stackdose.UI.Core.Controls
                 ShowError("沒有已連接的噴頭");
                 return false;
             }
-
             return true;
         }
 
@@ -770,7 +624,6 @@ namespace Stackdose.UI.Core.Controls
                 LogLevel.Error,
                 showInUi: true
             );
-
             MessageBox.Show(message, "PrintHead Controller", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 

@@ -967,7 +967,7 @@ public static class RuntimeControlFactory
     $handlersDir = Join-Path $projectDir "Handlers"
     New-Item -ItemType Directory -Path $handlersDir -Force | Out-Null
 
-@'
+    $handlerCs = @'
 using Stackdose.App.ShellShared.Behaviors;
 using System.Windows;
 
@@ -998,8 +998,8 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler
             MessageBox.Show(msg, ctx.Action.Title ?? "系統訊息");
     }
 }
-'@ -replace 'NAMESPACE_PLACEHOLDER', $AppName |
-    Set-Content -Path (Join-Path $handlersDir "SampleCustomHandler.cs") -Encoding UTF8
+'@ -replace 'NAMESPACE_PLACEHOLDER', $AppName
+    [System.IO.File]::WriteAllText((Join-Path $handlersDir "SampleCustomHandler.cs"), $handlerCs, [System.Text.UTF8Encoding]::new($true))
 
     # -- 8. Config/ ------------------------------------------------------------
     $jdConfigDir = Join-Path $projectDir "Config"

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Stackdose.Abstractions.Logging;
+using Stackdose.Abstractions.Models;
 using Stackdose.Abstractions.Print;
 using Stackdose.UI.Core.Models;
 
@@ -213,6 +214,75 @@ namespace Stackdose.UI.Core.Helpers
             }
 
             return summary.ToString();
+        }
+
+        #endregion
+
+        #region 閃噴 (Spit/Flash) 邏輯
+
+        /// <summary>
+        /// 嘗試解析閃噴參數字串
+        /// </summary>
+        /// <param name="paramsString">格式：frequency,workDuration,idleDuration,drops (ex: 0.1,1,1,1)</param>
+        /// <param name="spitParams">輸出的參數物件</param>
+        /// <returns>是否解析成功</returns>
+        public static bool TryParseSpitParams(string paramsString, out SpitParams? spitParams)
+        {
+            spitParams = null;
+            if (string.IsNullOrWhiteSpace(paramsString)) return false;
+
+            var parts = paramsString.Trim().Split(',');
+            if (parts.Length != 4) return false;
+
+            if (double.TryParse(parts[0].Trim(), out double freq) &&
+                double.TryParse(parts[1].Trim(), out double work) &&
+                double.TryParse(parts[2].Trim(), out double idle) &&
+                byte.TryParse(parts[3].Trim(), out byte drops))
+            {
+                spitParams = new SpitParams
+                {
+                    Frequency = freq,
+                    WorkDuration = work,
+                    IdleDuration = idle,
+                    Drops = drops
+                };
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 對所有已連線的 PrintHead 執行閃噴 (Spit)
+        /// </summary>
+        /// <returns>成功與失敗數量</returns>
+        public static async Task<(int success, int fail)> SpitAllAsync(SpitParams spitParams)
+        {
+            int successCount = 0;
+            int failCount = 0;
+
+            var heads = GetAllConnectedPrintHeads();
+            if (heads.Count == 0) return (0, 0);
+
+            foreach (var kvp in heads)
+            {
+                try
+                {
+                    bool result = await kvp.Value.Spit(spitParams);
+                    if (result) successCount++;
+                    else failCount++;
+                }
+                catch (Exception ex)
+                {
+                    ComplianceContext.LogSystem(
+                        $"[PrintHeadContext] {kvp.Key} Spit error: {ex.Message}",
+                        LogLevel.Error,
+                        showInUi: false);
+                    failCount++;
+                }
+            }
+
+            return (successCount, failCount);
         }
 
         #endregion

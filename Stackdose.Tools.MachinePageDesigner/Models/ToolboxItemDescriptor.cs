@@ -121,6 +121,24 @@ public sealed class ToolboxItemDescriptor
             },
             Width = 300, Height = 160
         },
+        "PrintHeadStatus" => new DesignerItemDefinition
+        {
+            Type = "PrintHeadStatus",
+            Props = new()
+            {
+                ["configFile"] = "Config/feiyang_head1.json",
+                ["headName"] = "PrintHead 1",
+                ["headIndex"] = 0,
+                ["autoConnect"] = false
+            },
+            Width = 320, Height = 100
+        },
+        "PrintHeadController" => new DesignerItemDefinition
+        {
+            Type = "PrintHeadController",
+            Props = [],
+            Width = 700, Height = 300
+        },
         _ => new DesignerItemDefinition { Type = Type }
     };
 
@@ -131,6 +149,8 @@ public sealed class ToolboxItemDescriptor
         new() { Type = "PlcStatusIndicator", DisplayName = "PlcStatusIndicator", Category = "PLC",    Icon = "\u25CF" },
         new() { Type = "PlcDeviceEditor",    DisplayName = "PlcDeviceEditor",    Category = "PLC",    Icon = "\u2699" },
         new() { Type = "SecuredButton",      DisplayName = "SecuredButton",      Category = "Button", Icon = "\u25A3" },
+        new() { Type = "PrintHeadStatus",    DisplayName = "PrintHeadStatus",    Category = "Hardware", Icon = "\u2631" },
+        new() { Type = "PrintHeadController", DisplayName = "PrintHeadController", Category = "Hardware", Icon = "\u2699" },
         new() { Type = "Spacer",             DisplayName = "Spacer",             Category = "Layout", Icon = "\u25A1" },
         new() { Type = "StaticLabel",        DisplayName = "StaticLabel",        Category = "Layout", Icon = "T" },
         new() { Type = "SystemClock",        DisplayName = "SystemClock",        Category = "Layout", Icon = "\u23F0" },

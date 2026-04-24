@@ -275,23 +275,11 @@ namespace Stackdose.UI.Core.Controls
                     return;
                 }
 
-                // 驗證格式
-                var parts = flashParams.Split(',');
-                if (parts.Length != 4)
+                // 解析與驗證 Flash 參數
+                if (!PrintHeadContext.TryParseSpitParams(flashParams, out var spitParams) || spitParams == null)
                 {
                     CyberMessageBox.Show(
-                        "Flash 參數格式錯誤！\n正確格式：0.1,1,1,1 (4個數值，用逗號分隔)",
-                        "參數錯誤",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                    return;
-                }
-
-                // 驗證每個參數是否為數字
-                if (!parts.All(p => double.TryParse(p.Trim(), out _)))
-                {
-                    CyberMessageBox.Show(
-                        "Flash 參數必須為數字！\n格式：0.1,1,1,1",
+                        "Flash 參數格式錯誤！\n正確格式：0.1,1,1,1 (4個數值，用逗號分隔，且必須為數字)",
                         "參數錯誤",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
@@ -322,13 +310,8 @@ namespace Stackdose.UI.Core.Controls
                     return;
                 }
 
-                ComplianceContext.LogSystem(
-                    $"[PrintHead] Found {connectedPrintHeads.Count} connected PrintHead(s)",
-                    LogLevel.Info,
-                    showInUi: true);
-
                 // 詢問使用者確認
-                var result = CyberMessageBox.Show(
+                var confirmResult = CyberMessageBox.Show(
                     $"確定要對 {connectedPrintHeads.Count} 個已連線的 PrintHead 執行 Flash 操作嗎？\n\n" +
                     $"參數：{flashParams} Khz\n\n" +
                     $"已連線的 PrintHead：\n{string.Join("\n", connectedPrintHeads.Select(kvp => $"  • {kvp.Key}"))}",
@@ -336,7 +319,7 @@ namespace Stackdose.UI.Core.Controls
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
 
-                if (result != MessageBoxResult.Yes)
+                if (confirmResult != MessageBoxResult.Yes)
                 {
                     ComplianceContext.LogSystem(
                         "[PrintHead] Flash operation cancelled by user",
@@ -346,88 +329,7 @@ namespace Stackdose.UI.Core.Controls
                 }
 
                 // 執行 Flash 操作
-                int successCount = 0;
-                int failCount = 0;
-
-                foreach (var kvp in connectedPrintHeads)
-                {
-                    string printHeadName = kvp.Key;
-                    var printHead = kvp.Value;
-
-                    try
-                    {
-                        ComplianceContext.LogSystem(
-                            $"[PrintHead] Flashing {printHeadName}...",
-                            LogLevel.Info,
-                            showInUi: true);
-
-                        // 執行 Flash 操作
-                        bool flashSuccess = await Task.Run(async () =>
-                        {
-                            try
-                            {
-                                // 🔥 解析 Flash 參數 (格式：0.1,1,1,1)
-                                // 0.1 = Frequency (kHz)
-                                // 1   = WorkDuration (秒)
-                                // 1   = IdleDuration (秒)
-                                // 1   = Drops (液滴數)
-                                
-                                var paramParts = flashParams.Split(',');
-                                double frequency = double.Parse(paramParts[0].Trim());
-                                double workDuration = double.Parse(paramParts[1].Trim());
-                                double idleDuration = double.Parse(paramParts[2].Trim());
-                                byte drops = byte.Parse(paramParts[3].Trim());
-
-                                // 🔥 建立 SpitParams 物件
-                                var spitParams = new SpitParams
-                                {
-                                    Frequency = frequency,
-                                    WorkDuration = workDuration,
-                                    IdleDuration = idleDuration,
-                                    Drops = drops
-                                };
-
-                                // 🔥 呼叫 PrintHead 的 Spit 方法
-                                bool result = await printHead.Spit(spitParams);
-                                
-                                return result;
-                            }
-                            catch (Exception ex)
-                            {
-                                ComplianceContext.LogSystem(
-                                    $"[PrintHead] {printHeadName} Flash error: {ex.Message}",
-                                    LogLevel.Error,
-                                    showInUi: false);
-                                return false;
-                            }
-                        });
-
-                        if (flashSuccess)
-                        {
-                            successCount++;
-                            ComplianceContext.LogSystem(
-                                $"[PrintHead] {printHeadName} Flash completed",
-                                LogLevel.Success,
-                                showInUi: true);
-                        }
-                        else
-                        {
-                            failCount++;
-                            ComplianceContext.LogSystem(
-                                $"[PrintHead] {printHeadName} Flash failed",
-                                LogLevel.Error,
-                                showInUi: true);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        failCount++;
-                        ComplianceContext.LogSystem(
-                            $"[PrintHead] {printHeadName} Flash exception: {ex.Message}",
-                            LogLevel.Error,
-                            showInUi: true);
-                    }
-                }
+                var (successCount, failCount) = await PrintHeadContext.SpitAllAsync(spitParams);
 
                 // 顯示結果
                 if (failCount == 0)

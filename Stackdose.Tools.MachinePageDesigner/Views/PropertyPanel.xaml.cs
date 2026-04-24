@@ -64,6 +64,7 @@ public class PropertyPanelTemplateSelector : DataTemplateSelector
     public DataTemplate? SensorViewerTemplate { get; set; }
     public DataTemplate? ProcessStatusIndicatorTemplate { get; set; }
     public DataTemplate? PlcDeviceEditorTemplate { get; set; }
+    public DataTemplate? PrintHeadStatusTemplate { get; set; }
     public DataTemplate? EmptyTemplate { get; set; }
 
     public override DataTemplate? SelectTemplate(object? item, DependencyObject container)
@@ -82,6 +83,7 @@ public class PropertyPanelTemplateSelector : DataTemplateSelector
             "SensorViewer" => SensorViewerTemplate,
             "ProcessStatusIndicator" => ProcessStatusIndicatorTemplate,
             "PlcDeviceEditor" => PlcDeviceEditorTemplate,
+            "PrintHeadStatus" => PrintHeadStatusTemplate,
             _ => EmptyTemplate,
         };
     }

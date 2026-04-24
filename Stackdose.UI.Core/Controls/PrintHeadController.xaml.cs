@@ -296,77 +296,23 @@ namespace Stackdose.UI.Core.Controls
 
             if (!ValidatePrintHeads()) return;
 
-            var parts = frequencyString?.Trim().Split(',');
-            if (parts == null || parts.Length != 4)
+            if (!PrintHeadContext.TryParseSpitParams(frequencyString, out var spitParams) || spitParams == null)
             {
                 ShowError("Frequency 必須是 4 個數字 (ex. 0.1,1,1,1)");
                 return;
             }
-
-            if (!double.TryParse(parts[0].Trim(), out double frequency) ||
-                !double.TryParse(parts[1].Trim(), out double workDuration) ||
-                !double.TryParse(parts[2].Trim(), out double idleDuration) ||
-                !byte.TryParse(parts[3].Trim(), out byte drops))
-            {
-                ShowError("Frequency 必須是有效的數字 (ex. 0.1,1,1,1)");
-                return;
-            }
-
-            var spitParams = new SpitParams
-            {
-                Frequency = frequency,
-                WorkDuration = workDuration,
-                IdleDuration = idleDuration,
-                Drops = drops
-            };
 
             if (sourceButton != null) sourceButton.IsEnabled = false;
 
             try
             {
                 ComplianceContext.LogSystem(
-                    $"[PrintHeadController] Starting spit on all heads (Freq:{frequency}kHz)",
+                    $"[PrintHeadController] Starting spit on all heads (Freq:{spitParams.Frequency}kHz)",
                     LogLevel.Info,
                     showInUi: true
                 );
 
-                int successCount = 0;
-                int failCount = 0;
-
-                foreach (var kvp in PrintHeadContext.ConnectedPrintHeads)
-                {
-                    try
-                    {
-                        bool result = await kvp.Value.Spit(spitParams);
-                        if (result)
-                        {
-                            successCount++;
-                            ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {kvp.Key}: Spit started successfully",
-                                LogLevel.Success,
-                                showInUi: true
-                            );
-                        }
-                        else
-                        {
-                            failCount++;
-                            ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {kvp.Key}: Spit failed",
-                                LogLevel.Error,
-                                showInUi: true
-                            );
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        failCount++;
-                        ComplianceContext.LogSystem(
-                            $"[PrintHeadController] {kvp.Key}: Spit error - {ex.Message}",
-                            LogLevel.Error,
-                            showInUi: true
-                        );
-                    }
-                }
+                var (successCount, failCount) = await PrintHeadContext.SpitAllAsync(spitParams);
 
                 ComplianceContext.LogSystem(
                     $"[PrintHeadController] Spit completed: {successCount} success, {failCount} failed",
@@ -552,11 +498,35 @@ namespace Stackdose.UI.Core.Controls
 
                 using var bitmap = new System.Drawing.Bitmap(_currentImagePath);
 
+                var connectedHeads = PrintHeadContext.GetAllConnectedPrintHeads().ToList();
+                int totalHeads = connectedHeads.Count;
                 int successCount = 0;
                 int failCount = 0;
 
-                foreach (var kvp in PrintHeadContext.ConnectedPrintHeads)
+                // 顯示進度條
+                Dispatcher.Invoke(() =>
                 {
+                    ProgressPanel.Visibility = Visibility.Visible;
+                    TransferProgressBar.Value = 0;
+                });
+
+                for (int i = 0; i < totalHeads; i++)
+                {
+                    var kvp = connectedHeads[i];
+                    int headIndex = i;
+
+                    // 訂閱進度事件
+                    Action<int> progressHandler = (progress) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            double overallProgress = ((double)headIndex + (progress / 100.0)) / totalHeads * 100.0;
+                            TransferProgressBar.Value = overallProgress;
+                        });
+                    };
+
+                    kvp.Value.ProgressChanged += progressHandler;
+
                     try
                     {
                         var (result, msg) = await kvp.Value.TransferBitmapAsync(bitmap, startX, caliMM);
@@ -589,6 +559,17 @@ namespace Stackdose.UI.Core.Controls
                             showInUi: true
                         );
                     }
+                    finally
+                    {
+                        // 取消訂閱
+                        kvp.Value.ProgressChanged -= progressHandler;
+                        
+                        // 確保該頭結束時進度達到 (i+1)/total
+                        Dispatcher.Invoke(() =>
+                        {
+                            TransferProgressBar.Value = (double)(headIndex + 1) / totalHeads * 100.0;
+                        });
+                    }
                 }
 
                 ComplianceContext.LogSystem(
@@ -596,6 +577,10 @@ namespace Stackdose.UI.Core.Controls
                     successCount > 0 ? LogLevel.Success : LogLevel.Error,
                     showInUi: true
                 );
+
+                // 延遲隱藏進度條
+                await Task.Delay(1000);
+                Dispatcher.Invoke(() => ProgressPanel.Visibility = Visibility.Collapsed);
             }
             finally
             {

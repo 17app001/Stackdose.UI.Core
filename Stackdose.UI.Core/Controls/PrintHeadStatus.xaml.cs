@@ -182,8 +182,8 @@ namespace Stackdose.UI.Core.Controls
                     return false;
                 }
 
-                if (!string.IsNullOrWhiteSpace(_config.Waveform) && !Path.IsPathRooted(_config.Waveform))
-                    _config.Waveform = ResolveWavePath(_config.Waveform);
+                if (!string.IsNullOrWhiteSpace(_config.Firmware.WaveformPath) && !Path.IsPathRooted(_config.Firmware.WaveformPath))
+                    _config.Firmware.WaveformPath = ResolveWavePath(_config.Firmware.WaveformPath);
 
                 Dispatcher.Invoke(() =>
                 {
@@ -191,7 +191,7 @@ namespace Stackdose.UI.Core.Controls
                 });
 
                 ComplianceContext.LogSystem(
-                    $"[PrintHead] Config loaded: {_config.Name} ({_config.Model})",
+                    $"[PrintHead] Config loaded: {_config.Name} ({_config.DriverType})",
                     LogLevel.Info,
                     showInUi: false
                 );

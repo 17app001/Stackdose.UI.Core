@@ -369,6 +369,18 @@ public static class RuntimeControlFactory
         };
     }
 
+    private static UIElement CreatePrintHeadStatus(DesignerItemDefinition def)
+    {
+        var p = def.Props;
+        return new PrintHeadStatus
+        {
+            ConfigFilePath = p.GetString("configFile", "Config/feiyang_head1.json"),
+            HeadName       = p.GetString("headName",   "PrintHead 1"),
+            HeadIndex      = (int)p.GetDouble("headIndex", 0),
+            AutoConnect    = p.GetBool("autoConnect",  false),
+        };
+    }
+
     // ── 未知類型佔位符 ────────────────────────────────────────────────────
 
     private static UIElement MakeUnknownPlaceholder(string type)

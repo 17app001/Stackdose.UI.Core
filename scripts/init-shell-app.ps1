@@ -24,7 +24,10 @@
     [switch]$JsonDrivenApp,
 
     [ValidateSet("SinglePage", "Standard", "Dashboard")]
-    [string]$JsonDrivenShellMode = "SinglePage"
+    [string]$JsonDrivenShellMode = "SinglePage",
+
+    # Optional hardware configs
+    [switch]$IncludePrintHead
 )
 
 Set-StrictMode -Version Latest
@@ -1005,6 +1008,60 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler
     $jdConfigDir = Join-Path $projectDir "Config"
     New-Item -ItemType Directory -Path $jdConfigDir -Force | Out-Null
 
+    # 預設感測器設定檔
+@"
+[
+  { "id": 1, "name": "溫度感測器", "address": "D1000", "type": "Word", "unit": "°C", "category": "環境" },
+  { "id": 2, "name": "進氣壓力", "address": "D1002", "type": "Word", "unit": "bar", "category": "氣動" }
+]
+"@ | Set-Content -Path (Join-Path $jdConfigDir "Machine1.sensors.json") -Encoding UTF8
+
+    # 預設警報設定檔
+@"
+[
+  { "id": 1, "name": "緊急停止按下", "address": "M100", "level": "Critical", "message": "請解除急停並復歸" },
+  { "id": 2, "name": "氣壓不足", "address": "M101", "level": "Warning", "message": "請檢查氣源供應" }
+]
+"@ | Set-Content -Path (Join-Path $jdConfigDir "Machine1.alarms.json") -Encoding UTF8
+
+    if ($IncludePrintHead) {
+        # 預設噴頭設定檔
+@"
+{
+  "Name": "A-Head1",
+  "BoardIP": "192.168.22.68",
+  "BoardPort": 10000,
+  "PcIP": "192.168.22.1",
+  "PcPort": 10000,
+  "Firmware": {
+    "WaveformPath": "waves/A8_1536GS_L_25PL_UV_DROP1_30K_ABC0.data",
+    "EnableTkling": false,
+    "PrintheadColorCount": 0,
+    "InstallDirectionPositive": false,
+    "EncoderFunction": 0,
+    "HeatTempreture": 40,
+    "BaseVoltage": [ 23.5, 23.5, 23.5, 23.5 ],
+    "OffsetVoltage": [ 0.0, 0.0, 0.0, 0.0 ],
+    "JetColor": [ 0, 0, 0, 0 ],
+    "DisableColumnMask": 0
+  },
+  "PrintMode": {
+    "Repeat": 1,
+    "Direction": "Bidirection",
+    "GratingDPI": 1270,
+    "GrayScale": 0,
+    "GrayScaleDrop": 1,
+    "ResetEncoder": 1000,
+    "PrintBegin": 0,
+    "XSpace": 0,
+    "LColumnCali": [ 29.9, 22.3, 7.6 ],
+    "RColumnCali": [ 7.6, 22.3, 29.9 ]
+  }
+}
+"@ | Set-Content -Path (Join-Path $jdConfigDir "feiyang_head1.json") -Encoding UTF8
+    }
+
+    # App 主設定檔
 @"
 {
   "appTitle": "$AppName",
@@ -1017,7 +1074,7 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler
     "autoConnect": true
   },
   "liveRecordIntervalSec": 5,
-  "designFile": "Config/$AppName.machinedesign.json"
+  "designFile": "Config/M1.machinedesign.json"
 }
 "@ | Set-Content -Path (Join-Path $jdConfigDir "app-config.json") -Encoding UTF8
 
@@ -1043,7 +1100,7 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler
   ],
   "pages": []
 }
-"@ | Set-Content -Path (Join-Path $jdConfigDir "$AppName.machinedesign.json") -Encoding UTF8
+"@ | Set-Content -Path (Join-Path $jdConfigDir "M1.machinedesign.json") -Encoding UTF8
 
     # -- 9. README -------------------------------------------------------------
 @"

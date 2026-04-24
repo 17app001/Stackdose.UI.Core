@@ -1,13 +1,15 @@
-﻿param(
+param(
     [Parameter(Mandatory = $true, HelpMessage = "App 名稱，例如 Stackdose.App.ModelF")]
     [string]$AppName,
     [ValidateSet("SinglePage", "Standard", "Dashboard")]
     [string]$Mode = "SinglePage",
-    [string]$DestinationRoot = (Join-Path $PSScriptRoot "..\..")
+    [string]$DestinationRoot = (Join-Path $PSScriptRoot "..\.."),
+    [switch]$IncludePrintHead
 )
 
 & "$PSScriptRoot\init-shell-app.ps1" `
     -AppName            $AppName `
     -DestinationRoot    $DestinationRoot `
     -JsonDrivenApp `
-    -JsonDrivenShellMode $Mode
+    -JsonDrivenShellMode $Mode `
+    -IncludePrintHead:$IncludePrintHead

@@ -6,8 +6,9 @@
 
 ## 現狀三行摘要
 
-- **分支：** `master`｜PlcLabel Float 支援、Designer DataType 選項、scaffold 編碼全修（2026-04-24）
-- **主力工作：** DesignRuntime 驗收測試、MachinePageDesigner 細節完善
+- **分支：** `feature/printhead-robustness`（未合 master）｜PrintHead 控件型別安全重構（2026-04-24）
+- **主力工作：** PrintHead 整合關鍵環節，控件強化已完成，待進入實際硬體整合
+- **未解問題：** Flash/Spit 邏輯仍在 PrintHeadPanel 與 PrintHeadController 各有一份（重複）；傳圖進度條尚未實作
 
 ---
 

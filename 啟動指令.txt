@@ -2,7 +2,13 @@
 -DestinationRoot .  (預設同一個目錄)
 
 
+.\scripts\new-app.ps1 -AppName "MyApp" -Mode "Dashboard" -IncludePrintHead
 
+.\scripts\new-app.ps1 -AppName "MyApp" -Mode "Dashboard" -IncludePrintHead
+
+
+
+.\scripts\new-app.ps1 -AppName "MyPrintApp" 
 
 
 

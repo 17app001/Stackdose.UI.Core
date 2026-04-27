@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -32,6 +32,23 @@
     </Reference>
   </ItemGroup>
 
-  <!-- 📋 複製 FeiyangSDK 依賴的 DLLs -->
+  <!-- 📋 統一管理：自動複製 Feiyang SDK 所有必要的 Native DLLs -->
+  <ItemGroup>
+    <!-- 1. 複製 SDK lib 下的所有檔案 (包含子目錄) -->
+    <None Include="..\..\Sdk\FeiyangSDK-2.3.1\lib\**\*.*">
+      <Link>%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    
+    <!-- 2. 複製 FeiyangWrapper 本身 (Debug/Release 自動選擇) -->
+    <None Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll" Condition="Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll')">
+      <Link>FeiyangWrapper.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll" Condition="!Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll') and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll')">
+      <Link>FeiyangWrapper.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>

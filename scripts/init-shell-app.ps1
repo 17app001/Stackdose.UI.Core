@@ -132,13 +132,33 @@ if ($JsonDrivenApp) {
     $uiCoreRef    = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "Stackdose.UI.Core\Stackdose.UI.Core.csproj")
     $templatesRef = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "Stackdose.UI.Templates\Stackdose.UI.Templates.csproj")
     $shellRef     = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "Stackdose.App.ShellShared\Stackdose.App.ShellShared.csproj")
+    # 注入 ProjectReferences
     $refGroup = $jdXml.CreateElement("ItemGroup")
     foreach ($r in @($uiCoreRef, $templatesRef, $shellRef)) {
         $n = $jdXml.CreateElement("ProjectReference")
         $n.SetAttribute("Include", $r)
         $refGroup.AppendChild($n) | Out-Null
     }
+    
+    # 注入 FeiyangWrapper C++ 專案參考 (如果路徑匹配)
+    $wrapperVcxproj = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "..\Sdk\FeiyangWrapper\FeiyangWrapper\FeiyangWrapper.vcxproj")
+    $wrapperNode = $jdXml.CreateElement("ProjectReference")
+    $wrapperNode.SetAttribute("Include", $wrapperVcxproj)
+    $refGroup.AppendChild($wrapperNode) | Out-Null
+    
     $jdProject.AppendChild($refGroup) | Out-Null
+
+    # 注入強力複製 Target (解決另一台電腦找不到 DLL 的問題)
+    $targetNode = $jdXml.CreateElement("Target")
+    $targetNode.SetAttribute("Name", "CopyFeiyangSdkLibs")
+    $targetNode.SetAttribute("AfterTargets", "Build")
+    # 這裡使用相對路徑變數
+    $sdkLibPath = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "..\Sdk\FeiyangSDK-2.3.1\lib")
+    $targetNode.InnerXml = @"
+<ItemGroup><FeiyangSdkLibs Include="`$(MSBuildProjectDirectory)\$sdkLibPath\**\*.*" /></ItemGroup><Copy SourceFiles="@(FeiyangSdkLibs)" DestinationFolder="`$(TargetDir)" SkipUnchangedFiles="true" />
+"@
+    $jdProject.AppendChild($targetNode) | Out-Null
+
     $jdXml.Save($projectFile)
 
 @"

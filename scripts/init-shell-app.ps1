@@ -140,24 +140,39 @@ if ($JsonDrivenApp) {
         $refGroup.AppendChild($n) | Out-Null
     }
     
-    # 注入 FeiyangWrapper C++ 專案參考 (如果路徑匹配)
-    $wrapperVcxproj = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "..\Sdk\FeiyangWrapper\FeiyangWrapper\FeiyangWrapper.vcxproj")
-    $wrapperNode = $jdXml.CreateElement("ProjectReference")
-    $wrapperNode.SetAttribute("Include", $wrapperVcxproj)
-    $refGroup.AppendChild($wrapperNode) | Out-Null
+    # 只有在 IncludePrintHead 時才注入相關 DLL 與專案參考
+    if ($IncludePrintHead) {
+        # 1. 注入 FeiyangWrapper C++ 專案參考 (如果路徑匹配)
+        $wrapperVcxproj = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "..\Sdk\FeiyangWrapper\FeiyangWrapper\FeiyangWrapper.vcxproj")
+        $wrapperNode = $jdXml.CreateElement("ProjectReference")
+        $wrapperNode.SetAttribute("Include", $wrapperVcxproj)
+        $refGroup.AppendChild($wrapperNode) | Out-Null
+        
+        # 2. 注入強力複製 Target (解決另一台電腦找不到 DLL 的問題)
+        $targetNode = $jdXml.CreateElement("Target")
+        $targetNode.SetAttribute("Name", "CopyFeiyangSdkLibs")
+        $targetNode.SetAttribute("AfterTargets", "Build")
+        
+        # 計算相對路徑
+        $sdkLibPath = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "..\Sdk\FeiyangSDK-2.3.1\lib")
+        $wrapperRelPath = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "..\Sdk\FeiyangWrapper\FeiyangWrapper\x64")
+
+        $targetNode.InnerXml = @"
+<PropertyGroup>
+  <WrapperDllPath>`$(MSBuildProjectDirectory)\$wrapperRelPath\Release</WrapperDllPath>
+  <WrapperDllPath Condition="!Exists('`$(WrapperDllPath)\FeiyangWrapper.dll')">`$(MSBuildProjectDirectory)\$wrapperRelPath\Debug</WrapperDllPath>
+</PropertyGroup>
+<ItemGroup>
+  <FeiyangSdkLibs Include="`$(MSBuildProjectDirectory)\$sdkLibPath\**\*.*" />
+  <WrapperDll Include="`$(WrapperDllPath)\FeiyangWrapper.dll" />
+</ItemGroup>
+<Copy SourceFiles="@(FeiyangSdkLibs)" DestinationFolder="`$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('`$(MSBuildProjectDirectory)\$sdkLibPath')" />
+<Copy SourceFiles="@(WrapperDll)" DestinationFolder="`$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('%(FullPath)')" />
+"@
+        $jdProject.AppendChild($targetNode) | Out-Null
+    }
     
     $jdProject.AppendChild($refGroup) | Out-Null
-
-    # 注入強力複製 Target (解決另一台電腦找不到 DLL 的問題)
-    $targetNode = $jdXml.CreateElement("Target")
-    $targetNode.SetAttribute("Name", "CopyFeiyangSdkLibs")
-    $targetNode.SetAttribute("AfterTargets", "Build")
-    # 這裡使用相對路徑變數
-    $sdkLibPath = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "..\Sdk\FeiyangSDK-2.3.1\lib")
-    $targetNode.InnerXml = @"
-<ItemGroup><FeiyangSdkLibs Include="`$(MSBuildProjectDirectory)\$sdkLibPath\**\*.*" /></ItemGroup><Copy SourceFiles="@(FeiyangSdkLibs)" DestinationFolder="`$(TargetDir)" SkipUnchangedFiles="true" />
-"@
-    $jdProject.AppendChild($targetNode) | Out-Null
 
     $jdXml.Save($projectFile)
 

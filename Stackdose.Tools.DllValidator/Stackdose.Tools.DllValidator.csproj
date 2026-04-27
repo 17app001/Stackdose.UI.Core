@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Stackdose.UI.Core\Stackdose.UI.Core.csproj" />
+  </ItemGroup>
+
+  <!-- 自動複製 SDK DLL 邏輯：確保驗證工具執行時環境與真實 App 一致 -->
+  <Target Name="CopyFeiyangSdkLibs" AfterTargets="Build">
+    <PropertyGroup>
+      <!-- 從專案目錄到 Sdk 的相對路徑：.. (UI.Core) / .. (Project) / Sdk -->
+      <SdkRootPath>..\..\Sdk</SdkRootPath>
+      <SdkLibPath>$(SdkRootPath)\FeiyangSDK-2.3.1\lib</SdkLibPath>
+      <WrapperPath>$(SdkRootPath)\FeiyangWrapper\FeiyangWrapper\x64\Release</WrapperPath>
+      <!-- 如果找不到 Release，嘗試找 Debug -->
+      <WrapperPath Condition="!Exists('$(WrapperPath)\FeiyangWrapper.dll')">$(SdkRootPath)\FeiyangWrapper\FeiyangWrapper\x64\Debug</WrapperPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <FeiyangSdkLibs Include="$(SdkLibPath)\**\*.*" />
+      <WrapperDll Include="$(WrapperPath)\FeiyangWrapper.dll" />
+    </ItemGroup>
+
+    <Message Importance="High" Text="[DllValidator] SDK Root: $([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(SdkRootPath)'))" />
+
+    <Copy SourceFiles="@(FeiyangSdkLibs)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('$(SdkLibPath)')" />
+    <Copy SourceFiles="@(WrapperDll)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('%(FullPath)')" />
+  </Target>
+</Project>

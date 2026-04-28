@@ -122,6 +122,19 @@ if ($null -eq $configCopyNode) {
     $requiresCsprojSave = $true
 }
 
+$wavesCopyNode = $baseCsprojXml.SelectSingleNode('/Project/ItemGroup/None[@Update="Config\\waves\\**"]')
+if ($null -eq $wavesCopyNode) {
+    $wavesGroup = $baseCsprojXml.CreateElement("ItemGroup")
+    $wavesNone = $baseCsprojXml.CreateElement("None")
+    $wavesNone.SetAttribute("Update", "Config\waves\**")
+    $wavesCopy = $baseCsprojXml.CreateElement("CopyToOutputDirectory")
+    $wavesCopy.InnerText = "PreserveNewest"
+    $wavesNone.AppendChild($wavesCopy) | Out-Null
+    $wavesGroup.AppendChild($wavesNone) | Out-Null
+    $baseProjectNode.AppendChild($wavesGroup) | Out-Null
+    $requiresCsprojSave = $true
+}
+
 if ($requiresCsprojSave) {
     $baseCsprojXml.Save($projectFile)
 }
@@ -159,8 +172,8 @@ if ($JsonDrivenApp) {
 
         $targetNode.InnerXml = @"
 <PropertyGroup>
-  <WrapperDllPath>`$(MSBuildProjectDirectory)\$wrapperRelPath\Release</WrapperDllPath>
-  <WrapperDllPath Condition="!Exists('`$(WrapperDllPath)\FeiyangWrapper.dll')">`$(MSBuildProjectDirectory)\$wrapperRelPath\Debug</WrapperDllPath>
+  <WrapperDllPath>`$(MSBuildProjectDirectory)\$wrapperRelPath\Debug</WrapperDllPath>
+  <WrapperDllPath Condition="!Exists('`$(WrapperDllPath)\FeiyangWrapper.dll')">`$(MSBuildProjectDirectory)\$wrapperRelPath\Release</WrapperDllPath>
 </PropertyGroup>
 <ItemGroup>
   <FeiyangSdkLibs Include="`$(MSBuildProjectDirectory)\$sdkLibPath\**\*.*" />

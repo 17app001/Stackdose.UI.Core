@@ -40,12 +40,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     
-    <!-- 2. 複製 FeiyangWrapper 本身 (Debug/Release 自動選擇) -->
-    <None Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll" Condition="Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll')">
+    <!-- 2. 複製 FeiyangWrapper 本身 (Debug 優先，與 Stackdose.PrintHead 編譯依賴一致) -->
+    <None Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll" Condition="Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll')">
       <Link>FeiyangWrapper.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll" Condition="!Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll') and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll')">
+    <None Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll" Condition="!Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll') and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll')">
       <Link>FeiyangWrapper.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

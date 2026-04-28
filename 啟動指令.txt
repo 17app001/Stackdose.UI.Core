@@ -8,8 +8,12 @@
 
 
 
-.\scripts\new-app.ps1 -AppName "MyPrintApp" 
+.\scripts\new-app.ps1 -AppName "MyPrintApp" -Mode "Dashboard" -IncludePrintHead
 
+
+
+D:\工作區\Project\Stackdose.UI.Core\scripts\new-app.ps1" -AppName
+  "WaveTest" -Mode Dashboard -IncludePrintHead -DestinationRoot "C:\Temp
 
 
   1. 自動讀 CLAUDE.md（hook 強制）→ 知道分支、目前狀態、架構規則

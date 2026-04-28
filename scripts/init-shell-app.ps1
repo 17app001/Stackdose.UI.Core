@@ -215,14 +215,10 @@ public partial class App : Application
         WindowStyle="None" ResizeMode="NoResize" SizeToContent="WidthAndHeight">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
             <RowDefinition Height="28"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <ContentPresenter x:Name="DashboardHost" Grid.Row="0" />
-        <Border x:Name="dashboardPlcHost" Grid.Row="0"
-                Width="1" Height="1" Opacity="0" IsHitTestVisible="False"
-                HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <Border Grid.Row="1" Background="#12121E" MouseLeftButtonDown="OnBarDrag">
+        <Border Grid.Row="0" Background="#12121E" MouseLeftButtonDown="OnBarDrag">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -234,11 +230,20 @@ public partial class App : Application
                     <TextBlock x:Name="plcLabel" Text="---" Foreground="#777788"
                                FontSize="11" FontFamily="Consolas" VerticalAlignment="Center"/>
                 </StackPanel>
-                <Button Grid.Column="1" Content="X" Width="28" Height="28"
-                        Background="Transparent" Foreground="#777788" BorderThickness="0"
-                        FontSize="12" Cursor="Hand" Click="OnCloseClick"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Content="_" Width="28" Height="28"
+                            Background="Transparent" Foreground="#777788" BorderThickness="0"
+                            FontSize="12" Cursor="Hand" Click="OnMinimizeClick"/>
+                    <Button Content="X" Width="28" Height="28"
+                            Background="Transparent" Foreground="#777788" BorderThickness="0"
+                            FontSize="12" Cursor="Hand" Click="OnCloseClick"/>
+                </StackPanel>
             </Grid>
         </Border>
+        <ContentPresenter x:Name="DashboardHost" Grid.Row="1" />
+        <Border x:Name="dashboardPlcHost" Grid.Row="1"
+                Width="1" Height="1" Opacity="0" IsHitTestVisible="False"
+                HorizontalAlignment="Left" VerticalAlignment="Top"/>
     </Grid>
 </Window>
 "@
@@ -361,6 +366,7 @@ public partial class MainWindow : Window
     }
 
     private void OnBarDrag(object sender, System.Windows.Input.MouseButtonEventArgs e) => DragMove();
+    private void OnMinimizeClick(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
     private void OnCloseClick(object sender, RoutedEventArgs e) => Close();
 
     private void RenderDocument(DesignDocument doc)
@@ -700,6 +706,9 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler {
     '[]' | Set-Content -Path (Join-Path $jdConfigDir "Machine1.alarms.json")
 
     if ($IncludePrintHead) {
+        $wavesDir = Join-Path $jdConfigDir "waves"
+        New-Item -ItemType Directory -Path $wavesDir -Force | Out-Null
+        '' | Set-Content -Path (Join-Path $wavesDir ".gitkeep")
 @"
 {
   "Name": "A-Head1",
@@ -752,6 +761,12 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler {
 "@ | Set-Content -Path (Join-Path $jdConfigDir "M1.machinedesign.json") -Encoding UTF8
 
     Write-Host "[init-shell-app] Done. Generated: $projectDir"
+    if ($IncludePrintHead) {
+        Write-Host ""
+        Write-Host "⚠  PrintHead waveform: place vendor-provided .data file into:" -ForegroundColor Yellow
+        Write-Host "   $wavesDir" -ForegroundColor Yellow
+        Write-Host "   Then set WaveformPath in Config/feiyang_head1.json (e.g. waves/your_file.data)" -ForegroundColor Yellow
+    }
     exit 0
 }
 

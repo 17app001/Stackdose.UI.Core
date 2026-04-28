@@ -97,7 +97,13 @@ namespace Stackdose.UI.Core.Helpers
                 throw new ArgumentException("File name cannot be null or empty", nameof(fileName));
             }
 
-            return Path.Combine(ResourcesDirectory, fileName);
+            var inResources = Path.Combine(ResourcesDirectory, fileName);
+            if (File.Exists(inResources)) return inResources;
+
+            var inConfig = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config", fileName);
+            if (File.Exists(inConfig)) return inConfig;
+
+            return inResources;
         }
 
         /// <summary>

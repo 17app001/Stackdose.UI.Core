@@ -183,7 +183,15 @@ namespace Stackdose.UI.Core.Controls
                 }
 
                 if (!string.IsNullOrWhiteSpace(_config.Firmware.WaveformPath) && !Path.IsPathRooted(_config.Firmware.WaveformPath))
+                {
                     _config.Firmware.WaveformPath = ResolveWavePath(_config.Firmware.WaveformPath);
+                    if (!File.Exists(_config.Firmware.WaveformPath))
+                        ComplianceContext.LogSystem(
+                            $"[PrintHead] Waveform file not found: {_config.Firmware.WaveformPath}. Place .data file in Config/waves/.",
+                            LogLevel.Warning,
+                            showInUi: false
+                        );
+                }
 
                 Dispatcher.Invoke(() =>
                 {

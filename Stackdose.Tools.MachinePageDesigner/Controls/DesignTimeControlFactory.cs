@@ -27,6 +27,8 @@ public static class DesignTimeControlFactory
             "ProcessStatusIndicator" => CreateProcessStatusIndicator(def),
             "SystemClock"            => new SystemClock { IsHitTestVisible = false },
             "PlcDeviceEditor"        => CreatePlcDeviceEditor(def),
+            "PrintHeadStatus"        => CreatePrintHeadStatus(def),
+            "PrintHeadController"    => new PrintHeadController { IsHitTestVisible = false },
             "LiveLog"                => CreateViewerPlaceholder("System Log",    "\u2637", Color.FromRgb(0x1A, 0x1A, 0x30)),
             "AlarmViewer"            => CreateViewerPlaceholder("Alarm Viewer",  "\u26A0", Color.FromRgb(0x30, 0x18, 0x18)),
             "SensorViewer"           => CreateViewerPlaceholder("Sensor Viewer", "\u26A1", Color.FromRgb(0x18, 0x28, 0x30)),
@@ -63,6 +65,21 @@ public static class DesignTimeControlFactory
         return new PlcDeviceEditor
         {
             Address = p.GetString("address", "D100"),
+            IsHitTestVisible = false,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+        };
+    }
+
+    private static UIElement CreatePrintHeadStatus(DesignerItemDefinition def)
+    {
+        var p = def.Props;
+        return new PrintHeadStatus
+        {
+            ConfigFilePath = p.GetString("configFile", "Config/feiyang_head1.json"),
+            HeadName = p.GetString("headName", "PrintHead 1"),
+            HeadIndex = (int)p.GetDouble("headIndex", 0),
+            AutoConnect = p.GetBool("autoConnect", false),
             IsHitTestVisible = false,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,

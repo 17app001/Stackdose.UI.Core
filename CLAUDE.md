@@ -6,8 +6,11 @@
 
 ## 現狀三行摘要
 
-- **分支：** `master`｜PlcLabel Float 支援、Designer DataType 選項、scaffold 編碼全修（2026-04-24）
-- **主力工作：** DesignRuntime 驗收測試、MachinePageDesigner 細節完善
+- **分支：** `master`（feature/printhead-robustness 已合入）｜PrintHead 整合完成（2026-04-29）
+- **主力工作：** PrintHead 實機驗證完成，FeiyangWrapper Release/Debug 選擇已修正
+- **未解問題：** 
+  - Sensor/Alarm Viewer 在 new-app 產出專案後路徑對應失效（待修復）
+  - 傳圖進度條已實作，但尚未進行大檔案壓力測試
 
 ---
 

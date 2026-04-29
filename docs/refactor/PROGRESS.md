@@ -96,7 +96,12 @@
 - 移除畫布尺寸 clamp（400–4000 / 300–3000）
 - Dashboard 模式：scaffold 視窗可拖移 + IP:Port 燈號 + X 關閉
 
-**下一步：** 重構完成，合併分支至 master 或繼續 MachinePageDesigner / DesignRuntime 功能開發。
+**下一步：** 
+1. ✅ **[2026-04-28 完成]** 實機測試：執行產出的 App 並驗證與噴頭控制板的真實連線。
+2. ✅ **[2026-04-28 完成]** 波形檔擺放策略：Scaffold 建立 `Config/waves/` 約定目錄（含 `.gitkeep`）、`WaveformPath` 預設留空、控件偵測缺檔時輸出 Warning log、scaffold 完成後印出擺放提示。
+3. ✅ **[2026-04-28 完成]** 合併分支至 master 或繼續 MachinePageDesigner / DesignRuntime 功能開發。
+
+**待確認下一步方向：** 等用戶決定（MachinePageDesigner 新功能 / DesignRuntime 功能擴充 / 其他）
 
 ---
 
@@ -116,5 +121,4 @@
 | 問題 | 所在專案 | 優先度 | 備註 |
 |---|---|---|---|
 | JSON 熱更新（修改 JSON 後自動重新載入畫布） | DesignRuntime | 中 | 重構後尚未實作 |
-| PLC 斷線重連穩定性 | DesignRuntime | 高 | 長時間連線偶發掉線未處理 |
 | MachinePageDesigner 下一個功能待確認 | MachinePageDesigner | 低 | 等用戶決定方向 |

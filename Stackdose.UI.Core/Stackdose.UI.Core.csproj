@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -22,16 +22,55 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="FeiyangWrapper" Condition="Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll')">
+    <!-- Debug build: 優先 Debug dll，沒有才 fallback Release -->
+    <Reference Include="FeiyangWrapper" Condition="'$(Configuration)'=='Debug' and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll')">
       <HintPath>..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll</HintPath>
       <Private>true</Private>
     </Reference>
-    <Reference Include="FeiyangWrapper" Condition="!Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll') and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll')">
+    <Reference Include="FeiyangWrapper" Condition="'$(Configuration)'=='Debug' and !Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll') and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll')">
       <HintPath>..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <!-- Release build: 優先 Release dll，沒有才 fallback Debug -->
+    <Reference Include="FeiyangWrapper" Condition="'$(Configuration)'!='Debug' and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll')">
+      <HintPath>..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="FeiyangWrapper" Condition="'$(Configuration)'!='Debug' and !Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll') and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll')">
+      <HintPath>..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll</HintPath>
       <Private>true</Private>
     </Reference>
   </ItemGroup>
 
-  <!-- 📋 複製 FeiyangSDK 依賴的 DLLs -->
+  <!-- 📋 統一管理：自動複製 Feiyang SDK 所有必要的 Native DLLs -->
+  <ItemGroup>
+    <!-- 1. 複製 SDK lib 下的所有檔案 (包含子目錄) -->
+    <None Include="..\..\Sdk\FeiyangSDK-2.3.1\lib\**\*.*">
+      <Link>%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+
+    <!-- 2. 複製 FeiyangWrapper 本身：依 $(Configuration) 選對應 dll，缺檔才 fallback -->
+    <None Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll"
+          Condition="'$(Configuration)'=='Debug' and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll')">
+      <Link>FeiyangWrapper.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll"
+          Condition="'$(Configuration)'=='Debug' and !Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll') and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll')">
+      <Link>FeiyangWrapper.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll"
+          Condition="'$(Configuration)'!='Debug' and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll')">
+      <Link>FeiyangWrapper.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll"
+          Condition="'$(Configuration)'!='Debug' and !Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll') and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll')">
+      <Link>FeiyangWrapper.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>

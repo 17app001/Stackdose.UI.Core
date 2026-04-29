@@ -281,6 +281,27 @@
         </DataTemplate>
 
         <!-- ════════════════════════════════════════════════════════
+             PrintHeadStatus 屬性面板
+             ════════════════════════════════════════════════════════ -->
+        <DataTemplate x:Key="PrintHeadStatusTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
+            <StackPanel Margin="0,4">
+                <TextBlock Text="噴頭名稱" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding HeadName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <TextBlock Text="噴頭索引 (Index)" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding HeadIndex, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <TextBlock Text="設定檔路徑 (ConfigFile)" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding ConfigFile, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <CheckBox Content="啟動時自動連線"
+                          IsChecked="{Binding AutoConnect}"
+                          Foreground="{StaticResource TextPrimaryBrush}"
+                          Margin="0,4,0,8"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- ════════════════════════════════════════════════════════
              空白（未選取任何項目或無屬性項目）
              ════════════════════════════════════════════════════════ -->
         <DataTemplate x:Key="EmptyTemplate">
@@ -302,6 +323,7 @@
             SensorViewerTemplate="{StaticResource SensorViewerTemplate}"
             ProcessStatusIndicatorTemplate="{StaticResource ProcessStatusIndicatorTemplate}"
             PlcDeviceEditorTemplate="{StaticResource PlcDeviceEditorTemplate}"
+            PrintHeadStatusTemplate="{StaticResource PrintHeadStatusTemplate}"
             EmptyTemplate="{StaticResource EmptyTemplate}"/>
     </UserControl.Resources>
 

@@ -6,11 +6,10 @@
 
 ## 現狀三行摘要
 
-- **分支：** `feature/printhead-robustness`（未合 master）｜PrintHead 控件型別安全重構（2026-04-24）
-- **主力工作：** PrintHead 整合關鍵環節，控件強化已完成，待進入實際硬體整合
+- **分支：** `master`（feature/printhead-robustness 已合入）｜PrintHead 整合完成（2026-04-29）
+- **主力工作：** PrintHead 實機驗證完成，FeiyangWrapper Release/Debug 選擇已修正
 - **未解問題：** 
   - Sensor/Alarm Viewer 在 new-app 產出專案後路徑對應失效（待修復）
-  - 缺少外部依賴 `FeiyangWrapper.dll`（目前編譯報警告且無法實機測試）
   - 傳圖進度條已實作，但尚未進行大檔案壓力測試
 
 ---

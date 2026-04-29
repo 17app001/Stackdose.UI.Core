@@ -17,9 +17,10 @@
       <!-- 從專案目錄到 Sdk 的相對路徑：.. (UI.Core) / .. (Project) / Sdk -->
       <SdkRootPath>..\..\Sdk</SdkRootPath>
       <SdkLibPath>$(SdkRootPath)\FeiyangSDK-2.3.1\lib</SdkLibPath>
-      <WrapperPath>$(SdkRootPath)\FeiyangWrapper\FeiyangWrapper\x64\Release</WrapperPath>
-      <!-- 如果找不到 Release，嘗試找 Debug -->
-      <WrapperPath Condition="!Exists('$(WrapperPath)\FeiyangWrapper.dll')">$(SdkRootPath)\FeiyangWrapper\FeiyangWrapper\x64\Debug</WrapperPath>
+      <WrapperPath>$(SdkRootPath)\FeiyangWrapper\FeiyangWrapper\x64\$(Configuration)</WrapperPath>
+      <!-- 缺對應組態 dll 時 fallback 到另一個 -->
+      <WrapperPath Condition="'$(Configuration)'=='Release' and !Exists('$(WrapperPath)\FeiyangWrapper.dll')">$(SdkRootPath)\FeiyangWrapper\FeiyangWrapper\x64\Debug</WrapperPath>
+      <WrapperPath Condition="'$(Configuration)'=='Debug' and !Exists('$(WrapperPath)\FeiyangWrapper.dll')">$(SdkRootPath)\FeiyangWrapper\FeiyangWrapper\x64\Release</WrapperPath>
     </PropertyGroup>
 
     <ItemGroup>

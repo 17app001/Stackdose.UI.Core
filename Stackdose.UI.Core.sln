@@ -53,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stackdose.Tools.DllValidato
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyPrintApp1", "..\MyPrintApp1\MyPrintApp1.csproj", "{C15CDDAD-0E84-F909-6226-C88009B08B27}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyPrintApp2", "..\MyPrintApp2\MyPrintApp2.csproj", "{C895FFCA-686E-203E-5E36-D73C467A152E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -291,6 +293,18 @@ Global
 		{C15CDDAD-0E84-F909-6226-C88009B08B27}.Release|x64.Build.0 = Release|Any CPU
 		{C15CDDAD-0E84-F909-6226-C88009B08B27}.Release|x86.ActiveCfg = Release|Any CPU
 		{C15CDDAD-0E84-F909-6226-C88009B08B27}.Release|x86.Build.0 = Release|Any CPU
+		{C895FFCA-686E-203E-5E36-D73C467A152E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C895FFCA-686E-203E-5E36-D73C467A152E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C895FFCA-686E-203E-5E36-D73C467A152E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C895FFCA-686E-203E-5E36-D73C467A152E}.Debug|x64.Build.0 = Debug|Any CPU
+		{C895FFCA-686E-203E-5E36-D73C467A152E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C895FFCA-686E-203E-5E36-D73C467A152E}.Debug|x86.Build.0 = Debug|Any CPU
+		{C895FFCA-686E-203E-5E36-D73C467A152E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C895FFCA-686E-203E-5E36-D73C467A152E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C895FFCA-686E-203E-5E36-D73C467A152E}.Release|x64.ActiveCfg = Release|Any CPU
+		{C895FFCA-686E-203E-5E36-D73C467A152E}.Release|x64.Build.0 = Release|Any CPU
+		{C895FFCA-686E-203E-5E36-D73C467A152E}.Release|x86.ActiveCfg = Release|Any CPU
+		{C895FFCA-686E-203E-5E36-D73C467A152E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -317,7 +331,7 @@ Global
 		{C15CDDAD-0E84-F909-6226-C88009B08B27} = {8DDC4786-5FC8-F15C-1CA5-9F41FD4BEB75}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {8C32A5E8-A6CF-49BC-AFBF-CFF6B3027799}
 		{D1000001-0000-0000-0000-000000000001} = {A0000001-0000-0000-0000-000000000001}
+		SolutionGuid = {8C32A5E8-A6CF-49BC-AFBF-CFF6B3027799}
 	EndGlobalSection
 EndGlobal

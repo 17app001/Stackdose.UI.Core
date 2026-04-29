@@ -172,8 +172,9 @@ if ($JsonDrivenApp) {
 
         $targetNode.InnerXml = @"
 <PropertyGroup>
-  <WrapperDllPath>`$(MSBuildProjectDirectory)\$wrapperRelPath\Debug</WrapperDllPath>
-  <WrapperDllPath Condition="!Exists('`$(WrapperDllPath)\FeiyangWrapper.dll')">`$(MSBuildProjectDirectory)\$wrapperRelPath\Release</WrapperDllPath>
+  <WrapperDllPath>`$(MSBuildProjectDirectory)\$wrapperRelPath\`$(Configuration)</WrapperDllPath>
+  <WrapperDllPath Condition="'`$(Configuration)'=='Release' and !Exists('`$(WrapperDllPath)\FeiyangWrapper.dll')">`$(MSBuildProjectDirectory)\$wrapperRelPath\Debug</WrapperDllPath>
+  <WrapperDllPath Condition="'`$(Configuration)'=='Debug' and !Exists('`$(WrapperDllPath)\FeiyangWrapper.dll')">`$(MSBuildProjectDirectory)\$wrapperRelPath\Release</WrapperDllPath>
 </PropertyGroup>
 <ItemGroup>
   <FeiyangSdkLibs Include="`$(MSBuildProjectDirectory)\$sdkLibPath\**\*.*" />

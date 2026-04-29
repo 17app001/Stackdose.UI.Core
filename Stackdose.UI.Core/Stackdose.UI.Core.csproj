@@ -22,12 +22,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="FeiyangWrapper" Condition="Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll')">
+    <!-- Debug build: 優先 Debug dll，沒有才 fallback Release -->
+    <Reference Include="FeiyangWrapper" Condition="'$(Configuration)'=='Debug' and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll')">
       <HintPath>..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll</HintPath>
       <Private>true</Private>
     </Reference>
-    <Reference Include="FeiyangWrapper" Condition="!Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll') and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll')">
+    <Reference Include="FeiyangWrapper" Condition="'$(Configuration)'=='Debug' and !Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll') and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll')">
       <HintPath>..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <!-- Release build: 優先 Release dll，沒有才 fallback Debug -->
+    <Reference Include="FeiyangWrapper" Condition="'$(Configuration)'!='Debug' and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll')">
+      <HintPath>..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="FeiyangWrapper" Condition="'$(Configuration)'!='Debug' and !Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll') and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll')">
+      <HintPath>..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll</HintPath>
       <Private>true</Private>
     </Reference>
   </ItemGroup>
@@ -39,13 +49,25 @@
       <Link>%(RecursiveDir)%(FileName)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    
-    <!-- 2. 複製 FeiyangWrapper 本身 (Debug 優先，與 Stackdose.PrintHead 編譯依賴一致) -->
-    <None Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll" Condition="Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll')">
+
+    <!-- 2. 複製 FeiyangWrapper 本身：依 $(Configuration) 選對應 dll，缺檔才 fallback -->
+    <None Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll"
+          Condition="'$(Configuration)'=='Debug' and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll')">
       <Link>FeiyangWrapper.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll" Condition="!Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll') and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll')">
+    <None Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll"
+          Condition="'$(Configuration)'=='Debug' and !Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll') and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll')">
+      <Link>FeiyangWrapper.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll"
+          Condition="'$(Configuration)'!='Debug' and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll')">
+      <Link>FeiyangWrapper.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll"
+          Condition="'$(Configuration)'!='Debug' and !Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Release\FeiyangWrapper.dll') and Exists('..\..\Sdk\FeiyangWrapper\FeiyangWrapper\x64\Debug\FeiyangWrapper.dll')">
       <Link>FeiyangWrapper.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

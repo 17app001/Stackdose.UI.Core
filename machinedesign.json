@@ -1,0 +1,1071 @@
+﻿{
+  "version": "1.0",
+  "meta": {
+    "title": "Migrated from ModelE",
+    "author": "Gemini Migration Tool",
+    "description": "Imported from D:\\工作區\\Project\\Stackdose.Solution.ModelE\\Stackdose.Solution.ModelE\\Form1.Designer.cs"
+  },
+  "layout": {
+    "mode": "Standard",
+    "showLiveLog": true,
+    "showAlarmViewer": true
+  },
+  "shellMode": "Standard",
+  "canvasWidth": 1284,
+  "canvasHeight": 729,
+  "canvasItems": [
+    {
+      "id": "btnConnectHead",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 220,
+      "y": 12,
+      "width": 90,
+      "height": 32,
+      "locked": false,
+      "props": {
+        "label": "連接噴頭",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnConnectPrinter",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 125,
+      "y": 12,
+      "width": 90,
+      "height": 32,
+      "locked": false,
+      "props": {
+        "label": "連接PLC",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "txtPlcStatus",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 72,
+      "y": 11,
+      "width": 43,
+      "height": 15,
+      "locked": false,
+      "props": {
+        "label": "未連線",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "label1",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 34,
+      "y": 11,
+      "width": 31,
+      "height": 15,
+      "locked": false,
+      "props": {
+        "label": "PLC:",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnStopPrinting",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 220,
+      "y": 56,
+      "width": 90,
+      "height": 32,
+      "locked": false,
+      "props": {
+        "label": "停止",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnPauseResume",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 125,
+      "y": 56,
+      "width": 90,
+      "height": 32,
+      "locked": false,
+      "props": {
+        "label": "暫停",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnStartPrinting",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 14,
+      "y": 56,
+      "width": 90,
+      "height": 32,
+      "locked": false,
+      "props": {
+        "label": "開始製程",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "label15",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 15,
+      "y": 137,
+      "width": 89,
+      "height": 17,
+      "locked": false,
+      "props": {
+        "label": "列印經過時間:",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "lblElapsedText",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 15,
+      "y": 161,
+      "width": 62,
+      "height": 17,
+      "locked": false,
+      "props": {
+        "label": "00:00:00",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnStartTestPrinting",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 4,
+      "y": 227,
+      "width": 78,
+      "height": 31,
+      "locked": false,
+      "props": {
+        "label": "測試動作",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "label2",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 160,
+      "y": 181,
+      "width": 27,
+      "height": 15,
+      "locked": false,
+      "props": {
+        "label": "Khz",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnGratingReset",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 267,
+      "y": 174,
+      "width": 68,
+      "height": 30,
+      "locked": false,
+      "props": {
+        "label": "光閘歸零",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "label22",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 12,
+      "y": 181,
+      "width": 31,
+      "height": 15,
+      "locked": false,
+      "props": {
+        "label": "閃噴",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnSpit",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 195,
+      "y": 174,
+      "width": 68,
+      "height": 30,
+      "locked": false,
+      "props": {
+        "label": "執行",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnRefreshMonitor",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 8,
+      "y": 5,
+      "width": 90,
+      "height": 30,
+      "locked": false,
+      "props": {
+        "label": "🔄 重新讀取",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnOpenLog",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 6,
+      "y": 10,
+      "width": 75,
+      "height": 23,
+      "locked": false,
+      "props": {
+        "label": "Open log",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "groupBox1",
+      "type": "Spacer",
+      "order": 0,
+      "x": 11,
+      "y": 70,
+      "width": 389,
+      "height": 158,
+      "locked": false,
+      "props": {
+        "label": "寫入資料"
+      },
+      "events": []
+    },
+    {
+      "id": "btnReadBit",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 96,
+      "y": 199,
+      "width": 75,
+      "height": 23,
+      "locked": false,
+      "props": {
+        "label": "讀取",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnWriteBit",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 17,
+      "y": 199,
+      "width": 75,
+      "height": 23,
+      "locked": false,
+      "props": {
+        "label": "寫入",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "label13",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 308,
+      "y": 173,
+      "width": 19,
+      "height": 15,
+      "locked": false,
+      "props": {
+        "label": "值",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "label12",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 178,
+      "y": 173,
+      "width": 31,
+      "height": 15,
+      "locked": false,
+      "props": {
+        "label": "位元",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "label11",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 17,
+      "y": 173,
+      "width": 55,
+      "height": 15,
+      "locked": false,
+      "props": {
+        "label": "裝置位址",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "label10",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 17,
+      "y": 144,
+      "width": 65,
+      "height": 20,
+      "locked": false,
+      "props": {
+        "label": "Bit 操作",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnReadValue",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 96,
+      "y": 114,
+      "width": 75,
+      "height": 23,
+      "locked": false,
+      "props": {
+        "label": "讀取",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnWriteValue",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 17,
+      "y": 114,
+      "width": 75,
+      "height": 23,
+      "locked": false,
+      "props": {
+        "label": "寫入",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "label9",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 179,
+      "y": 89,
+      "width": 31,
+      "height": 15,
+      "locked": false,
+      "props": {
+        "label": "數值",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "label8",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 17,
+      "y": 89,
+      "width": 55,
+      "height": 15,
+      "locked": false,
+      "props": {
+        "label": "裝置位址",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnClearLogs",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 6,
+      "y": 40,
+      "width": 75,
+      "height": 23,
+      "locked": false,
+      "props": {
+        "label": "Clear Log",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "label7",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 11,
+      "y": 46,
+      "width": 31,
+      "height": 15,
+      "locked": false,
+      "props": {
+        "label": "參數",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnExecuteCommand",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 174,
+      "y": 41,
+      "width": 76,
+      "height": 23,
+      "locked": false,
+      "props": {
+        "label": "發送",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "label6",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 11,
+      "y": 15,
+      "width": 31,
+      "height": 15,
+      "locked": false,
+      "props": {
+        "label": "指令",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "lblYDPI",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 207,
+      "y": 28,
+      "width": 31,
+      "height": 11,
+      "locked": false,
+      "props": {
+        "label": "YDPI:",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "lblXDPI",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 4,
+      "y": 28,
+      "width": 31,
+      "height": 11,
+      "locked": false,
+      "props": {
+        "label": "XDPI:",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnLoadJob",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 6,
+      "y": 30,
+      "width": 96,
+      "height": 23,
+      "locked": false,
+      "props": {
+        "label": "載入任務",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "lblPictureHeight",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 207,
+      "y": 3,
+      "width": 15,
+      "height": 11,
+      "locked": false,
+      "props": {
+        "label": "H:",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnCancelJob",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 6,
+      "y": 57,
+      "width": 96,
+      "height": 23,
+      "locked": false,
+      "props": {
+        "label": "取消任務",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "lblPictureWidth",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 4,
+      "y": 4,
+      "width": 18,
+      "height": 11,
+      "locked": false,
+      "props": {
+        "label": "W:",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "lblLastUpdate",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 121,
+      "y": 12,
+      "width": 62,
+      "height": 15,
+      "locked": false,
+      "props": {
+        "label": "更新時間 :",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnRecipe1",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 4,
+      "y": 4,
+      "width": 110,
+      "height": 29,
+      "locked": false,
+      "props": {
+        "label": "配方1",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "groupBox3",
+      "type": "Spacer",
+      "order": 0,
+      "x": 3,
+      "y": 3,
+      "width": 298,
+      "height": 205,
+      "locked": false,
+      "props": {
+        "label": "PrintArea A"
+      },
+      "events": []
+    },
+    {
+      "id": "groupBox4",
+      "type": "Spacer",
+      "order": 0,
+      "x": 3,
+      "y": 214,
+      "width": 298,
+      "height": 202,
+      "locked": false,
+      "props": {
+        "label": "PrintArea B"
+      },
+      "events": []
+    },
+    {
+      "id": "groupBox5",
+      "type": "Spacer",
+      "order": 0,
+      "x": 3,
+      "y": 3,
+      "width": 505,
+      "height": 159,
+      "locked": false,
+      "props": {
+        "label": "PrintHead"
+      },
+      "events": []
+    },
+    {
+      "id": "plcLabelTotalLayout",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 20,
+      "y": 64,
+      "width": 150,
+      "height": 20,
+      "locked": false,
+      "props": {
+        "address": "D3401",
+        "label": "總層數",
+        "dataType": "Word"
+      },
+      "events": []
+    },
+    {
+      "id": "plcLblDeviceStatus",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 14,
+      "y": 120,
+      "width": 211,
+      "height": 20,
+      "locked": false,
+      "props": {
+        "address": "D40",
+        "label": "設備運行狀態",
+        "dataType": "Word"
+      },
+      "events": []
+    },
+    {
+      "id": "plcLabelLayout",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 20,
+      "y": 91,
+      "width": 150,
+      "height": 20,
+      "locked": false,
+      "props": {
+        "address": "D32",
+        "label": "目前列印層數",
+        "dataType": "Word"
+      },
+      "events": []
+    },
+    {
+      "id": "plcLabelCurrent",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 20,
+      "y": 37,
+      "width": 150,
+      "height": 20,
+      "locked": false,
+      "props": {
+        "address": "D33",
+        "label": "目前列印盤數",
+        "dataType": "Word"
+      },
+      "events": []
+    },
+    {
+      "id": "plcLabelShowMessage",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 15,
+      "y": 37,
+      "width": 109,
+      "height": 20,
+      "locked": false,
+      "props": {
+        "address": "D85",
+        "label": "MessageID",
+        "dataType": "Word"
+      },
+      "events": []
+    },
+    {
+      "id": "plcLabelbattery",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 14,
+      "y": 11,
+      "width": 150,
+      "height": 20,
+      "locked": false,
+      "props": {
+        "address": "D120",
+        "label": "電池",
+        "dataType": "Word"
+      },
+      "events": []
+    },
+    {
+      "id": "button2",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 218,
+      "y": 4,
+      "width": 108,
+      "height": 29,
+      "locked": false,
+      "props": {
+        "label": "配方3",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "button1",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 121,
+      "y": 4,
+      "width": 90,
+      "height": 29,
+      "locked": false,
+      "props": {
+        "label": "配方2",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnDeviceInitialization",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 4,
+      "y": 4,
+      "width": 78,
+      "height": 29,
+      "locked": false,
+      "props": {
+        "label": "設備初始化",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "button5",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 4,
+      "y": 114,
+      "width": 78,
+      "height": 31,
+      "locked": false,
+      "props": {
+        "label": "功能4",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "button4",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 4,
+      "y": 76,
+      "width": 78,
+      "height": 31,
+      "locked": false,
+      "props": {
+        "label": "功能3",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnCleanSurface",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 4,
+      "y": 40,
+      "width": 78,
+      "height": 29,
+      "locked": false,
+      "props": {
+        "label": "盤面清潔",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "plcLabelField1",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 20,
+      "y": 11,
+      "width": 150,
+      "height": 20,
+      "locked": false,
+      "props": {
+        "address": "D3400",
+        "label": "總盤數",
+        "dataType": "Word"
+      },
+      "events": []
+    },
+    {
+      "id": "btnAsyncTime",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 4,
+      "y": 152,
+      "width": 78,
+      "height": 29,
+      "locked": false,
+      "props": {
+        "label": "時間校正",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnLoadBitmap",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 6,
+      "y": 3,
+      "width": 96,
+      "height": 23,
+      "locked": false,
+      "props": {
+        "label": "讀取圖片",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "groupBox2",
+      "type": "Spacer",
+      "order": 0,
+      "x": 0,
+      "y": 419,
+      "width": 304,
+      "height": 310,
+      "locked": false,
+      "props": {
+        "label": ""
+      },
+      "events": []
+    },
+    {
+      "id": "plcLabelChangeArea",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 20,
+      "y": 160,
+      "width": 150,
+      "height": 20,
+      "locked": false,
+      "props": {
+        "address": "D512",
+        "label": "切換區域(層)",
+        "dataType": "Word"
+      },
+      "events": []
+    },
+    {
+      "id": "plcLabelChangePic",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 20,
+      "y": 134,
+      "width": 150,
+      "height": 20,
+      "locked": false,
+      "props": {
+        "address": "D510",
+        "label": "切換圖形(層)",
+        "dataType": "Word"
+      },
+      "events": []
+    },
+    {
+      "id": "groupBox6",
+      "type": "Spacer",
+      "order": 0,
+      "x": 3,
+      "y": 3,
+      "width": 438,
+      "height": 254,
+      "locked": false,
+      "props": {
+        "label": "System"
+      },
+      "events": []
+    },
+    {
+      "id": "groupBox7",
+      "type": "Spacer",
+      "order": 0,
+      "x": 447,
+      "y": 3,
+      "width": 439,
+      "height": 254,
+      "locked": false,
+      "props": {
+        "label": "Recipe"
+      },
+      "events": []
+    },
+    {
+      "id": "label55",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 16,
+      "y": 145,
+      "width": 54,
+      "height": 17,
+      "locked": false,
+      "props": {
+        "label": "PcAlive:",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "lblPcAlive",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 74,
+      "y": 145,
+      "width": 32,
+      "height": 17,
+      "locked": false,
+      "props": {
+        "label": "N/A",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "label3",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 6,
+      "y": 31,
+      "width": 66,
+      "height": 15,
+      "locked": false,
+      "props": {
+        "label": "PrintHead:",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "txtPrintHeadStatus",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 72,
+      "y": 31,
+      "width": 43,
+      "height": 15,
+      "locked": false,
+      "props": {
+        "label": "未連線",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "lblCurrentFile",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 7,
+      "y": 8,
+      "width": 61,
+      "height": 15,
+      "locked": false,
+      "props": {
+        "label": "FileName",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "btnReadAttribute",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 4,
+      "y": 188,
+      "width": 78,
+      "height": 32,
+      "locked": false,
+      "props": {
+        "label": "列印參數",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "label4",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 8,
+      "y": 123,
+      "width": 35,
+      "height": 11,
+      "locked": false,
+      "props": {
+        "label": "StartX:",
+        "address": ""
+      },
+      "events": []
+    },
+    {
+      "id": "label5",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 3,
+      "y": 151,
+      "width": 44,
+      "height": 11,
+      "locked": false,
+      "props": {
+        "label": "CaliMM:",
+        "address": ""
+      },
+      "events": []
+    }
+  ],
+  "pages": []
+}

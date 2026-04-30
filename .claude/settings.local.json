@@ -54,7 +54,9 @@
       "Bash(findstr /i \"design App\\\\.\")",
       "Bash(dir *)",
       "Skill(update-config)",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(grep -v \"//\")",
+      "Bash(python *)"
     ]
   }
 }

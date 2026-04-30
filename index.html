@@ -1149,9 +1149,10 @@
             <div class="prog-row"><span class="prog-check">✓</span><span>PLC 斷線自動重連（ConnectionLost + 視覺回饋）</span></div>
             <div class="prog-row"><span class="prog-check">✓</span><span>多頁面切換（pages 陣列 + 頁籤列）</span></div>
             <div class="prog-row"><span class="prog-check">✓</span><span>DesignViewer 靜態預覽 + 多頁面切換</span></div>
+            <div class="prog-row"><span class="prog-check">✓</span><span>PrintHead 5 控件支援（PrintHeadStatus / PrintHeadController / SystemClock / ProcessStatusIndicator / PlcDeviceEditor）</span></div>
           </div>
           <div style="margin-top:14px;">
-            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;"><span>完成度</span><span>10 / 10</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;"><span>完成度</span><span>11 / 11</span></div>
             <div style="background:var(--border); border-radius:4px; height:4px;"><div style="background:var(--green); width:100%; height:4px; border-radius:4px;"></div></div>
           </div>
         </div>
@@ -1195,6 +1196,7 @@
           <div class="tl-item tl-highlight"><span class="tl-date">4月22日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ Models 搬移至 ShellShared；LiveRecord 即時數據記錄（LiveRecordContext + SqliteLogger LiveRecords 表 + PlcLabel EnableLiveRecord DP）；DesignTimeControlFactory 補齊 StaticLabel + PlcLabel 5 個屬性；PropertyPanel 補齊對應 UI + StaticLabel 屬性面板；new-app.ps1 簡化建立指令</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月23日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ B9 重構完成（B0–B9 全部完成）；Dashboard 模式全功能（DashboardShellStrategy + new-app.ps1 -Mode Dashboard scaffold + 無邊框 SizeToContent 視窗 + 底部拖移條 + IP:Port 連線燈號 + X 關閉 + DesignRuntime 自動連線）；設計器 Layout 下拉加入 Dashboard + PLC IP/Port/ScanInterval 欄位；方向鍵微調從 feature/copilot 補入（Arrow=1px / Shift+Arrow=10px）；移除畫布尺寸 clamp</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月27日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ scaffold 腳本健壯性強化（UTF-8 BOM 亂碼修正、PS 語法錯誤修復）；new-app.ps1 支援 -IncludePrintHead 參數（自動產生噴頭設定、自動複製 Feiyang SDK DLL）</span></div>
+          <div class="tl-item tl-highlight"><span class="tl-date">4月29~30日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ PrintHead 完整修復 — feiyang_head1.json 欄位名稱全面修正（MachineType=M1536、PrintheadColorCount、JetColors 複數等）；SensorContext / RecipeContext / PrintHeadPanel Config 路徑雙前綴 bug 修復（移除 ResourcePathHelper）；DesignRuntime RuntimeControlFactory 補齊 5 個缺漏控件（PrintHeadStatus / PrintHeadController / SystemClock / ProcessStatusIndicator / PlcDeviceEditor）；PrintHeadStatus UI 重設計為常態顯示緊湊版型（移除展開/收合箭頭，電壓＋Encoder＋PrintIndex 直接常態顯示）</span></div>
         </div>
       </div>
     </div>
@@ -1423,7 +1425,7 @@
 <footer class="site-footer">
   <div class="container" style="display:flex; align-items:center; justify-content:space-between; width:100%;">
     <span>Stackdose.UI.Core · .NET 8 WPF · Windows x64</span>
-    <span>更新：2026-04-23</span>
+    <span>更新：2026-04-30</span>
   </div>
 </footer>
 

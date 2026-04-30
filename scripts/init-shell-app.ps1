@@ -726,30 +726,34 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler {
 @"
 {
   "Name": "A-Head1",
+  "MachineType": "A",
+  "HeadIndex": 0,
   "BoardIP": "192.168.22.68",
   "BoardPort": 10000,
   "PcIP": "192.168.22.1",
   "PcPort": 10000,
+  "Waveform": "waves/A8_1536GS_L_25PL_UV_DROP1_30K_ABC0.data",
   "Firmware": {
-    "WaveformPath": "waves/A8_1536GS_L_25PL_UV_DROP1_30K_ABC0.data",
-    "EnableTkling": false,
-    "HeatTempreture": 40,
-    "BaseVoltage": [ 23.5, 23.5, 23.5, 23.5 ],
-    "OffsetVoltage": [ 0.0, 0.0, 0.0, 0.0 ],
-    "JetColor": [ 0, 0, 0, 0 ],
-    "DisableColumnMask": 0
+    "MachineType": "M1536",
+    "JetColors": [ 0, 0, 0, 0 ],
+    "BaseVoltages": [ 23.5, 23.5, 23.5, 23.5 ],
+    "OffsetVoltages": [ 0.0, 0.0, 0.0, 0.0 ],
+    "HeatTemperature": 40.0,
+    "DisableColumnMask": 0,
+    "PrintheadColorCount": 1,
+    "InstallDirectionPositive": false,
+    "EncoderFunction": 0
   },
   "PrintMode": {
-    "Repeat": 1,
-    "Direction": "Bidirection",
-    "GratingDPI": 1270,
+    "PrintDirection": "bidirection",
+    "GratingDpi": 1270,
+    "ImageDpi": 600,
     "GrayScale": 0,
     "GrayScaleDrop": 1,
     "ResetEncoder": 1000,
-    "PrintBegin": 0,
-    "XSpace": 0,
     "LColumnCali": [ 29.9, 22.3, 7.6 ],
-    "RColumnCali": [ 7.6, 22.3, 29.9 ]
+    "RColumnCali": [ 7.6, 22.3, 29.9 ],
+    "CaliPixelMM": 8
   }
 }
 "@ | Set-Content -Path (Join-Path $jdConfigDir "feiyang_head1.json") -Encoding UTF8
@@ -779,7 +783,7 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler {
         Write-Host ""
         Write-Host "⚠  PrintHead waveform: place vendor-provided .data file into:" -ForegroundColor Yellow
         Write-Host "   $wavesDir" -ForegroundColor Yellow
-        Write-Host "   Then set WaveformPath in Config/feiyang_head1.json (e.g. waves/your_file.data)" -ForegroundColor Yellow
+        Write-Host "   Then set Waveform in Config/feiyang_head1.json (e.g. waves/your_file.data)" -ForegroundColor Yellow
     }
     exit 0
 }

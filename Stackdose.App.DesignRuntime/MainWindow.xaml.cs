@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Threading;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Microsoft.Win32;
@@ -22,6 +23,9 @@ public partial class MainWindow : Window
     private PlcStatus? _plcStatus;
     private CancellationTokenSource? _simCts;
     private readonly BehaviorEngine _behaviorEngine;
+    private FileSystemWatcher? _fileWatcher;
+    private DispatcherTimer? _reloadDebounce;
+    private string? _loadedFilePath;
 
     public MainWindow()
     {
@@ -33,7 +37,11 @@ public partial class MainWindow : Window
                 msg, Abstractions.Logging.LogLevel.Info),
         };
 
-        Closing += (_, _) => _behaviorEngine.Dispose();
+        Closing += (_, _) =>
+        {
+            _behaviorEngine.Dispose();
+            _fileWatcher?.Dispose();
+        };
     }
 
     // ── PLC 連線 ──────────────────────────────────────────────────────────
@@ -181,15 +189,55 @@ public partial class MainWindow : Window
         try
         {
             var doc = DesignFileService.Load(path);
+            _loadedFilePath = path;
             RenderDocument(doc, path);
             lblFilePath.Text = path;
             lblFilePath.Foreground = System.Windows.Media.Brushes.LightGray;
+            SetupFileWatcher(path);
         }
         catch (Exception ex)
         {
             MessageBox.Show($"載入失敗：{ex.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
             ShowStatus($"載入失敗：{ex.Message}", error: true);
         }
+    }
+
+    private void SetupFileWatcher(string path)
+    {
+        _fileWatcher?.Dispose();
+        var dir  = Path.GetDirectoryName(path)!;
+        var file = Path.GetFileName(path);
+        _fileWatcher = new FileSystemWatcher(dir, file)
+        {
+            NotifyFilter        = NotifyFilters.LastWrite | NotifyFilters.Size,
+            EnableRaisingEvents = true,
+        };
+        _fileWatcher.Changed += OnFileWatcherChanged;
+    }
+
+    private void OnFileWatcherChanged(object sender, FileSystemEventArgs e)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            if (_reloadDebounce == null)
+            {
+                _reloadDebounce = new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromMilliseconds(300),
+                };
+                _reloadDebounce.Tick += (_, _) =>
+                {
+                    _reloadDebounce.Stop();
+                    if (_loadedFilePath != null)
+                    {
+                        LoadFile(_loadedFilePath);
+                        ShowStatus($"🔄 已自動重載：{Path.GetFileName(_loadedFilePath)}");
+                    }
+                };
+            }
+            _reloadDebounce.Stop();
+            _reloadDebounce.Start();
+        });
     }
 
     private void RenderDocument(DesignDocument doc, string filePath)

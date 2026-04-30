@@ -9,6 +9,7 @@ using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
+using Stackdose.UI.Templates.Controls;
 
 namespace Stackdose.App.DesignRuntime;
 
@@ -24,15 +25,20 @@ public static class RuntimeControlFactory
     {
         var control = def.Type switch
         {
-            "PlcLabel"           => CreatePlcLabel(def),
-            "PlcText"            => CreatePlcText(def),
-            "PlcStatusIndicator" => CreateBitIndicator(def),
-            "SecuredButton"      => CreateSecuredButton(def),
-            "Spacer"             => CreateGroupBox(def),
-            "LiveLog"            => CreateLiveLog(),
-            "AlarmViewer"        => CreateAlarmViewer(def),
-            "SensorViewer"       => CreateSensorViewer(def),
-            "StaticLabel"        => CreateStaticLabel(def),
+            "PlcLabel"               => CreatePlcLabel(def),
+            "PlcText"                => CreatePlcText(def),
+            "PlcStatusIndicator"     => CreateBitIndicator(def),
+            "SecuredButton"          => CreateSecuredButton(def),
+            "Spacer"                 => CreateGroupBox(def),
+            "LiveLog"                => CreateLiveLog(),
+            "AlarmViewer"            => CreateAlarmViewer(def),
+            "SensorViewer"           => CreateSensorViewer(def),
+            "StaticLabel"            => CreateStaticLabel(def),
+            "PrintHeadStatus"        => CreatePrintHeadStatus(def),
+            "PrintHeadController"    => new PrintHeadController(),
+            "SystemClock"            => new SystemClock(),
+            "ProcessStatusIndicator" => CreateProcessStatusIndicator(def),
+            "PlcDeviceEditor"        => CreatePlcDeviceEditor(def),
             _ => MakeUnknownPlaceholder(def.Type),
         };
 
@@ -368,6 +374,39 @@ public static class RuntimeControlFactory
             TextWrapping      = TextWrapping.Wrap,
         };
     }
+
+    // ── ProcessStatusIndicator ───────────────────────────────────────────
+
+    private static UIElement CreateProcessStatusIndicator(DesignerItemDefinition def)
+    {
+        var p         = def.Props;
+        var indicator = new ProcessStatusIndicator
+        {
+            BatchNumber         = p.GetString("label", ""),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment   = VerticalAlignment.Stretch,
+        };
+
+        if (Enum.TryParse<ProcessState>(p.GetString("processState", "Running"), true, out var state))
+            indicator.ProcessState = state;
+
+        return indicator;
+    }
+
+    // ── PlcDeviceEditor ──────────────────────────────────────────────────
+
+    private static UIElement CreatePlcDeviceEditor(DesignerItemDefinition def)
+    {
+        var p = def.Props;
+        return new PlcDeviceEditor
+        {
+            Address             = p.GetString("address", "D100"),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment   = VerticalAlignment.Stretch,
+        };
+    }
+
+    // ── PrintHeadStatus ──────────────────────────────────────────────────
 
     private static UIElement CreatePrintHeadStatus(DesignerItemDefinition def)
     {

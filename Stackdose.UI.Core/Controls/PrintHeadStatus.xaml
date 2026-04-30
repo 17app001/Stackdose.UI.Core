@@ -17,7 +17,7 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="5"/>
+                <RowDefinition Height="4"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
@@ -149,16 +149,16 @@
                     Background="{DynamicResource Plc.Bg.Main}"
                     BorderBrush="{DynamicResource Plc.Border}"
                     BorderThickness="1"
-                    CornerRadius="5"
-                    Padding="6,4">
+                    CornerRadius="4"
+                    Padding="6,3">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="3"/>
+                        <RowDefinition Height="2"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Voltages (4 channels, single row) -->
+                    <!-- Voltages: 4 channels in a single row, plain text, no badge borders -->
                     <ItemsControl x:Name="VoltagesPanel" Grid.Row="0" HorizontalAlignment="Stretch">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -167,19 +167,12 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="{DynamicResource Cyber.Bg.Panel}"
-                                        BorderBrush="{DynamicResource Cyber.Border}"
-                                        BorderThickness="1"
-                                        CornerRadius="2"
-                                        Padding="3,1"
-                                        Margin="1">
-                                    <TextBlock Text="{Binding}"
-                                               FontSize="8"
-                                               Foreground="{DynamicResource PrintHead.Accent.Voltage}"
-                                               FontFamily="Consolas"
-                                               FontWeight="Bold"
-                                               HorizontalAlignment="Center"/>
-                                </Border>
+                                <TextBlock Text="{Binding}"
+                                           FontSize="9"
+                                           Foreground="{DynamicResource PrintHead.Accent.Voltage}"
+                                           FontFamily="Consolas"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -188,34 +181,29 @@
                     <Grid Grid.Row="2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="4"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center">
                             <TextBlock Text="Enc: "
-                                       FontSize="8"
+                                       FontSize="9"
                                        Foreground="{DynamicResource Plc.Text.Default}"
-                                       FontWeight="Bold"
                                        FontFamily="Consolas"/>
                             <TextBlock x:Name="EncoderText"
                                        Text="N/A"
-                                       FontSize="8"
+                                       FontSize="9"
                                        Foreground="{DynamicResource PrintHead.Accent.Encoder}"
-                                       FontFamily="Consolas"
-                                       FontWeight="Bold"/>
+                                       FontFamily="Consolas"/>
                         </StackPanel>
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
                             <TextBlock Text="Idx: "
-                                       FontSize="8"
+                                       FontSize="9"
                                        Foreground="{DynamicResource Plc.Text.Default}"
-                                       FontWeight="Bold"
                                        FontFamily="Consolas"/>
                             <TextBlock x:Name="PrintIndexText"
                                        Text="N/A"
-                                       FontSize="8"
+                                       FontSize="9"
                                        Foreground="{DynamicResource PrintHead.Accent.PrintIndex}"
-                                       FontFamily="Consolas"
-                                       FontWeight="Bold"/>
+                                       FontFamily="Consolas"/>
                         </StackPanel>
                     </Grid>
                 </Grid>

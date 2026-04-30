@@ -4,6 +4,7 @@ using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -124,34 +125,34 @@ namespace Stackdose.UI.Core.Controls
         {
             try
             {
-                // 使用 ResourcePathHelper 取得所有 feiyang_head*.json 檔案
-                var jsonFiles = ResourcePathHelper.GetJsonFiles(searchPattern: "feiyang_head*.json");
+                var configDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config");
+                var jsonFiles = Directory.Exists(configDir)
+                    ? Directory.GetFiles(configDir, "feiyang_head*.json", SearchOption.TopDirectoryOnly)
+                    : Array.Empty<string>();
 
                 if (jsonFiles.Length == 0)
                 {
                     ComplianceContext.LogSystem(
-                        "[PrintHeadPanel] No feiyang_head*.json files found in Resources directory",
+                        "[PrintHeadPanel] No feiyang_head*.json files found in Config directory",
                         LogLevel.Warning,
                         showInUi: true
                     );
-                    
-                    // 建立空集合
+
                     PrintHeadConfigs = new ObservableCollection<PrintHeadItemConfig>();
                     return;
                 }
 
-                // 建立配置集合
                 var configs = new ObservableCollection<PrintHeadItemConfig>();
 
-                // 解析每個 JSON 檔案
                 foreach (var filePath in jsonFiles.OrderBy(f => f))
                 {
                     try
                     {
-                        string fileName = System.IO.Path.GetFileName(filePath);
-                        
-                        // 🔥 讀取 JSON 檔案以取得 PrintHead 名稱
-                        string? jsonContent = ResourcePathHelper.ReadJsonFile(fileName);
+                        string fileName = Path.GetFileName(filePath);
+
+                        string? jsonContent = File.Exists(filePath)
+                            ? File.ReadAllText(filePath, System.Text.Encoding.UTF8)
+                            : null;
                         
                         if (string.IsNullOrWhiteSpace(jsonContent))
                         {
@@ -179,8 +180,8 @@ namespace Stackdose.UI.Core.Controls
                         configs.Add(new PrintHeadItemConfig
                         {
                             HeadName = headName,
-                            ConfigFilePath = fileName,
-                            AutoConnect = true // 預設自動連線
+                            ConfigFilePath = $"Config/{fileName}",
+                            AutoConnect = true
                         });
                     }
                     catch (Exception ex)
@@ -200,7 +201,7 @@ namespace Stackdose.UI.Core.Controls
                 UpdatePrintHeadList();
 
                 ComplianceContext.LogSystem(
-                    $"[PrintHeadPanel] Auto-loaded {configs.Count} PrintHead(s) from Resources",
+                    $"[PrintHeadPanel] Auto-loaded {configs.Count} PrintHead(s) from Config",
                     LogLevel.Success,
                     showInUi: true
                 );

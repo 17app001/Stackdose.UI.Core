@@ -63,19 +63,9 @@ namespace Stackdose.UI.Core.Helpers
         {
             try
             {
-                // 🔥 使用 ResourcePathHelper 統一管理路徑
-                string fullPath;
-                
-                if (Path.IsPathRooted(jsonFilePath) && File.Exists(jsonFilePath))
-                {
-                    // 支援絕對路徑（向下相容）
-                    fullPath = jsonFilePath;
-                }
-                else
-                {
-                    // 優先使用 ResourcePathHelper
-                    fullPath = ResourcePathHelper.GetResourceFilePath(jsonFilePath);
-                }
+                string fullPath = Path.IsPathRooted(jsonFilePath)
+                    ? jsonFilePath
+                    : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, jsonFilePath);
 
                 if (!File.Exists(fullPath))
                 {

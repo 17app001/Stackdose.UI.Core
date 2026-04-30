@@ -71,6 +71,7 @@ namespace Stackdose.UI.Core.Controls
         private CancellationTokenSource? _temperatureMonitorCts;
         private bool _isConnected = false;
         private bool _isExpanded = false;
+        private double _collapsedHeight = double.NaN;
 
         #endregion
 
@@ -150,6 +151,16 @@ namespace Stackdose.UI.Core.Controls
             rotation?.BeginAnimation(RotateTransform.AngleProperty, rotateAnimation);
 
             StatusDataPanel.Visibility = expand ? Visibility.Visible : Visibility.Collapsed;
+
+            if (expand)
+            {
+                _collapsedHeight = double.IsNaN(Height) ? ActualHeight : Height;
+                Height = double.NaN;
+            }
+            else
+            {
+                Height = _collapsedHeight;
+            }
         }
 
         #endregion

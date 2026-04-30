@@ -2,36 +2,35 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Core;component/Themes/Theme.xaml"/>
+        <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Core;component/Themes/LightColors.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 
-    <!-- Legacy-compatible brush keys mapped from UI.Core semantic/domain tokens -->
-    <!-- ?? FIX: Use direct color values instead of Binding to avoid design-time issues -->
-    <SolidColorBrush x:Key="PrimaryBrush" Color="#00E5FF"/>
-    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#0088D4"/>
-    <SolidColorBrush x:Key="BackgroundBrush" Color="#0D0D16"/>
-    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#262640"/>
-    <SolidColorBrush x:Key="DarkBackgroundBrush" Color="#1C1C2E"/>
-    <SolidColorBrush x:Key="HoverBackgroundBrush" Color="#22000000"/>
+    <!-- Light Theme brush keys for Shell Templates -->
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#0091EA"/>
+    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#0065B3"/>
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="DarkBackgroundBrush" Color="#E8E8E8"/>
+    <SolidColorBrush x:Key="HoverBackgroundBrush" Color="#14000000"/>
 
-    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#B8C5D0"/>
-    <SolidColorBrush x:Key="TextTertiaryBrush" Color="#A8A8A8"/>
-    <SolidColorBrush x:Key="TextMutedBrush" Color="#B8C5D0"/>
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#212121"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#616161"/>
+    <SolidColorBrush x:Key="TextTertiaryBrush" Color="#9E9E9E"/>
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#9E9E9E"/>
 
-    <SolidColorBrush x:Key="SuccessBrush" Color="#00B876"/>
-    <SolidColorBrush x:Key="WarningBrush" Color="#FFB03A"/>
-    <SolidColorBrush x:Key="ErrorBrush" Color="#FF5F5F"/>
-    <SolidColorBrush x:Key="InfoBrush" Color="#00CED1"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="#2E7D32"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="#E65100"/>
+    <SolidColorBrush x:Key="ErrorBrush" Color="#C62828"/>
+    <SolidColorBrush x:Key="InfoBrush" Color="#0277BD"/>
 
-    <SolidColorBrush x:Key="BorderBrush" Color="#4A6078"/>
-    <SolidColorBrush x:Key="BorderSecondaryBrush" Color="#5A8AB0"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="#BDBDBD"/>
+    <SolidColorBrush x:Key="BorderSecondaryBrush" Color="#9E9E9E"/>
 
-    <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="#2B000000"/>
-    <SolidColorBrush x:Key="DisabledTextBrush" Color="#A8A8A8"/>
-    <SolidColorBrush x:Key="DangerAccentBrush" Color="#FF5F5F"/>
+    <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="#0A000000"/>
+    <SolidColorBrush x:Key="DisabledTextBrush" Color="#BDBDBD"/>
+    <SolidColorBrush x:Key="DangerAccentBrush" Color="#C62828"/>
 
-    <!-- Layout tokens -->
+    <!-- Layout tokens (same as dark, layout is not theme-sensitive) -->
     <Thickness x:Key="Template.PagePadding">20,16,20,20</Thickness>
     <Thickness x:Key="Template.CardMargin">16,0,16,16</Thickness>
     <Thickness x:Key="Template.CardPadding">16</Thickness>
@@ -95,7 +94,7 @@
         <Setter Property="FontWeight" Value="Bold"/>
     </Style>
 
-    <!-- Tab styles (drag-friendly: use native TabControl/TabItem) -->
+    <!-- Tab styles -->
     <Style x:Key="Template.TabControl" TargetType="TabControl">
         <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>

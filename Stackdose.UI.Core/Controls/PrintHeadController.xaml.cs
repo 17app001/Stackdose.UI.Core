@@ -8,6 +8,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using Stackdose.Abstractions.Hardware;
 
 
 namespace Stackdose.UI.Core.Controls
@@ -48,7 +49,7 @@ namespace Stackdose.UI.Core.Controls
         /// </summary>
         private string? _activeMachineId;
 
-        #region MachineId Dependency Property
+        #region Dependency Properties
 
         public static readonly DependencyProperty MachineIdProperty =
             DependencyProperty.Register(
@@ -70,6 +71,31 @@ namespace Stackdose.UI.Core.Controls
         {
             if (d is PrintHeadController ctrl)
                 ctrl.HandleMachineSwitch(e.OldValue as string, e.NewValue as string);
+        }
+
+        /// <summary>
+        /// 傳圖完成後通知 PLC 的裝置位址，e.g. "D513"。空字串表示不通知。
+        /// </summary>
+        public static readonly DependencyProperty PlcReadyDeviceProperty =
+            DependencyProperty.Register(nameof(PlcReadyDevice), typeof(string), typeof(PrintHeadController), new PropertyMetadata(string.Empty));
+
+        public string PlcReadyDevice
+        {
+            get => (string)GetValue(PlcReadyDeviceProperty);
+            set => SetValue(PlcReadyDeviceProperty, value);
+        }
+
+        /// <summary>
+        /// 列印方向寫入的 PLC D-register，e.g. "D32"。
+        /// 值：0=雙向、1=左到右、2=右到左。空字串表示不寫。
+        /// </summary>
+        public static readonly DependencyProperty DirectionPlcDeviceProperty =
+            DependencyProperty.Register(nameof(DirectionPlcDevice), typeof(string), typeof(PrintHeadController), new PropertyMetadata(string.Empty));
+
+        public string DirectionPlcDevice
+        {
+            get => (string)GetValue(DirectionPlcDeviceProperty);
+            set => SetValue(DirectionPlcDeviceProperty, value);
         }
 
         #endregion
@@ -487,14 +513,20 @@ namespace Stackdose.UI.Core.Controls
 
             try
             {
+                if (!float.TryParse(StartXBox.Text, out float startX)) startX = 0;
+                if (!float.TryParse(CaliMMBox.Text, out float caliMM)) caliMM = 0;
+                int imageDpi = int.TryParse(XDpiText.Text, out int d) && d > 0 ? d : 0;
+                int directionValue = DirectionCombo.SelectedIndex; // 0=雙向 1=左到右 2=右到左
+
                 ComplianceContext.LogSystem(
-                    $"[PrintHeadController] Loading image '{_currentImagePath}' to all heads",
+                    $"[PrintHeadController] Loading image '{_currentImagePath}' (DPI:{imageDpi}, Dir:{directionValue})",
                     LogLevel.Info,
                     showInUi: true
                 );
 
-                if (!float.TryParse(StartXBox.Text, out float startX)) startX = 0;
-                if (!float.TryParse(CaliMMBox.Text, out float caliMM)) caliMM = 0;
+                // 1. 方向寫入 PLC（傳圖前先設定）
+                if (!string.IsNullOrWhiteSpace(DirectionPlcDevice))
+                    await WritePlcAsync($"{DirectionPlcDevice}={directionValue}", $"Direction={directionValue}");
 
                 using var bitmap = new System.Drawing.Bitmap(_currentImagePath);
 
@@ -503,7 +535,6 @@ namespace Stackdose.UI.Core.Controls
                 int successCount = 0;
                 int failCount = 0;
 
-                // 顯示進度條
                 Dispatcher.Invoke(() =>
                 {
                     ProgressPanel.Visibility = Visibility.Visible;
@@ -515,7 +546,6 @@ namespace Stackdose.UI.Core.Controls
                     var kvp = connectedHeads[i];
                     int headIndex = i;
 
-                    // 訂閱進度事件
                     Action<int> progressHandler = (progress) =>
                     {
                         Dispatcher.Invoke(() =>
@@ -529,12 +559,24 @@ namespace Stackdose.UI.Core.Controls
 
                     try
                     {
+                        // 2. 每次傳圖前設定 DPI
+                        if (imageDpi > 0)
+                        {
+                            var (cfgOk, cfgMsg) = await kvp.Value.ConfigurePrintModeAsync(imageDpi);
+                            ComplianceContext.LogSystem(
+                                $"[PrintHeadController] {kvp.Key}: ConfigureDPI({imageDpi}) → {(cfgOk ? "OK" : cfgMsg)}",
+                                cfgOk ? LogLevel.Info : LogLevel.Warning,
+                                showInUi: !cfgOk
+                            );
+                        }
+
+                        // 3. 傳圖 + 啟動
                         var (result, msg) = await kvp.Value.TransferBitmapAsync(bitmap, startX, caliMM);
                         if (result)
                         {
                             successCount++;
                             ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {kvp.Key}: Image loaded successfully",
+                                $"[PrintHeadController] {kvp.Key}: Image transferred successfully",
                                 LogLevel.Success,
                                 showInUi: true
                             );
@@ -544,7 +586,7 @@ namespace Stackdose.UI.Core.Controls
                         {
                             failCount++;
                             ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {kvp.Key}: Image load failed - {msg}",
+                                $"[PrintHeadController] {kvp.Key}: Transfer failed - {msg}",
                                 LogLevel.Error,
                                 showInUi: true
                             );
@@ -554,17 +596,14 @@ namespace Stackdose.UI.Core.Controls
                     {
                         failCount++;
                         ComplianceContext.LogSystem(
-                            $"[PrintHeadController] {kvp.Key}: Image load error - {ex.Message}",
+                            $"[PrintHeadController] {kvp.Key}: Transfer error - {ex.Message}",
                             LogLevel.Error,
                             showInUi: true
                         );
                     }
                     finally
                     {
-                        // 取消訂閱
                         kvp.Value.ProgressChanged -= progressHandler;
-                        
-                        // 確保該頭結束時進度達到 (i+1)/total
                         Dispatcher.Invoke(() =>
                         {
                             TransferProgressBar.Value = (double)(headIndex + 1) / totalHeads * 100.0;
@@ -573,12 +612,15 @@ namespace Stackdose.UI.Core.Controls
                 }
 
                 ComplianceContext.LogSystem(
-                    $"[PrintHeadController] Image load completed: {successCount} success, {failCount} failed",
+                    $"[PrintHeadController] Transfer completed: {successCount} success, {failCount} failed",
                     successCount > 0 ? LogLevel.Success : LogLevel.Error,
                     showInUi: true
                 );
 
-                // 延遲隱藏進度條
+                // 4. 通知 PLC 傳圖完畢（全部成功才寫）
+                if (successCount > 0 && !string.IsNullOrWhiteSpace(PlcReadyDevice))
+                    await WritePlcAsync($"{PlcReadyDevice}=1", "ImageReady");
+
                 await Task.Delay(1000);
                 Dispatcher.Invoke(() => ProgressPanel.Visibility = Visibility.Collapsed);
             }
@@ -591,6 +633,22 @@ namespace Stackdose.UI.Core.Controls
         #endregion
 
         #region 輔助方法
+
+        private async Task WritePlcAsync(string deviceInput, string label)
+        {
+            var manager = PlcContext.GlobalStatus?.CurrentManager;
+            if (manager == null || !manager.IsConnected)
+            {
+                ComplianceContext.LogSystem(
+                    $"[PrintHeadController] PLC 未連線，跳過寫入 {label}",
+                    LogLevel.Warning, showInUi: false);
+                return;
+            }
+            bool ok = await manager.WriteAsync(deviceInput);
+            ComplianceContext.LogSystem(
+                $"[PrintHeadController] PLC {label}: {deviceInput} → {(ok ? "OK" : "FAIL")}",
+                ok ? LogLevel.Info : LogLevel.Warning, showInUi: false);
+        }
 
         private bool ValidatePrintHeads()
         {

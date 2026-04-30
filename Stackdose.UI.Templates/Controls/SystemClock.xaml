@@ -22,12 +22,12 @@
                        FontSize="{Binding TimeFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        FontWeight="Bold"
                        HorizontalAlignment="Right"
-                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
             <TextBlock x:Name="DateText"
                        Text="2000-01-01"
                        FontSize="{Binding DateFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        HorizontalAlignment="Right"
-                       Foreground="{StaticResource TextSecondaryBrush}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
                        Margin="0,4,0,0"/>
         </StackPanel>
     </Border>

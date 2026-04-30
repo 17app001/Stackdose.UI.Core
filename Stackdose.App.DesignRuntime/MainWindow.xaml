@@ -80,9 +80,37 @@
                 <Button x:Name="btnDisconnect" Content="&#x26D4; 斷線"
                         Click="OnDisconnectClick"
                         Padding="12,5" Margin="0,0,16,0"
-                        Background="#EF5350" Foreground="White"
                         BorderThickness="0" Cursor="Hand" FontWeight="SemiBold"
-                        IsEnabled="False"/>
+                        IsEnabled="False">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#EF5350"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                Padding="{TemplateBinding Padding}"
+                                                CornerRadius="3">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter Property="Background" Value="#7B2B2A"/>
+                                                <Setter Property="Foreground" Value="#AA7070"/>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#E53935"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
 
                 <Separator Width="1" Background="#3A3A6A" Margin="0,2,16,2" Style="{x:Null}"/>
 
@@ -151,6 +179,17 @@
                         Background="#5C6BC0" Foreground="White"
                         BorderThickness="0" Cursor="Hand" FontWeight="SemiBold"
                         ToolTip="每 100~300ms 隨機寫入 0~32767 至 D100、D101、D102（需先連線）"/>
+
+                <Separator Width="1" Background="#3A3A5A" Margin="16,2,8,2" Style="{x:Null}"/>
+
+                <ToggleButton x:Name="btnThemeToggle"
+                              Content="☀ Light"
+                              Click="OnThemeToggleClick"
+                              Padding="10,5"
+                              Background="#3A3A5A" Foreground="#C0C0D8"
+                              BorderThickness="1" BorderBrush="#5A5A7A"
+                              Cursor="Hand" FontSize="11"
+                              ToolTip="切換 Dark / Light 主題"/>
 
             </WrapPanel>
         </Border>

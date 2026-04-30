@@ -135,6 +135,16 @@
                 <TextBox Text="{Binding ScanInterval, UpdateSourceTrigger=LostFocus}" Width="52"
                          ToolTip="PLC 掃描間隔 ms（預設 200）"
                          Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="16,2,16,2"/>
+
+                <ToggleButton x:Name="btnThemeToggle"
+                              Content="☀ Light"
+                              Click="OnThemeToggleClick"
+                              Style="{StaticResource CanvasModeToggle}"
+                              Padding="10,5"
+                              Cursor="Hand" FontSize="11"
+                              ToolTip="切換 Dark / Light 預覽主題"/>
             </WrapPanel>
         </Border>
 

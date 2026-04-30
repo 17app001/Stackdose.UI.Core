@@ -35,7 +35,7 @@ public static class RuntimeControlFactory
             "SensorViewer"           => CreateSensorViewer(def),
             "StaticLabel"            => CreateStaticLabel(def),
             "PrintHeadStatus"        => CreatePrintHeadStatus(def),
-            "PrintHeadController"    => new PrintHeadController(),
+            "PrintHeadController"    => CreatePrintHeadController(def),
             "SystemClock"            => new SystemClock(),
             "ProcessStatusIndicator" => CreateProcessStatusIndicator(def),
             "PlcDeviceEditor"        => CreatePlcDeviceEditor(def),
@@ -404,6 +404,24 @@ public static class RuntimeControlFactory
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment   = VerticalAlignment.Stretch,
         };
+    }
+
+    // ── PrintHeadController ──────────────────────────────────────────────
+
+    private static UIElement CreatePrintHeadController(DesignerItemDefinition def)
+    {
+        var p = def.Props;
+        var ctrl = new PrintHeadController();
+
+        var plcReady = p.GetString("plcReadyDevice", "");
+        if (!string.IsNullOrWhiteSpace(plcReady))
+            ctrl.PlcReadyDevice = plcReady;
+
+        var dirDevice = p.GetString("directionPlcDevice", "");
+        if (!string.IsNullOrWhiteSpace(dirDevice))
+            ctrl.DirectionPlcDevice = dirDevice;
+
+        return ctrl;
     }
 
     // ── PrintHeadStatus ──────────────────────────────────────────────────

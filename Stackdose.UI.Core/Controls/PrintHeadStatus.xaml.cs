@@ -10,7 +10,6 @@ using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 
 namespace Stackdose.UI.Core.Controls
 {
@@ -70,8 +69,6 @@ namespace Stackdose.UI.Core.Controls
         private IPrintHead? _printHead;
         private CancellationTokenSource? _temperatureMonitorCts;
         private bool _isConnected = false;
-        private bool _isExpanded = false;
-        private double _collapsedHeight = double.NaN;
 
         #endregion
 
@@ -130,42 +127,7 @@ namespace Stackdose.UI.Core.Controls
 
         #endregion
 
-        #region 展開/收合
-
-        private void ExpandButton_Click(object sender, RoutedEventArgs e)
-        {
-            _isExpanded = !_isExpanded;
-            AnimateExpand(_isExpanded);
-        }
-
-        private void AnimateExpand(bool expand)
-        {
-            var rotateAnimation = new DoubleAnimation
-            {
-                To = expand ? 180 : 0,
-                Duration = TimeSpan.FromMilliseconds(200),
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-            };
-
-            var rotation = ExpandIcon.RenderTransform as RotateTransform;
-            rotation?.BeginAnimation(RotateTransform.AngleProperty, rotateAnimation);
-
-            StatusDataPanel.Visibility = expand ? Visibility.Visible : Visibility.Collapsed;
-
-            if (expand)
-            {
-                _collapsedHeight = double.IsNaN(Height) ? ActualHeight : Height;
-                Height = double.NaN;
-            }
-            else
-            {
-                Height = _collapsedHeight;
-            }
-        }
-
-        #endregion
-
-        #region 配置載入
+        #region        #region 配置載入
 
         private bool LoadConfiguration()
         {

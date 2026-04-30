@@ -1,16 +1,16 @@
 <UserControl x:Class="Stackdose.UI.Core.Controls.PrintHeadStatus"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
              x:Name="root"
              d:DesignWidth="220"
              HorizontalAlignment="Stretch">
 
-    <Border Background="{DynamicResource Plc.Bg.Dark}" 
-            BorderBrush="{DynamicResource Plc.Border}" 
-            BorderThickness="1" 
+    <Border Background="{DynamicResource Plc.Bg.Dark}"
+            BorderBrush="{DynamicResource Plc.Border}"
+            BorderThickness="1"
             CornerRadius="8"
             Padding="8"
             HorizontalAlignment="Stretch">
@@ -21,7 +21,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Header: Status Light + Name + IP + Temperature + Power Button + Expand Button -->
+            <!-- Header: Status Light + Name + IP + Temperature + Power Button -->
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -31,21 +31,19 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="8"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="8"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Status Light -->
                 <Grid Grid.Column="0" VerticalAlignment="Center">
-                    <Ellipse x:Name="StatusLight" 
-                             Width="10" 
-                             Height="10" 
+                    <Ellipse x:Name="StatusLight"
+                             Width="10"
+                             Height="10"
                              Fill="{DynamicResource Status.Error}">
                         <Ellipse.Effect>
-                            <DropShadowEffect x:Name="StatusGlow" 
-                                              Color="#ff4757" 
-                                              BlurRadius="6" 
-                                              ShadowDepth="0" 
+                            <DropShadowEffect x:Name="StatusGlow"
+                                              Color="#ff4757"
+                                              BlurRadius="6"
+                                              ShadowDepth="0"
                                               Opacity="0.8"/>
                         </Ellipse.Effect>
                     </Ellipse>
@@ -53,18 +51,17 @@
 
                 <!-- Name + IP -->
                 <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding HeadName, ElementName=root, FallbackValue='PrintHead 1'}" 
-                               FontSize="12" 
+                    <TextBlock Text="{Binding HeadName, ElementName=root, FallbackValue='PrintHead 1'}"
+                               FontSize="12"
                                FontWeight="Bold"
                                FontFamily="Microsoft JhengHei"
                                Foreground="{DynamicResource Plc.Text.Label}"/>
-                    <TextBlock x:Name="BoardAddressText" 
-                               Text="N/A" 
-                               FontSize="9" 
+                    <TextBlock x:Name="BoardAddressText"
+                               Text="N/A"
+                               FontSize="9"
                                FontFamily="Consolas"
                                Foreground="{DynamicResource Plc.Text.Default}"
                                Margin="0,1,0,0"/>
-                    <!-- Status display -->
                     <TextBlock x:Name="StateText"
                                Text="IDLE"
                                FontSize="9"
@@ -76,11 +73,11 @@
                 </StackPanel>
 
                 <!-- Temperature -->
-                <TextBlock x:Name="TemperatureText" 
+                <TextBlock x:Name="TemperatureText"
                            Grid.Column="4"
-                           Text="N/A" 
-                           FontSize="12" 
-                           Foreground="{DynamicResource Plc.Text.Value}" 
+                           Text="N/A"
+                           FontSize="12"
+                           Foreground="{DynamicResource Plc.Text.Value}"
                            FontWeight="Bold"
                            FontFamily="Consolas"
                            VerticalAlignment="Center"/>
@@ -100,26 +97,21 @@
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ToggleButton">
                                         <Grid>
-                                            <!-- Circle Background -->
-                                             <Ellipse x:Name="CircleBackground"
+                                            <Ellipse x:Name="CircleBackground"
                                                      Width="28"
                                                      Height="28"
                                                      Fill="{DynamicResource Cyber.Bg.Panel}"
                                                      Stroke="{DynamicResource Cyber.Border}"
                                                      StrokeThickness="1.5"/>
-                                            
-                                            <!-- Power Icon (Circle with vertical line) -->
-                                            <Canvas Width="14" Height="14" 
-                                                    HorizontalAlignment="Center" 
+                                            <Canvas Width="14" Height="14"
+                                                    HorizontalAlignment="Center"
                                                     VerticalAlignment="Center">
-                                                <!-- Vertical line -->
                                                 <Line X1="7" Y1="0" X2="7" Y2="7"
                                                       x:Name="PowerLine"
                                                       Stroke="#95a5a6"
                                                       StrokeThickness="2"
                                                       StrokeStartLineCap="Round"
                                                       StrokeEndLineCap="Round"/>
-                                                <!-- Arc (partial circle) -->
                                                 <Path x:Name="PowerArc"
                                                       Data="M 3,5 A 5,5 0 1,0 11,5"
                                                       Stroke="#95a5a6"
@@ -130,20 +122,15 @@
                                             </Canvas>
                                         </Grid>
                                         <ControlTemplate.Triggers>
-                                            <!-- Checked State (ON) -->
                                             <Trigger Property="IsChecked" Value="True">
                                                 <Setter TargetName="CircleBackground" Property="Fill" Value="#2ecc71"/>
                                                 <Setter TargetName="CircleBackground" Property="Stroke" Value="#27ae60"/>
                                                 <Setter TargetName="PowerLine" Property="Stroke" Value="White"/>
                                                 <Setter TargetName="PowerArc" Property="Stroke" Value="White"/>
                                             </Trigger>
-                                            
-                                            <!-- Hover Effect -->
                                             <Trigger Property="IsMouseOver" Value="True">
                                                 <Setter TargetName="CircleBackground" Property="Opacity" Value="0.85"/>
                                             </Trigger>
-                                            
-                                            <!-- Disabled State -->
                                             <Trigger Property="IsEnabled" Value="False">
                                                 <Setter TargetName="CircleBackground" Property="Opacity" Value="0.5"/>
                                             </Trigger>
@@ -154,133 +141,83 @@
                         </Style>
                     </ToggleButton.Style>
                 </ToggleButton>
-
-                <!-- Expand/Collapse Button -->
-                <Button x:Name="ExpandButton"
-                        Grid.Column="8"
-                        Width="18"
-                        Height="18"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Click="ExpandButton_Click"
-                        VerticalAlignment="Center"
-                        Cursor="Hand">
-                    <TextBlock x:Name="ExpandIcon"
-                               Text="&#x25BC;"
-                               FontSize="8"
-                               Foreground="{DynamicResource Plc.Text.Label}"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               IsHitTestVisible="False"
-                               RenderTransformOrigin="0.5,0.5">
-                        <TextBlock.RenderTransform>
-                            <RotateTransform x:Name="ExpandIconRotation" Angle="0"/>
-                        </TextBlock.RenderTransform>
-                    </TextBlock>
-                </Button>
             </Grid>
 
-            <!-- Status Data (Collapsible) -->
+            <!-- Status Data (Always Visible, Compact) -->
             <Border x:Name="StatusDataPanel"
-                    Grid.Row="2" 
-                    Background="{DynamicResource Plc.Bg.Main}" 
-                    BorderBrush="{DynamicResource Plc.Border}" 
-                    BorderThickness="1" 
+                    Grid.Row="2"
+                    Background="{DynamicResource Plc.Bg.Main}"
+                    BorderBrush="{DynamicResource Plc.Border}"
+                    BorderThickness="1"
                     CornerRadius="5"
-                    Padding="8"
-                    Visibility="Collapsed">
+                    Padding="6,4">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="5"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="3"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Voltages (4 channels) -->
-                    <Border Grid.Row="0" 
-                            Background="{DynamicResource Plc.Bg.Dark}" 
-                            BorderBrush="{DynamicResource Plc.Border}" 
-                            BorderThickness="1" 
-                            CornerRadius="3"
-                            Padding="6">
-                        <StackPanel>
-                            <TextBlock Text="Voltages" 
-                                       FontSize="9" 
+                    <!-- Voltages (4 channels, single row) -->
+                    <ItemsControl x:Name="VoltagesPanel" Grid.Row="0" HorizontalAlignment="Stretch">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="4" Rows="1"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource Cyber.Bg.Panel}"
+                                        BorderBrush="{DynamicResource Cyber.Border}"
+                                        BorderThickness="1"
+                                        CornerRadius="2"
+                                        Padding="3,1"
+                                        Margin="1">
+                                    <TextBlock Text="{Binding}"
+                                               FontSize="8"
+                                               Foreground="{DynamicResource PrintHead.Accent.Voltage}"
+                                               FontFamily="Consolas"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Encoder + PrintIndex side by side -->
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="4"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="Enc: "
+                                       FontSize="8"
                                        Foreground="{DynamicResource Plc.Text.Default}"
                                        FontWeight="Bold"
+                                       FontFamily="Consolas"/>
+                            <TextBlock x:Name="EncoderText"
+                                       Text="N/A"
+                                       FontSize="8"
+                                       Foreground="{DynamicResource PrintHead.Accent.Encoder}"
                                        FontFamily="Consolas"
-                                       HorizontalAlignment="Center"/>
-                            <ItemsControl x:Name="VoltagesPanel" 
-                                          HorizontalAlignment="Center"
-                                          Margin="0,3,0,0">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <UniformGrid Columns="2" Rows="2"/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Background="{DynamicResource Cyber.Bg.Panel}" 
-                                                BorderBrush="{DynamicResource Cyber.Border}" 
-                                                BorderThickness="1" 
-                                                CornerRadius="2"
-                                                Padding="4,2"
-                                                Margin="2">
-                                            <TextBlock Text="{Binding}" 
-                                                       FontSize="9" 
-                                                       Foreground="{DynamicResource PrintHead.Accent.Voltage}" 
-                                                       FontFamily="Consolas"
-                                                       FontWeight="Bold"/>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                                       FontWeight="Bold"/>
                         </StackPanel>
-                    </Border>
-
-                    <!-- Encoder -->
-                    <Border Grid.Row="2" 
-                            Background="{DynamicResource Plc.Bg.Dark}" 
-                            BorderBrush="{DynamicResource Plc.Border}" 
-                            BorderThickness="1" 
-                            CornerRadius="3"
-                            Padding="6">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="Encoder: " 
-                                       FontSize="9" 
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="Idx: "
+                                       FontSize="8"
                                        Foreground="{DynamicResource Plc.Text.Default}"
-                                       FontWeight="Bold"/>
-                            <TextBlock x:Name="EncoderText" 
-                                       Text="N/A" 
-                                       FontSize="9" 
-                                       Foreground="{DynamicResource PrintHead.Accent.Encoder}" 
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"/>
+                            <TextBlock x:Name="PrintIndexText"
+                                       Text="N/A"
+                                       FontSize="8"
+                                       Foreground="{DynamicResource PrintHead.Accent.PrintIndex}"
                                        FontFamily="Consolas"
                                        FontWeight="Bold"/>
                         </StackPanel>
-                    </Border>
-
-                    <!-- PrintIndex -->
-                    <Border Grid.Row="4" 
-                            Background="{DynamicResource Plc.Bg.Dark}" 
-                            BorderBrush="{DynamicResource Plc.Border}" 
-                            BorderThickness="1" 
-                            CornerRadius="3"
-                            Padding="6">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="PrintIndex: " 
-                                       FontSize="9" 
-                                       Foreground="{DynamicResource Plc.Text.Default}"
-                                       FontWeight="Bold"/>
-                            <TextBlock x:Name="PrintIndexText" 
-                                       Text="N/A" 
-                                       FontSize="9" 
-                                       Foreground="{DynamicResource PrintHead.Accent.PrintIndex}" 
-                                       FontFamily="Consolas"
-                                       FontWeight="Bold"/>
-                        </StackPanel>
-                    </Border>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>

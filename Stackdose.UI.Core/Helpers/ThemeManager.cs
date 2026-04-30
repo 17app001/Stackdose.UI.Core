@@ -226,22 +226,34 @@ namespace Stackdose.UI.Core.Helpers
             {
                 var d = dicts[i];
                 var src = d.Source?.OriginalString ?? "";
+                bool swapped = false;
 
                 foreach (var (dark, light) in _themeDictPairs)
                 {
-                    if (src.EndsWith(dark, StringComparison.OrdinalIgnoreCase) ||
-                        src.EndsWith(light, StringComparison.OrdinalIgnoreCase))
+                    // Match both full pack URI and relative filename (nested dicts use relative paths)
+                    var darkFile = dark.Split('/').Last();
+                    var lightFile = light.Split('/').Last();
+
+                    bool matches = src.EndsWith(dark, StringComparison.OrdinalIgnoreCase)
+                                || src.EndsWith(light, StringComparison.OrdinalIgnoreCase)
+                                || string.Equals(src, darkFile, StringComparison.OrdinalIgnoreCase)
+                                || string.Equals(src, lightFile, StringComparison.OrdinalIgnoreCase);
+
+                    if (matches)
                     {
                         var target = isLight ? light : dark;
                         dicts[i] = new ResourceDictionary
                         {
                             Source = new Uri("pack://application:,,,/" + target)
                         };
+                        swapped = true;
                         break;
                     }
                 }
 
-                SwapColorDictionaries(dicts[i].MergedDictionaries, isLight);
+                // Only recurse into unswapped dicts (swapped dicts are leaf nodes)
+                if (!swapped)
+                    SwapColorDictionaries(dicts[i].MergedDictionaries, isLight);
             }
         }
 

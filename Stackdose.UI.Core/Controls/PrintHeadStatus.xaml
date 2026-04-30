@@ -41,7 +41,7 @@
                              Fill="{DynamicResource Status.Error}">
                         <Ellipse.Effect>
                             <DropShadowEffect x:Name="StatusGlow"
-                                              Color="#ff4757"
+                                              Color="#FF5F5F"
                                               BlurRadius="6"
                                               ShadowDepth="0"
                                               Opacity="0.8"/>
@@ -108,13 +108,13 @@
                                                     VerticalAlignment="Center">
                                                 <Line X1="7" Y1="0" X2="7" Y2="7"
                                                       x:Name="PowerLine"
-                                                      Stroke="#95a5a6"
+                                                      Stroke="{DynamicResource Plc.Text.Gray}"
                                                       StrokeThickness="2"
                                                       StrokeStartLineCap="Round"
                                                       StrokeEndLineCap="Round"/>
                                                 <Path x:Name="PowerArc"
                                                       Data="M 3,5 A 5,5 0 1,0 11,5"
-                                                      Stroke="#95a5a6"
+                                                      Stroke="{DynamicResource Plc.Text.Gray}"
                                                       StrokeThickness="2"
                                                       StrokeStartLineCap="Round"
                                                       StrokeEndLineCap="Round"
@@ -123,8 +123,8 @@
                                         </Grid>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsChecked" Value="True">
-                                                <Setter TargetName="CircleBackground" Property="Fill" Value="#2ecc71"/>
-                                                <Setter TargetName="CircleBackground" Property="Stroke" Value="#27ae60"/>
+                                                <Setter TargetName="CircleBackground" Property="Fill" Value="{DynamicResource Status.Success}"/>
+                                                <Setter TargetName="CircleBackground" Property="Stroke" Value="{DynamicResource Status.Success}"/>
                                                 <Setter TargetName="PowerLine" Property="Stroke" Value="White"/>
                                                 <Setter TargetName="PowerArc" Property="Stroke" Value="White"/>
                                             </Trigger>

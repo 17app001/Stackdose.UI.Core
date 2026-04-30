@@ -152,6 +152,17 @@
                         BorderThickness="0" Cursor="Hand" FontWeight="SemiBold"
                         ToolTip="每 100~300ms 隨機寫入 0~32767 至 D100、D101、D102（需先連線）"/>
 
+                <Separator Width="1" Background="#3A3A5A" Margin="16,2,8,2" Style="{x:Null}"/>
+
+                <ToggleButton x:Name="btnThemeToggle"
+                              Content="☀ Light"
+                              Click="OnThemeToggleClick"
+                              Padding="10,5"
+                              Background="#3A3A5A" Foreground="#C0C0D8"
+                              BorderThickness="1" BorderBrush="#5A5A7A"
+                              Cursor="Hand" FontSize="11"
+                              ToolTip="切換 Dark / Light 主題"/>
+
             </WrapPanel>
         </Border>
 

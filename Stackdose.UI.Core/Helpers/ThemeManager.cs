@@ -207,6 +207,44 @@ namespace Stackdose.UI.Core.Helpers
         /// <param name="themeType">主題類型</param>
         /// <param name="themeName">主題名稱（選填）</param>
         /// <returns>是否切換成功</returns>
+        // Theme dict URI pairs: (dark, light)
+        private static readonly (string Dark, string Light)[] _themeDictPairs =
+        [
+            (
+                "Stackdose.UI.Core;component/Themes/Colors.xaml",
+                "Stackdose.UI.Core;component/Themes/LightColors.xaml"
+            ),
+            (
+                "Stackdose.UI.Templates;component/Resources/CommonColors.xaml",
+                "Stackdose.UI.Templates;component/Resources/LightCommonColors.xaml"
+            ),
+        ];
+
+        private static void SwapColorDictionaries(System.Collections.ObjectModel.Collection<ResourceDictionary> dicts, bool isLight)
+        {
+            for (int i = 0; i < dicts.Count; i++)
+            {
+                var d = dicts[i];
+                var src = d.Source?.OriginalString ?? "";
+
+                foreach (var (dark, light) in _themeDictPairs)
+                {
+                    if (src.EndsWith(dark, StringComparison.OrdinalIgnoreCase) ||
+                        src.EndsWith(light, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var target = isLight ? light : dark;
+                        dicts[i] = new ResourceDictionary
+                        {
+                            Source = new Uri("pack://application:,,,/" + target)
+                        };
+                        break;
+                    }
+                }
+
+                SwapColorDictionaries(dicts[i].MergedDictionaries, isLight);
+            }
+        }
+
         public static bool SwitchTheme(ThemeType themeType, string? themeName = null)
         {
             bool isLightTheme = themeType == ThemeType.Light;
@@ -258,6 +296,10 @@ namespace Stackdose.UI.Core.Helpers
                         }
                     }
 
+                    // 1b. Swap ResourceDictionary in Application.Resources
+                    if (Application.Current != null)
+                        SwapColorDictionaries(Application.Current.Resources.MergedDictionaries, isLightTheme);
+
                     // 2. 更新快取
                     _currentTheme = newTheme;
 

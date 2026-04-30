@@ -638,6 +638,15 @@ public partial class MainWindow : Window
         }
     }
 
+    private bool _isLightTheme = false;
+
+    private void OnThemeToggleClick(object sender, RoutedEventArgs e)
+    {
+        _isLightTheme = !_isLightTheme;
+        ThemeManager.SwitchTheme(_isLightTheme ? ThemeType.Light : ThemeType.Dark);
+        btnThemeToggle.Content = _isLightTheme ? "🌙 Dark" : "☀ Light";
+    }
+
     private void OnControlValueChanged(object? sender, PlcValueChangedEventArgs e)
     {
         Dispatcher.BeginInvoke(() =>

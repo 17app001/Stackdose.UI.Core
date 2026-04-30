@@ -18,7 +18,7 @@
             <Style x:Key="HeaderMachineComboStyle" TargetType="ComboBox">
                 <Setter Property="Foreground" Value="#FFFFFF"/>
                 <Setter Property="Background" Value="#1A2A40"/>
-                <Setter Property="BorderBrush" Value="{StaticResource WarningBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource WarningBrush}"/>
                 <Setter Property="BorderThickness" Value="2"/>
                 <Setter Property="Padding" Value="8,2"/>
                 <Setter Property="FontSize" Value="13"/>
@@ -52,7 +52,7 @@
                                                             Margin="0,6"/>
                                                     <Path Grid.Column="1"
                                                           Data="M0,0 L5,5 L10,0"
-                                                          Stroke="{StaticResource WarningBrush}"
+                                                          Stroke="{DynamicResource WarningBrush}"
                                                           StrokeThickness="2"
                                                           HorizontalAlignment="Center"
                                                           VerticalAlignment="Center"/>
@@ -104,7 +104,7 @@
                                           MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                         <Border x:Name="DropDownBorder"
                                                 Background="#1A2A40"
-                                                BorderBrush="{StaticResource WarningBrush}"
+                                                BorderBrush="{DynamicResource WarningBrush}"
                                                 BorderThickness="1"
                                                 CornerRadius="0,0,6,6"
                                                 Margin="0,-1,0,0">
@@ -130,7 +130,7 @@
             </Style>
 
             <Style x:Key="HeaderMachineComboItemStyle" TargetType="ComboBoxItem">
-                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="FontSize" Value="13"/>
                 <Setter Property="Padding" Value="10,8"/>
@@ -162,8 +162,8 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource CardBackgroundBrush}"
-            BorderBrush="{StaticResource BorderBrush}"
+    <Border Background="{DynamicResource CardBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
             BorderThickness="0,0,0,2"
             Height="60">
         <Grid Margin="15,0">
@@ -180,13 +180,13 @@
 
                 <!-- Logo Circle -->
                 <Border Width="38" Height="38"
-                        Background="{StaticResource PrimaryBrush}"
+                        Background="{DynamicResource PrimaryBrush}"
                         CornerRadius="19"
                         Margin="0,0,12,0">
                     <TextBlock Text="S"
                                FontSize="22"
                                FontWeight="Bold"
-                               Foreground="{StaticResource CardBackgroundBrush}"
+                               Foreground="{DynamicResource CardBackgroundBrush}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"/>
                 </Border>
@@ -197,18 +197,18 @@
                         <TextBlock Text="STACKDOSE 3D TABLET PRINTER"
                                    FontSize="15"
                                    FontWeight="Bold"
-                                   Foreground="{StaticResource PrimaryBrush}"/>
+                                   Foreground="{DynamicResource PrimaryBrush}"/>
                         <TextBlock Text="  |  "
                                    FontSize="15"
-                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
                         <TextBlock Text="{Binding DeviceName, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                    FontSize="18"
                                    FontWeight="Bold"
-                                   Foreground="{StaticResource WarningBrush}"/>
+                                   Foreground="{DynamicResource WarningBrush}"/>
                     </StackPanel>
                     <TextBlock Text="Mercury Co. - Pharmaceutical 3D Printing System"
                                FontSize="10"
-                               Foreground="{StaticResource TextTertiaryBrush}"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
                                Margin="0,1,0,0"/>
                 </StackPanel>
 
@@ -240,7 +240,7 @@
                 <TextBlock Text="{Binding PageTitle, RelativeSource={RelativeSource AncestorType=UserControl}}"
                            FontSize="22"
                            FontWeight="Bold"
-                           Foreground="{StaticResource TextPrimaryBrush}"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
                            HorizontalAlignment="Center"/>
             </StackPanel>
 
@@ -251,13 +251,13 @@
 
                 <!-- User Avatar -->
                 <Border Width="36" Height="36"
-                        Background="{StaticResource TextMutedBrush}"
+                        Background="{DynamicResource TextMutedBrush}"
                         CornerRadius="18"
                         Margin="0,0,8,0">
                     <TextBlock Text="{Binding UserName, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource FirstCharConverter}}"
                                FontSize="20"
                                FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimaryBrush}"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"/>
                 </Border>
@@ -267,21 +267,21 @@
                     <TextBlock Text="{Binding UserName, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                FontSize="13"
                                FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock x:Name="UserIdText"
                                    Text="{Binding UserId, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                    FontSize="10"
-                                   Foreground="{StaticResource InfoBrush}"
+                                   Foreground="{DynamicResource InfoBrush}"
                                    FontWeight="SemiBold"
                                    Margin="0,0,6,0"/>
                         <TextBlock Text="|"
                                    FontSize="10"
-                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"
                                    Margin="0,0,6,0"/>
                         <TextBlock Text="{Binding UserRole, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                    FontSize="10"
-                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
                     </StackPanel>
                 </StackPanel>
 
@@ -293,7 +293,7 @@
                             Content="Logout"
                             Width="70"
                             Style="{StaticResource Template.HeaderActionButton}"
-                            Background="{StaticResource ErrorBrush}"
+                            Background="{DynamicResource ErrorBrush}"
                             Margin="0,0,4,0"
                             Click="LogoutButton_Click"/>
 
@@ -301,7 +301,7 @@
                     <Button x:Name="SwitchUserButton"
                             Width="70"
                             Style="{StaticResource Template.HeaderActionButton}"
-                            Background="{StaticResource InfoBrush}"
+                            Background="{DynamicResource InfoBrush}"
                             Margin="0,0,8,0"
                             Click="SwitchUserButton_Click">
                         <StackPanel Orientation="Horizontal"
@@ -323,7 +323,7 @@
                             Content="-"
                             Width="30"
                             Style="{StaticResource Template.HeaderWindowButton}"
-                            Background="{StaticResource WarningBrush}"
+                            Background="{DynamicResource WarningBrush}"
                             Margin="0,0,2,0"
                             Click="MinimizeButton_Click"/>
 
@@ -331,12 +331,12 @@
                     <Button x:Name="FullscreenButton"
                             Width="30"
                             Style="{StaticResource Template.HeaderWindowButton}"
-                            Background="{StaticResource SuccessBrush}"
+                            Background="{DynamicResource SuccessBrush}"
                             Margin="0,0,2,0"
                             Click="FullscreenButton_Click"
                             ToolTip="Exit Fullscreen">
                         <Path Data="M2,5 H11 V14 H2 Z M4,7 V12 H9 V7 Z M7,2 H16 V11 H7 Z M9,4 V9 H14 V4 Z"
-                              Fill="{StaticResource TextPrimaryBrush}"
+                              Fill="{DynamicResource TextPrimaryBrush}"
                               Stretch="Uniform"
                               Width="16"
                               Height="16"/>
@@ -347,7 +347,7 @@
                             Content="X"
                             Width="30"
                             Style="{StaticResource Template.HeaderWindowButton}"
-                            Background="{StaticResource ErrorBrush}"
+                            Background="{DynamicResource ErrorBrush}"
                             Click="CloseButton_Click"/>
                 </StackPanel>
             </StackPanel>

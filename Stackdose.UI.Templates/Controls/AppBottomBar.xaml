@@ -14,8 +14,8 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource DarkBackgroundBrush}" 
-            BorderBrush="{StaticResource BorderBrush}" 
+    <Border Background="{DynamicResource DarkBackgroundBrush}" 
+            BorderBrush="{DynamicResource BorderBrush}" 
             BorderThickness="0,2,0,0"
             Height="35">
         <Grid Margin="16,0">
@@ -30,16 +30,16 @@
                         VerticalAlignment="Center">
                 <TextBlock Text="StackDose 3D Tablet Printer" 
                            FontSize="11" 
-                           Foreground="{StaticResource TextTertiaryBrush}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
                            Margin="0,0,12,0"/>
                 <TextBlock Text="v2.0.1" 
                            FontSize="11" 
                            FontWeight="Bold"
-                           Foreground="{StaticResource PrimaryBrush}"
+                           Foreground="{DynamicResource PrimaryBrush}"
                            Margin="0,0,12,0"/>
                 <TextBlock Text="Build 2025.01.12" 
                            FontSize="10" 
-                           Foreground="{StaticResource TextSecondaryBrush}"/>
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
             </StackPanel>
 
             <!-- Right: Copyright -->
@@ -49,7 +49,7 @@
                         VerticalAlignment="Center">
                 <TextBlock Text="2025 Mercury Co. All Rights Reserved." 
                            FontSize="10" 
-                           Foreground="{StaticResource TextTertiaryBrush}"/>
+                           Foreground="{DynamicResource TextTertiaryBrush}"/>
             </StackPanel>
         </Grid>
     </Border>

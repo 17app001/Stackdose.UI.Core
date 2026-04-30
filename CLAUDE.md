@@ -163,3 +163,4 @@ dotnet build Stackdose.UI.Core.sln
 | `docs/kb/controls-reference.md` | 控制項快速參考 |
 | `docs/kb/quickstart.md` | 新 App 快速建立指南（CLI 指令說明） |
 | `docs/devlog/2026-04.md` | 2026年4月開發日誌 |
+| `docs/eval/modele-vs-framework.md` | ModelE WinForms vs WPF框架功能對照、差距分析、未來實作方向 |

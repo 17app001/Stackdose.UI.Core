@@ -141,11 +141,8 @@
                 <ToggleButton x:Name="btnThemeToggle"
                               Content="☀ Light"
                               Click="OnThemeToggleClick"
+                              Style="{StaticResource CanvasModeToggle}"
                               Padding="10,5"
-                              Background="{StaticResource SurfaceBrush}"
-                              Foreground="{StaticResource TextSecondaryBrush}"
-                              BorderThickness="1"
-                              BorderBrush="{StaticResource BorderBrush}"
                               Cursor="Hand" FontSize="11"
                               ToolTip="切換 Dark / Light 預覽主題"/>
             </WrapPanel>

@@ -87,13 +87,13 @@ public sealed class ToolboxItemDescriptor
         "AlarmViewer" => new DesignerItemDefinition
         {
             Type = "AlarmViewer",
-            Props = [],
+            Props = new() { ["configFile"] = "Config/Machine1.alarms.json" },
             Width = 420, Height = 280
         },
         "SensorViewer" => new DesignerItemDefinition
         {
             Type = "SensorViewer",
-            Props = [],
+            Props = new() { ["configFile"] = "Config/Machine1.sensors.json" },
             Width = 420, Height = 200
         },
         "ProcessStatusIndicator" => new DesignerItemDefinition

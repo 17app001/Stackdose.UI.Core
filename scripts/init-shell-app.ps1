@@ -674,7 +674,7 @@ public static class RuntimeControlFactory
         var p = def.Props;
         var label = p.GetString("label", "Cmd");
         var themeStr = p.GetString("theme", "Normal");
-        var theme = Enum.TryParse<Stackdose.UI.Core.Controls.ButtonTheme>(themeStr, true, out var t) ? t : Stackdose.UI.Core.Controls.ButtonTheme.Normal;
+        var theme = Enum.TryParse<Stackdose.UI.Core.Models.ButtonTheme>(themeStr, true, out var t) ? t : Stackdose.UI.Core.Models.ButtonTheme.Normal;
         return new SecuredButton { Content = label, OperationName = label, Theme = theme };
     }
 

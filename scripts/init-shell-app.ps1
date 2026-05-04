@@ -711,14 +711,26 @@ public static class RuntimeControlFactory
         if (tabs == null) return panel;
         foreach (var tab in tabs)
         {
-            var container = new Grid
+            var container = new Canvas
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment   = VerticalAlignment.Stretch,
             };
             if (tab.Items != null)
+            {
                 foreach (var itemDef in tab.Items)
-                    container.Children.Add(Create(itemDef));
+                {
+                    var child = Create(itemDef);
+                    if (child is FrameworkElement fe)
+                    {
+                        fe.Width  = itemDef.Width;
+                        fe.Height = itemDef.Height;
+                        Canvas.SetLeft(fe, itemDef.X);
+                        Canvas.SetTop(fe,  itemDef.Y);
+                    }
+                    container.Children.Add(child);
+                }
+            }
             panel.AddTab(tab.Title ?? "", container);
         }
         return panel;

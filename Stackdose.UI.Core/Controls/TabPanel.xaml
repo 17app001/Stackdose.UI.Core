@@ -39,7 +39,7 @@
                                 <Button.Style>
                                     <Style TargetType="Button">
                                         <Setter Property="Background" Value="Transparent"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource Plc.Text.Muted}"/>
+                                        <Setter Property="Foreground" Value="#9090B0"/>
                                         <Setter Property="FontWeight" Value="Normal"/>
                                         <Setter Property="Template">
                                             <Setter.Value>

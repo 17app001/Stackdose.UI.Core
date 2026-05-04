@@ -42,7 +42,9 @@ public partial class TabPanel : UserControl
         if (index < 0 || index >= _tabs.Count) return;
         _activeIndex = index;
         ContentArea.Child = _tabs[index].Content;
-        RefreshHeaderStyles();
+        // Defer style refresh until containers are actually generated
+        Dispatcher.BeginInvoke(RefreshHeaderStyles,
+            System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
     // ── Event handlers ────────────────────────────────────────────────────

@@ -162,6 +162,7 @@ if ($JsonDrivenApp) {
         $wrapperVcxproj = Get-RelativePath -From $projectDir -To (Join-Path $repoRoot "..\Sdk\FeiyangWrapper\FeiyangWrapper\FeiyangWrapper.vcxproj")
         $wrapperNode = $jdXml.CreateElement("ProjectReference")
         $wrapperNode.SetAttribute("Include", $wrapperVcxproj)
+        $wrapperNode.SetAttribute("Condition", "'`$(MSBuildRuntimeType)'=='Full'")
         $refGroup.AppendChild($wrapperNode) | Out-Null
         
         # 2. 注入強力複製 Target (解決另一台電腦找不到 DLL 的問題)

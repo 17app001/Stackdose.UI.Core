@@ -7,20 +7,25 @@
 - **日期：** 2026-05-04
 - **分支：** `master`
 - **上次做了什麼：**
-    - **TabPanel 完備化：** 修正運行時 Canvas 定位、JSON 屬性大小寫不匹配；實作 `TabPanelEditorDialog` 子項目設計器，支援雙擊編輯子畫布。
-    - **視覺風格同步：** GroupBox (Spacer) 改為半透明科技感風格（`Color.FromArgb(0xCC, 0x3A, 0x56, 0xA8)`），全專案 Designer / Runtime / Scaffold 對齊。
-    - **AlarmViewer / SensorViewer 修正：** JSON case-insensitive 反序列化、group header 改為青色左邊框（`#00E5FF`），`Sensor.Bg.Header` token 調亮至 `#1B2B45`。
-    - **Scaffold 強化：** sample config 含範例資料、`-AutoFullPack` 一鍵完整佈局、`viewerTitle` 屬性讀取。
-    - **ButtonTheme 命名空間修正：** `Stackdose.UI.Core.Models.ButtonTheme`（非 Controls）。
-    - **AI 文件：** 新增 `docs/AI_SCAFFOLDING_GUIDE.md` 標準化 scaffold 規範。
-- **下一步：** 實機傳圖驗證、大型檔案傳輸壓力測試。
+    - **ModelE 移植啟動完成：** Scaffold 建立、57 筆 alarm / 10 筆 sensor 轉換、machinedesign.json 雙噴頭+四軸+12按鈕佈局、feiyang_head2.json 建立、build 0 錯誤。
+    - **軸位址確認：** 從 WinForms Form1.cs 查明 X_A=D65、X_B=D67、Z_A=D69、Z_B=D71（DWord 32-bit），machinedesign.json 已更正。
+    - **MachineStateHandler 範本：** `ModelE/Handlers/MachineStateHandler.cs` 建立，示範 isEnabled/label/visibility prop 控制；JSON events 用法已寫在註解。
+    - **scaffold bug 修正：** `init-shell-app.ps1` 的 vcxproj ProjectReference 補上 MSBuildRuntimeType 條件。
+- **下一步（明日上工順序）：**
+    1. `PlcConfirmationHandler` — 倒數確認 Dialog
+    2. 噴頭啟動 wiring — MainWindow OnLoaded 串接
+    3. machinedesign.json 補 M9/M1/M4 監控 events
 
 ## 進行中
 
-| 任務 | 狀態 | 備註 |
-|---|---|---|
-| 大檔案傳圖壓力測試 | 待測試 | 進度條已實作，尚未用大檔案驗證 |
-| PrintHeadController 傳圖流程實機驗證 | 待測試 | DPI設定/方向PLC/完成通知均已實作 |
+| # | 任務 | 檔案 | 備註 |
+|---|---|---|---|
+| 1 | PlcConfirmationHandler | `ModelE/Handlers/PlcConfirmationHandler.cs` | 對應 WinForms PlcMessageForm，倒數→寫回 ConfirmAddress |
+| 2 | 噴頭啟動 wiring | `ModelE/MainWindow.xaml.cs` | ConnectionEstablished 事件後 init PrintHead |
+| 3 | machinedesign.json M-bit events | `ModelE/Config/M1.machinedesign.json` | M9=列印中→停用btnPrint；M1/M4=初始化中→停用相關按鈕 |
+| 4 | 實機驗證 | — | feiyang_head2 BoardIP、app-config PLC IP、wave 檔 |
+| 5 | D2000 alarm 確認 | `Machine1.alarms.json` | 循環系統_A 供墨超時 用 D2000 還是 D900，需對 PLC 程式 |
+| 6 | 大檔案傳圖壓力測試 | — | 進度條已實作，尚未大檔案驗證 |
 
 ## ⚠️ 未解問題
 
@@ -53,3 +58,5 @@
 | TabPanel 控件 + 子項設計器 | ✅ 完成（2026-05-04） |
 | Scaffold AutoFullPack | ✅ 完成（2026-05-04） |
 | GroupBox / Viewer 視覺對齊 | ✅ 完成（2026-05-04） |
+| ModelE 移植 — 靜態層（JSON/Config） | ✅ 完成（2026-05-04） |
+| ModelE 移植 — 邏輯層（Handlers/Events） | 🔄 進行中 |

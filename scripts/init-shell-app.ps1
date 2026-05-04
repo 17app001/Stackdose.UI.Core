@@ -677,7 +677,33 @@ public static class RuntimeControlFactory
 
     private static UIElement CreateGroupBox(DesignerItemDefinition def)
     {
-        return new Border { BorderBrush = Brushes.CornflowerBlue, BorderThickness = new Thickness(1), Child = new TextBlock { Text = def.Props.GetString("title", "Group") } };
+        var title = def.Props.GetString("title", "Group");
+        var root = new Border
+        {
+            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x55, 0x88, 0xCC)),
+            BorderThickness = new Thickness(1),
+            Background      = new SolidColorBrush(Color.FromRgb(0x1A, 0x1E, 0x2E)),
+            CornerRadius    = new CornerRadius(4),
+        };
+        var dock = new DockPanel();
+        var header = new Border
+        {
+            Background      = new SolidColorBrush(Color.FromRgb(0x22, 0x33, 0x55)),
+            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x55, 0x88, 0xCC)),
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            Padding         = new Thickness(8, 4, 8, 4),
+            Child           = new TextBlock
+            {
+                Text       = title,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x88, 0xBB, 0xFF)),
+                FontSize   = 12,
+                FontWeight = FontWeights.SemiBold,
+            }
+        };
+        DockPanel.SetDock(header, Dock.Top);
+        dock.Children.Add(header);
+        root.Child = dock;
+        return root;
     }
 
     private static UIElement CreateAlarmViewer(DesignerItemDefinition def)

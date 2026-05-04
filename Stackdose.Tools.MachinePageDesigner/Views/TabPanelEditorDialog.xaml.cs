@@ -79,8 +79,7 @@ public partial class TabPanelEditorDialog : Window
             panel.Children.Add(btn);
         }
 
-        TabHeadersControl.ItemsSource = null;
-        TabHeadersControl.Content     = panel; // use ContentControl instead of ItemsControl
+        TabHeadersControl.Content = panel;
     }
 
     private void SwitchTab(int index)

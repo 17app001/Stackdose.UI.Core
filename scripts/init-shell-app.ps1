@@ -671,8 +671,11 @@ public static class RuntimeControlFactory
 
     private static UIElement CreateSecuredButton(DesignerItemDefinition def)
     {
-        var p = def.Props; var label = p.GetString("label", "Cmd");
-        return new SecuredButton { Content = label, OperationName = label };
+        var p = def.Props;
+        var label = p.GetString("label", "Cmd");
+        var themeStr = p.GetString("theme", "Normal");
+        var theme = Enum.TryParse<Stackdose.UI.Core.Controls.ButtonTheme>(themeStr, true, out var t) ? t : Stackdose.UI.Core.Controls.ButtonTheme.Normal;
+        return new SecuredButton { Content = label, OperationName = label, Theme = theme };
     }
 
     private static UIElement CreateGroupBox(DesignerItemDefinition def)

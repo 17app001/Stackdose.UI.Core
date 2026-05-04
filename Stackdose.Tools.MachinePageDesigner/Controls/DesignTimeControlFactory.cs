@@ -305,8 +305,8 @@ public static class DesignTimeControlFactory
 
     private static UIElement CreateTabPanelPlaceholder(DesignerItemDefinition def)
     {
-        // Extract tab titles from props for design-time display
-        var tabTitles = new List<string>();
+        // Extract (title, itemCount) pairs from props
+        var tabs = new List<(string Title, int Count)>();
         if (def.Props.TryGetValue("tabs", out var raw))
         {
             try
@@ -316,13 +316,15 @@ public static class DesignTimeControlFactory
                     : System.Text.Json.JsonSerializer.SerializeToElement(raw);
                 foreach (var tab in je.EnumerateArray())
                 {
-                    if (tab.TryGetProperty("title", out var t))
-                        tabTitles.Add(t.GetString() ?? "Tab");
+                    var title = tab.TryGetProperty("title", out var t) ? t.GetString() ?? "Tab" : "Tab";
+                    var count = tab.TryGetProperty("items", out var items) && items.ValueKind == System.Text.Json.JsonValueKind.Array
+                        ? items.GetArrayLength() : 0;
+                    tabs.Add((title, count));
                 }
             }
             catch { }
         }
-        if (tabTitles.Count == 0) { tabTitles.Add("Tab 1"); tabTitles.Add("Tab 2"); }
+        if (tabs.Count == 0) { tabs.Add(("Tab 1", 0)); tabs.Add(("Tab 2", 0)); }
 
         var root = new DockPanel { Background = new SolidColorBrush(Color.FromRgb(0x1A, 0x1E, 0x2A)) };
 
@@ -336,9 +338,10 @@ public static class DesignTimeControlFactory
         DockPanel.SetDock(header, Dock.Top);
 
         var tabStrip = new StackPanel { Orientation = Orientation.Horizontal };
-        for (int i = 0; i < tabTitles.Count; i++)
+        for (int i = 0; i < tabs.Count; i++)
         {
             var isFirst = i == 0;
+            var label = tabs[i].Count > 0 ? $"{tabs[i].Title}  ({tabs[i].Count})" : tabs[i].Title;
             tabStrip.Children.Add(new Border
             {
                 Background = isFirst
@@ -349,7 +352,7 @@ public static class DesignTimeControlFactory
                 Padding = new Thickness(16, 6, 16, 6),
                 Child = new TextBlock
                 {
-                    Text = tabTitles[i],
+                    Text = label,
                     Foreground = isFirst
                         ? new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0))
                         : new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0xAA)),
@@ -361,18 +364,35 @@ public static class DesignTimeControlFactory
         header.Child = tabStrip;
         root.Children.Add(header);
 
-        // Content placeholder
+        // Content area — "double-click to edit" hint
+        var hint = new StackPanel
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        hint.Children.Add(new TextBlock
+        {
+            Text = "✎",
+            FontSize = 22,
+            Foreground = new SolidColorBrush(Color.FromRgb(0x55, 0x66, 0x99)),
+            HorizontalAlignment = HorizontalAlignment.Center,
+        });
+        hint.Children.Add(new TextBlock
+        {
+            Text = "雙擊開啟 Tab 編輯器",
+            FontSize = 11,
+            Foreground = new SolidColorBrush(Color.FromRgb(0x66, 0x77, 0xAA)),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(0, 4, 0, 0),
+        });
+
         var content = new Border
         {
             Background = Brushes.Transparent,
-            Child = new TextBlock
-            {
-                Text = $"[TabPanel] {tabTitles.Count} tabs",
-                Foreground = new SolidColorBrush(Color.FromRgb(0x66, 0x66, 0x88)),
-                FontSize = 11,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-            }
+            BorderBrush = new SolidColorBrush(Color.FromRgb(0x33, 0x38, 0x55)),
+            BorderThickness = new Thickness(1),
+            Margin = new Thickness(8),
+            Child = hint,
         };
         root.Children.Add(content);
 

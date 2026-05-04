@@ -562,6 +562,7 @@ public partial class MainWindow : Window
 @'
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -592,6 +593,7 @@ public static class RuntimeControlFactory
             "StaticLabel"        => CreateStaticLabel(def),
             "PrintHeadStatus"     => CreatePrintHeadStatus(def),
             "PrintHeadController" => new PrintHeadController(),
+            "TabPanel"            => CreateTabPanel(def),
             _                   => MakeUnknownPlaceholder(def.Type),
         };
         AttachBehaviorTag(def, control);
@@ -696,6 +698,36 @@ public static class RuntimeControlFactory
     {
         var p = def.Props;
         return new TextBlock { Text = p.GetString("staticText", "Label"), FontSize = p.GetDouble("staticFontSize", 14), Foreground = Brushes.White };
+    }
+
+    private static UIElement CreateTabPanel(DesignerItemDefinition def)
+    {
+        var panel = new TabPanel();
+        if (!def.Props.TryGetValue("tabs", out var raw) || raw is not JsonElement je)
+            return panel;
+        TabEntry[]? tabs;
+        try { tabs = JsonSerializer.Deserialize<TabEntry[]>(je.GetRawText()); }
+        catch { return panel; }
+        if (tabs == null) return panel;
+        foreach (var tab in tabs)
+        {
+            var container = new Grid
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment   = VerticalAlignment.Stretch,
+            };
+            if (tab.Items != null)
+                foreach (var itemDef in tab.Items)
+                    container.Children.Add(Create(itemDef));
+            panel.AddTab(tab.Title ?? "", container);
+        }
+        return panel;
+    }
+
+    private sealed class TabEntry
+    {
+        public string? Title { get; set; }
+        public DesignerItemDefinition[]? Items { get; set; }
     }
 
     private static UIElement MakeUnknownPlaceholder(string type) => new Border { Child = new TextBlock { Text = "Unknown: " + type, Foreground = Brushes.Red } };

@@ -122,6 +122,14 @@ public partial class FreeCanvasItem : UserControl
         if (e.OriginalSource is Thumb) { e.Handled = true; return; }
         if (Item == null) return;
 
+        // Double-click on TabPanel → open sub-designer dialog
+        if (e.ClickCount == 2 && Item.ItemType == "TabPanel")
+        {
+            e.Handled = true;
+            OpenTabPanelEditor();
+            return;
+        }
+
         e.Handled = true;
 
         FindFreeCanvas()?.FocusCanvas();
@@ -526,5 +534,13 @@ public partial class FreeCanvasItem : UserControl
             parent = VisualTreeHelper.GetParent(parent);
         }
         return null;
+    }
+
+    private void OpenTabPanelEditor()
+    {
+        if (Item == null) return;
+        var owner = Window.GetWindow(this);
+        var dlg = new TabPanelEditorDialog(Item) { Owner = owner };
+        dlg.ShowDialog();
     }
 }

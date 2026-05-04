@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -142,6 +143,7 @@ public sealed class DesignerItemViewModel : ObservableObject
             "headName" => nameof(HeadName),
             "headIndex" => nameof(HeadIndex),
             "autoConnect" => nameof(AutoConnect),
+            "tabs" => nameof(TabTitles),
             _ => null
         };
         if (propName != null) N(propName);
@@ -347,6 +349,61 @@ public sealed class DesignerItemViewModel : ObservableObject
     {
         get => _definition.Props.GetBool("autoConnect", false);
         set { var old = _definition.Props.GetBool("autoConnect", false); if (old == value) return; SetPropDirect("autoConnect", value); PropCommitted?.Invoke("autoConnect", old, value); }
+    }
+
+    // -- TabPanel -----------------------------------------------------------
+
+    /// <summary>
+    /// Tab 標題（逗號分隔），供屬性面板顯示/編輯。
+    /// 寫入時更新 props["tabs"] 中每個 entry 的 title，不破壞 items 陣列。
+    /// </summary>
+    public string TabTitles
+    {
+        get
+        {
+            if (!_definition.Props.TryGetValue("tabs", out var raw)) return "";
+            try
+            {
+                var je = raw is JsonElement j ? j : JsonSerializer.SerializeToElement(raw);
+                var titles = je.EnumerateArray()
+                    .Select(e => e.TryGetProperty("title", out var t) ? t.GetString() ?? "" : "")
+                    .ToArray();
+                return string.Join(", ", titles);
+            }
+            catch { return ""; }
+        }
+        set
+        {
+            var titles = value.Split(',').Select(s => s.Trim()).ToArray();
+
+            // Deserialize existing tabs to preserve items
+            TabEntryJson[]? existing = null;
+            if (_definition.Props.TryGetValue("tabs", out var raw))
+            {
+                try
+                {
+                    var je = raw is JsonElement j ? j : JsonSerializer.SerializeToElement(raw);
+                    existing = JsonSerializer.Deserialize<TabEntryJson[]>(je.GetRawText());
+                }
+                catch { }
+            }
+
+            var updated = titles.Select((t, i) => new TabEntryJson
+            {
+                title = t,
+                items = existing != null && i < existing.Length ? existing[i].items : []
+            }).ToArray();
+
+            _definition.Props["tabs"] = JsonSerializer.SerializeToElement(updated);
+            N(nameof(TabTitles));
+            RefreshPreview();
+        }
+    }
+
+    private sealed class TabEntryJson
+    {
+        public string? title { get; set; }
+        public object[]? items { get; set; }
     }
 
     // -- 畫布幾何 -----------------------------------------------------------

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -29,6 +30,7 @@ public static class DesignTimeControlFactory
             "PlcDeviceEditor"        => CreatePlcDeviceEditor(def),
             "PrintHeadStatus"        => CreatePrintHeadStatus(def),
             "PrintHeadController"    => new PrintHeadController { IsHitTestVisible = false },
+            "TabPanel"               => CreateTabPanelPlaceholder(def),
             "LiveLog"                => CreateViewerPlaceholder("System Log",    "\u2637", Color.FromRgb(0x1A, 0x1A, 0x30)),
             "AlarmViewer"            => CreateViewerPlaceholder("Alarm Viewer",  "\u26A0", Color.FromRgb(0x30, 0x18, 0x18)),
             "SensorViewer"           => CreateViewerPlaceholder("Sensor Viewer", "\u26A1", Color.FromRgb(0x18, 0x28, 0x30)),
@@ -298,6 +300,82 @@ public static class DesignTimeControlFactory
         dock.Children.Add(new Border { Background = null });
 
         root.Children.Add(dock);
+        return root;
+    }
+
+    private static UIElement CreateTabPanelPlaceholder(DesignerItemDefinition def)
+    {
+        // Extract tab titles from props for design-time display
+        var tabTitles = new List<string>();
+        if (def.Props.TryGetValue("tabs", out var raw))
+        {
+            try
+            {
+                var je = raw is System.Text.Json.JsonElement j
+                    ? j
+                    : System.Text.Json.JsonSerializer.SerializeToElement(raw);
+                foreach (var tab in je.EnumerateArray())
+                {
+                    if (tab.TryGetProperty("title", out var t))
+                        tabTitles.Add(t.GetString() ?? "Tab");
+                }
+            }
+            catch { }
+        }
+        if (tabTitles.Count == 0) { tabTitles.Add("Tab 1"); tabTitles.Add("Tab 2"); }
+
+        var root = new DockPanel { Background = new SolidColorBrush(Color.FromRgb(0x1A, 0x1E, 0x2A)) };
+
+        // Header strip
+        var header = new Border
+        {
+            Background = new SolidColorBrush(Color.FromRgb(0x12, 0x14, 0x20)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x5A)),
+            BorderThickness = new Thickness(0, 0, 0, 1),
+        };
+        DockPanel.SetDock(header, Dock.Top);
+
+        var tabStrip = new StackPanel { Orientation = Orientation.Horizontal };
+        for (int i = 0; i < tabTitles.Count; i++)
+        {
+            var isFirst = i == 0;
+            tabStrip.Children.Add(new Border
+            {
+                Background = isFirst
+                    ? new SolidColorBrush(Color.FromRgb(0x1A, 0x1E, 0x2A))
+                    : Brushes.Transparent,
+                BorderBrush = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x5A)),
+                BorderThickness = new Thickness(0, 0, 1, 0),
+                Padding = new Thickness(16, 6, 16, 6),
+                Child = new TextBlock
+                {
+                    Text = tabTitles[i],
+                    Foreground = isFirst
+                        ? new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0))
+                        : new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0xAA)),
+                    FontWeight = isFirst ? FontWeights.SemiBold : FontWeights.Normal,
+                    FontSize = 13,
+                }
+            });
+        }
+        header.Child = tabStrip;
+        root.Children.Add(header);
+
+        // Content placeholder
+        var content = new Border
+        {
+            Background = Brushes.Transparent,
+            Child = new TextBlock
+            {
+                Text = $"[TabPanel] {tabTitles.Count} tabs",
+                Foreground = new SolidColorBrush(Color.FromRgb(0x66, 0x66, 0x88)),
+                FontSize = 11,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+            }
+        };
+        root.Children.Add(content);
+
         return root;
     }
 

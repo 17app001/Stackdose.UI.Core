@@ -302,6 +302,19 @@
         </DataTemplate>
 
         <!-- ════════════════════════════════════════════════════════
+             TabPanel 屬性面板
+             ════════════════════════════════════════════════════════ -->
+        <DataTemplate x:Key="TabPanelTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
+            <StackPanel Margin="0,4">
+                <TextBlock Text="Tab 標題（逗號分隔）" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding TabTitles, UpdateSourceTrigger=LostFocus}" Margin="0,0,0,8"/>
+                <TextBlock Text="※ 執行時 Tab 內容由 JSON tabs[].items 決定"
+                           Foreground="{StaticResource TextMutedBrush}"
+                           FontSize="10" TextWrapping="Wrap"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- ════════════════════════════════════════════════════════
              空白（未選取任何項目或無屬性項目）
              ════════════════════════════════════════════════════════ -->
         <DataTemplate x:Key="EmptyTemplate">
@@ -324,6 +337,7 @@
             ProcessStatusIndicatorTemplate="{StaticResource ProcessStatusIndicatorTemplate}"
             PlcDeviceEditorTemplate="{StaticResource PlcDeviceEditorTemplate}"
             PrintHeadStatusTemplate="{StaticResource PrintHeadStatusTemplate}"
+            TabPanelTemplate="{StaticResource TabPanelTemplate}"
             EmptyTemplate="{StaticResource EmptyTemplate}"/>
     </UserControl.Resources>
 

@@ -1,0 +1,81 @@
+<UserControl x:Class="Stackdose.UI.Core.Controls.TabPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignWidth="600"
+             d:DesignHeight="400">
+
+    <Border Background="{DynamicResource Plc.Bg.Main}"
+            BorderBrush="{DynamicResource Plc.Border}"
+            BorderThickness="1"
+            CornerRadius="4">
+
+        <DockPanel>
+            <!-- Tab header strip -->
+            <Border x:Name="HeaderBorder"
+                    DockPanel.Dock="Top"
+                    Background="{DynamicResource Plc.Bg.Dark}"
+                    BorderBrush="{DynamicResource Plc.Border}"
+                    BorderThickness="0,0,0,1">
+                <ItemsControl x:Name="TabHeaders" Focusable="False">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button x:Name="TabBtn"
+                                    Content="{Binding Title}"
+                                    Tag="{Binding}"
+                                    Click="OnTabHeaderClick"
+                                    MinWidth="100"
+                                    Padding="16,6"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    FontSize="13">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource Plc.Text.Muted}"/>
+                                        <Setter Property="FontWeight" Value="Normal"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="Bd"
+                                                            Background="{TemplateBinding Background}"
+                                                            BorderBrush="{DynamicResource Plc.Border}"
+                                                            BorderThickness="0,0,1,0"
+                                                            Padding="{TemplateBinding Padding}">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                          VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="Bd" Property="Background"
+                                                                    Value="{DynamicResource Plc.Bg.Main}"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+
+            <!-- Content area -->
+            <Border x:Name="ContentArea"
+                    Background="Transparent"
+                    Padding="0">
+                <!-- Active tab content is swapped in code-behind -->
+            </Border>
+        </DockPanel>
+
+    </Border>
+</UserControl>

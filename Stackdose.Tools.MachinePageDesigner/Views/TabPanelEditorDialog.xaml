@@ -1,0 +1,74 @@
+<Window x:Class="Stackdose.Tools.MachinePageDesigner.Views.TabPanelEditorDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Stackdose.Tools.MachinePageDesigner.Views"
+        xmlns:vm="clr-namespace:Stackdose.Tools.MachinePageDesigner.ViewModels"
+        Title="TabPanel 子項目設計器"
+        Width="1100" Height="720"
+        MinWidth="800" MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        Background="{StaticResource BgBrush}">
+
+    <DockPanel>
+
+        <!-- ── Top: tab header strip ──────────────────────────────────── -->
+        <Border DockPanel.Dock="Top"
+                Background="{StaticResource PanelBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="8,4">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Left"
+                           Text="Tab："
+                           Foreground="{StaticResource TextMutedBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"
+                           FontSize="12"/>
+                <ContentControl x:Name="TabHeadersControl"
+                                DockPanel.Dock="Left"
+                                VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+
+        <!-- ── Bottom: Save / Cancel ──────────────────────────────────── -->
+        <Border DockPanel.Dock="Bottom"
+                Background="{StaticResource PanelBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="12,6">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center">
+                <Button x:Name="BtnSave"
+                        Content="✔ 儲存"
+                        Width="90" Height="30"
+                        Margin="0,0,8,0"
+                        Background="#3A5690"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Click="OnSave"/>
+                <Button x:Name="BtnCancel"
+                        Content="✘ 取消"
+                        Width="90" Height="30"
+                        Background="#4A3030"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Click="OnCancel"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ── Left: Toolbox ──────────────────────────────────────────── -->
+        <Border DockPanel.Dock="Left"
+                Width="170"
+                Background="{StaticResource SurfaceBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,1,0">
+            <local:ToolboxPanel x:Name="ToolboxPanelCtrl"/>
+        </Border>
+
+        <!-- ── Center: FreeCanvas ─────────────────────────────────────── -->
+        <local:FreeCanvas x:Name="EditorCanvas"/>
+
+    </DockPanel>
+</Window>

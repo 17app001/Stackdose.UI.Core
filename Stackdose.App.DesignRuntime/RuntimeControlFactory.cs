@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -36,6 +37,7 @@ public static class RuntimeControlFactory
             "StaticLabel"            => CreateStaticLabel(def),
             "PrintHeadStatus"        => CreatePrintHeadStatus(def),
             "PrintHeadController"    => CreatePrintHeadController(def),
+            "TabPanel"               => CreateTabPanel(def),
             "SystemClock"            => new SystemClock(),
             "ProcessStatusIndicator" => CreateProcessStatusIndicator(def),
             "PlcDeviceEditor"        => CreatePlcDeviceEditor(def),
@@ -436,6 +438,43 @@ public static class RuntimeControlFactory
             HeadIndex      = (int)p.GetDouble("headIndex", 0),
             AutoConnect    = p.GetBool("autoConnect",  false),
         };
+    }
+
+    // ── TabPanel ──────────────────────────────────────────────────────────
+
+    private static UIElement CreateTabPanel(DesignerItemDefinition def)
+    {
+        var panel = new TabPanel();
+
+        if (!def.Props.TryGetValue("tabs", out var raw) || raw is not JsonElement je)
+            return panel;
+
+        TabEntry[]? tabs;
+        try { tabs = JsonSerializer.Deserialize<TabEntry[]>(je.GetRawText()); }
+        catch { return panel; }
+        if (tabs == null) return panel;
+
+        foreach (var tab in tabs)
+        {
+            var container = new Grid
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment   = VerticalAlignment.Stretch,
+            };
+            if (tab.Items != null)
+            {
+                foreach (var itemDef in tab.Items)
+                    container.Children.Add(Create(itemDef));
+            }
+            panel.AddTab(tab.Title ?? "", container);
+        }
+        return panel;
+    }
+
+    private sealed class TabEntry
+    {
+        public string? Title { get; set; }
+        public DesignerItemDefinition[]? Items { get; set; }
     }
 
     // ── 未知類型佔位符 ────────────────────────────────────────────────────

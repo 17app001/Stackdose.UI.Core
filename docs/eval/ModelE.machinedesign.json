@@ -1,0 +1,308 @@
+﻿{
+  "version": "1.0",
+  "meta": {
+    "title": "ModelE \u2014 \u4E3B\u63A7\u9762\u677F",
+    "machineId": "M1",
+    "createdAt": "2026-04-30T08:16:58.9886847Z",
+    "modifiedAt": "2026-04-30T08:37:23.9396686Z",
+    "plcIp": "",
+    "plcPort": 3000,
+    "scanInterval": 200
+  },
+  "layout": {
+    "mode": "FreeCanvas",
+    "leftCommandWidthPx": 250,
+    "rightColumnWidthStar": 0.85,
+    "showLiveLog": true,
+    "showAlarmViewer": true,
+    "showSensorViewer": false
+  },
+  "canvasItems": [
+    {
+      "id": "head1Status",
+      "type": "PrintHeadStatus",
+      "order": 0,
+      "x": 810,
+      "y": 20,
+      "width": 260,
+      "height": 88,
+      "locked": false,
+      "props": {
+        "configFile": "Config/feiyang_head1.json",
+        "headName": "PrintHead 1",
+        "headIndex": 0,
+        "autoConnect": false
+      },
+      "events": []
+    },
+    {
+      "id": "head2Status",
+      "type": "PrintHeadStatus",
+      "order": 0,
+      "x": 300,
+      "y": 20,
+      "width": 260,
+      "height": 88,
+      "locked": false,
+      "props": {
+        "configFile": "Config/feiyang_head2.json",
+        "headName": "PrintHead 2",
+        "headIndex": 1,
+        "autoConnect": false
+      },
+      "events": []
+    },
+    {
+      "id": "grpCommands",
+      "type": "Spacer",
+      "order": 0,
+      "x": 580,
+      "y": 20,
+      "width": 200,
+      "height": 120,
+      "locked": false,
+      "props": {
+        "title": "\u8A2D\u5099\u6307\u4EE4"
+      },
+      "events": []
+    },
+    {
+      "id": "btnInit",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 596,
+      "y": 50,
+      "width": 80,
+      "height": 28,
+      "locked": false,
+      "props": {
+        "label": "\u8A2D\u5099\u521D\u59CB\u5316",
+        "address": "",
+        "theme": "primary"
+      },
+      "events": []
+    },
+    {
+      "id": "btnClean",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 686,
+      "y": 50,
+      "width": 80,
+      "height": 28,
+      "locked": false,
+      "props": {
+        "label": "\u76E4\u9762\u6E05\u6F54",
+        "address": "",
+        "theme": "warning"
+      },
+      "events": []
+    },
+    {
+      "id": "btnTimeSync",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 596,
+      "y": 86,
+      "width": 80,
+      "height": 28,
+      "locked": false,
+      "props": {
+        "label": "\u6642\u9593\u6821\u6B63",
+        "address": "",
+        "theme": "normal"
+      },
+      "events": []
+    },
+    {
+      "id": "btnTestAction",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 686,
+      "y": 86,
+      "width": 80,
+      "height": 28,
+      "locked": false,
+      "props": {
+        "label": "\u6E2C\u8A66\u52D5\u4F5C",
+        "address": "",
+        "theme": "normal"
+      },
+      "events": []
+    },
+    {
+      "id": "headController",
+      "type": "PrintHeadController",
+      "order": 0,
+      "x": 810,
+      "y": 173,
+      "width": 540,
+      "height": 377,
+      "locked": false,
+      "props": {
+        "plcReadyDevice": "D513",
+        "directionPlcDevice": "D32"
+      },
+      "events": []
+    },
+    {
+      "id": "grpStatus",
+      "type": "Spacer",
+      "order": 0,
+      "x": 317.7777777777778,
+      "y": 140,
+      "width": 224.4444444444444,
+      "height": 355,
+      "locked": false,
+      "props": {
+        "title": "\u751F\u7522\u72C0\u614B"
+      },
+      "events": []
+    },
+    {
+      "id": "lblCurrentLayer",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 342.2222222222223,
+      "y": 184.90000000000003,
+      "width": 180,
+      "height": 46,
+      "locked": false,
+      "props": {
+        "address": "D32",
+        "label": "\u76EE\u524D\u5217\u5370\u5C64\u6578",
+        "dataType": "Word"
+      },
+      "events": []
+    },
+    {
+      "id": "lblTotalLayer",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 342.2222222222223,
+      "y": 235.44000000000003,
+      "width": 180,
+      "height": 46,
+      "locked": false,
+      "props": {
+        "address": "D3401",
+        "label": "\u7E3D\u5C64\u6578",
+        "dataType": "Word"
+      },
+      "events": []
+    },
+    {
+      "id": "lblCurrentTray",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 342.2222222222223,
+      "y": 285.98,
+      "width": 180,
+      "height": 46,
+      "locked": false,
+      "props": {
+        "address": "D33",
+        "label": "\u76EE\u524D\u76E4\u6578",
+        "dataType": "Word"
+      },
+      "events": []
+    },
+    {
+      "id": "lblTotalTray",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 342.2222222222223,
+      "y": 336.52,
+      "width": 180,
+      "height": 46,
+      "locked": false,
+      "props": {
+        "address": "D3400",
+        "label": "\u7E3D\u76E4\u6578",
+        "dataType": "Word"
+      },
+      "events": []
+    },
+    {
+      "id": "lblDeviceState",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 340,
+      "y": 387.05999999999995,
+      "width": 180,
+      "height": 46,
+      "locked": false,
+      "props": {
+        "address": "D40",
+        "label": "\u8A2D\u5099\u72C0\u614B",
+        "dataType": "Word"
+      },
+      "events": []
+    },
+    {
+      "id": "lblChangePic",
+      "type": "PlcLabel",
+      "order": 0,
+      "x": 340,
+      "y": 437.59999999999997,
+      "width": 180,
+      "height": 46,
+      "locked": false,
+      "props": {
+        "address": "D510",
+        "label": "\u5207\u63DB\u5716\u5F62(\u5C64)",
+        "dataType": "Word"
+      },
+      "events": []
+    },
+    {
+      "id": "alarmViewer",
+      "type": "AlarmViewer",
+      "order": 0,
+      "x": 1180,
+      "y": 71.39999999999998,
+      "width": 380,
+      "height": 220,
+      "locked": false,
+      "props": {
+        "configFile": "Config/plc_alarm_config.json",
+        "viewerTitle": "\u8B66\u5831",
+        "defaultShowActiveOnly": false
+      },
+      "events": []
+    },
+    {
+      "id": "sensorViewer",
+      "type": "SensorViewer",
+      "order": 0,
+      "x": 1180,
+      "y": 305.59999999999997,
+      "width": 380,
+      "height": 264,
+      "locked": false,
+      "props": {
+        "configFile": "Config/plc_sensor_config.json",
+        "viewerTitle": "Sensor",
+        "enableGrouping": false,
+        "defaultShowActiveOnly": false
+      },
+      "events": []
+    },
+    {
+      "id": "liveLog",
+      "type": "LiveLog",
+      "order": 0,
+      "x": 293.33333333333326,
+      "y": 550,
+      "width": 886.6666666666667,
+      "height": 180,
+      "locked": false,
+      "props": {},
+      "events": []
+    }
+  ],
+  "shellMode": "FreeCanvas",
+  "pages": [],
+  "canvasWidth": 1600,
+  "canvasHeight": 750
+}

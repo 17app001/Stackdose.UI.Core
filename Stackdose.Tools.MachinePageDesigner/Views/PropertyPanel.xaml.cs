@@ -65,6 +65,7 @@ public class PropertyPanelTemplateSelector : DataTemplateSelector
     public DataTemplate? ProcessStatusIndicatorTemplate { get; set; }
     public DataTemplate? PlcDeviceEditorTemplate { get; set; }
     public DataTemplate? PrintHeadStatusTemplate { get; set; }
+    public DataTemplate? TabPanelTemplate { get; set; }
     public DataTemplate? EmptyTemplate { get; set; }
 
     public override DataTemplate? SelectTemplate(object? item, DependencyObject container)
@@ -84,6 +85,7 @@ public class PropertyPanelTemplateSelector : DataTemplateSelector
             "ProcessStatusIndicator" => ProcessStatusIndicatorTemplate,
             "PlcDeviceEditor" => PlcDeviceEditorTemplate,
             "PrintHeadStatus" => PrintHeadStatusTemplate,
+            "TabPanel" => TabPanelTemplate,
             _ => EmptyTemplate,
         };
     }

@@ -139,6 +139,19 @@ public sealed class ToolboxItemDescriptor
             Props = [],
             Width = 700, Height = 300
         },
+        "TabPanel" => new DesignerItemDefinition
+        {
+            Type = "TabPanel",
+            Props = new()
+            {
+                ["tabs"] = new object[]
+                {
+                    new { title = "Tab 1", items = Array.Empty<object>() },
+                    new { title = "Tab 2", items = Array.Empty<object>() },
+                }
+            },
+            Width = 600, Height = 400
+        },
         _ => new DesignerItemDefinition { Type = Type }
     };
 
@@ -155,6 +168,7 @@ public sealed class ToolboxItemDescriptor
         new() { Type = "StaticLabel",        DisplayName = "StaticLabel",        Category = "Layout", Icon = "T" },
         new() { Type = "SystemClock",        DisplayName = "SystemClock",        Category = "Layout", Icon = "\u23F0" },
         new() { Type = "ProcessStatusIndicator", DisplayName = "ProcessStatus",  Category = "Status", Icon = "\u231B" },
+        new() { Type = "TabPanel",           DisplayName = "TabPanel",           Category = "Layout", Icon = "\u25A5" },
         new() { Type = "LiveLog",            DisplayName = "LiveLog",            Category = "Viewer", Icon = "\u2637" },
         new() { Type = "AlarmViewer",        DisplayName = "AlarmViewer",        Category = "Viewer", Icon = "\u26A0" },
         new() { Type = "SensorViewer",       DisplayName = "SensorViewer",       Category = "Viewer", Icon = "\u26A1" },

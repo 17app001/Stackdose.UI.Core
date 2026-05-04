@@ -691,9 +691,9 @@ public static class RuntimeControlFactory
         var dock = new DockPanel();
         var header = new Border
         {
-            Background      = new SolidColorBrush(Color.FromRgb(0x22, 0x33, 0x55)),
+            Background      = new SolidColorBrush(Color.FromRgb(0x1A, 0x30, 0x58)),
             BorderBrush     = new SolidColorBrush(Color.FromRgb(0x55, 0x88, 0xCC)),
-            BorderThickness = new Thickness(0, 0, 0, 1),
+            BorderThickness = new Thickness(3, 0, 0, 1),
             Padding         = new Thickness(8, 4, 8, 4),
             Child           = new TextBlock
             {
@@ -790,8 +790,22 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler {
 
     $jdConfigDir = Join-Path $projectDir "Config"
     New-Item -ItemType Directory -Path $jdConfigDir -Force | Out-Null
-    '[]' | Set-Content -Path (Join-Path $jdConfigDir "Machine1.sensors.json")
-    '[]' | Set-Content -Path (Join-Path $jdConfigDir "Machine1.alarms.json")
+@'
+[
+  { "group": "設備狀態", "device": "M0",  "bit": "", "value": "1", "mode": "AND", "operationDescription": "設備電源 ON" },
+  { "group": "設備狀態", "device": "M1",  "bit": "", "value": "1", "mode": "AND", "operationDescription": "設備就緒" },
+  { "group": "製程狀態", "device": "M10", "bit": "", "value": "1", "mode": "AND", "operationDescription": "作業中" }
+]
+'@ | Set-Content -Path (Join-Path $jdConfigDir "Machine1.sensors.json") -Encoding UTF8
+@'
+{
+  "alarms": [
+    { "group": "設備狀態",  "device": "M200", "bit": 0, "operationDescription": "緊急停機" },
+    { "group": "設備狀態",  "device": "M201", "bit": 0, "operationDescription": "氣壓不足" },
+    { "group": "製程異常",  "device": "M210", "bit": 0, "operationDescription": "溫度異常" }
+  ]
+}
+'@ | Set-Content -Path (Join-Path $jdConfigDir "Machine1.alarms.json") -Encoding UTF8
 
     if ($IncludePrintHead) {
         $wavesDir = Join-Path $jdConfigDir "waves"

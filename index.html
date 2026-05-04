@@ -1197,6 +1197,7 @@
           <div class="tl-item tl-highlight"><span class="tl-date">4月23日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ B9 重構完成（B0–B9 全部完成）；Dashboard 模式全功能（DashboardShellStrategy + new-app.ps1 -Mode Dashboard scaffold + 無邊框 SizeToContent 視窗 + 底部拖移條 + IP:Port 連線燈號 + X 關閉 + DesignRuntime 自動連線）；設計器 Layout 下拉加入 Dashboard + PLC IP/Port/ScanInterval 欄位；方向鍵微調從 feature/copilot 補入（Arrow=1px / Shift+Arrow=10px）；移除畫布尺寸 clamp</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月27日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ scaffold 腳本健壯性強化（UTF-8 BOM 亂碼修正、PS 語法錯誤修復）；new-app.ps1 支援 -IncludePrintHead 參數（自動產生噴頭設定、自動複製 Feiyang SDK DLL）</span></div>
           <div class="tl-item tl-highlight"><span class="tl-date">4月29~30日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ PrintHead 完整修復 — feiyang_head1.json 欄位名稱全面修正（MachineType=M1536、PrintheadColorCount、JetColors 複數等）；SensorContext / RecipeContext / PrintHeadPanel Config 路徑雙前綴 bug 修復（移除 ResourcePathHelper）；DesignRuntime RuntimeControlFactory 補齊 5 個缺漏控件（PrintHeadStatus / PrintHeadController / SystemClock / ProcessStatusIndicator / PlcDeviceEditor）；PrintHeadStatus UI 重設計為常態顯示緊湊版型（移除展開/收合箭頭，電壓＋Encoder＋PrintIndex 直接常態顯示）</span></div>
+          <div class="tl-item tl-highlight"><span class="tl-date">5月04日</span><span class="tl-dot tl-dot-hi"></span><span class="tl-text">★ TabPanel 運行時與子項目設計器（雙擊開啟 Dialog 編輯畫布）；GroupBox 視覺風格對齊設計器（半透明科技感）；scaffold 腳本 UTF-8 BOM 編碼修復（解決中文亂碼）；Alarm/Sensor Viewer 邊框與標題對齊 LogViewer 規格；RuntimeControlFactory 補全 viewerTitle 屬性支援</span></div>
         </div>
       </div>
     </div>
@@ -1221,6 +1222,7 @@
             <li>StaticLabel 靜態文字控制項</li>
             <li>所有控制項屬性面板</li>
             <li>多頁面支援（頁籤切換 + 獨立 UndoRedo）</li>
+            <li><strong>TabPanel 子項目設計器</strong>（支援子畫布編輯）</li>
           </ul>
         </div>
 

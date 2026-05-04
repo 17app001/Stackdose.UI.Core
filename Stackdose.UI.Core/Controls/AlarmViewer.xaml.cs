@@ -29,7 +29,7 @@ namespace Stackdose.UI.Core.Controls
 
         public static readonly DependencyProperty TitleProperty =
             DependencyProperty.Register(nameof(Title), typeof(string), typeof(AlarmViewer),
-                new PropertyMetadata("ALARM VIEWER"));
+                new PropertyMetadata("ALARM"));
 
         public string Title
         {

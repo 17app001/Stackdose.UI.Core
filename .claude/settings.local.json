@@ -56,7 +56,8 @@
       "Skill(update-config)",
       "Bash(python -c ' *)",
       "Bash(grep -v \"//\")",
-      "Bash(python *)"
+      "Bash(python *)",
+      "Bash(Get-ChildItem Stackdose.Tools.MachinePageDesigner/Views/ -Filter \"FreeCanvasItem*\")"
     ]
   }
 }

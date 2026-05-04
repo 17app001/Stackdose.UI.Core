@@ -110,22 +110,23 @@
         </Style>
     </FrameworkElement.Resources>
 
-    <Border BorderBrush="{DynamicResource Sensor.Border}"
+    <Border BorderBrush="{DynamicResource Log.Border}"
             BorderThickness="1"
             CornerRadius="6"
-            Background="{DynamicResource Sensor.Bg.Main}">
+            Background="{DynamicResource Log.Bg.Main}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-        <!-- Header Bar -->
-        <Border Grid.Row="0" 
-                Background="{DynamicResource Sensor.Bg.Header}" 
-                BorderBrush="{DynamicResource Sensor.Border}"
+            <!-- Header Bar -->
+            <Border Grid.Row="0" 
+                Background="{DynamicResource Log.Bg.Header}" 
+                BorderBrush="{DynamicResource Log.Border}"
                 BorderThickness="0,0,0,1"
-                Padding="10,8">
+                Padding="10,8"
+                CornerRadius="6,6,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>

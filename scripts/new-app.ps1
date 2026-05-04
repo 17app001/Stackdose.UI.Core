@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory = $true, HelpMessage = "App 名稱，例如 Stackdose.App.ModelF")]
     [string]$AppName,
     [ValidateSet("SinglePage", "Standard", "Dashboard")]

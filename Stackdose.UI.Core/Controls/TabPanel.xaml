@@ -7,18 +7,19 @@
              d:DesignWidth="600"
              d:DesignHeight="400">
 
-    <Border Background="{DynamicResource Plc.Bg.Main}"
-            BorderBrush="{DynamicResource Plc.Border}"
+    <Border Background="{DynamicResource Log.Bg.Main}"
+            BorderBrush="{DynamicResource Log.Border}"
             BorderThickness="1"
-            CornerRadius="4">
+            CornerRadius="6">
 
         <DockPanel>
             <!-- Tab header strip -->
             <Border x:Name="HeaderBorder"
                     DockPanel.Dock="Top"
-                    Background="{DynamicResource Plc.Bg.Dark}"
-                    BorderBrush="{DynamicResource Plc.Border}"
-                    BorderThickness="0,0,0,1">
+                    Background="{DynamicResource Log.Bg.Header}"
+                    BorderBrush="{DynamicResource Log.Border}"
+                    BorderThickness="0,0,0,1"
+                    CornerRadius="6,6,0,0">
                 <ItemsControl x:Name="TabHeaders" Focusable="False">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -32,7 +33,7 @@
                                     Tag="{Binding}"
                                     Click="OnTabHeaderClick"
                                     MinWidth="100"
-                                    Padding="16,6"
+                                    Padding="16,8"
                                     BorderThickness="0"
                                     Cursor="Hand"
                                     FontSize="13">
@@ -40,13 +41,13 @@
                                     <Style TargetType="Button">
                                         <Setter Property="Background" Value="Transparent"/>
                                         <Setter Property="Foreground" Value="#9090B0"/>
-                                        <Setter Property="FontWeight" Value="Normal"/>
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="Button">
                                                     <Border x:Name="Bd"
                                                             Background="{TemplateBinding Background}"
-                                                            BorderBrush="{DynamicResource Plc.Border}"
+                                                            BorderBrush="{DynamicResource Log.Border}"
                                                             BorderThickness="0,0,1,0"
                                                             Padding="{TemplateBinding Padding}">
                                                         <ContentPresenter HorizontalAlignment="Center"
@@ -55,7 +56,7 @@
                                                     <ControlTemplate.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
                                                             <Setter TargetName="Bd" Property="Background"
-                                                                    Value="{DynamicResource Plc.Bg.Main}"/>
+                                                                    Value="{DynamicResource Log.Bg.Main}"/>
                                                         </Trigger>
                                                     </ControlTemplate.Triggers>
                                                 </ControlTemplate>

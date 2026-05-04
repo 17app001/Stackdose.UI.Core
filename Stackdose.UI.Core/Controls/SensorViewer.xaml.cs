@@ -38,8 +38,8 @@ namespace Stackdose.UI.Core.Controls
         /// 標題文字 (顯示在控制項頂部)
         /// </summary>
         public static readonly DependencyProperty TitleProperty =
-            DependencyProperty.Register("Title", typeof(string), typeof(SensorViewer), 
-                new PropertyMetadata("Sensor Status"));
+            DependencyProperty.Register(nameof(Title), typeof(string), typeof(SensorViewer),
+                new PropertyMetadata("SENSOR"));
         public string Title
         {
             get { return (string)GetValue(TitleProperty); }

@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory = $true)]
     [ValidateNotNullOrEmpty()]
     [string]$AppName,
@@ -190,15 +190,16 @@ if ($JsonDrivenApp) {
 
     $jdXml.Save($projectFile)
 
-@"
+    $appXaml = @"
 <Application x:Class="$AppName.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Application.Resources />
 </Application>
-"@ | Set-Content -Path (Join-Path $projectDir "App.xaml") -Encoding UTF8
+"@
+    [System.IO.File]::WriteAllText((Join-Path $projectDir "App.xaml"), $appXaml, [System.Text.UTF8Encoding]::new($true))
 
-@"
+    $appCs = @"
 using Stackdose.UI.Templates.Helpers;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
@@ -218,7 +219,8 @@ public partial class App : Application
         mainWindow.Show();
     }
 }
-"@ | Set-Content -Path (Join-Path $projectDir "App.xaml.cs") -Encoding UTF8
+"@
+    [System.IO.File]::WriteAllText((Join-Path $projectDir "App.xaml.cs"), $appCs, [System.Text.UTF8Encoding]::new($true))
 
     if ($JsonDrivenShellMode -eq "Dashboard") {
         $shellXml = @"
@@ -286,7 +288,7 @@ public partial class App : Application
 </Window>
 "@
     }
-    $shellXml | Set-Content -Path (Join-Path $projectDir "MainWindow.xaml") -Encoding UTF8
+    [System.IO.File]::WriteAllText((Join-Path $projectDir "MainWindow.xaml"), $shellXml, [System.Text.UTF8Encoding]::new($true))
 
     if ($JsonDrivenShellMode -eq "Dashboard") {
         $mainWindowCs = @"
@@ -559,7 +561,7 @@ public partial class MainWindow : Window
     }
     [System.IO.File]::WriteAllText((Join-Path $projectDir "MainWindow.xaml.cs"), $mainWindowCs, [System.Text.UTF8Encoding]::new($true))
 
-@'
+    $factoryContent = @'
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -681,46 +683,62 @@ public static class RuntimeControlFactory
     private static UIElement CreateGroupBox(DesignerItemDefinition def)
     {
         var title = def.Props.GetString("title", "Group");
-        var root = new Border
+        var root  = new Grid();
+
+        root.Children.Add(new Border
         {
-            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x55, 0x88, 0xCC)),
-            BorderThickness = new Thickness(1),
-            Background      = new SolidColorBrush(Color.FromRgb(0x1A, 0x1E, 0x2E)),
-            CornerRadius    = new CornerRadius(4),
-        };
-        var dock = new DockPanel();
+            BorderBrush      = new SolidColorBrush(Color.FromRgb(0x6C, 0x8E, 0xEF)),
+            BorderThickness   = new Thickness(1.5),
+            Background       = new SolidColorBrush(Color.FromArgb(0x18, 0x6C, 0x8E, 0xEF)),
+            CornerRadius     = new CornerRadius(4),
+            IsHitTestVisible  = false,
+        });
+
         var header = new Border
         {
-            Background      = new SolidColorBrush(Color.FromRgb(0x1A, 0x30, 0x58)),
-            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x55, 0x88, 0xCC)),
-            BorderThickness = new Thickness(3, 0, 0, 1),
-            Padding         = new Thickness(8, 4, 8, 4),
-            Child           = new TextBlock
-            {
-                Text       = title,
-                Foreground = new SolidColorBrush(Color.FromRgb(0x88, 0xBB, 0xFF)),
-                FontSize   = 12,
-                FontWeight = FontWeights.SemiBold,
-            }
+            Background   = new SolidColorBrush(Color.FromArgb(0xCC, 0x3A, 0x56, 0xA8)),
+            CornerRadius = new CornerRadius(2, 2, 0, 0),
+            Padding      = new Thickness(10, 4, 10, 4),
         };
+        header.Child = new TextBlock
+        {
+            Text       = string.IsNullOrWhiteSpace(title) ? "Group" : title,
+            Foreground = Brushes.White,
+            FontSize   = 12,
+            FontWeight = FontWeights.SemiBold,
+        };
+
+        var dock = new DockPanel { LastChildFill = true, Background = null };
         DockPanel.SetDock(header, Dock.Top);
         dock.Children.Add(header);
-        root.Child = dock;
+        dock.Children.Add(new Border { Background = null });
+        root.Children.Add(dock);
         return root;
     }
 
     private static UIElement CreateAlarmViewer(DesignerItemDefinition def)
     {
-        var v = new AlarmViewer(); var cfg = def.Props.GetString("configFile", "");
-        if (!string.IsNullOrEmpty(cfg)) v.ConfigFile = cfg;
-        return v;
+        var p      = def.Props;
+        var viewer = new AlarmViewer();
+        var cf     = p.GetString("configFile", "");
+        if (!string.IsNullOrWhiteSpace(cf)) viewer.ConfigFile = cf;
+        var title  = p.GetString("viewerTitle", "");
+        if (!string.IsNullOrWhiteSpace(title)) viewer.Title = title;
+        viewer.DefaultShowActiveOnly = p.GetBool("defaultShowActiveOnly", true);
+        return viewer;
     }
 
     private static UIElement CreateSensorViewer(DesignerItemDefinition def)
     {
-        var v = new SensorViewer(); var cfg = def.Props.GetString("configFile", "");
-        if (!string.IsNullOrEmpty(cfg)) v.ConfigFile = cfg;
-        return v;
+        var p      = def.Props;
+        var viewer = new SensorViewer();
+        var cf     = p.GetString("configFile", "");
+        if (!string.IsNullOrWhiteSpace(cf)) viewer.ConfigFile = cf;
+        var title  = p.GetString("viewerTitle", "");
+        if (!string.IsNullOrWhiteSpace(title)) viewer.Title = title;
+        viewer.EnableGrouping        = p.GetBool("enableGrouping", true);
+        viewer.DefaultShowActiveOnly = p.GetBool("defaultShowActiveOnly", true);
+        return viewer;
     }
 
     private static UIElement CreateStaticLabel(DesignerItemDefinition def)
@@ -774,11 +792,13 @@ public static class RuntimeControlFactory
 
     private static UIElement MakeUnknownPlaceholder(string type) => new Border { Child = new TextBlock { Text = "Unknown: " + type, Foreground = Brushes.Red } };
 }
-'@ -replace "NAMESPACE_PLACEHOLDER", $AppName | Set-Content -Path (Join-Path $projectDir "RuntimeControlFactory.cs") -Encoding UTF8
+'@
+    $factoryContent = $factoryContent -replace "NAMESPACE_PLACEHOLDER", $AppName
+    [System.IO.File]::WriteAllText((Join-Path $projectDir "RuntimeControlFactory.cs"), $factoryContent, [System.Text.UTF8Encoding]::new($true))
 
     $handlersDir = Join-Path $projectDir "Handlers"
     New-Item -ItemType Directory -Path $handlersDir -Force | Out-Null
-@"
+    $handlerContent = @"
 using Stackdose.App.ShellShared.Behaviors;
 using System.Windows;
 namespace $AppName.Handlers;
@@ -786,18 +806,21 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler {
     public string ActionType => "Custom.Sample";
     public void Execute(BehaviorActionContext ctx) { MessageBox.Show("Custom Action!"); }
 }
-"@ | Set-Content -Path (Join-Path $handlersDir "SampleCustomHandler.cs") -Encoding UTF8
+"@
+    [System.IO.File]::WriteAllText((Join-Path $handlersDir "SampleCustomHandler.cs"), $handlerContent, [System.Text.UTF8Encoding]::new($true))
 
     $jdConfigDir = Join-Path $projectDir "Config"
     New-Item -ItemType Directory -Path $jdConfigDir -Force | Out-Null
-@'
+    $sensorsJson = @'
 [
   { "group": "設備狀態", "device": "M0",  "bit": "", "value": "1", "mode": "AND", "operationDescription": "設備電源 ON" },
   { "group": "設備狀態", "device": "M1",  "bit": "", "value": "1", "mode": "AND", "operationDescription": "設備就緒" },
   { "group": "製程狀態", "device": "M10", "bit": "", "value": "1", "mode": "AND", "operationDescription": "作業中" }
 ]
-'@ | Set-Content -Path (Join-Path $jdConfigDir "Machine1.sensors.json") -Encoding UTF8
-@'
+'@
+    [System.IO.File]::WriteAllText((Join-Path $jdConfigDir "Machine1.sensors.json"), $sensorsJson, [System.Text.UTF8Encoding]::new($true))
+
+    $alarmsJson = @'
 {
   "alarms": [
     { "group": "設備狀態",  "device": "M200", "bit": 0, "operationDescription": "緊急停機" },
@@ -805,13 +828,14 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler {
     { "group": "製程異常",  "device": "M210", "bit": 0, "operationDescription": "溫度異常" }
   ]
 }
-'@ | Set-Content -Path (Join-Path $jdConfigDir "Machine1.alarms.json") -Encoding UTF8
+'@
+    [System.IO.File]::WriteAllText((Join-Path $jdConfigDir "Machine1.alarms.json"), $alarmsJson, [System.Text.UTF8Encoding]::new($true))
 
     if ($IncludePrintHead) {
         $wavesDir = Join-Path $jdConfigDir "waves"
         New-Item -ItemType Directory -Path $wavesDir -Force | Out-Null
-        '' | Set-Content -Path (Join-Path $wavesDir ".gitkeep")
-@"
+        [System.IO.File]::WriteAllText((Join-Path $wavesDir ".gitkeep"), "", [System.Text.UTF8Encoding]::new($true))
+        $headConfig = @"
 {
   "Name": "A-Head1",
   "MachineType": "A",
@@ -844,19 +868,21 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler {
     "CaliPixelMM": 8
   }
 }
-"@ | Set-Content -Path (Join-Path $jdConfigDir "feiyang_head1.json") -Encoding UTF8
+"@
+        [System.IO.File]::WriteAllText((Join-Path $jdConfigDir "feiyang_head1.json"), $headConfig, [System.Text.UTF8Encoding]::new($true))
     }
 
-@"
+    $appConfig = @"
 {
   "appTitle": "$AppName",
   "plc": { "ip": "127.0.0.1", "port": 3000, "autoConnect": true },
   "designFile": "Config/M1.machinedesign.json"
 }
-"@ | Set-Content -Path (Join-Path $jdConfigDir "app-config.json") -Encoding UTF8
+"@
+    [System.IO.File]::WriteAllText((Join-Path $jdConfigDir "app-config.json"), $appConfig, [System.Text.UTF8Encoding]::new($true))
 
     $shellModeValue = if ($JsonDrivenShellMode -eq "Dashboard") { "Dashboard" } else { "SinglePage" }
-@"
+    $designJson = @"
 {
   "version": "2.0",
   "meta": { "title": "$AppName", "machineId": "M1" },
@@ -864,7 +890,8 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler {
   "canvasWidth": 1280, "canvasHeight": 720,
   "canvasItems": [ { "id": "lbl1", "type": "StaticLabel", "x": 40, "y": 40, "width": 400, "height": 48, "props": { "staticText": "Hello $AppName" } } ]
 }
-"@ | Set-Content -Path (Join-Path $jdConfigDir "M1.machinedesign.json") -Encoding UTF8
+"@
+    [System.IO.File]::WriteAllText((Join-Path $jdConfigDir "M1.machinedesign.json"), $designJson, [System.Text.UTF8Encoding]::new($true))
 
     Write-Host "[init-shell-app] Done. Generated: $projectDir"
     if ($IncludePrintHead) {

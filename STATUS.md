@@ -6,8 +6,13 @@
 
 - **日期：** 2026-05-04
 - **分支：** `master`
-- **上次做了什麼：** 修正 TabPanel 運行時問題（Canvas 定位、JSON 大小寫、tab 文字顯示）、GroupBox border 樣式、AlarmViewer/SensorViewer config 預設路徑、SecuredButton Theme prop 套用（DesignRuntime + scaffold）
-- **下一步：** 編譯 MyPrintApp2 驗證全部修正是否生效（按鈕顏色、Alarm/Sensor 顯示、GroupBox 樣式）
+- **上次做了什麼：** 
+    - **TabPanel 完備化：** 修正運行時 Canvas 定位、JSON 屬性大小寫不匹配；實作 `TabPanelEditorDialog` 子項目設計器，支援雙擊編輯子畫布。
+    - **視覺風格同步：** GroupBox (Spacer) 改為半透明科技感風格，全專案（Designer/Runtime/Scaffold）對齊。
+    - **編碼與亂碼修復：** 修正 scaffold 腳本產出檔案缺少 UTF-8 BOM 導致的中文亂碼問題，腳本本身亦強制轉為 UTF-8 BOM。
+    - **Viewer 控制項優化：** Alarm/Sensor Viewer 邊框與標題列完全對齊 LogViewer (Cyber/Log 混合風格)，增加 `viewerTitle` 屬性讀取與簡約版預設值 (`ALARM`/`SENSOR`)。
+    - **Scaffold 強化：** `init-shell-app.ps1` 產出的 `RuntimeControlFactory` 補全 `viewerTitle` 讀取邏輯。
+- **下一步：** 實機傳圖驗證、大型檔案傳輸壓力測試。
 
 ## 進行中
 
@@ -15,7 +20,7 @@
 |---|---|---|
 | 大檔案傳圖壓力測試 | 待測試 | 進度條已實作，尚未用大檔案驗證 |
 | PrintHeadController 傳圖流程實機驗證 | 待測試 | DPI設定/方向PLC/完成通知均已實作 |
-| TabPanel 實機驗證 | 待測試 | 已編譯並提交，未實機測試 |
+| TabPanel / GroupBox / Encoding 實機驗證 | ✅ 完成 | 透過 new-app 重新產生專案驗證 OK |
 
 ## ⚠️ 未解問題
 

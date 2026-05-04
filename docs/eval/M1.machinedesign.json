@@ -1,0 +1,227 @@
+﻿{
+  "version": "1.0",
+  "meta": {
+    "title": "Machine Page",
+    "machineId": "M1",
+    "createdAt": "2026-05-04T02:39:22.103313Z",
+    "modifiedAt": "2026-05-04T02:59:56.5538923Z",
+    "plcIp": "",
+    "plcPort": 3000,
+    "scanInterval": 200
+  },
+  "layout": {
+    "mode": "SplitRight",
+    "leftCommandWidthPx": 250,
+    "rightColumnWidthStar": 0.85,
+    "showLiveLog": true,
+    "showAlarmViewer": true,
+    "showSensorViewer": false
+  },
+  "canvasItems": [
+    {
+      "id": "99df45fb",
+      "type": "Spacer",
+      "order": 0,
+      "x": 10,
+      "y": 210,
+      "width": 329,
+      "height": 200,
+      "locked": false,
+      "props": {
+        "title": "Group"
+      },
+      "events": []
+    },
+    {
+      "id": "f1e6880e",
+      "type": "TabPanel",
+      "order": 0,
+      "x": 350,
+      "y": 200,
+      "width": 837,
+      "height": 537,
+      "locked": false,
+      "props": {
+        "tabs": [
+          {
+            "title": "\u5674\u982D\u5340",
+            "items": [
+              {
+                "id": "7b8a0495",
+                "type": "Spacer",
+                "order": 0,
+                "x": 350,
+                "y": 160,
+                "width": 300,
+                "height": 200,
+                "locked": false,
+                "props": {
+                  "title": "Group"
+                },
+                "events": []
+              },
+              {
+                "id": "f0b924bd",
+                "type": "PlcText",
+                "order": 0,
+                "x": 20,
+                "y": 20,
+                "width": 180,
+                "height": 120,
+                "locked": false,
+                "props": {
+                  "label": "Parameter",
+                  "address": "D100"
+                },
+                "events": []
+              },
+              {
+                "id": "2c6a810a",
+                "type": "PrintHeadStatus",
+                "order": 0,
+                "x": 20,
+                "y": 160,
+                "width": 320,
+                "height": 100,
+                "locked": false,
+                "props": {
+                  "configFile": "Config/feiyang_head1.json",
+                  "headName": "PrintHead 1",
+                  "headIndex": 0,
+                  "autoConnect": false
+                },
+                "events": []
+              }
+            ]
+          },
+          {
+            "title": "Tab 2",
+            "items": [
+              {
+                "id": "d9098314",
+                "type": "PrintHeadStatus",
+                "order": 0,
+                "x": 20,
+                "y": 20,
+                "width": 320,
+                "height": 100,
+                "locked": false,
+                "props": {
+                  "configFile": "Config/feiyang_head1.json",
+                  "headName": "PrintHead 1",
+                  "headIndex": 0,
+                  "autoConnect": false
+                },
+                "events": []
+              },
+              {
+                "id": "9127fca0",
+                "type": "PrintHeadController",
+                "order": 0,
+                "x": 30,
+                "y": 150,
+                "width": 700,
+                "height": 300,
+                "locked": false,
+                "props": {},
+                "events": []
+              }
+            ]
+          }
+        ]
+      },
+      "events": []
+    },
+    {
+      "id": "a8217d5a",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 10,
+      "y": 20,
+      "width": 180,
+      "height": 48,
+      "locked": false,
+      "props": {
+        "label": "Command",
+        "commandAddress": "M100",
+        "authLevel": "Operator",
+        "theme": "Primary"
+      },
+      "events": []
+    },
+    {
+      "id": "015e7e40",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 10,
+      "y": 76.5,
+      "width": 180,
+      "height": 48,
+      "locked": false,
+      "props": {
+        "label": "Command",
+        "commandAddress": "M100",
+        "authLevel": "Operator",
+        "theme": "Primary"
+      },
+      "events": []
+    },
+    {
+      "id": "a79e7392",
+      "type": "SecuredButton",
+      "order": 0,
+      "x": 10,
+      "y": 133,
+      "width": 180,
+      "height": 48,
+      "locked": false,
+      "props": {
+        "label": "Command",
+        "commandAddress": "M100",
+        "authLevel": "Operator",
+        "theme": "Primary"
+      },
+      "events": []
+    },
+    {
+      "id": "6a350b97",
+      "type": "AlarmViewer",
+      "order": 0,
+      "x": 350,
+      "y": 20,
+      "width": 420,
+      "height": 169,
+      "locked": false,
+      "props": {},
+      "events": []
+    },
+    {
+      "id": "12bd58d0",
+      "type": "SensorViewer",
+      "order": 0,
+      "x": 780,
+      "y": 20,
+      "width": 400,
+      "height": 171,
+      "locked": false,
+      "props": {},
+      "events": []
+    },
+    {
+      "id": "0637a92e",
+      "type": "LiveLog",
+      "order": 0,
+      "x": 10,
+      "y": 420,
+      "width": 331,
+      "height": 308,
+      "locked": false,
+      "props": {},
+      "events": []
+    }
+  ],
+  "shellMode": "SplitRight",
+  "pages": [],
+  "canvasWidth": 1200,
+  "canvasHeight": 750
+}

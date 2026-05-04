@@ -26,8 +26,8 @@
 
     <!-- ========== SensorViewer Colors ========== -->
     <SolidColorBrush x:Key="Sensor.Bg.Main" Color="#1F1F32"/>
-    <SolidColorBrush x:Key="Sensor.Bg.Header" Color="#282845"/>
-    <SolidColorBrush x:Key="Sensor.Border" Color="#3A4A5F"/>
+    <SolidColorBrush x:Key="Sensor.Bg.Header" Color="#1B2B45"/>
+    <SolidColorBrush x:Key="Sensor.Border" Color="#3A6090"/>
     <SolidColorBrush x:Key="Sensor.Text.Title" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="Sensor.Text.Group" Color="#00E5FF"/>
     <SolidColorBrush x:Key="Sensor.Text.Label" Color="#B8C5D0"/>

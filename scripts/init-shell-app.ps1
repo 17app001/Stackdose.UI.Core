@@ -706,7 +706,8 @@ public static class RuntimeControlFactory
         if (!def.Props.TryGetValue("tabs", out var raw) || raw is not JsonElement je)
             return panel;
         TabEntry[]? tabs;
-        try { tabs = JsonSerializer.Deserialize<TabEntry[]>(je.GetRawText()); }
+        try { tabs = JsonSerializer.Deserialize<TabEntry[]>(je.GetRawText(),
+                  new JsonSerializerOptions { PropertyNameCaseInsensitive = true }); }
         catch { return panel; }
         if (tabs == null) return panel;
         foreach (var tab in tabs)

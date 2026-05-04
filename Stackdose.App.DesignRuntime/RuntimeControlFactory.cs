@@ -450,7 +450,8 @@ public static class RuntimeControlFactory
             return panel;
 
         TabEntry[]? tabs;
-        try { tabs = JsonSerializer.Deserialize<TabEntry[]>(je.GetRawText()); }
+        try { tabs = JsonSerializer.Deserialize<TabEntry[]>(je.GetRawText(),
+                  new JsonSerializerOptions { PropertyNameCaseInsensitive = true }); }
         catch { return panel; }
         if (tabs == null) return panel;
 

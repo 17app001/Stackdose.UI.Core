@@ -4,7 +4,8 @@
     [ValidateSet("SinglePage", "Standard", "Dashboard")]
     [string]$Mode = "SinglePage",
     [string]$DestinationRoot = (Join-Path $PSScriptRoot "..\.."),
-    [switch]$IncludePrintHead
+    [switch]$IncludePrintHead,
+    [switch]$AutoFullPack
 )
 
 & "$PSScriptRoot\init-shell-app.ps1" `
@@ -12,4 +13,5 @@
     -DestinationRoot    $DestinationRoot `
     -JsonDrivenApp `
     -JsonDrivenShellMode $Mode `
-    -IncludePrintHead:$IncludePrintHead
+    -IncludePrintHead:$IncludePrintHead `
+    -AutoFullPack:$AutoFullPack

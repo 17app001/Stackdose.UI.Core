@@ -27,7 +27,10 @@
     [string]$JsonDrivenShellMode = "SinglePage",
 
     # Optional hardware configs
-    [switch]$IncludePrintHead
+    [switch]$IncludePrintHead,
+
+    # AI-Driven Full Pack: provide a complete layout with log, alarm, sensor viewers
+    [switch]$AutoFullPack
 )
 
 Set-StrictMode -Version Latest
@@ -882,7 +885,27 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler {
     [System.IO.File]::WriteAllText((Join-Path $jdConfigDir "app-config.json"), $appConfig, [System.Text.UTF8Encoding]::new($true))
 
     $shellModeValue = if ($JsonDrivenShellMode -eq "Dashboard") { "Dashboard" } else { "SinglePage" }
-    $designJson = @"
+    
+    $designJson = if ($AutoFullPack) {
+@"
+{
+  "version": "2.0",
+  "meta": { "title": "$AppName", "machineId": "M1" },
+  "layout": { "mode": "$shellModeValue", "showLiveLog": true },
+  "canvasWidth": 1280, "canvasHeight": 800,
+  "canvasItems": [
+    { "id": "liveLog", "type": "LiveLog", "x": 10, "y": 590, "width": 1260, "height": 200, "props": {} },
+    { "id": "alarm", "type": "AlarmViewer", "x": 870, "y": 40, "width": 400, "height": 240, "props": { "viewerTitle": "ALARM", "configFile": "Config/Machine1.alarms.json" } },
+    { "id": "sensor", "type": "SensorViewer", "x": 870, "y": 290, "width": 400, "height": 290, "props": { "viewerTitle": "SENSOR", "configFile": "Config/Machine1.sensors.json" } },
+    { "id": "grpCmd", "type": "Spacer", "x": 10, "y": 40, "width": 300, "height": 540, "props": { "title": "COMMANDS" } },
+    { "id": "btn1", "type": "SecuredButton", "x": 30, "y": 80, "width": 260, "height": 40, "props": { "label": "START PROCESS", "theme": "Primary" } },
+    { "id": "btn2", "type": "SecuredButton", "x": 30, "y": 130, "width": 260, "height": 40, "props": { "label": "STOP", "theme": "Danger" } },
+    { "id": "title", "type": "StaticLabel", "x": 320, "y": 40, "width": 500, "height": 60, "props": { "staticText": "$AppName", "staticFontSize": 32 } }
+  ]
+}
+"@
+    } else {
+@"
 {
   "version": "2.0",
   "meta": { "title": "$AppName", "machineId": "M1" },
@@ -891,6 +914,7 @@ public sealed class SampleCustomHandler : IBehaviorActionHandler {
   "canvasItems": [ { "id": "lbl1", "type": "StaticLabel", "x": 40, "y": 40, "width": 400, "height": 48, "props": { "staticText": "Hello $AppName" } } ]
 }
 "@
+    }
     [System.IO.File]::WriteAllText((Join-Path $jdConfigDir "M1.machinedesign.json"), $designJson, [System.Text.UTF8Encoding]::new($true))
 
     Write-Host "[init-shell-app] Done. Generated: $projectDir"

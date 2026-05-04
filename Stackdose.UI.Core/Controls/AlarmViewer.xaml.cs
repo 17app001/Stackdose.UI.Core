@@ -188,7 +188,8 @@ namespace Stackdose.UI.Core.Controls
                 }
 
                 var json = File.ReadAllText(fullPath);
-                var config = JsonSerializer.Deserialize<AlarmConfig>(json);
+                var config = JsonSerializer.Deserialize<AlarmConfig>(json,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 if (config?.Alarms != null)
                 {

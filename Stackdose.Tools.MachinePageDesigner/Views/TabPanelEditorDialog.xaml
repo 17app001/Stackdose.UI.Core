@@ -10,8 +10,16 @@
         ShowInTaskbar="False"
         Background="{StaticResource BgBrush}">
 
-    <DockPanel>
+    <Window.InputBindings>
+        <KeyBinding Command="{Binding UndoCmd}" Gesture="Ctrl+Z"/>
+        <KeyBinding Command="{Binding RedoCmd}" Gesture="Ctrl+Y"/>
+        <KeyBinding Command="{Binding CopyCmd}" Gesture="Ctrl+C"/>
+        <KeyBinding Command="{Binding PasteCmd}" Gesture="Ctrl+V"/>
+        <KeyBinding Command="{Binding DeleteSelectedCmd}" Gesture="Delete"/>
+        <KeyBinding Command="{Binding SelectAllCmd}" Gesture="Ctrl+A"/>
+    </Window.InputBindings>
 
+    <DockPanel>
         <!-- ── Top: tab header strip ──────────────────────────────────── -->
         <Border DockPanel.Dock="Top"
                 Background="{StaticResource PanelBrush}"
@@ -37,25 +45,34 @@
                 BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="0,1,0,0"
                 Padding="12,6">
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center">
-                <Button x:Name="BtnSave"
-                        Content="✔ 儲存"
-                        Width="90" Height="30"
-                        Margin="0,0,8,0"
-                        Background="#3A5690"
-                        Foreground="White"
-                        BorderThickness="0"
-                        Click="OnSave"/>
-                <Button x:Name="BtnCancel"
-                        Content="✘ 取消"
-                        Width="90" Height="30"
-                        Background="#4A3030"
-                        Foreground="White"
-                        BorderThickness="0"
-                        Click="OnCancel"/>
-            </StackPanel>
+            <DockPanel>
+                <!-- 狀態列訊息 -->
+                <TextBlock Text="{Binding StatusText}"
+                           Foreground="{StaticResource TextMutedBrush}"
+                           VerticalAlignment="Center"
+                           FontSize="11"
+                           Margin="8,0,0,0"/>
+
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center">
+                    <Button x:Name="BtnSave"
+                            Content="✔ 儲存並關閉"
+                            Width="110" Height="30"
+                            Margin="0,0,8,0"
+                            Background="#3A5690"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Click="OnSave"/>
+                    <Button x:Name="BtnCancel"
+                            Content="✘ 取消"
+                            Width="90" Height="30"
+                            Background="#4A3030"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Click="OnCancel"/>
+                </StackPanel>
+            </DockPanel>
         </Border>
 
         <!-- ── Left: Toolbox ──────────────────────────────────────────── -->
@@ -65,6 +82,16 @@
                 BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="0,0,1,0">
             <local:ToolboxPanel x:Name="ToolboxPanelCtrl"/>
+        </Border>
+
+        <!-- ── Right: Property Panel ───────────────────────────────────── -->
+        <Border DockPanel.Dock="Right"
+                Width="260"
+                Background="{StaticResource SurfaceBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1,0,0,0">
+            <local:PropertyPanel x:Name="PropertyPanelCtrl"
+                                 DataContext="{Binding Canvas.SelectedItem}"/>
         </Border>
 
         <!-- ── Center: FreeCanvas ─────────────────────────────────────── -->

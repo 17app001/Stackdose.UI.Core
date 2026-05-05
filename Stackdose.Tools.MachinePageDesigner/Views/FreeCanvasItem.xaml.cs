@@ -161,14 +161,19 @@ public partial class FreeCanvasItem : UserControl
         }
         else if (Item.ItemType == "Spacer")
         {
-            // ── GroupBox 模式：自動帶動中心點在框內的元件 ───────────────
+            // ── GroupBox 模式：自動帶動「完全位於框內」的元件 ───────────────
             MainVm?.Canvas.SelectSingle(Item);
 
             var groupBounds = new Rect(Item.X, Item.Y, Item.Width, Item.Height);
             var contained = MainVm?.Canvas.CanvasItems
                 .Where(i => !ReferenceEquals(i, Item) && !i.IsLocked)
-                .Where(i => groupBounds.Contains(
-                    new Point(i.X + i.Width / 2, i.Y + i.Height / 2)))
+                .Where(i =>
+                {
+                    // 改用 Rect.Contains(Rect) 確保元件完全在框內才連動。
+                    // 避免小 Spacer 在大 Spacer 中央時，拖動小 Spacer 卻帶動大 Spacer。
+                    var itemBounds = new Rect(i.X, i.Y, i.Width, i.Height);
+                    return groupBounds.Contains(itemBounds);
+                })
                 .ToList() ?? [];
 
             if (contained.Count > 0)

@@ -43,7 +43,6 @@ public sealed class MainViewModel : ObservableObject
     private int    _scanInterval;
 
     // ── Clipboard ────────────────────────────────────────────────────
-    private List<DesignerItemDefinition> _clipboard = [];
     private int _pasteCount;
 
     // ── Services ─────────────────────────────────────────────────────
@@ -84,7 +83,7 @@ public sealed class MainViewModel : ObservableObject
         MoveDownCmd        = new RelayCommand(_ => MoveDown(),       _ => Canvas.HasSelectedItem);
         LockToggleCmd      = new RelayCommand(_ => ToggleLock(),     _ => Canvas.HasSelectedItem);
         CopyCmd            = new RelayCommand(_ => CopySelected(),   _ => Canvas.HasSelectedItem);
-        PasteCmd           = new RelayCommand(_ => PasteClipboard(), _ => _clipboard.Count > 0);
+        PasteCmd           = new RelayCommand(_ => PasteClipboard(), _ => DesignClipboard.HasData);
         SelectAllCmd       = new RelayCommand(_ => SelectAll());
 
         AlignLeftCmd    = new RelayCommand(_ => AlignItems("left"),    _ => Canvas.HasSelectedItem);
@@ -438,21 +437,21 @@ public sealed class MainViewModel : ObservableObject
     {
         var items = Canvas.GetAllSelectedItems();
         if (items.Count == 0) return;
-        _clipboard = items.Select(i => i.ToDefinition().Clone()).ToList();
+        DesignClipboard.SetData(items.Select(i => i.ToDefinition().Clone()));
         _pasteCount = 0;
         Application.Current?.Dispatcher.InvokeAsync(
             CommandManager.InvalidateRequerySuggested,
             DispatcherPriority.Background);
-        StatusText = $"已複製 {_clipboard.Count} 個元件";
+        StatusText = $"已複製 {DesignClipboard.Count} 個元件";
     }
 
     private void PasteClipboard()
     {
-        if (_clipboard.Count == 0) return;
+        if (!DesignClipboard.HasData) return;
         _pasteCount++;
         double offset = _pasteCount * 20;
 
-        var newVms = _clipboard
+        var newVms = DesignClipboard.GetData()
             .Select(def => new DesignerItemViewModel(def.Clone(offset, offset)))
             .ToList();
 

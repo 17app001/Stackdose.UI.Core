@@ -39,6 +39,7 @@ public partial class TabPanelEditorDialog : Window
         _editorVm.Canvas.CanvasHeight = Math.Max(300, tabPanelItem.Height - 36); // subtract tab header
 
         InitializeComponent();
+        this.DataContext = _editorVm; // 重要：讓 InputBindings 找到命令
 
         // Wire FreeCanvas to editorVm
         EditorCanvas.DataContext = _editorVm.Canvas;

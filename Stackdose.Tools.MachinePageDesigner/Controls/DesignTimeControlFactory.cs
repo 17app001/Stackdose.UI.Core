@@ -263,9 +263,20 @@ public static class DesignTimeControlFactory
         return border;
     }
 
+    private static Color GroupBoxHeaderColor(string colorName) => colorName.ToLowerInvariant() switch
+    {
+        "normal"   => Color.FromArgb(0xCC, 0x37, 0x47, 0x4F),
+        "success"  => Color.FromArgb(0xCC, 0x2E, 0x7D, 0x32),
+        "warning"  => Color.FromArgb(0xCC, 0xE6, 0x51, 0x00),
+        "error"    => Color.FromArgb(0xCC, 0xC6, 0x28, 0x28),
+        "info"     => Color.FromArgb(0xCC, 0x00, 0x83, 0x8F),
+        _          => Color.FromArgb(0xCC, 0x15, 0x65, 0xC0), // primary (default)
+    };
+
     private static UIElement CreateGroupBox(DesignerItemDefinition def)
     {
-        var title = def.Props.GetString("title", "Group");
+        var title       = def.Props.GetString("title", "Group");
+        var headerColor = GroupBoxHeaderColor(def.Props.GetString("headerColor", "Primary"));
 
         // 根容器（無背景 → 不攔截 hit-test，讓 Body 區點擊穿透到 Canvas）
         var root = new Grid();
@@ -273,9 +284,9 @@ public static class DesignTimeControlFactory
         // ── 第一層：純視覺（邊框 + 半透明底）IsHitTestVisible=false ──────
         root.Children.Add(new Border
         {
-            BorderBrush     = new SolidColorBrush(Color.FromRgb(0x6C, 0x8E, 0xEF)),
+            BorderBrush     = new SolidColorBrush(Color.FromRgb(headerColor.R, headerColor.G, headerColor.B)),
             BorderThickness  = new Thickness(1.5),
-            Background      = new SolidColorBrush(Color.FromArgb(0x18, 0x6C, 0x8E, 0xEF)),
+            Background      = new SolidColorBrush(Color.FromArgb(0x18, headerColor.R, headerColor.G, headerColor.B)),
             CornerRadius    = new CornerRadius(4),
             IsHitTestVisible = false,   // 只是外觀，不攔截滑鼠
         });
@@ -283,7 +294,7 @@ public static class DesignTimeControlFactory
         // ── 第二層：互動（只有 Header 有背景 → 只有 Header 可 hit-test）─
         var headerBorder = new Border
         {
-            Background   = new SolidColorBrush(Color.FromArgb(0xCC, 0x3A, 0x56, 0xA8)),
+            Background   = new SolidColorBrush(headerColor),
             CornerRadius = new CornerRadius(2, 2, 0, 0),
             Padding      = new Thickness(10, 4, 10, 4),
             // Background 非 null → 該區域 hit-testable，點 Header 可選取/拖曳 GroupBox

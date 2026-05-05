@@ -144,6 +144,8 @@ public sealed class DesignerItemViewModel : ObservableObject
             "headIndex" => nameof(HeadIndex),
             "autoConnect" => nameof(AutoConnect),
             "tabs" => nameof(TabTitles),
+            "headerColor" => nameof(HeaderColor),
+            "gridColumns" => nameof(GridColumns),
             _ => null
         };
         if (propName != null) N(propName);
@@ -245,6 +247,12 @@ public sealed class DesignerItemViewModel : ObservableObject
     {
         get => (int)Math.Max(1, GetPropDouble("gridColumns", 2));
         set { var v = Math.Max(1, value); var old = (int)Math.Max(1, GetPropDouble("gridColumns", 2)); if (old == v) return; _definition.Props["gridColumns"] = (double)v; N(); }
+    }
+
+    public string HeaderColor
+    {
+        get => GetProp("headerColor", "Primary");
+        set { var old = GetProp("headerColor", "Primary"); if (old == value) return; SetPropDirect("headerColor", value); PropCommitted?.Invoke("headerColor", old, value); }
     }
 
     public double LabelFontSize
@@ -452,5 +460,6 @@ public sealed class DesignerItemViewModel : ObservableObject
     public static readonly string[] StringFormats = ["F0", "F1", "F2", "F3"];
     public static readonly string[] DataTypes = ["Word", "DWord", "Float", "Bit"];
     public static readonly string[] ButtonThemes = ["Normal", "Primary", "Success", "Warning", "Error", "Info"];
+    public static readonly string[] HeaderColors  = ["Normal", "Primary", "Success", "Warning", "Error", "Info"];
     public static readonly string[] AccessLevels = ["Operator", "Instructor", "Supervisor", "Admin", "SuperAdmin"];
 }

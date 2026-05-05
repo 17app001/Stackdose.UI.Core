@@ -942,7 +942,7 @@
       "height": 254,
       "locked": false,
       "props": {
-        "label": "Recipe"
+        "title": "Recipe"
       },
       "events": []
     },

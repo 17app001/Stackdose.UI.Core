@@ -684,23 +684,34 @@ public static class RuntimeControlFactory
         return new SecuredButton { Content = label, OperationName = label, Theme = theme };
     }
 
+    private static Color GroupBoxHeaderColor(string colorName) => colorName.ToLowerInvariant() switch
+    {
+        "normal"   => Color.FromArgb(0xCC, 0x37, 0x47, 0x4F),
+        "success"  => Color.FromArgb(0xCC, 0x2E, 0x7D, 0x32),
+        "warning"  => Color.FromArgb(0xCC, 0xE6, 0x51, 0x00),
+        "error"    => Color.FromArgb(0xCC, 0xC6, 0x28, 0x28),
+        "info"     => Color.FromArgb(0xCC, 0x00, 0x83, 0x8F),
+        _          => Color.FromArgb(0xCC, 0x15, 0x65, 0xC0), // primary (default)
+    };
+
     private static UIElement CreateGroupBox(DesignerItemDefinition def)
     {
-        var title = def.Props.GetString("title", "Group");
-        var root  = new Grid();
+        var title       = def.Props.GetString("title", "Group");
+        var headerColor = GroupBoxHeaderColor(def.Props.GetString("headerColor", "Primary"));
+        var root        = new Grid();
 
         root.Children.Add(new Border
         {
-            BorderBrush      = new SolidColorBrush(Color.FromRgb(0x6C, 0x8E, 0xEF)),
+            BorderBrush      = new SolidColorBrush(Color.FromRgb(headerColor.R, headerColor.G, headerColor.B)),
             BorderThickness   = new Thickness(1.5),
-            Background       = new SolidColorBrush(Color.FromArgb(0x18, 0x6C, 0x8E, 0xEF)),
+            Background       = new SolidColorBrush(Color.FromArgb(0x18, headerColor.R, headerColor.G, headerColor.B)),
             CornerRadius     = new CornerRadius(4),
             IsHitTestVisible  = false,
         });
 
         var header = new Border
         {
-            Background   = new SolidColorBrush(Color.FromArgb(0xCC, 0x3A, 0x56, 0xA8)),
+            Background   = new SolidColorBrush(headerColor),
             CornerRadius = new CornerRadius(2, 2, 0, 0),
             Padding      = new Thickness(10, 4, 10, 4),
         };

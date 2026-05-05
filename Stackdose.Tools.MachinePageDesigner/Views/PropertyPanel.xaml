@@ -232,6 +232,11 @@
                             Click="OnArrangeGrid"/>
                 </Grid>
 
+                <!-- 標題列顏色 -->
+                <TextBlock Text="標題列顏色" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{x:Static vm:DesignerItemViewModel.HeaderColors}"
+                          SelectedItem="{Binding HeaderColor}" Margin="0,0,0,8"/>
+
                 <TextBlock Text="拖曳此 GroupBox 時，中心點在框內的元件會一起移動"
                            Foreground="{StaticResource TextMutedBrush}"
                            FontSize="10" TextWrapping="Wrap" Margin="0,0,0,4"/>

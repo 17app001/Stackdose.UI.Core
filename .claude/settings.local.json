@@ -57,7 +57,18 @@
       "Bash(python -c ' *)",
       "Bash(grep -v \"//\")",
       "Bash(python *)",
-      "Bash(Get-ChildItem Stackdose.Tools.MachinePageDesigner/Views/ -Filter \"FreeCanvasItem*\")"
+      "Bash(Get-ChildItem Stackdose.Tools.MachinePageDesigner/Views/ -Filter \"FreeCanvasItem*\")",
+      "Bash(Get-ChildItem \"D:\\\\工作區\\\\Project\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "PowerShell(Get-ChildItem \"D:\\\\工作區\\\\Project\" -Force | Where-Object {$_.PSIsContainer} | Select-Object Name)",
+      "Bash(Get-ChildItem *)",
+      "PowerShell(head *)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\工作區\\\\Project\\\\Stackdose.Solution.ModelE\\\\\" -Recurse -File | Where-Object {$_.Extension -match \"\\\\.\\(cs|json\\)$\"} | Select-Object FullName)",
+      "Bash(Select-Object -First 20)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\\\\Stackdose.Tools.MachinePageDesigner\" -Recurse | Where-Object { $_.Extension -eq \".cs\" -or $_.Extension -eq \".xaml\" } | Select-Object FullName)",
+      "PowerShell(Get-ChildItem \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\\\\Stackdose.Tools.MachinePageDesigner\" -Recurse -Force | ForEach-Object { $_.FullName })",
+      "Bash(Find \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\" -type f -name \"*.xaml\")",
+      "Bash(Find \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\" -type f -name \"*.cs\")"
     ]
   }
 }

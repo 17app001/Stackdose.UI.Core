@@ -129,7 +129,7 @@ def migrate_modele(designer_path, output_json):
             
         elif 'GroupBox' in ctrl['type']:
             item["type"] = "Spacer" # GroupBox maps to Spacer in Runtime
-            item["props"]["label"] = ctrl['text']
+            item["props"]["title"] = ctrl['text']
 
         items.append(item)
 

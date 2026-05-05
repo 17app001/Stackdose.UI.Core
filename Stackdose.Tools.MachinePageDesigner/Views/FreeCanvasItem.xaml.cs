@@ -14,6 +14,7 @@ public partial class FreeCanvasItem : UserControl
 
     // ── Move state ───────────────────────────────────────────────────────
     private bool  _isDragging;
+    private bool  _isDragCommitted;   // true once mouse has moved beyond the dead zone
     private bool  _isMultiDrag;
     private Point _dragOrigin;
     private double _dragStartX, _dragStartY;
@@ -190,10 +191,11 @@ public partial class FreeCanvasItem : UserControl
             _multiDragState.Clear();
         }
 
-        _isDragging  = true;
-        _dragOrigin  = e.GetPosition(parentCanvas);
-        _dragStartX  = Item.X;
-        _dragStartY  = Item.Y;
+        _isDragging      = true;
+        _isDragCommitted = false;
+        _dragOrigin      = e.GetPosition(parentCanvas);
+        _dragStartX      = Item.X;
+        _dragStartY      = Item.Y;
         CaptureMouse();
     }
 
@@ -208,6 +210,15 @@ public partial class FreeCanvasItem : UserControl
         var pos = e.GetPosition(parentCanvas);
         var dx  = pos.X - _dragOrigin.X;
         var dy  = pos.Y - _dragOrigin.Y;
+
+        // Dead zone: ignore tiny movements so a plain click never triggers Snap/SmartSnap.
+        if (!_isDragCommitted)
+        {
+            if (Math.Abs(dx) < SystemParameters.MinimumHorizontalDragDistance &&
+                Math.Abs(dy) < SystemParameters.MinimumVerticalDragDistance)
+                return;
+            _isDragCommitted = true;
+        }
 
         if (_isMultiDrag && _multiDragState.Count > 1)
         {
@@ -279,8 +290,9 @@ public partial class FreeCanvasItem : UserControl
                 Item.SetPropDirect("y", _dragStartY);
             }
         }
-        _isDragging = false;
-        _isMultiDrag = false;
+        _isDragging      = false;
+        _isDragCommitted = false;
+        _isMultiDrag     = false;
         _multiDragState.Clear();
         ReleaseMouseCapture();
     }

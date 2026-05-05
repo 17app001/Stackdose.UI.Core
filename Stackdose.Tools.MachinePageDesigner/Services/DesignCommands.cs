@@ -103,6 +103,39 @@ public sealed class CanvasRemoveItemCommand : IDesignCommand
 }
 
 /// <summary>
+/// 從自由畫布批次移除多個元件（Delete / Cut 用）
+/// </summary>
+public sealed class CanvasRemoveMultipleItemsCommand : IDesignCommand
+{
+    private readonly ObservableCollection<DesignerItemViewModel> _items;
+    private readonly List<(DesignerItemViewModel Item, int Index)> _removed;
+
+    public CanvasRemoveMultipleItemsCommand(ObservableCollection<DesignerItemViewModel> items, IEnumerable<DesignerItemViewModel> targets)
+    {
+        _items = items;
+        // 依照 Index 從大到小排，Execute 時比較好處理（雖然 Undo 時也是照 Index 塞回）
+        _removed = targets.Select(t => (t, items.IndexOf(t)))
+                          .OrderByDescending(x => x.Item2)
+                          .ToList();
+    }
+
+    public string Description => $"Remove {_removed.Count} items";
+
+    public void Execute()
+    {
+        foreach (var r in _removed)
+            if (r.Index >= 0) _items.RemoveAt(r.Index);
+    }
+
+    public void Undo()
+    {
+        // 復原時要從小到大塞回，或是照原本順序逆著塞
+        foreach (var r in _removed.OrderBy(x => x.Index))
+            _items.Insert(Math.Clamp(r.Index, 0, _items.Count), r.Item);
+    }
+}
+
+/// <summary>
 /// 自由畫布元件移動
 /// </summary>
 public sealed class CanvasMoveItemCommand : IDesignCommand

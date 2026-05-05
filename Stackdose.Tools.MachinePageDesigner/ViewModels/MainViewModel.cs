@@ -83,6 +83,7 @@ public sealed class MainViewModel : ObservableObject
         MoveDownCmd        = new RelayCommand(_ => MoveDown(),       _ => Canvas.HasSelectedItem);
         LockToggleCmd      = new RelayCommand(_ => ToggleLock(),     _ => Canvas.HasSelectedItem);
         CopyCmd            = new RelayCommand(_ => CopySelected(),   _ => Canvas.HasSelectedItem);
+        CutCmd             = new RelayCommand(_ => CutSelected(),    _ => Canvas.HasSelectedItem);
         PasteCmd           = new RelayCommand(p => PasteClipboard(p is string s && bool.TryParse(s, out var b) ? b : (p is bool b2 && b2)), _ => DesignClipboard.HasData);
         SelectAllCmd       = new RelayCommand(_ => SelectAll());
 
@@ -275,6 +276,7 @@ public sealed class MainViewModel : ObservableObject
     public ICommand MoveDownCmd { get; }
     public ICommand LockToggleCmd { get; }
     public ICommand CopyCmd { get; }
+    public ICommand CutCmd { get; }
     public ICommand PasteCmd { get; }
     public ICommand SelectAllCmd { get; }
 
@@ -498,12 +500,43 @@ public sealed class MainViewModel : ObservableObject
 
     private void DeleteSelected()
     {
-        var item = Canvas.SelectedItem;
-        if (item == null) return;
-        var cmd = new CanvasRemoveItemCommand(Canvas.CanvasItems, item);
+        var items = GetDeepSelectedItems();
+        if (items.Count == 0) return;
+
+        var cmd = new CanvasRemoveMultipleItemsCommand(Canvas.CanvasItems, items);
         UndoRedo.Execute(cmd);
+
         Canvas.ClearSelection();
-        StatusText = $"已刪除：{item.DisplayName}";
+        StatusText = $"已刪除：{items.Count} 個元件";
+    }
+
+    /// <summary>
+    /// 取得「深層」選取元件：包含手動選取的元件，以及選取中的 Spacer 所包含的所有子元件。
+    /// </summary>
+    private List<DesignerItemViewModel> GetDeepSelectedItems()
+    {
+        var selected = Canvas.GetAllSelectedItems();
+        if (selected.Count == 0) return [];
+
+        var result = new HashSet<DesignerItemViewModel>(selected);
+        var spacers = selected.Where(i => i.ItemType == "Spacer").ToList();
+
+        foreach (var spacer in spacers)
+        {
+            var bounds = new Rect(spacer.X, spacer.Y, spacer.Width, spacer.Height);
+            var children = Canvas.CanvasItems
+                .Where(i => !ReferenceEquals(i, spacer))
+                .Where(i =>
+                {
+                    var itemBounds = new Rect(i.X, i.Y, i.Width, i.Height);
+                    return bounds.Contains(itemBounds);
+                });
+
+            foreach (var child in children)
+                result.Add(child);
+        }
+
+        return [.. result];
     }
 
     private void BringToFront()

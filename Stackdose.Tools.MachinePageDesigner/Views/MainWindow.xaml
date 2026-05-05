@@ -23,6 +23,7 @@
         <KeyBinding Key="Z" Modifiers="Ctrl"       Command="{Binding UndoCmd}"/>
         <KeyBinding Key="Y" Modifiers="Ctrl"       Command="{Binding RedoCmd}"/>
         <KeyBinding Key="Delete"                    Command="{Binding DeleteSelectedCmd}"/>
+        <KeyBinding Key="X" Modifiers="Ctrl"       Command="{Binding CutCmd}"/>
         <KeyBinding Key="C" Modifiers="Ctrl"       Command="{Binding CopyCmd}"/>
         <KeyBinding Key="V" Modifiers="Ctrl"       Command="{Binding PasteCmd}"/>
         <KeyBinding Key="A" Modifiers="Ctrl"       Command="{Binding SelectAllCmd}"/>
@@ -55,6 +56,7 @@
                 <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
 
                 <Button Content="&#x2716; Delete"  Command="{Binding DeleteSelectedCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,4,0"/>
+                <Button Content="&#x2702; Cut"    Command="{Binding CutCmd}"            Style="{StaticResource ToolbarButton}" Margin="0,0,4,0" ToolTip="剪下選取元件（Ctrl+X）"/>
                 <Button Content="&#x2398; Copy"    Command="{Binding CopyCmd}"          Style="{StaticResource ToolbarButton}" Margin="0,0,4,0" ToolTip="複製選取元件（Ctrl+C）"/>
                 <Button Content="&#x2399; Paste"   Command="{Binding PasteCmd}"         Style="{StaticResource ToolbarButton}" Margin="0,0,4,0" ToolTip="貼上（Ctrl+V）"/>
                 <Button Content="&#x2630; All"     Command="{Binding SelectAllCmd}"     Style="{StaticResource ToolbarButton}" Margin="0,0,16,0" ToolTip="全選（Ctrl+A）"/>

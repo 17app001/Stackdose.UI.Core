@@ -13,6 +13,7 @@
     <Window.InputBindings>
         <KeyBinding Command="{Binding UndoCmd}" Gesture="Ctrl+Z"/>
         <KeyBinding Command="{Binding RedoCmd}" Gesture="Ctrl+Y"/>
+        <KeyBinding Command="{Binding CutCmd}" Gesture="Ctrl+X"/>
         <KeyBinding Command="{Binding CopyCmd}" Gesture="Ctrl+C"/>
         <KeyBinding Command="{Binding PasteCmd}" CommandParameter="True" Gesture="Ctrl+V"/>
         <KeyBinding Command="{Binding DeleteSelectedCmd}" Gesture="Delete"/>

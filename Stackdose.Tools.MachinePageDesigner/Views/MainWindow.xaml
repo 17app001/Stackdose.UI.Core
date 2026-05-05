@@ -12,7 +12,6 @@
     </Window.DataContext>
 
     <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Window.Resources>
 
     <Window.InputBindings>
@@ -138,11 +137,20 @@
                          ToolTip="PLC 掃描間隔 ms（預設 200）"
                          Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
-                <TextBlock Text="Gap:" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"
-                           Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                <TextBox Text="{Binding GlobalSpacing, UpdateSourceTrigger=LostFocus}" Width="40"
-                         ToolTip="全域間距（用於自動排列與磁吸）"
-                         Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                <TextBlock Text="Gap:" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"/>
+                <TextBox Text="{Binding GlobalSpacing, UpdateSourceTrigger=PropertyChanged}" Width="40"
+                         ToolTip="元件之間的間距"/>
+
+                <TextBlock Text="Padding:" Style="{StaticResource FieldLabel}" Margin="8,0,4,0"/>
+                <TextBox Text="{Binding CanvasPadding, UpdateSourceTrigger=PropertyChanged}" Width="40"
+                         ToolTip="內容與畫布邊界的間距"/>
+
+                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="8,2,8,2"/>
+
+                <!-- Stack Tools -->
+                <Button Content="&#x21C9;" Command="{Binding StackHorizCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,2,0" ToolTip="水平堆疊 (依 Gap 間距排列選取元件)"/>
+                <Button Content="&#x21CA;" Command="{Binding StackVertCmd}"  Style="{StaticResource ToolbarButton}" Margin="0,0,4,0" ToolTip="垂直堆疊 (依 Gap 間距排列選取元件)"/>
+                <Button Content="✨ Precision Gap" Command="{Binding TidyUpCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,16,0" ToolTip="精密間距校正：將鄰近元件吸附至精準 Gap"/>
 
                 <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="16,2,16,2"/>
 

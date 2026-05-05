@@ -27,4 +27,7 @@ public sealed class PageLayoutConfig
 
     [JsonPropertyName("globalSpacing")]
     public double GlobalSpacing { get; set; } = 8.0;
+
+    [JsonPropertyName("canvasPadding")]
+    public double CanvasPadding { get; set; } = 20.0;
 }

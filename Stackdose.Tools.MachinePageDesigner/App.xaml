@@ -9,6 +9,7 @@
                 <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Core;component/Themes/Theme.xaml"/>
                 <ResourceDictionary Source="Themes/DesignerTheme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -35,6 +35,7 @@ public sealed class MainViewModel : ObservableObject
     private bool _showAlarmViewer;
     private bool _showSensorViewer;
     private double _globalSpacing = 8.0;
+    private double _canvasPadding = 20.0;
 
     // ── Meta ─────────────────────────────────────────────────────────
     private string _docTitle;
@@ -98,6 +99,9 @@ public sealed class MainViewModel : ObservableObject
 
         DistributeHorizCmd = new RelayCommand(_ => DistributeItems(horizontal: true),  _ => Canvas.HasSelectedItem);
         DistributeVertCmd  = new RelayCommand(_ => DistributeItems(horizontal: false), _ => Canvas.HasSelectedItem);
+        StackHorizCmd      = new RelayCommand(_ => StackItems(horizontal: true),  _ => Canvas.HasSelectedItem);
+        StackVertCmd       = new RelayCommand(_ => StackItems(horizontal: false), _ => Canvas.HasSelectedItem);
+        TidyUpCmd          = new RelayCommand(_ => SurgicalTidyUp());
 
         // UndoRedo 狀態變更時更新 dirty 並強制刷新 Command enable 狀態
         UndoRedo.StateChanged += () =>
@@ -259,6 +263,12 @@ public sealed class MainViewModel : ObservableObject
         set { if (Set(ref _globalSpacing, value)) MarkDirty(); }
     }
 
+    public double CanvasPadding
+    {
+        get => _canvasPadding;
+        set { if (Set(ref _canvasPadding, value)) MarkDirty(); }
+    }
+
     public string[] LayoutModes { get; } = ["SplitRight", "Standard", "SplitBottom", "Dashboard"];
 
     public bool SnapToGrid
@@ -287,6 +297,9 @@ public sealed class MainViewModel : ObservableObject
     public ICommand CutCmd { get; }
     public ICommand PasteCmd { get; }
     public ICommand SelectAllCmd { get; }
+    public ICommand StackHorizCmd { get; }
+    public ICommand StackVertCmd { get; }
+    public ICommand TidyUpCmd { get; }
 
     // Align
     public ICommand AlignLeftCmd    { get; }
@@ -712,10 +725,47 @@ public sealed class MainViewModel : ObservableObject
             cursor += (horizontal ? item.Width : item.Height) + gap;
         }
 
-        if (moves.Count == 0) return;
-        UndoRedo.Record(new CanvasMoveMultipleItemsCommand(moves));
-        MarkDirty();
-        StatusText = $"{(horizontal ? "水平" : "垂直")}均分 {items.Count} 個元件，間距 {gap:F1}px";
+        if (moves.Count > 0)
+        {
+            UndoRedo.Record(new CanvasMoveMultipleItemsCommand(moves));
+            MarkDirty();
+            StatusText = $"{(horizontal ? "水平" : "垂直")}均分 {items.Count} 個元件，間距 {gap:F1}px";
+        }
+    }
+
+    private void StackItems(bool horizontal)
+    {
+        var items = Canvas.GetAllSelectedItems()
+            .Where(i => !i.IsLocked)
+            .OrderBy(i => horizontal ? i.X : i.Y)
+            .ToList();
+
+        if (items.Count < 2) return;
+
+        var moves = new List<(DesignerItemViewModel item, double oldX, double oldY, double newX, double newY)>();
+        double cursor = horizontal ? items[0].X : items[0].Y;
+
+        foreach (var item in items)
+        {
+            double newX = horizontal ? cursor : item.X;
+            double newY = horizontal ? item.Y  : cursor;
+
+            if (Math.Abs(newX - item.X) > 0.01 || Math.Abs(newY - item.Y) > 0.01)
+            {
+                moves.Add((item, item.X, item.Y, newX, newY));
+                item.X = newX;
+                item.Y = newY;
+            }
+
+            cursor += (horizontal ? item.Width : item.Height) + GlobalSpacing;
+        }
+
+        if (moves.Count > 0)
+        {
+            UndoRedo.Record(new CanvasMoveMultipleItemsCommand(moves));
+            MarkDirty();
+            StatusText = $"已{(horizontal ? "水平" : "垂直")}堆疊 {items.Count} 個元件 (Gap: {GlobalSpacing})";
+        }
     }
 
     /// <summary>
@@ -900,6 +950,7 @@ public sealed class MainViewModel : ObservableObject
         _document.Layout.ShowLiveLog = ShowLiveLog;
         _document.Layout.ShowAlarmViewer = ShowAlarmViewer;
         _document.Layout.ShowSensorViewer = ShowSensorViewer;
+        _document.Layout.GlobalSpacing = GlobalSpacing;
 
         _document.CanvasItems = Canvas.ExportCanvasItems();
         _document.CanvasWidth = Canvas.CanvasWidth;
@@ -913,6 +964,102 @@ public sealed class MainViewModel : ObservableObject
         var item = Canvas.SelectedItem;
         if (item == null) { StatusText = "就緒"; return; }
         StatusText = $"已選取：{item.DisplayName} [{item.X:F0}, {item.Y:F0}]";
+    }
+
+    /// <summary>
+    /// 精密間距校正 (Surgical Tidy Up)：
+    /// 不改變大的排版結構，但將鄰近元件的間距精確修正為 GlobalSpacing，並修復微量對齊誤差。
+    /// </summary>
+    private void SurgicalTidyUp()
+    {
+        var items = Canvas.CanvasItems
+            .Where(i => !i.IsLocked)
+            .OrderBy(i => i.Y).ThenBy(i => i.X)
+            .ToList();
+
+        if (items.Count == 0) return;
+
+        var moves = new List<(DesignerItemViewModel item, double oldX, double oldY, double newX, double newY)>();
+        double gap = GlobalSpacing;
+        const double snapThreshold = 15.0; // 差距在 15px 內才進行自動校正
+
+        foreach (var item in items)
+        {
+            double targetX = item.X;
+            double targetY = item.Y;
+
+            // 尋找此元件「上方」或「左側」的元件作為校正基準
+            var processed = items.Take(items.IndexOf(item)).ToList();
+            
+            // 找出左側鄰居與上方鄰居
+            var leftNeighbor = processed
+                .Where(refItem => Math.Max(item.Y, refItem.Y) < Math.Min(item.Y + item.Height, refItem.Y + refItem.Height))
+                .Where(refItem => item.X > refItem.X)
+                .OrderByDescending(refItem => refItem.X + refItem.Width)
+                .FirstOrDefault();
+
+            var topNeighbor = processed
+                .Where(refItem => Math.Max(item.X, refItem.X) < Math.Min(item.X + item.Width, refItem.X + refItem.Width))
+                .Where(refItem => item.Y > refItem.Y)
+                .OrderByDescending(refItem => refItem.Y + refItem.Height)
+                .FirstOrDefault();
+
+            // 1. 處理 X 軸 (水平)
+            if (leftNeighbor != null)
+            {
+                // 有左鄰居：吸附到鄰居右側 + Gap
+                double currentGap = item.X - (leftNeighbor.X + leftNeighbor.Width);
+                if (Math.Abs(currentGap - gap) < snapThreshold)
+                {
+                    targetX = leftNeighbor.X + leftNeighbor.Width + gap;
+                }
+                // 微量對齊頂部
+                if (Math.Abs(item.Y - leftNeighbor.Y) < 5) targetY = leftNeighbor.Y;
+            }
+            else
+            {
+                // 沒有左鄰居：檢查是否靠近畫布左邊緣 (Canvas Padding)
+                if (Math.Abs(item.X - gap) < snapThreshold || item.X < gap)
+                {
+                    targetX = gap;
+                }
+            }
+
+            // 2. 處理 Y 軸 (垂直)
+            if (topNeighbor != null)
+            {
+                // 有上鄰居：吸附到鄰居底部 + Gap
+                double currentGap = item.Y - (topNeighbor.Y + topNeighbor.Height);
+                if (Math.Abs(currentGap - gap) < snapThreshold)
+                {
+                    targetY = topNeighbor.Y + topNeighbor.Height + gap;
+                }
+                // 微量對齊左側
+                if (Math.Abs(item.X - topNeighbor.X) < 5) targetX = topNeighbor.X;
+            }
+            else
+            {
+                // 沒有上鄰居：檢查是否靠近畫布頂邊緣 (Canvas Padding)
+                if (Math.Abs(item.Y - gap) < snapThreshold || item.Y < gap)
+                {
+                    targetY = gap;
+                }
+            }
+
+            if (Math.Abs(targetX - item.X) > 0.1 || Math.Abs(targetY - item.Y) > 0.1)
+            {
+                moves.Add((item, item.X, item.Y, targetX, targetY));
+                item.X = targetX;
+                item.Y = targetY;
+            }
+        }
+
+        if (moves.Count > 0)
+        {
+            UndoRedo.Record(new CanvasMoveMultipleItemsCommand(moves));
+            MarkDirty();
+            StatusText = $"精密間距校正完成 (含畫布 Padding)：調整了 {moves.Count} 個元件";
+        }
     }
 
     private void OnItemPropCommitted(string propKey, object? oldValue, object? newValue)

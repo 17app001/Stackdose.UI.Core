@@ -437,7 +437,7 @@ public sealed class MainViewModel : ObservableObject
 
     private void CopySelected()
     {
-        var items = Canvas.GetAllSelectedItems();
+        var items = GetDeepSelectedItems();
         if (items.Count == 0) return;
         DesignClipboard.SetData(items.Select(i => i.ToDefinition().Clone()));
         _pasteCount = 0;
@@ -445,6 +445,24 @@ public sealed class MainViewModel : ObservableObject
             CommandManager.InvalidateRequerySuggested,
             DispatcherPriority.Background);
         StatusText = $"已複製 {DesignClipboard.Count} 個元件";
+    }
+
+    private void CutSelected()
+    {
+        var items = GetDeepSelectedItems();
+        if (items.Count == 0) return;
+
+        // 先複製
+        DesignClipboard.SetData(items.Select(i => i.ToDefinition().Clone()));
+        _pasteCount = 0;
+
+        // 再刪除
+        var cmd = new CanvasRemoveMultipleItemsCommand(Canvas.CanvasItems, items);
+        UndoRedo.Execute(cmd);
+
+        Canvas.ClearSelection();
+        MarkDirty();
+        StatusText = $"已剪下 {items.Count} 個元件";
     }
 
     private void PasteClipboard(bool atTopLeft = false)

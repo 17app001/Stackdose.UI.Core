@@ -236,7 +236,7 @@ public partial class App : Application
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="28"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Border Grid.Row="0" Background="#12121E" MouseLeftButtonDown="OnBarDrag">
             <Grid>
@@ -419,6 +419,22 @@ public partial class MainWindow : Window
         DashboardHost.Content = canvas;
         RegisterCustomHandlers();
         _behaviorEngine.BindDocument(doc.CanvasItems, controlMap);
+
+        // 補償視窗高度，確保標題列不遮擋畫布
+        CompensateWindowSize(doc.CanvasWidth, doc.CanvasHeight);
+    }
+
+    private void CompensateWindowSize(double contentWidth, double contentHeight)
+    {
+        if (WindowState == WindowState.Maximized) return;
+        double dw = ActualWidth - ((FrameworkElement)Content).ActualWidth;
+        double dh = ActualHeight - ((FrameworkElement)Content).ActualHeight;
+        if (dw <= 0) dw = SystemParameters.ResizeFrameVerticalBorderWidth * 2;
+        if (dh <= 0) dh = SystemParameters.WindowCaptionHeight + SystemParameters.ResizeFrameHorizontalBorderHeight * 2;
+        
+        // 額外加上自定義標題列 (28px) 的高度落差
+        Width  = contentWidth + dw;
+        Height = contentHeight + dh + 28;
     }
 
     private void RegisterCustomHandlers()
@@ -698,6 +714,7 @@ public static class RuntimeControlFactory
     {
         var title       = def.Props.GetString("title", "Group");
         var headerColor = GroupBoxHeaderColor(def.Props.GetString("headerColor", "Primary"));
+        var showTitle   = def.Props.GetBool("showTitle", true);
         var root        = new Grid();
 
         root.Children.Add(new Border
@@ -714,6 +731,7 @@ public static class RuntimeControlFactory
             Background   = new SolidColorBrush(headerColor),
             CornerRadius = new CornerRadius(2, 2, 0, 0),
             Padding      = new Thickness(10, 4, 10, 4),
+            Visibility   = showTitle ? Visibility.Visible : Visibility.Collapsed
         };
         header.Child = new TextBlock
         {

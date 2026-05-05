@@ -11,11 +11,9 @@
              ════════════════════════════════════════════════════════ -->
         <DataTemplate x:Key="PlcLabelTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
             <StackPanel Margin="0,4">
-                <!-- Label -->
                 <TextBlock Text="標籤名稱" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
-                <!-- Address -->
                 <TextBlock Text="PLC 位址" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
@@ -196,6 +194,8 @@
             <StackPanel Margin="0,4">
                 <TextBlock Text="群組標題 (Title)" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
                 <TextBox Text="{Binding GroupTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <CheckBox Content="顯示標題列" IsChecked="{Binding ShowTitle}" Margin="0,0,0,8"/>
 
                 <!-- 自動排列 -->
                 <TextBlock Text="自動排列子控件" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>

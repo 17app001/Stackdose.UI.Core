@@ -11,114 +11,34 @@
 |---|---|---|---|---|
 | **B0** 底層現況校正 | ✅ 完成 | 2026-04-21 | `01a903c` | 盤點、修文件，不動程式碼 |
 | **B1** 抽共用基類 | ✅ 完成 | 2026-04-21 | `b0e424d` | PlcLabel/Text/StatusIndicator/AlarmViewer/SensorViewer 全遷移 |
-| **B2** 事件能力收斂 | ✅ 完成 | 2026-04-21 | `b0e424d` | PlcEventContext + ControlValueChanged event bus（與 B1 同 commit） |
+| **B2** 事件能力收斂 | ✅ 完成 | 2026-04-21 | `b0e424d` | PlcEventContext + ControlValueChanged event bus |
 | **B3** Templates/Shell 策略化 | ✅ 完成 | 2026-04-21 | `70b919f` | IShellStrategy + FreeCanvas/SinglePage/Standard |
 | **B4** Behavior Schema | ✅ 完成 | 2026-04-21 | `4a8cc13` | BehaviorEvent/Condition/Action POCO + events[] |
-| **B5** Behavior Engine | ✅ 完成 | 2026-04-22 | `34d9c1f` | BehaviorEngine + 6 Handler + SecuredButton click + DesignRuntime 接線 |
-| **B6** Designer UI | ✅ 完成 | 2026-04-22 | `f314dcf` | PropertyPanel → TabControl + EventsPanel 事件編輯 UI |
-| **B7** Standard 模式收尾 | ✅ 完成 | 2026-04-21 | `d7c185a` | PageDefinition + pages[] + SetupMultiPageNavigation + Navigator 接線 |
-| **B8** docs 全全面對齊 | ✅ 完成 | 2026-04-21 | `b11398a` | kb/ 新增 behavior-system + foundation-base-classes；architecture/controls 更新 |
-| **B9** 格式與腳本同步 | ✅ 完成 | 2026-04-21 | `49d4109` | 同步 Designer JSON 格式 (pageId/name/layout) 與 init-shell-app 腳本產出 |
-
+| **B5** Behavior Engine | ✅ 完成 | 2026-04-22 | `34d9c1f` | BehaviorEngine + 6 Handler + SecuredButton click |
+| **B6** Designer UI | ✅ 完成 | 2026-04-22 | `f314dcf` | PropertyPanel → TabControl + EventsPanel 事件編輯 |
+| **B7** Standard 模式收尾 | ✅ 完成 | 2026-04-21 | `d7c185a` | PageDefinition + pages[] + SetupMultiPageNavigation |
+| **B8** docs 全全面對齊 | ✅ 完成 | 2026-04-21 | `b11398a` | kb/ 更新 behavior-system + base-classes 等 |
+| **B9** 專案產生器強化 | ✅ 完成 | 2026-05-04 | `9456591` | 自動生成 Dashboard 專案結構與完整配置 |
+| **B10** 設計器體驗優化 | ✅ 完成 | 2026-05-05 | `231a956` | Spacer 容器連動、TabPanel 強化、視窗尺寸補償 |
 
 圖例：⚪ 待命 / 🟡 進行中 / ✅ 完成 / ⛔ 擱置
 
 ---
 
-## B0 子任務 checklist
-
-- [x] **B0.0** 建立 `docs/refactor/` 元文件（README / PLAN / PROGRESS / HANDOFF）— 2026-04-21
-- [x] **B0.1** Core Controls DP 盤點 → `B0-control-inventory.md` — 2026-04-21
-- [x] **B0.2** Templates Controls / Pages 盤點 — 2026-04-21
-- [x] **B0.3** 文件 vs 實際差異表 → `B0-findings.md` — 2026-04-21
-- [x] **B0.4** 修正 `docs/kb/controls-reference.md` — 2026-04-21
-- [x] **B0.5** 修正 `docs/kb/architecture.md` + `docs/PROJECT_MAP.md` + `CLAUDE.md` — 2026-04-21
-- [x] **B0.6** 更新 `CURRENT_FOCUS.md` + `devlog/2026-04.md`（`index.html` 不存在，跳過） — 2026-04-21
-- [x] **B0.7** Commit 所有 B0 變更（`01a903c`）+ 回報用戶、停手 — 2026-04-21
-
----
-
-## B1+B2 子任務 checklist
-
-- [x] **B1.1** 移動 `PlcValueChangedEventArgs` 到 `Helpers/`（共用） — 2026-04-21
-- [x] **B1.2** 升級 `PlcControlBase`：加 `ValueChanged` event、`RaiseValueChanged()`、`OnPlcConnected`/`OnPlcDataUpdated` 抽象覆寫、`OnGlobalStatusChanged` — 2026-04-21
-- [x] **B1.3** 升級 `PlcEventContext`：加 `ControlValueChanged` static event、`PublishControlValueChanged()` — 2026-04-21
-- [x] **B1.4** PlcLabel → PlcControlBase（移除手動 PlcStatus 訂閱、修 OnThemeChanged override）— 2026-04-21
-- [x] **B1.5** PlcText → PlcControlBase（移除 `_subscribedStatus` 樣板、移除重複 SafeInvoke）— 2026-04-21
-- [x] **B1.6** PlcStatusIndicator → PlcControlBase（完整重寫，精簡 70% 程式碼）— 2026-04-21
-- [x] **B1.7** AlarmViewer → PlcControlBase（移除 `BindToStatus`/`_boundStatus`/`OnScanUpdated`）— 2026-04-21
-- [x] **B1.8** SensorViewer → PlcControlBase（移除手動 ConnectionEstablished 訂閱）— 2026-04-21
-- [x] **B1.9** 編譯驗證：0 errors、0 warnings — 2026-04-21
-
----
-
 ## 當前焦點 / 下一步
 
-> 接手 AI：從這裡開始做事。
+1. **PlcConfirmationHandler 實作**
+   - 負責處理 PLC 觸發的確認對話框（含倒數自動關閉）。
+   - 與 `machinedesign.json` 中的 `Events` 系統對接。
 
-**現在在做：** ✅ **B0–B9 全部完成 + Dashboard 模式功能開發完成**（2026-04-23）
-
-**Dashboard 模式產出（2026-04-23）：**
-- 新增：`ShellShared/Services/DashboardShellStrategy.cs`（精簡生產模式，Wrap() 直接回傳 viewport）
-- 修改：`ShellShared/Services/ShellStrategyFactory.cs`（加 "dashboard" → DashboardShellStrategy）
-- 修改：`ShellShared/Models/DesignMeta.cs`（加 PlcIp / PlcPort / ScanInterval 欄位）
-- 修改：`ShellShared/Models/DesignDocument.cs`（更新 ShellMode 注釋）
-- 修改：`DesignRuntime/MainWindow.xaml(.cs)`（ApplyShellStrategy 加 Dashboard 分支：隱藏開發者面板、SizeToContent、AutoConnect、dashboardPlcHost）
-- 修改：`MachinePageDesigner/ViewModels/MainViewModel.cs`（LayoutModes 加 Dashboard；PlcIp/Port/ScanInterval 屬性；IsDashboardMode；畫布尺寸限制移除）
-- 修改：`MachinePageDesigner/Views/MainWindow.xaml`（Dashboard PLC 欄位，IsDashboardMode 條件顯示）
-- 修改：`scripts/init-shell-app.ps1`（Dashboard scaffold：XAML 無 Shell Chrome + 拖移條 + IP:Port 燈號 + X 關閉；CS 自動連 PLC）
-- 修改：`scripts/new-app.ps1`（ValidateSet 加 Dashboard）
-
-**B7 產出：**
-- 新增：`Stackdose.Tools.MachinePageDesigner/Models/PageDefinition.cs`（id / title / canvasItems[]）
-- 修改：`DesignDocument`（加 `pages[]`，空清單向後相容）
-- 修改：`DesignRuntime.csproj`（直接引用 UI.Templates）
-- 修改：`MainWindow.xaml.cs`（`ApplyShellStrategy` 回傳 bool；Standard+pages[] 走 `SetupMultiPageNavigation`；`BehaviorEngine.Navigator` 完整接線）
-
-**B6 產出：**
-- 新增：`MachinePageDesigner/ViewModels/BehaviorEventViewModel.cs`（包裝 BehaviorEvent POCO，ObservableCollection<BehaviorActionViewModel>，靜態 OnTypes/WhenOps）
-- 新增：`MachinePageDesigner/ViewModels/BehaviorActionViewModel.cs`（包裝 BehaviorAction POCO，ShowTarget/ShowProp/ShowValue 可見性屬性，Summary 顯示字串）
-- 新增：`MachinePageDesigner/Views/EventsPanel.xaml` + `.cs`（3 層 Master-Detail：事件清單 → 詳情 → 動作清單 → 動作詳情，_suppressHandlers 防回饋迴圈）
-- 修改：`MachinePageDesigner/ViewModels/DesignerItemViewModel.cs`（加 Events ObservableCollection + AddEvent/RemoveEvent + BuildEventsCollection 同步）
-- 修改：`MachinePageDesigner/Views/PropertyPanel.xaml`（最外層 ScrollViewer → TabControl，"屬性" 頁 + "事件 ⚡" 頁）
-
-**已完成的 commits：**
-| Commit | 內容 |
-|---|---|
-| `b0e424d` | B1+B2：5 個控件遷移 PlcControlBase、PlcEventContext 事件匯流 |
-| `70b919f` | B3：IShellStrategy + 三策略 + DesignRuntime 接線 |
-| `4a8cc13` | B4：BehaviorEvent/Condition/Action POCO + events[] |
-| `e497a93` | docs：B4 designer-system.md + PROGRESS + devlog |
-| `34d9c1f` | B5：BehaviorEngine + Handlers + SecuredButton click + DesignRuntime 接線 |
-
-**2026-04-23 補齊：**
-- 恢復方向鍵微調（Arrow=1px / Shift+Arrow=10px），從 feature/copilot 補入
-- 移除畫布尺寸 clamp（400–4000 / 300–3000）
-- Dashboard 模式：scaffold 視窗可拖移 + IP:Port 燈號 + X 關閉
-
-**下一步：** 
-1. ✅ **[2026-04-28 完成]** 實機測試：執行產出的 App 並驗證與噴頭控制板的真實連線。
-2. ✅ **[2026-04-28 完成]** 波形檔擺放策略：Scaffold 建立 `Config/waves/` 約定目錄（含 `.gitkeep`）、`WaveformPath` 預設留空、控件偵測缺檔時輸出 Warning log、scaffold 完成後印出擺放提示。
-3. ✅ **[2026-04-28 完成]** 合併分支至 master 或繼續 MachinePageDesigner / DesignRuntime 功能開發。
-
-**待確認下一步方向：** 等用戶決定（MachinePageDesigner 新功能 / DesignRuntime 功能擴充 / 其他）
-
----
-
-## 已知規矩 / 用戶偏好（重構期間）
-
-- ✅ **可以移除舊控件**：不必為 UbiDemo / 測試專案編譯買單
-- ✅ **底層先完成**：B0-B3 都處理底層，B4 之後才做上層
-- 🛑 **每階段 stop-and-report**：除非明確授權連跑
-- 🛑 **不要動 `docs/kb/` 中途版本**：B0 例外（目的就是改它），B1–B7 產出放 `docs/refactor/`，B8 才統一回灌
+2. **ModelE 實機連線驗證**
+   - 測試雙噴頭與四軸狀態在 Dashboard 上的即時反饋。
+   - 驗證 `PrintHead` 初始化邏輯與 M-bit 事件連動。
 
 ---
 
 ## ⚠️ 未解問題
 
-> 記錄已知但暫未處理的問題。解決後移除該行，不要留空區塊。
-
 | 問題 | 所在專案 | 優先度 | 備註 |
 |---|---|---|---|
 | JSON 熱更新（修改 JSON 後自動重新載入畫布） | DesignRuntime | 中 | 重構後尚未實作 |
-| MachinePageDesigner 下一個功能待確認 | MachinePageDesigner | 低 | 等用戶決定方向 |

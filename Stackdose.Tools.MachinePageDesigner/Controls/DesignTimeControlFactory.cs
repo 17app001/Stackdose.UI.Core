@@ -277,6 +277,7 @@ public static class DesignTimeControlFactory
     {
         var title       = def.Props.GetString("title", "Group");
         var headerColor = GroupBoxHeaderColor(def.Props.GetString("headerColor", "Primary"));
+        var showTitle   = def.Props.GetBool("showTitle", true);
 
         // 根容器（無背景 → 不攔截 hit-test，讓 Body 區點擊穿透到 Canvas）
         var root = new Grid();
@@ -294,18 +295,23 @@ public static class DesignTimeControlFactory
         // ── 第二層：互動（只有 Header 有背景 → 只有 Header 可 hit-test）─
         var headerBorder = new Border
         {
-            Background   = new SolidColorBrush(headerColor),
+            Background   = new SolidColorBrush(showTitle ? headerColor : Color.FromArgb(0x44, headerColor.R, headerColor.G, headerColor.B)),
             CornerRadius = new CornerRadius(2, 2, 0, 0),
-            Padding      = new Thickness(10, 4, 10, 4),
-            // Background 非 null → 該區域 hit-testable，點 Header 可選取/拖曳 GroupBox
+            Padding      = showTitle ? new Thickness(10, 4, 10, 4) : new Thickness(0),
+            Height       = showTitle ? double.NaN : 8, // 隱藏標題時，留 8px 作為設計時的拖曳把手
+            VerticalAlignment = VerticalAlignment.Top
         };
-        headerBorder.Child = new TextBlock
+
+        if (showTitle)
         {
-            Text       = string.IsNullOrWhiteSpace(title) ? "Group" : title,
-            Foreground = Brushes.White,
-            FontSize   = 12,
-            FontWeight = FontWeights.SemiBold,
-        };
+            headerBorder.Child = new TextBlock
+            {
+                Text       = string.IsNullOrWhiteSpace(title) ? "Group" : title,
+                Foreground = Brushes.White,
+                FontSize   = 12,
+                FontWeight = FontWeights.SemiBold,
+            };
+        }
 
         var dock = new DockPanel { LastChildFill = true, Background = null };
         DockPanel.SetDock(headerBorder, Dock.Top);

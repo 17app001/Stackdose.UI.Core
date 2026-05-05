@@ -358,6 +358,10 @@ public partial class MainWindow : Window
             SizeToContent = SizeToContent.WidthAndHeight;
             ResizeMode    = ResizeMode.NoResize;
 
+            // 補補強：在某些 OS 環境下 SizeToContent 可能不會立即觸發完美，
+            // 或是視窗裝飾（邊框）計算有落差，我們手動再微調。
+            CompensateWindowSize(doc.CanvasWidth, doc.CanvasHeight);
+
             // 自動連線（若 meta 有設定 IP）
             if (!string.IsNullOrWhiteSpace(doc.Meta.PlcIp))
             {
@@ -661,5 +665,30 @@ public partial class MainWindow : Window
         lblStatus.Foreground = error
             ? System.Windows.Media.Brushes.OrangeRed
             : System.Windows.Media.Brushes.LightGreen;
+    }
+
+    /// <summary>
+    /// 自動補償視窗尺寸。
+    /// 當畫布高度為 H 時，視窗總高度應為 H + 標題列高度 + 邊框高度。
+    /// </summary>
+    private void CompensateWindowSize(double contentWidth, double contentHeight)
+    {
+        if (WindowState == WindowState.Maximized) return;
+
+        // 計算目前的非客戶區（裝飾）尺寸落差
+        double dw = ActualWidth - ((FrameworkElement)Content).ActualWidth;
+        double dh = ActualHeight - ((FrameworkElement)Content).ActualHeight;
+
+        // 如果視窗尚未完全渲染（ActualWidth=0），則使用系統參數預估
+        if (dw <= 0) dw = SystemParameters.ResizeFrameVerticalBorderWidth * 2;
+        if (dh <= 0) dh = SystemParameters.WindowCaptionHeight + SystemParameters.ResizeFrameHorizontalBorderHeight * 2;
+
+        // 加上 Dashboard 模式特有的 custom bar (28px) 或是其他 overhead
+        // 在 DesignRuntime 中，Dashboard 模式會隱藏大部分 UI，但 rootGrid 可能還有 Row 0 (PLC Config) 等雖然 Collapsed 但佔位的影響。
+        // 不過因為我們已經將 Row 2 設為 Auto 且 SizeToContent=WidthAndHeight，WPF 通常會處理好。
+        // 此處作為雙重保險，確保 Width/Height 最小值足夠。
+
+        Width  = contentWidth + dw;
+        Height = contentHeight + dh;
     }
 }

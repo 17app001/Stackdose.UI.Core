@@ -67,6 +67,9 @@ public sealed class DesignerItemViewModel : ObservableObject
     public double GetPropDouble(string key, double fallback = 0)
         => _definition.Props.GetDouble(key, fallback);
 
+    public bool GetPropBool(string key, bool fallback = false)
+        => _definition.Props.GetBool(key, fallback);
+
     public event Action<string, object?, object?>? PropCommitted;
 
     public void SetProp(string key, object? value)
@@ -146,12 +149,19 @@ public sealed class DesignerItemViewModel : ObservableObject
             "tabs" => nameof(TabTitles),
             "headerColor" => nameof(HeaderColor),
             "gridColumns" => nameof(GridColumns),
+            "showTitle" => nameof(ShowTitle),
             _ => null
         };
         if (propName != null) N(propName);
     }
 
     // -- 屬性包裝 -----------------------------------------------------------
+
+    public bool ShowTitle
+    {
+        get => GetPropBool("showTitle", true);
+        set { SetProp("showTitle", value); }
+    }
 
     public string Label
     {

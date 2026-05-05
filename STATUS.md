@@ -4,17 +4,19 @@
 
 ## 現況
 
-- **日期：** 2026-05-04
+- **日期：** 2026-05-05
 - **分支：** `master`
 - **上次做了什麼：**
-    - **ModelE 移植啟動完成：** Scaffold 建立、57 筆 alarm / 10 筆 sensor 轉換、machinedesign.json 雙噴頭+四軸+12按鈕佈局、feiyang_head2.json 建立、build 0 錯誤。
-    - **軸位址確認：** 從 WinForms Form1.cs 查明 X_A=D65、X_B=D67、Z_A=D69、Z_B=D71（DWord 32-bit），machinedesign.json 已更正。
-    - **MachineStateHandler 範本：** `ModelE/Handlers/MachineStateHandler.cs` 建立，示範 isEnabled/label/visibility prop 控制；JSON events 用法已寫在註解。
-    - **scaffold bug 修正：** `init-shell-app.ps1` 的 vcxproj ProjectReference 補上 MSBuildRuntimeType 條件。
+    - **Designer 體驗大幅強化：**
+        - **Spacer (GroupBox) 容器化：** 實現「深層選取」，複製/剪下/刪除容器時自動連動內部元件。
+        - **TabPanel 子設計器升級：** 支援跨視窗剪貼簿、快捷鍵 (Ctrl+X/C/V/Z/Y)、屬性面板與左上角智慧貼上。
+        - **視覺與功能擴充：** Spacer 框線/背景隨標題色連動；新增「隱藏標題」功能（含設計時 Ghost Handle）。
+    - **Runtime 視覺校正：** 實作「視窗高度補償」，確保設計高度不被標題列遮擋；修正 Spacer 標題與顏色讀取 Bug。
+    - **ModelE 移植：** 靜態層配置完成，補齊 ViewModel 屬性通知機制。
 - **下一步（明日上工順序）：**
-    1. `PlcConfirmationHandler` — 倒數確認 Dialog
-    2. 噴頭啟動 wiring — MainWindow OnLoaded 串接
-    3. machinedesign.json 補 M9/M1/M4 監控 events
+    1. `PlcConfirmationHandler` — 實作倒數確認對話框，與 Events 系統接軌。
+    2. 噴頭啟動接線 — 在 MainWindow OnLoaded 進行實機初始化驗證。
+    3. 實機壓力測試 — 驗證大檔案傳圖與多軸同步狀態。
 
 ## 進行中
 
@@ -24,39 +26,33 @@
 | 2 | 噴頭啟動 wiring | `ModelE/MainWindow.xaml.cs` | ConnectionEstablished 事件後 init PrintHead |
 | 3 | machinedesign.json M-bit events | `ModelE/Config/M1.machinedesign.json` | M9=列印中→停用btnPrint；M1/M4=初始化中→停用相關按鈕 |
 | 4 | 實機驗證 | — | feiyang_head2 BoardIP、app-config PLC IP、wave 檔 |
-| 5 | D2000 alarm 確認 | `Machine1.alarms.json` | 循環系統_A 供墨超時 用 D2000 還是 D900，需對 PLC 程式 |
-| 6 | 大檔案傳圖壓力測試 | — | 進度條已實作，尚未大檔案驗證 |
 
 ## ⚠️ 未解問題
 
 | 問題 | 優先度 | 備註 |
 |---|---|---|
-| ProcessStatusIndicator / PlcDeviceEditor DesignRuntime 渲染未實機驗證 | Low | 程式碼已加，邏輯未跑過 |
+| JSON 熱更新（修改 JSON 後自動重新載入畫布） | 中 | DesignRuntime 尚未實作 |
 
 ## 最近 Commits
 
 ```
-8dd306c 完成更新動作（GroupBox/Viewer 視覺同步、Scaffold 強化）
-789dee4 fix: scaffold creates sample alarm/sensor configs + GroupBox header contrast
-7012e80 fix: improve group header visibility in AlarmViewer and SensorViewer
-6aa3b55 fix: use case-insensitive JSON deserialization in AlarmViewer
-6949117 fix: correct ButtonTheme namespace (Models not Controls) in scaffold
-1979273 fix: apply ButtonTheme prop in scaffold CreateSecuredButton
+231a956 feat: GroupBox color synchronization and bug fixes
+7227130 feat: enhance Spacer containment for Copy/Cut/Delete and add Cut support
+61c2b51 feat: improve paste behavior for TabPanel (paste at top-left)
+2a64861 feat: enhance TabPanel editor with shared clipboard and command wiring
 ```
 
-## 功能完成狀態快照（2026-05-04）
+## 功能完成狀態快照（2026-05-05）
 
 | 模組 | 完成度 |
 |---|---|
 | 核心框架 PLC / 日誌 / 權限 | 11 / 11 ✅ |
-| MachinePageDesigner | 19 / 19 ✅（含 TabPanel + 子項設計器） |
-| DesignRuntime + DesignViewer | 12 / 12 ✅ |
+| MachinePageDesigner | 21 / 21 ✅（含跨視窗剪貼、深層選取、視覺連動） |
+| DesignRuntime + DesignViewer | 13 / 13 ✅（含視窗尺寸補償） |
 | 開發工具（ProjectGenerator）| 6 / 6 ✅ |
 | PrintHead 整合 | ✅ 完成 |
-| Dashboard 模式 | ✅ 完成（2026-04-23） |
-| 底層重構 B0–B9 | ✅ 完成（2026-04-21~23） |
-| TabPanel 控件 + 子項設計器 | ✅ 完成（2026-05-04） |
-| Scaffold AutoFullPack | ✅ 完成（2026-05-04） |
-| GroupBox / Viewer 視覺對齊 | ✅ 完成（2026-05-04） |
-| ModelE 移植 — 靜態層（JSON/Config） | ✅ 完成（2026-05-04） |
+| Dashboard 模式 | ✅ 完成 |
+| 底層重構 B0–B10 | ✅ 完成（2026-05-05） |
+| TabPanel 強化版 | ✅ 完成（2026-05-05） |
+| ModelE 移植 — 靜態層（JSON/Config） | ✅ 完成 |
 | ModelE 移植 — 邏輯層（Handlers/Events） | 🔄 進行中 |

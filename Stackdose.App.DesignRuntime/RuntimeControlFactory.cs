@@ -275,6 +275,7 @@ public static class RuntimeControlFactory
     {
         var title       = def.Props.GetString("title", "Group");
         var headerColor = GroupBoxHeaderColor(def.Props.GetString("headerColor", "Primary"));
+        var showTitle   = def.Props.GetBool("showTitle", true);
         var root        = new Grid();
 
         root.Children.Add(new Border
@@ -291,6 +292,7 @@ public static class RuntimeControlFactory
             Background   = new SolidColorBrush(headerColor),
             CornerRadius = new CornerRadius(2, 2, 0, 0),
             Padding      = new Thickness(10, 4, 10, 4),
+            Visibility   = showTitle ? Visibility.Visible : Visibility.Collapsed
         };
         header.Child = new TextBlock
         {

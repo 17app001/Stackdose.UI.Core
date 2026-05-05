@@ -266,7 +266,7 @@ public sealed class MainViewModel : ObservableObject
     public double CanvasPadding
     {
         get => _canvasPadding;
-        set { if (Set(ref _canvasPadding, value)) MarkDirty(); }
+        set { if (Set(ref _canvasPadding, value)) { MarkDirty(); N(nameof(CanvasPadding)); } }
     }
 
     public string[] LayoutModes { get; } = ["SplitRight", "Standard", "SplitBottom", "Dashboard"];
@@ -1019,9 +1019,9 @@ public sealed class MainViewModel : ObservableObject
             else
             {
                 // 沒有左鄰居：檢查是否靠近畫布左邊緣 (Canvas Padding)
-                if (Math.Abs(item.X - gap) < snapThreshold || item.X < gap)
+                if (Math.Abs(item.X - CanvasPadding) < snapThreshold || item.X < CanvasPadding)
                 {
-                    targetX = gap;
+                    targetX = CanvasPadding;
                 }
             }
 
@@ -1040,9 +1040,9 @@ public sealed class MainViewModel : ObservableObject
             else
             {
                 // 沒有上鄰居：檢查是否靠近畫布頂邊緣 (Canvas Padding)
-                if (Math.Abs(item.Y - gap) < snapThreshold || item.Y < gap)
+                if (Math.Abs(item.Y - CanvasPadding) < snapThreshold || item.Y < CanvasPadding)
                 {
-                    targetY = gap;
+                    targetY = CanvasPadding;
                 }
             }
 

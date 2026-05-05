@@ -83,7 +83,7 @@ public sealed class MainViewModel : ObservableObject
         MoveDownCmd        = new RelayCommand(_ => MoveDown(),       _ => Canvas.HasSelectedItem);
         LockToggleCmd      = new RelayCommand(_ => ToggleLock(),     _ => Canvas.HasSelectedItem);
         CopyCmd            = new RelayCommand(_ => CopySelected(),   _ => Canvas.HasSelectedItem);
-        PasteCmd           = new RelayCommand(_ => PasteClipboard(), _ => DesignClipboard.HasData);
+        PasteCmd           = new RelayCommand(p => PasteClipboard(p is string s && bool.TryParse(s, out var b) ? b : (p is bool b2 && b2)), _ => DesignClipboard.HasData);
         SelectAllCmd       = new RelayCommand(_ => SelectAll());
 
         AlignLeftCmd    = new RelayCommand(_ => AlignItems("left"),    _ => Canvas.HasSelectedItem);
@@ -445,14 +445,34 @@ public sealed class MainViewModel : ObservableObject
         StatusText = $"已複製 {DesignClipboard.Count} 個元件";
     }
 
-    private void PasteClipboard()
+    private void PasteClipboard(bool atTopLeft = false)
     {
         if (!DesignClipboard.HasData) return;
         _pasteCount++;
-        double offset = _pasteCount * 20;
 
-        var newVms = DesignClipboard.GetData()
-            .Select(def => new DesignerItemViewModel(def.Clone(offset, offset)))
+        var data = DesignClipboard.GetData();
+        if (data.Count == 0) return;
+
+        // 如果指定貼在左上角 (例如進入 TabPanel 時)，重設所有元件的基準點為 (10, 10)
+        // 但維持多個元件之間的相對位置。
+        double offsetX = 0;
+        double offsetY = 0;
+
+        if (atTopLeft)
+        {
+            double minX = data.Min(i => i.X);
+            double minY = data.Min(i => i.Y);
+            offsetX = 10 - minX;
+            offsetY = 10 - minY;
+        }
+        else
+        {
+            offsetX = _pasteCount * 20;
+            offsetY = _pasteCount * 20;
+        }
+
+        var newVms = data
+            .Select(def => new DesignerItemViewModel(def.Clone(offsetX, offsetY)))
             .ToList();
 
         UndoRedo.Execute(new CanvasAddMultipleItemsCommand(Canvas.CanvasItems, newVms));

@@ -134,8 +134,14 @@
                          Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
                 <TextBlock Text="Scan(ms):" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"
                            Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                <TextBox Text="{Binding ScanInterval, UpdateSourceTrigger=LostFocus}" Width="52"
+                <TextBox Text="{Binding ScanInterval, UpdateSourceTrigger=LostFocus}" Width="52" Margin="0,0,8,0"
                          ToolTip="PLC 掃描間隔 ms（預設 200）"
+                         Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                <TextBlock Text="Gap:" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"
+                           Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                <TextBox Text="{Binding GlobalSpacing, UpdateSourceTrigger=LostFocus}" Width="40"
+                         ToolTip="全域間距（用於自動排列與磁吸）"
                          Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                 <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="16,2,16,2"/>

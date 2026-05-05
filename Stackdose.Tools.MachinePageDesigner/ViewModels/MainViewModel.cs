@@ -34,6 +34,7 @@ public sealed class MainViewModel : ObservableObject
     private bool _showLiveLog;
     private bool _showAlarmViewer;
     private bool _showSensorViewer;
+    private double _globalSpacing = 8.0;
 
     // ── Meta ─────────────────────────────────────────────────────────
     private string _docTitle;
@@ -63,6 +64,7 @@ public sealed class MainViewModel : ObservableObject
         _showLiveLog = _document.Layout.ShowLiveLog;
         _showAlarmViewer = _document.Layout.ShowAlarmViewer;
         _showSensorViewer = _document.Layout.ShowSensorViewer;
+        _globalSpacing = _document.Layout.GlobalSpacing;
         _docTitle     = _document.Meta.Title;
         _machineId    = _document.Meta.MachineId;
         _plcIp        = _document.Meta.PlcIp;
@@ -249,6 +251,12 @@ public sealed class MainViewModel : ObservableObject
     {
         get => _scanInterval;
         set { if (Set(ref _scanInterval, value)) MarkDirty(); }
+    }
+
+    public double GlobalSpacing
+    {
+        get => _globalSpacing;
+        set { if (Set(ref _globalSpacing, value)) MarkDirty(); }
     }
 
     public string[] LayoutModes { get; } = ["SplitRight", "Standard", "SplitBottom", "Dashboard"];
@@ -851,6 +859,7 @@ public sealed class MainViewModel : ObservableObject
         _showLiveLog = _document.Layout.ShowLiveLog;
         _showAlarmViewer = _document.Layout.ShowAlarmViewer;
         _showSensorViewer = _document.Layout.ShowSensorViewer;
+        _globalSpacing = _document.Layout.GlobalSpacing;
         _docTitle     = _document.Meta.Title;
         _machineId    = _document.Meta.MachineId;
         _plcIp        = _document.Meta.PlcIp;
@@ -864,6 +873,7 @@ public sealed class MainViewModel : ObservableObject
         N(nameof(ShowLiveLog));
         N(nameof(ShowAlarmViewer));
         N(nameof(ShowSensorViewer));
+        N(nameof(GlobalSpacing));
         N(nameof(DocTitle));
         N(nameof(MachineId));
         N(nameof(PlcIp));

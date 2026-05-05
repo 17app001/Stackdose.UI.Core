@@ -24,4 +24,7 @@ public sealed class PageLayoutConfig
 
     [JsonPropertyName("showSensorViewer")]
     public bool ShowSensorViewer { get; set; }
+
+    [JsonPropertyName("globalSpacing")]
+    public double GlobalSpacing { get; set; } = 8.0;
 }

@@ -68,10 +68,17 @@ public partial class FreeCanvasItem : UserControl
         {
             if (excluded.Contains(other)) continue;
 
-            // 其他元件的三條 X/Y 軸對齊線
+            // 1. 傳統對齊：其他元件的三條 X/Y 軸對齊線（左/中/右）
             double[] otherX = [other.X, other.X + other.Width  / 2, other.X + other.Width];
             double[] otherY = [other.Y, other.Y + other.Height / 2, other.Y + other.Height];
 
+            // 2. 間距磁吸 (Gap Snap)：
+            // 當被拖曳元件的右邊緣 + GlobalSpacing 接近其他元件的左邊緣時...等
+            double gap = vm.GlobalSpacing;
+            double[] gapX = [other.X - gap, other.X + other.Width + gap];
+            double[] gapY = [other.Y - gap, other.Y + other.Height + gap];
+
+            // 對齊線磁吸
             foreach (var dx in dragX)
                 foreach (var ox in otherX)
                 {
@@ -79,11 +86,27 @@ public partial class FreeCanvasItem : UserControl
                     if (d < bestDX) { bestDX = d; snapAdjX = ox - dx; }
                 }
 
+            // 間距磁吸（僅針對拖曳元件的「邊緣」dx[0]=Left, dx[2]=Right）
+            foreach (var dx in new[] { dragX[0], dragX[2] })
+                foreach (var gx in gapX)
+                {
+                    double d = Math.Abs(dx - gx);
+                    if (d < bestDX) { bestDX = d; snapAdjX = gx - dx; }
+                }
+
+            // Y 軸同理
             foreach (var dy in dragY)
                 foreach (var oy in otherY)
                 {
                     double d = Math.Abs(dy - oy);
                     if (d < bestDY) { bestDY = d; snapAdjY = oy - dy; }
+                }
+
+            foreach (var dy in new[] { dragY[0], dragY[2] })
+                foreach (var gy in gapY)
+                {
+                    double d = Math.Abs(dy - gy);
+                    if (d < bestDY) { bestDY = d; snapAdjY = gy - dy; }
                 }
         }
 

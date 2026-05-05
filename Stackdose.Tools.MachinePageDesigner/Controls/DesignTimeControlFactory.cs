@@ -228,12 +228,15 @@ public static class DesignTimeControlFactory
         var label = p.GetString("label", "Command");
         var theme = p.GetString("theme", "Primary").ToLowerInvariant();
 
+        // 顏色與 SecuredButton.UpdateThemeColors() 的 ButtonTheme enum 完全一致
         var bgColor = theme switch
         {
-            "danger" or "red" => Color.FromRgb(0xEF, 0x53, 0x50),
-            "success" or "green" => Color.FromRgb(0x4E, 0xC9, 0x94),
-            "warning" or "orange" => Color.FromRgb(0xFF, 0xB7, 0x4D),
-            _ => Color.FromRgb(0x6C, 0x8E, 0xEF), // Primary
+            "primary"          => Color.FromRgb(0x21, 0x96, 0xF3), // #2196F3
+            "success"          => Color.FromRgb(0x4C, 0xAF, 0x50), // #4CAF50
+            "warning"          => Color.FromRgb(0xFF, 0x98, 0x00), // #FF9800
+            "error" or "danger"=> Color.FromRgb(0xF4, 0x43, 0x36), // #F44336
+            "info"             => Color.FromRgb(0x00, 0xBC, 0xD4), // #00BCD4
+            _                  => Color.FromRgb(0x60, 0x7D, 0x8B), // #607D8B Normal
         };
 
         var border = new Border

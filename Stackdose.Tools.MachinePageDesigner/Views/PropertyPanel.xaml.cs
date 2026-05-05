@@ -47,6 +47,24 @@ public partial class PropertyPanel : UserControl
             e.Handled = true;
         }
     }
+
+    private void OnArrangeHorizontal(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not DesignerItemViewModel spacer) return;
+        (Window.GetWindow(this)?.DataContext as MainViewModel)?.AutoArrangeGroupBox(spacer, horizontal: true);
+    }
+
+    private void OnArrangeVertical(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not DesignerItemViewModel spacer) return;
+        (Window.GetWindow(this)?.DataContext as MainViewModel)?.AutoArrangeGroupBox(spacer, horizontal: false);
+    }
+
+    private void OnArrangeGrid(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not DesignerItemViewModel spacer) return;
+        (Window.GetWindow(this)?.DataContext as MainViewModel)?.AutoArrangeGroupBoxGrid(spacer, spacer.GridColumns);
+    }
 }
 
 /// <summary>

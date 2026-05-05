@@ -241,6 +241,12 @@ public sealed class DesignerItemViewModel : ObservableObject
         set { var old = GetProp("title", "Group"); if (old == value) return; SetPropDirect("title", value); PropCommitted?.Invoke("title", old, value); }
     }
 
+    public int GridColumns
+    {
+        get => (int)Math.Max(1, GetPropDouble("gridColumns", 2));
+        set { var v = Math.Max(1, value); var old = (int)Math.Max(1, GetPropDouble("gridColumns", 2)); if (old == v) return; _definition.Props["gridColumns"] = (double)v; N(); }
+    }
+
     public double LabelFontSize
     {
         get => GetPropDouble("labelFontSize", 12);
@@ -445,6 +451,6 @@ public sealed class DesignerItemViewModel : ObservableObject
     public static readonly string[] FrameShapes = ["Rectangle", "Circle"];
     public static readonly string[] StringFormats = ["F0", "F1", "F2", "F3"];
     public static readonly string[] DataTypes = ["Word", "DWord", "Float", "Bit"];
-    public static readonly string[] ButtonThemes = ["Primary", "Success", "Danger", "Warning"];
+    public static readonly string[] ButtonThemes = ["Normal", "Primary", "Success", "Warning", "Error", "Info"];
     public static readonly string[] AccessLevels = ["Operator", "Instructor", "Supervisor", "Admin", "SuperAdmin"];
 }

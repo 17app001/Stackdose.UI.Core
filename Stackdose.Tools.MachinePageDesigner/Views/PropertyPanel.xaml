@@ -195,7 +195,43 @@
         <DataTemplate x:Key="SpacerTemplate" DataType="{x:Type vm:DesignerItemViewModel}">
             <StackPanel Margin="0,4">
                 <TextBlock Text="群組標題 (Title)" Style="{StaticResource FieldLabel}" Margin="0,0,0,2"/>
-                <TextBox Text="{Binding GroupTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"/>
+                <TextBox Text="{Binding GroupTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+                <!-- 自動排列 -->
+                <TextBlock Text="自動排列子控件" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>
+                <Grid Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Content="↔ 水平" Padding="0,5"
+                            Click="OnArrangeHorizontal"/>
+                    <Button Grid.Column="2" Content="↕ 垂直" Padding="0,5"
+                            Click="OnArrangeVertical"/>
+                </Grid>
+
+                <!-- 格狀排列 -->
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="52"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="每排欄數"
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource TextMutedBrush}"
+                               FontSize="11"/>
+                    <TextBox Grid.Column="2"
+                             Text="{Binding GridColumns, UpdateSourceTrigger=PropertyChanged}"
+                             PreviewKeyDown="OnNumericKeyDown"
+                             VerticalContentAlignment="Center"/>
+                    <Button Grid.Column="4" Content="⊞ 格狀" Padding="0,5"
+                            Click="OnArrangeGrid"/>
+                </Grid>
+
                 <TextBlock Text="拖曳此 GroupBox 時，中心點在框內的元件會一起移動"
                            Foreground="{StaticResource TextMutedBrush}"
                            FontSize="10" TextWrapping="Wrap" Margin="0,0,0,4"/>

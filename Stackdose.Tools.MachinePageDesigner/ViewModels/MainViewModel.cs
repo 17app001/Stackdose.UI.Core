@@ -640,6 +640,120 @@ public sealed class MainViewModel : ObservableObject
         StatusText = $"{(horizontal ? "水平" : "垂直")}均分 {items.Count} 個元件，間距 {gap:F1}px";
     }
 
+    /// <summary>
+    /// 將 GroupBox (Spacer) 內的子控件自動排列為水平列或垂直行，
+    /// 子控件等寬/等高填滿可用區域，保留 padding 與間距。
+    /// </summary>
+    public void AutoArrangeGroupBox(DesignerItemViewModel spacer, bool horizontal)
+    {
+        const double Padding      = 8.0;
+        const double Gap          = 8.0;
+        const double HeaderHeight = 28.0;
+
+        var groupBounds = new Rect(spacer.X, spacer.Y, spacer.Width, spacer.Height);
+        var children = Canvas.CanvasItems
+            .Where(i => !ReferenceEquals(i, spacer) && !i.IsLocked)
+            .Where(i => groupBounds.Contains(new Point(i.X + i.Width / 2, i.Y + i.Height / 2)))
+            .ToList();
+
+        if (children.Count == 0) return;
+
+        double innerX = spacer.X + Padding;
+        double innerY = spacer.Y + HeaderHeight + Padding;
+        double innerW = spacer.Width  - 2 * Padding;
+        double innerH = spacer.Height - HeaderHeight - 2 * Padding;
+        int n = children.Count;
+
+        var resizes = new List<(DesignerItemViewModel item,
+            double oldX, double oldY, double oldW, double oldH,
+            double newX, double newY, double newW, double newH)>();
+
+        for (int i = 0; i < n; i++)
+        {
+            var child = children[i];
+            double oldX = child.X, oldY = child.Y, oldW = child.Width, oldH = child.Height;
+            double newX, newY, newW, newH;
+
+            if (horizontal)
+            {
+                newW = Math.Max(40, (innerW - (n - 1) * Gap) / n);
+                newH = Math.Max(30, innerH);
+                newX = innerX + i * (newW + Gap);
+                newY = innerY;
+            }
+            else
+            {
+                newW = Math.Max(40, innerW);
+                newH = Math.Max(30, (innerH - (n - 1) * Gap) / n);
+                newX = innerX;
+                newY = innerY + i * (newH + Gap);
+            }
+
+            child.SetPropDirect("x", newX);
+            child.SetPropDirect("y", newY);
+            child.SetPropDirect("width",  newW);
+            child.SetPropDirect("height", newH);
+            resizes.Add((child, oldX, oldY, oldW, oldH, newX, newY, newW, newH));
+        }
+
+        RecordCanvasMultiResize(resizes);
+        StatusText = $"{(horizontal ? "水平" : "垂直")}自動排列 {n} 個元件";
+    }
+
+    /// <summary>
+    /// 將 GroupBox 內子控件以指定欄數排列成格狀（N 欄 × M 列）。
+    /// </summary>
+    public void AutoArrangeGroupBoxGrid(DesignerItemViewModel spacer, int columns)
+    {
+        const double Padding      = 8.0;
+        const double Gap          = 8.0;
+        const double HeaderHeight = 28.0;
+
+        var groupBounds = new Rect(spacer.X, spacer.Y, spacer.Width, spacer.Height);
+        var children = Canvas.CanvasItems
+            .Where(i => !ReferenceEquals(i, spacer) && !i.IsLocked)
+            .Where(i => groupBounds.Contains(new Point(i.X + i.Width / 2, i.Y + i.Height / 2)))
+            .ToList();
+
+        if (children.Count == 0) return;
+
+        int n    = children.Count;
+        int cols = Math.Max(1, Math.Min(columns, n));
+        int rows = (int)Math.Ceiling((double)n / cols);
+
+        double innerX = spacer.X + Padding;
+        double innerY = spacer.Y + HeaderHeight + Padding;
+        double innerW = spacer.Width  - 2 * Padding;
+        double innerH = spacer.Height - HeaderHeight - 2 * Padding;
+
+        double cellW = Math.Max(40, (innerW - (cols - 1) * Gap) / cols);
+        double cellH = Math.Max(30, (innerH - (rows - 1) * Gap) / rows);
+
+        var resizes = new List<(DesignerItemViewModel item,
+            double oldX, double oldY, double oldW, double oldH,
+            double newX, double newY, double newW, double newH)>();
+
+        for (int i = 0; i < n; i++)
+        {
+            var child = children[i];
+            int col = i % cols;
+            int row = i / cols;
+            double newX = innerX + col * (cellW + Gap);
+            double newY = innerY + row * (cellH + Gap);
+
+            resizes.Add((child, child.X, child.Y, child.Width, child.Height,
+                         newX, newY, cellW, cellH));
+
+            child.SetPropDirect("x",      newX);
+            child.SetPropDirect("y",      newY);
+            child.SetPropDirect("width",  cellW);
+            child.SetPropDirect("height", cellH);
+        }
+
+        RecordCanvasMultiResize(resizes);
+        StatusText = $"格狀排列 {n} 個元件（{cols} 欄 × {rows} 列）";
+    }
+
     private void PerformUndo()
     {
         UndoRedo.Undo();

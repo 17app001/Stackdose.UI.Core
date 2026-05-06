@@ -516,17 +516,27 @@ namespace Stackdose.UI.Core.Controls
                 if (!float.TryParse(StartXBox.Text, out float startX)) startX = 0;
                 if (!float.TryParse(CaliMMBox.Text, out float caliMM)) caliMM = 0;
                 int imageDpi = int.TryParse(XDpiText.Text, out int d) && d > 0 ? d : 0;
-                int directionValue = DirectionCombo.SelectedIndex; // 0=雙向 1=左到右 2=右到左
+                int directionIndex = DirectionCombo.SelectedIndex;
+                int directionSdkValue = directionIndex switch
+                {
+                    0 => 3,   // Bidirection
+                    1 => 1,   // LeftToRight
+                    2 => 2,   // RightToLeft
+                    3 => 131, // CarAtRightBidirection
+                    4 => 130, // CarAtRightLeftToRight
+                    5 => 129, // CarAtRightRightToLeft
+                    _ => 3
+                };
 
                 ComplianceContext.LogSystem(
-                    $"[PrintHeadController] Loading image '{_currentImagePath}' (DPI:{imageDpi}, Dir:{directionValue})",
+                    $"[PrintHeadController] Loading image '{_currentImagePath}' (DPI:{imageDpi}, Dir:{directionSdkValue}, StartX:{startX}, CaliMM:{caliMM})",
                     LogLevel.Info,
                     showInUi: true
                 );
 
-                // 1. 方向寫入 PLC（傳圖前先設定）
+                // 1. 方向寫入 PLC（傳圖前先設定，PLC 用 0-5 索引）
                 if (!string.IsNullOrWhiteSpace(DirectionPlcDevice))
-                    await WritePlcAsync($"{DirectionPlcDevice}={directionValue}", $"Direction={directionValue}");
+                    await WritePlcAsync($"{DirectionPlcDevice}={directionIndex}", $"Direction={directionIndex}");
 
                 using var bitmap = new System.Drawing.Bitmap(_currentImagePath);
 
@@ -559,12 +569,12 @@ namespace Stackdose.UI.Core.Controls
 
                     try
                     {
-                        // 2. 每次傳圖前設定 DPI
+                        // 2. 每次傳圖前設定 DPI + 方向（方向傳 SDK enum 值）
                         if (imageDpi > 0)
                         {
-                            var (cfgOk, cfgMsg) = await kvp.Value.ConfigurePrintModeAsync(imageDpi);
+                            var (cfgOk, cfgMsg) = await kvp.Value.ConfigurePrintModeAsync(imageDpi, directionSdkValue);
                             ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {kvp.Key}: ConfigureDPI({imageDpi}) → {(cfgOk ? "OK" : cfgMsg)}",
+                                $"[PrintHeadController] {kvp.Key}: ConfigureMode(DPI={imageDpi},Dir={directionSdkValue}) → {(cfgOk ? "OK" : cfgMsg)}",
                                 cfgOk ? LogLevel.Info : LogLevel.Warning,
                                 showInUi: !cfgOk
                             );
@@ -576,7 +586,7 @@ namespace Stackdose.UI.Core.Controls
                         {
                             successCount++;
                             ComplianceContext.LogSystem(
-                                $"[PrintHeadController] {kvp.Key}: Image transferred successfully",
+                                $"[PrintHeadController] {kvp.Key}: Image transferred (StartX={startX}, CaliMM={caliMM})",
                                 LogLevel.Success,
                                 showInUi: true
                             );

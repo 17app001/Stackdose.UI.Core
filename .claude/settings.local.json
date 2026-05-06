@@ -68,7 +68,8 @@
       "PowerShell(Get-ChildItem -Path \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\\\\Stackdose.Tools.MachinePageDesigner\" -Recurse | Where-Object { $_.Extension -eq \".cs\" -or $_.Extension -eq \".xaml\" } | Select-Object FullName)",
       "PowerShell(Get-ChildItem \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\\\\Stackdose.Tools.MachinePageDesigner\" -Recurse -Force | ForEach-Object { $_.FullName })",
       "Bash(Find \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\" -type f -name \"*.xaml\")",
-      "Bash(Find \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\" -type f -name \"*.cs\")"
+      "Bash(Find \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\" -type f -name \"*.cs\")",
+      "PowerShell(Get-ChildItem \"D:\\\\工作區\\\\Project\\\\Sdk\\\\FeiyangWrapper\" -Recurse -Depth 3 | Where-Object { $_.Name -match '\\\\.\\(vcxproj|csproj|dll|sln\\)$' } | Select-Object FullName)"
     ]
   }
 }

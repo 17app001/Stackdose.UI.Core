@@ -4,42 +4,43 @@
 
 ## 現況
 
-- **日期：** 2026-05-05 (下班前更新)
-- **分支：** `master`
+- **日期：** 2026-05-06
+- **分支：** `master`（UI.Core + Platform 皆已推送至 origin）
 - **上次做了什麼：**
-    - **Designer 體驗大幅強化：**
-        - **Spacer (GroupBox) 容器化：** 實現「深層選取」，複製/剪下/刪除容器時自動連動內部元件。
-        - **TabPanel 子設計器升級：** 支援跨視窗剪貼簿、快捷鍵 (Ctrl+X/C/V/Z/Y)、屬性面板與左上角智慧貼上。
-        - **間距與校正系統：** 實作全域 Gap 與 Canvas Padding 設定；新增「✨ Precision Gap」一鍵精密校準與「水平/垂直堆疊」工具。
-        - **視覺優化：** Spacer 框線/背景隨標題色連動；新增「隱藏標題」功能。
-    - **Runtime 視覺校正：** 實作「視窗高度補償」，解決標題列擋住畫布底部的 WYSIWYG 問題。
+    - **PrintHeadController UI 重排：** 讀取/載入/取消三按鈕移至第二排（Grid `*` 等寬），`已連線` 狀態 Badge 移至 Header 右側；左側面板移除舊的圖片操作區塊。
+    - **FeiyangWrapper 整合：** 將 WinForms 版 FeiyangWrapper.vcxproj 複製至 `D:\工作區\Project\Sdk\FeiyangWrapper\`；更新 `Stackdose.PrintHead.csproj` 為混合式（VS ProjectReference 建置順序 + DLL Reference 型別解析），修正 `dotnet build` 與 VS 兩種建置環境皆可通過的問題。
+    - **Platform waveform 路徑：** `FeiyangPrintHead.cs` 新增 `ResolveWaveformPath()` 多路徑搜尋（Resources/ / Config/waves/ / Config/）。
+    - **兩個 Repo 皆 commit + push（Platform: develop→master merge 完成）。**
 - **下一步（明日上工順序）：**
-    1. **Canvas Padding 修正** — 解決 AlarmViewer 與 SensorViewer 在精密校正時不理會 Padding 的問題。
-    2. **PlcConfirmationHandler** — 實作倒數確認對話框，與 Events 系統接軌。
-    3. **ModelE 實機驗證** — 噴頭啟動接線與 M-bit 事件連動測試。
+    1. **ModelE 實機驗證** — 噴頭啟動接線與 M-bit 事件連動測試（direction + D512 flag 待實機確認）。
+    2. **D512 PLC flag** — ModelE 傳圖前寫 D512 層旗標，確認新控件是否需要補上。
+    3. **JSON 熱更新** — DesignRuntime 修改 JSON 後自動重新載入畫布。
 
 ## 進行中
 
 | # | 任務 | 檔案 | 備註 |
 |---|---|---|---|
-| 1 | Canvas Padding 修正 | `MainViewModel.cs` | Alarm/Sensor 鄰居偵測算法微調 |
-| 2 | PlcConfirmationHandler | `ModelE/Handlers/PlcConfirmationHandler.cs` | 對應 WinForms PlcMessageForm |
-| 3 | 實機驗證與 wiring | — | 噴頭 init 與 Dashboard 反饋 |
+| 1 | 實機驗證與 wiring | — | 噴頭 init 與 Dashboard 反饋、direction + D512 flag 確認 |
+| 2 | D512 PLC flag | `PrintHeadController.xaml.cs` | 待實機確認是否需要補 |
+| 3 | JSON 熱更新 | `DesignRuntime` | 修改 JSON 後自動重載畫布 |
 
 ## ⚠️ 未解問題
 
 | 問題 | 優先度 | 備註 |
 |---|---|---|
+| **D512 PLC flag 缺失** | 中 | ModelE 傳圖前寫 D512 作為層旗標，待實機確認是否需要補 |
 | JSON 熱更新（修改 JSON 後自動重新載入畫布） | 中 | DesignRuntime 尚未實作 |
-| **Canvas Padding 對特定元件無效** | 高 | AlarmViewer/SensorViewer 需明天修正 |
 
 ## 最近 Commits
 
 ```
-9456591 feat: implement Global Spacing (Gap) system and Gap Snapping
-9539006 feat: add dedicated Canvas Padding setting and upgrade Precision Gap
-3f4e782 feat: Spacer 'Hide Title' feature and final designer refinements
+feed0c8 chore: update FeiyangWrapper GUID and add MyPrintApp to solution  [2026-05-06]
+4fb3519 refactor: SystemClock 搬移、Precision Gap 容器感知、PrintHeadController UI 重排  [2026-05-06]
+338acdb merge: Platform develop→master (FeiyangWrapper ProjectReference + waveform fix)  [2026-05-06]
+b7a07f8 docs: update STATUS.md and PROGRESS.md before session end  [2026-05-05]
 ```
+
+> 今日未 commit：`PrintHeadController` direction gap fix（`IPrintHead` + `FeiyangPrintHead` + XAML 6 選項）
 
 ## 功能完成狀態快照
 

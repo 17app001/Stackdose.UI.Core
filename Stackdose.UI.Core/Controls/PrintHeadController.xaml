@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" d:DesignWidth="700" MinHeight="200">
+             mc:Ignorable="d" d:DesignWidth="550" MinHeight="200">
 
 	<UserControl.Resources>
 		<!-- Modern button style -->
@@ -349,6 +349,9 @@
 							<ComboBoxItem Content="雙向列印"/>
 							<ComboBoxItem Content="左到右"/>
 							<ComboBoxItem Content="右到左"/>
+							<ComboBoxItem Content="CarAtRight 雙向"/>
+							<ComboBoxItem Content="CarAtRight 左到右"/>
+							<ComboBoxItem Content="CarAtRight 右到左"/>
 						</ComboBox>
 
 						<!-- 列印參數 -->

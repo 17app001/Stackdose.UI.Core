@@ -232,11 +232,12 @@ public partial class App : Application
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="$AppName"
-        WindowStyle="None" ResizeMode="NoResize" SizeToContent="WidthAndHeight">
+        WindowStyle="None" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="28"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Border Grid.Row="0" Background="#12121E" MouseLeftButtonDown="OnBarDrag">
             <Grid>
@@ -254,13 +255,19 @@ public partial class App : Application
                     <Button Content="_" Width="28" Height="28"
                             Background="Transparent" Foreground="#777788" BorderThickness="0"
                             FontSize="12" Cursor="Hand" Click="OnMinimizeClick"/>
+                    <Button x:Name="MaximizeButton" Content="&#x25A1;" Width="28" Height="28"
+                            Background="Transparent" Foreground="#777788" BorderThickness="0"
+                            FontSize="12" Cursor="Hand" Click="OnMaximizeClick"
+                            ToolTip="適螢幕顯示"/>
                     <Button Content="X" Width="28" Height="28"
                             Background="Transparent" Foreground="#777788" BorderThickness="0"
                             FontSize="12" Cursor="Hand" Click="OnCloseClick"/>
                 </StackPanel>
             </Grid>
         </Border>
-        <ContentPresenter x:Name="DashboardHost" Grid.Row="1" />
+        <Viewbox Grid.Row="1" Stretch="Uniform">
+            <ContentPresenter x:Name="DashboardHost"/>
+        </Viewbox>
         <Border x:Name="dashboardPlcHost" Grid.Row="1"
                 Width="1" Height="1" Opacity="0" IsHitTestVisible="False"
                 HorizontalAlignment="Left" VerticalAlignment="Top"/>
@@ -316,6 +323,8 @@ public partial class MainWindow : Window
 {
     private readonly BehaviorEngine _behaviorEngine;
     private PlcStatus? _plcStatus;
+    private double _designWidth;
+    private double _designHeight;
 
     public MainWindow()
     {
@@ -325,8 +334,9 @@ public partial class MainWindow : Window
             AuditLogger = msg => ComplianceContext.LogSystem(msg, LogLevel.Info),
         };
 
-        Closing += (_, _) => { _behaviorEngine.Dispose(); LiveRecordContext.Stop(); SqliteLogger.Shutdown(); };
-        Loaded += OnLoaded;
+        Closing      += (_, _) => { _behaviorEngine.Dispose(); LiveRecordContext.Stop(); SqliteLogger.Shutdown(); };
+        Loaded       += OnLoaded;
+        StateChanged += OnWindowStateChanged;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -385,12 +395,38 @@ public partial class MainWindow : Window
         RenderDocument(DesignFileService.Load(designFile));
     }
 
-    private void OnBarDrag(object sender, System.Windows.Input.MouseButtonEventArgs e) => DragMove();
+    private void OnBarDrag(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (WindowState == WindowState.Maximized) return;
+        DragMove();
+    }
+
     private void OnMinimizeClick(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
     private void OnCloseClick(object sender, RoutedEventArgs e) => Close();
 
+    private void OnMaximizeClick(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+    }
+
+    private void OnWindowStateChanged(object? sender, EventArgs e)
+    {
+        if (WindowState == WindowState.Normal)
+        {
+            CompensateWindowSize(_designWidth, _designHeight);
+            MaximizeButton.Content = "□"; // □
+        }
+        else if (WindowState == WindowState.Maximized)
+        {
+            MaximizeButton.Content = "❐"; // ❐
+        }
+    }
+
     private void RenderDocument(DesignDocument doc)
     {
+        _designWidth  = doc.CanvasWidth;
+        _designHeight = doc.CanvasHeight;
+
         var canvas = new Canvas
         {
             Width        = doc.CanvasWidth,
@@ -427,14 +463,9 @@ public partial class MainWindow : Window
     private void CompensateWindowSize(double contentWidth, double contentHeight)
     {
         if (WindowState == WindowState.Maximized) return;
-        double dw = ActualWidth - ((FrameworkElement)Content).ActualWidth;
-        double dh = ActualHeight - ((FrameworkElement)Content).ActualHeight;
-        if (dw <= 0) dw = SystemParameters.ResizeFrameVerticalBorderWidth * 2;
-        if (dh <= 0) dh = SystemParameters.WindowCaptionHeight + SystemParameters.ResizeFrameHorizontalBorderHeight * 2;
-        
-        // 額外加上自定義標題列 (28px) 的高度落差
-        Width  = contentWidth + dw;
-        Height = contentHeight + dh + 28;
+        // WindowStyle="None" 無系統邊框，直接設定尺寸（28px = 自定義標題列高度）
+        Width  = contentWidth;
+        Height = contentHeight + 28;
     }
 
     private void RegisterCustomHandlers()

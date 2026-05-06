@@ -30,4 +30,10 @@ public sealed class PageLayoutConfig
 
     [JsonPropertyName("canvasPadding")]
     public double CanvasPadding { get; set; } = 20.0;
+
+    /// <summary>
+    /// UI 主題：Dark (默認) | Light
+    /// </summary>
+    [JsonPropertyName("theme")]
+    public string Theme { get; set; } = "Dark";
 }

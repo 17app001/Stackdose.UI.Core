@@ -36,6 +36,7 @@ public sealed class MainViewModel : ObservableObject
     private bool _showSensorViewer;
     private double _globalSpacing = 8.0;
     private double _canvasPadding = 20.0;
+    private string _uiTheme = "Dark";
 
     // ── Meta ─────────────────────────────────────────────────────────
     private string _docTitle;
@@ -66,6 +67,9 @@ public sealed class MainViewModel : ObservableObject
         _showAlarmViewer = _document.Layout.ShowAlarmViewer;
         _showSensorViewer = _document.Layout.ShowSensorViewer;
         _globalSpacing = _document.Layout.GlobalSpacing;
+        _canvasPadding = _document.Layout.CanvasPadding;
+        _uiTheme = _document.Layout.Theme ?? "Dark";
+
         _docTitle     = _document.Meta.Title;
         _machineId    = _document.Meta.MachineId;
         _plcIp        = _document.Meta.PlcIp;
@@ -102,6 +106,8 @@ public sealed class MainViewModel : ObservableObject
         StackHorizCmd      = new RelayCommand(_ => StackItems(horizontal: true),  _ => Canvas.HasSelectedItem);
         StackVertCmd       = new RelayCommand(_ => StackItems(horizontal: false), _ => Canvas.HasSelectedItem);
         TidyUpCmd          = new RelayCommand(_ => SurgicalTidyUp());
+        
+        ToggleThemeCmd     = new RelayCommand(_ => ToggleUITheme());
 
         // UndoRedo 狀態變更時更新 dirty 並強制刷新 Command enable 狀態
         UndoRedo.StateChanged += () =>
@@ -129,9 +135,39 @@ public sealed class MainViewModel : ObservableObject
         };
 
         Canvas.LoadFromDocument(_document);
+        ApplyThemeToUI();
     }
 
     // ── Properties ───────────────────────────────────────────────────
+
+    public ICommand ToggleThemeCmd { get; }
+
+    public string UITheme
+    {
+        get => _uiTheme;
+        set 
+        { 
+            if (Set(ref _uiTheme, value))
+            {
+                ApplyThemeToUI();
+                MarkDirty();
+            }
+        }
+    }
+
+    private void ToggleUITheme()
+    {
+        UITheme = UITheme == "Dark" ? "Light" : "Dark";
+    }
+
+    private void ApplyThemeToUI()
+    {
+        if (Application.Current == null) return;
+        var theme = UITheme == "Light" 
+            ? Stackdose.UI.Core.Services.ThemeManager.ThemeType.Light 
+            : Stackdose.UI.Core.Services.ThemeManager.ThemeType.Dark;
+        Stackdose.UI.Core.Services.ThemeManager.ApplyTheme(Application.Current, theme);
+    }
 
     public string? CurrentFilePath
     {
@@ -910,6 +946,9 @@ public sealed class MainViewModel : ObservableObject
         _showAlarmViewer = _document.Layout.ShowAlarmViewer;
         _showSensorViewer = _document.Layout.ShowSensorViewer;
         _globalSpacing = _document.Layout.GlobalSpacing;
+        _canvasPadding = _document.Layout.CanvasPadding;
+        UITheme        = _document.Layout.Theme ?? "Dark";
+
         _docTitle     = _document.Meta.Title;
         _machineId    = _document.Meta.MachineId;
         _plcIp        = _document.Meta.PlcIp;
@@ -924,6 +963,8 @@ public sealed class MainViewModel : ObservableObject
         N(nameof(ShowAlarmViewer));
         N(nameof(ShowSensorViewer));
         N(nameof(GlobalSpacing));
+        N(nameof(CanvasPadding));
+        N(nameof(UITheme));
         N(nameof(DocTitle));
         N(nameof(MachineId));
         N(nameof(PlcIp));
@@ -931,6 +972,7 @@ public sealed class MainViewModel : ObservableObject
         N(nameof(ScanInterval));
 
         Canvas.LoadFromDocument(_document);
+        ApplyThemeToUI();
         // 通知代理屬性更新（Canvas.LoadFromDocument 直接設值，MainVM 需手動通知）
         N(nameof(CanvasWidth));
         N(nameof(CanvasHeight));
@@ -951,6 +993,8 @@ public sealed class MainViewModel : ObservableObject
         _document.Layout.ShowAlarmViewer = ShowAlarmViewer;
         _document.Layout.ShowSensorViewer = ShowSensorViewer;
         _document.Layout.GlobalSpacing = GlobalSpacing;
+        _document.Layout.CanvasPadding = CanvasPadding;
+        _document.Layout.Theme         = UITheme;
 
         _document.CanvasItems = Canvas.ExportCanvasItems();
         _document.CanvasWidth = Canvas.CanvasWidth;

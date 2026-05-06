@@ -242,6 +242,15 @@ public partial class MainWindow : Window
 
     private void RenderDocument(DesignDocument doc, string filePath)
     {
+        // 套用主題
+        if (doc.Layout != null)
+        {
+            var theme = doc.Layout.Theme == "Light"
+                ? Stackdose.UI.Core.Services.ThemeManager.ThemeType.Light
+                : Stackdose.UI.Core.Services.ThemeManager.ThemeType.Dark;
+            Stackdose.UI.Core.Services.ThemeManager.ApplyTheme(Application.Current, theme);
+        }
+
         // 清除舊有元件
         runtimeCanvas.Children.Clear();
 

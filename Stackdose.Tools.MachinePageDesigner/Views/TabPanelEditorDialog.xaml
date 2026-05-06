@@ -8,7 +8,7 @@
         MinWidth="800" MinHeight="500"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
-        Background="{StaticResource BgBrush}">
+        Background="{DynamicResource Surface.Bg.Page}">
 
     <Window.InputBindings>
         <KeyBinding Command="{Binding UndoCmd}" Gesture="Ctrl+Z"/>
@@ -23,14 +23,14 @@
     <DockPanel>
         <!-- ── Top: tab header strip ──────────────────────────────────── -->
         <Border DockPanel.Dock="Top"
-                Background="{StaticResource PanelBrush}"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{DynamicResource Surface.Bg.Panel}"
+                BorderBrush="{DynamicResource Surface.Border.Default}"
                 BorderThickness="0,0,0,1"
                 Padding="8,4">
             <DockPanel>
                 <TextBlock DockPanel.Dock="Left"
                            Text="Tab："
-                           Foreground="{StaticResource TextMutedBrush}"
+                           Foreground="{DynamicResource Text.Tertiary}"
                            VerticalAlignment="Center"
                            Margin="0,0,8,0"
                            FontSize="12"/>
@@ -42,14 +42,14 @@
 
         <!-- ── Bottom: Save / Cancel ──────────────────────────────────── -->
         <Border DockPanel.Dock="Bottom"
-                Background="{StaticResource PanelBrush}"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{DynamicResource Surface.Bg.Panel}"
+                BorderBrush="{DynamicResource Surface.Border.Default}"
                 BorderThickness="0,1,0,0"
                 Padding="12,6">
             <DockPanel>
                 <!-- 狀態列訊息 -->
                 <TextBlock Text="{Binding StatusText}"
-                           Foreground="{StaticResource TextMutedBrush}"
+                           Foreground="{DynamicResource Text.Tertiary}"
                            VerticalAlignment="Center"
                            FontSize="11"
                            Margin="8,0,0,0"/>
@@ -79,8 +79,8 @@
         <!-- ── Left: Toolbox ──────────────────────────────────────────── -->
         <Border DockPanel.Dock="Left"
                 Width="170"
-                Background="{StaticResource SurfaceBrush}"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{DynamicResource Surface.Bg.Control}"
+                BorderBrush="{DynamicResource Surface.Border.Default}"
                 BorderThickness="0,0,1,0">
             <local:ToolboxPanel x:Name="ToolboxPanelCtrl"/>
         </Border>
@@ -88,8 +88,8 @@
         <!-- ── Right: Property Panel ───────────────────────────────────── -->
         <Border DockPanel.Dock="Right"
                 Width="260"
-                Background="{StaticResource SurfaceBrush}"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{DynamicResource Surface.Bg.Control}"
+                BorderBrush="{DynamicResource Surface.Border.Default}"
                 BorderThickness="1,0,0,0">
             <local:PropertyPanel x:Name="PropertyPanelCtrl"
                                  DataContext="{Binding Canvas.SelectedItem}"/>

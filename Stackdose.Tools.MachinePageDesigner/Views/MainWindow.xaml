@@ -12,6 +12,7 @@
     </Window.DataContext>
 
     <Window.Resources>
+        <local:ThemeToBoolConverter x:Key="ThemeToBoolConverter"/>
     </Window.Resources>
 
     <Window.InputBindings>
@@ -37,8 +38,8 @@
 
         <!-- Toolbar -->
         <Border Grid.Row="0"
-                Background="{StaticResource PanelBrush}"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{DynamicResource Surface.Bg.Panel}"
+                BorderBrush="{DynamicResource Surface.Border.Default}"
                 BorderThickness="0,0,0,1"
                 Padding="8,4">
             <WrapPanel>
@@ -47,12 +48,12 @@
                 <Button Content="&#x25BC; Save"    Command="{Binding SaveCmd}"    Style="{StaticResource ToolbarButton}" Margin="0,0,4,0"/>
                 <Button Content="&#x25BD; Save As" Command="{Binding SaveAsCmd}"  Style="{StaticResource ToolbarButton}" Margin="0,0,16,0"/>
 
-                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
+                <Separator Style="{x:Null}" Width="1" Background="{DynamicResource Surface.Border.Default}" Margin="0,2,16,2"/>
 
                 <Button Content="&#x21B6; Undo"    Command="{Binding UndoCmd}"    Style="{StaticResource ToolbarButton}" Margin="0,0,4,0"/>
                 <Button Content="&#x21B7; Redo"    Command="{Binding RedoCmd}"    Style="{StaticResource ToolbarButton}" Margin="0,0,16,0"/>
 
-                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
+                <Separator Style="{x:Null}" Width="1" Background="{DynamicResource Surface.Border.Default}" Margin="0,2,16,2"/>
 
                 <Button Content="&#x2716; Delete"  Command="{Binding DeleteSelectedCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,4,0"/>
                 <Button Content="&#x2702; Cut"    Command="{Binding CutCmd}"            Style="{StaticResource ToolbarButton}" Margin="0,0,4,0" ToolTip="剪下選取元件（Ctrl+X）"/>
@@ -60,7 +61,7 @@
                 <Button Content="&#x2399; Paste"   Command="{Binding PasteCmd}"         Style="{StaticResource ToolbarButton}" Margin="0,0,4,0" ToolTip="貼上（Ctrl+V）"/>
                 <Button Content="&#x2630; All"     Command="{Binding SelectAllCmd}"     Style="{StaticResource ToolbarButton}" Margin="0,0,16,0" ToolTip="全選（Ctrl+A）"/>
 
-                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
+                <Separator Style="{x:Null}" Width="1" Background="{DynamicResource Surface.Border.Default}" Margin="0,2,16,2"/>
 
                 <!-- Z-Order -->
                 <Button Content="&#x25B3;&#x25B3;" Command="{Binding BringToFrontCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,2,0" ToolTip="移至最前（Bring to Front）"/>
@@ -68,12 +69,12 @@
                 <Button Content="&#x25BD;"  Command="{Binding MoveDownCmd}"     Style="{StaticResource ToolbarButton}" Margin="0,0,2,0" ToolTip="下移一層（Move Down）"/>
                 <Button Content="&#x25BD;&#x25BD;" Command="{Binding SendToBackCmd}"  Style="{StaticResource ToolbarButton}" Margin="0,0,16,0" ToolTip="移至最後（Send to Back）"/>
 
-                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
+                <Separator Style="{x:Null}" Width="1" Background="{DynamicResource Surface.Border.Default}" Margin="0,2,16,2"/>
 
                 <!-- Lock -->
                 <Button Content="&#x1F512; Lock" Command="{Binding LockToggleCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,4,0" ToolTip="鎖定/解鎖選取元件"/>
 
-                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="4,2,4,2"/>
+                <Separator Style="{x:Null}" Width="1" Background="{DynamicResource Surface.Border.Default}" Margin="4,2,4,2"/>
 
                 <!-- Align -->
                 <Button Content="&#x2594;&#x258C;" Command="{Binding AlignLeftCmd}"    Style="{StaticResource ToolbarButton}" Margin="0,0,2,0" ToolTip="靠左對齊 (Align Left)"/>
@@ -83,13 +84,13 @@
                 <Button Content="&#x2550;"         Command="{Binding AlignCenterVCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,2,0" ToolTip="垂直置中 (Center Vertically)"/>
                 <Button Content="&#x2015;&#x2581;" Command="{Binding AlignBottomCmd}"  Style="{StaticResource ToolbarButton}" Margin="0,0,4,0" ToolTip="靠下對齊 (Align Bottom)"/>
 
-                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="4,2,4,2"/>
+                <Separator Style="{x:Null}" Width="1" Background="{DynamicResource Surface.Border.Default}" Margin="4,2,4,2"/>
 
                 <!-- Distribute -->
                 <Button Content="&#x2194; =" Command="{Binding DistributeHorizCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,2,0" ToolTip="水平平均間距 (Distribute Horizontally，需 3 個以上)"/>
                 <Button Content="&#x2195; =" Command="{Binding DistributeVertCmd}"  Style="{StaticResource ToolbarButton}" Margin="0,0,16,0" ToolTip="垂直平均間距 (Distribute Vertically，需 3 個以上)"/>
 
-                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
+                <Separator Style="{x:Null}" Width="1" Background="{DynamicResource Surface.Border.Default}" Margin="0,2,16,2"/>
 
                 <!-- Snap to Grid -->
                 <ToggleButton Content="&#x22EF; Snap"
@@ -98,7 +99,7 @@
                               Margin="0,0,16,0"
                               ToolTip="Snap to Grid（吸附格線，10px）"/>
 
-                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
+                <Separator Style="{x:Null}" Width="1" Background="{DynamicResource Surface.Border.Default}" Margin="0,2,16,2"/>
 
                 <TextBlock Text="Canvas:" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"/>
                 <TextBox Text="{Binding CanvasWidth, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
@@ -107,7 +108,7 @@
                 <TextBox Text="{Binding CanvasHeight, UpdateSourceTrigger=LostFocus, StringFormat=F0}"
                          Width="56" Margin="0,0,16,0" ToolTip="畫布高度（px）"/>
 
-                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"/>
+                <Separator Style="{x:Null}" Width="1" Background="{DynamicResource Surface.Border.Default}" Margin="0,2,16,2"/>
 
                 <TextBlock Text="Layout:" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"/>
                 <ComboBox ItemsSource="{Binding LayoutModes}" SelectedItem="{Binding LayoutMode}" Width="120" Margin="0,0,12,0"/>
@@ -119,7 +120,7 @@
                 <TextBox Text="{Binding MachineId, UpdateSourceTrigger=PropertyChanged}" Width="80" Margin="0,0,12,0"/>
 
                 <!-- Dashboard 模式專屬：PLC 連線設定 -->
-                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="0,2,16,2"
+                <Separator Style="{x:Null}" Width="1" Background="{DynamicResource Surface.Border.Default}" Margin="0,2,16,2"
                            Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
                 <TextBlock Text="PLC IP:" Style="{StaticResource FieldLabel}" Margin="0,0,4,0"
                            Visibility="{Binding IsDashboardMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
@@ -145,22 +146,30 @@
                 <TextBox Text="{Binding CanvasPadding, UpdateSourceTrigger=PropertyChanged}" Width="40"
                          ToolTip="內容與畫布邊界的間距"/>
 
-                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="8,2,8,2"/>
+                <Separator Style="{x:Null}" Width="1" Background="{DynamicResource Surface.Border.Default}" Margin="8,2,8,2"/>
 
                 <!-- Stack Tools -->
                 <Button Content="&#x21C9;" Command="{Binding StackHorizCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,2,0" ToolTip="水平堆疊 (依 Gap 間距排列選取元件)"/>
                 <Button Content="&#x21CA;" Command="{Binding StackVertCmd}"  Style="{StaticResource ToolbarButton}" Margin="0,0,4,0" ToolTip="垂直堆疊 (依 Gap 間距排列選取元件)"/>
                 <Button Content="✨ Precision Gap" Command="{Binding TidyUpCmd}" Style="{StaticResource ToolbarButton}" Margin="0,0,16,0" ToolTip="精密間距校正：將鄰近元件吸附至精準 Gap"/>
 
-                <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderBrush}" Margin="16,2,16,2"/>
+                <Separator Style="{x:Null}" Width="1" Background="{DynamicResource Surface.Border.Default}" Margin="16,2,16,2"/>
 
-                <ToggleButton x:Name="btnThemeToggle"
-                              Content="☀ Light"
-                              Click="OnThemeToggleClick"
-                              Style="{StaticResource CanvasModeToggle}"
+                <ToggleButton IsChecked="{Binding UITheme, Converter={StaticResource ThemeToBoolConverter}}"
                               Padding="10,5"
                               Cursor="Hand" FontSize="11"
-                              ToolTip="切換 Dark / Light 預覽主題"/>
+                              ToolTip="切換 Dark / Light 預覽主題">
+                    <ToggleButton.Style>
+                        <Style TargetType="ToggleButton" BasedOn="{StaticResource CanvasModeToggle}">
+                            <Setter Property="Content" Value="☀ Light" />
+                            <Style.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="Content" Value="🌙 Dark" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ToggleButton.Style>
+                </ToggleButton>
             </WrapPanel>
         </Border>
 
@@ -175,21 +184,21 @@
             </Grid.ColumnDefinitions>
 
             <local:ToolboxPanel Grid.Column="0" DataContext="{Binding Toolbox}"/>
-            <GridSplitter Grid.Column="1" Width="3" Background="{StaticResource BorderBrush}" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+            <GridSplitter Grid.Column="1" Width="3" Background="{DynamicResource Surface.Border.Default}" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
 
             <local:FreeCanvas Grid.Column="2"
                               DataContext="{Binding Canvas}"
                               Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"/>
 
-            <GridSplitter Grid.Column="3" Width="3" Background="{StaticResource BorderBrush}" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+            <GridSplitter Grid.Column="3" Width="3" Background="{DynamicResource Surface.Border.Default}" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
             <local:PropertyPanel Grid.Column="4" DataContext="{Binding Canvas.SelectedItem}"
                                  Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"/>
         </Grid>
 
         <!-- StatusBar -->
         <Border Grid.Row="2"
-                Background="{StaticResource PanelBrush}"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{DynamicResource Surface.Bg.Panel}"
+                BorderBrush="{DynamicResource Surface.Border.Default}"
                 BorderThickness="0,1,0,0"
                 Padding="10,4">
             <Grid>

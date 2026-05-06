@@ -138,7 +138,7 @@
                 <TextBlock Grid.Column="0" 
                            Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                            Foreground="{DynamicResource Sensor.Text.Title}" 
-                           FontSize="16" 
+                           FontSize="13" 
                            FontWeight="Bold"
                            FontFamily="Microsoft JhengHei"
                            VerticalAlignment="Center"/>

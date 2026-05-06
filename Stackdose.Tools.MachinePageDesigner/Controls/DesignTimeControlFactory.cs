@@ -5,7 +5,6 @@ using System.Windows.Media;
 using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Models;
-using Stackdose.UI.Templates.Controls;
 
 namespace Stackdose.Tools.MachinePageDesigner.Controls;
 
@@ -17,7 +16,8 @@ public static class DesignTimeControlFactory
 {
     public static UIElement Create(DesignerItemDefinition def)
     {
-        return def.Type switch
+        string type = def.Type?.Trim() ?? "";
+        return type switch
         {
             "PlcLabel"               => CreatePlcLabel(def),
             "PlcText"                => CreatePlcText(def),
@@ -36,7 +36,7 @@ public static class DesignTimeControlFactory
             "SensorViewer"           => CreateViewerPlaceholder("Sensor Viewer", "\u26A1", Color.FromRgb(0x18, 0x28, 0x30)),
             _ => new TextBlock
             {
-                Text = $"未知類型: {def.Type}",
+                Text = $"未知類型: {type}",
                 Foreground = Brushes.OrangeRed,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center

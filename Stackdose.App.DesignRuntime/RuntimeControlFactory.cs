@@ -10,7 +10,6 @@ using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
-using Stackdose.UI.Templates.Controls;
 
 namespace Stackdose.App.DesignRuntime;
 
@@ -24,7 +23,8 @@ public static class RuntimeControlFactory
 
     public static UIElement Create(DesignerItemDefinition def)
     {
-        var control = def.Type switch
+        string type = def.Type?.Trim() ?? "";
+        var control = type switch
         {
             "PlcLabel"               => CreatePlcLabel(def),
             "PlcText"                => CreatePlcText(def),
@@ -41,7 +41,7 @@ public static class RuntimeControlFactory
             "SystemClock"            => new SystemClock(),
             "ProcessStatusIndicator" => CreateProcessStatusIndicator(def),
             "PlcDeviceEditor"        => CreatePlcDeviceEditor(def),
-            _ => MakeUnknownPlaceholder(def.Type),
+            _ => MakeUnknownPlaceholder(type),
         };
 
         // 附加 BehaviorTag — 讓 BehaviorEngine 能識別控制項並執行 SetProp

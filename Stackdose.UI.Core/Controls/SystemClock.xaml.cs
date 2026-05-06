@@ -2,7 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 
-namespace Stackdose.UI.Templates.Controls;
+namespace Stackdose.UI.Core.Controls;
 
 public partial class SystemClock : UserControl
 {

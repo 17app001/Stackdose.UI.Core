@@ -834,7 +834,7 @@ public sealed class MainViewModel : ObservableObject
     public void AutoArrangeGroupBoxGrid(DesignerItemViewModel spacer, int columns)
     {
         const double Padding      = 8.0;
-        const double Gap          = 8.0;
+        double gap                = GlobalSpacing; // 使用全域間距，確保一致性
         const double HeaderHeight = 28.0;
 
         var groupBounds = new Rect(spacer.X, spacer.Y, spacer.Width, spacer.Height);
@@ -854,8 +854,8 @@ public sealed class MainViewModel : ObservableObject
         double innerW = spacer.Width  - 2 * Padding;
         double innerH = spacer.Height - HeaderHeight - 2 * Padding;
 
-        double cellW = Math.Max(40, (innerW - (cols - 1) * Gap) / cols);
-        double cellH = Math.Max(30, (innerH - (rows - 1) * Gap) / rows);
+        double cellW = Math.Max(40, (innerW - (cols - 1) * gap) / cols);
+        double cellH = Math.Max(30, (innerH - (rows - 1) * gap) / rows);
 
         var resizes = new List<(DesignerItemViewModel item,
             double oldX, double oldY, double oldW, double oldH,
@@ -866,8 +866,8 @@ public sealed class MainViewModel : ObservableObject
             var child = children[i];
             int col = i % cols;
             int row = i / cols;
-            double newX = innerX + col * (cellW + Gap);
-            double newY = innerY + row * (cellH + Gap);
+            double newX = innerX + col * (cellW + gap);
+            double newY = innerY + row * (cellH + gap);
 
             resizes.Add((child, child.X, child.Y, child.Width, child.Height,
                          newX, newY, cellW, cellH));
@@ -879,7 +879,7 @@ public sealed class MainViewModel : ObservableObject
         }
 
         RecordCanvasMultiResize(resizes);
-        StatusText = $"格狀排列 {n} 個元件（{cols} 欄 × {rows} 列）";
+        StatusText = $"格狀排列 {n} 個元件（{cols} 欄 × {rows} 列，Gap: {gap}）";
     }
 
     private void PerformUndo()
@@ -968,89 +968,122 @@ public sealed class MainViewModel : ObservableObject
 
     /// <summary>
     /// 精密間距校正 (Surgical Tidy Up)：
-    /// 不改變大的排版結構，但將鄰近元件的間距精確修正為 GlobalSpacing，並修復微量對齊誤差。
+    /// 將頂層元件的間距修正為 GlobalSpacing，並修復微量對齊誤差。
+    /// 為了保護內部布局，此工具會忽略容器 (Spacer) 內的子元件，
+    /// 但當容器移動時，其內部元件會連帶保持相對位移。
     /// </summary>
     private void SurgicalTidyUp()
     {
-        var items = Canvas.CanvasItems
-            .Where(i => !i.IsLocked)
+        // 1. 取得所有元件
+        var allItems = Canvas.CanvasItems.ToList();
+
+        // 2. 找出哪些元件是「子元件」（被 Spacer 包含的）
+        var childrenMap = new Dictionary<DesignerItemViewModel, List<DesignerItemViewModel>>();
+        var allChildren = new HashSet<DesignerItemViewModel>();
+        var spacers = allItems.Where(i => i.ItemType == "Spacer").ToList();
+        
+        foreach (var s in spacers)
+        {
+            var bounds = new Rect(s.X, s.Y, s.Width, s.Height);
+            var contained = allItems
+                .Where(i => !ReferenceEquals(i, s))
+                .Where(i => bounds.Contains(new Rect(i.X, i.Y, i.Width, i.Height)))
+                .ToList();
+            
+            childrenMap[s] = contained;
+            foreach (var c in contained) allChildren.Add(c);
+        }
+
+        // 3. 排序待處理的頂層元件 (排除子元件，且必須未鎖定)
+        var rootItemsToMove = allItems
+            .Where(i => !allChildren.Contains(i) && !i.IsLocked)
             .OrderBy(i => i.Y).ThenBy(i => i.X)
             .ToList();
 
-        if (items.Count == 0) return;
+        if (rootItemsToMove.Count == 0) return;
+
+        // 基準候選人：包含鎖定元件，但不包含子元件（避免吸附到容器內部的小元件）
+        var candidates = allItems
+            .Where(i => !allChildren.Contains(i))
+            .ToList();
 
         var moves = new List<(DesignerItemViewModel item, double oldX, double oldY, double newX, double newY)>();
         double gap = GlobalSpacing;
-        const double snapThreshold = 15.0; // 差距在 15px 內才進行自動校正
+        const double snapThreshold = 15.0;
+        const double alignThreshold = 10.0;
 
-        foreach (var item in items)
+        foreach (var item in rootItemsToMove)
         {
             double targetX = item.X;
             double targetY = item.Y;
 
-            // 尋找此元件「上方」或「左側」的元件作為校正基準
-            var processed = items.Take(items.IndexOf(item)).ToList();
+            // 尋找此元件「上方」或「左側」的元件作為基準 (僅限 top-level 元件)
+            var processedCandidates = candidates
+                .Where(c => (c.Y < item.Y) || (Math.Abs(c.Y - item.Y) < 1 && c.X < item.X))
+                .ToList();
             
-            // 找出左側鄰居與上方鄰居
-            var leftNeighbor = processed
+            var leftNeighbor = processedCandidates
                 .Where(refItem => Math.Max(item.Y, refItem.Y) < Math.Min(item.Y + item.Height, refItem.Y + refItem.Height))
                 .Where(refItem => item.X > refItem.X)
                 .OrderByDescending(refItem => refItem.X + refItem.Width)
                 .FirstOrDefault();
 
-            var topNeighbor = processed
+            var topNeighbor = processedCandidates
                 .Where(refItem => Math.Max(item.X, refItem.X) < Math.Min(item.X + item.Width, refItem.X + refItem.Width))
                 .Where(refItem => item.Y > refItem.Y)
                 .OrderByDescending(refItem => refItem.Y + refItem.Height)
                 .FirstOrDefault();
 
-            // 1. 處理 X 軸 (水平)
+            // --- 1. 處理 X 軸 (水平) ---
             if (leftNeighbor != null)
             {
-                // 有左鄰居：吸附到鄰居右側 + Gap
                 double currentGap = item.X - (leftNeighbor.X + leftNeighbor.Width);
-                if (Math.Abs(currentGap - gap) < snapThreshold)
-                {
-                    targetX = leftNeighbor.X + leftNeighbor.Width + gap;
-                }
-                // 微量對齊頂部
-                if (Math.Abs(item.Y - leftNeighbor.Y) < 5) targetY = leftNeighbor.Y;
+                if (Math.Abs(currentGap - gap) < snapThreshold) targetX = leftNeighbor.X + leftNeighbor.Width + gap;
+                if (Math.Abs(item.Y - leftNeighbor.Y) < alignThreshold) targetY = leftNeighbor.Y;
             }
             else
             {
-                // 沒有左鄰居：檢查是否靠近畫布左邊緣 (Canvas Padding)
-                if (Math.Abs(item.X - CanvasPadding) < snapThreshold || item.X < CanvasPadding)
-                {
-                    targetX = CanvasPadding;
-                }
+                if (Math.Abs(item.X - CanvasPadding) < snapThreshold || item.X < CanvasPadding) targetX = CanvasPadding;
             }
 
-            // 2. 處理 Y 軸 (垂直)
+            double rightEdge = CanvasWidth - CanvasPadding;
+            if (Math.Abs((targetX + item.Width) - rightEdge) < snapThreshold) targetX = rightEdge - item.Width;
+
+            // --- 2. 處理 Y 軸 (垂直) ---
             if (topNeighbor != null)
             {
-                // 有上鄰居：吸附到鄰居底部 + Gap
                 double currentGap = item.Y - (topNeighbor.Y + topNeighbor.Height);
-                if (Math.Abs(currentGap - gap) < snapThreshold)
-                {
-                    targetY = topNeighbor.Y + topNeighbor.Height + gap;
-                }
-                // 微量對齊左側
-                if (Math.Abs(item.X - topNeighbor.X) < 5) targetX = topNeighbor.X;
+                if (Math.Abs(currentGap - gap) < snapThreshold) targetY = topNeighbor.Y + topNeighbor.Height + gap;
+                if (Math.Abs(item.X - topNeighbor.X) < alignThreshold) targetX = topNeighbor.X;
             }
             else
             {
-                // 沒有上鄰居：檢查是否靠近畫布頂邊緣 (Canvas Padding)
-                if (Math.Abs(item.Y - CanvasPadding) < snapThreshold || item.Y < CanvasPadding)
-                {
-                    targetY = CanvasPadding;
-                }
+                if (Math.Abs(item.Y - CanvasPadding) < snapThreshold || item.Y < CanvasPadding) targetY = CanvasPadding;
             }
 
+            double bottomEdge = CanvasHeight - CanvasPadding;
+            if (Math.Abs((targetY + item.Height) - bottomEdge) < snapThreshold) targetY = bottomEdge - item.Height;
+
+            // --- 執行移動並同步子元件 ---
             if (Math.Abs(targetX - item.X) > 0.1 || Math.Abs(targetY - item.Y) > 0.1)
             {
+                double dx = targetX - item.X;
+                double dy = targetY - item.Y;
+
                 moves.Add((item, item.X, item.Y, targetX, targetY));
                 item.X = targetX;
                 item.Y = targetY;
+
+                // 如果移動的是 Spacer，連動搬移其子元件
+                if (childrenMap.TryGetValue(item, out var myChildren))
+                {
+                    foreach (var child in myChildren)
+                    {
+                        moves.Add((child, child.X, child.Y, child.X + dx, child.Y + dy));
+                        child.X += dx;
+                        child.Y += dy;
+                    }
+                }
             }
         }
 
@@ -1058,7 +1091,7 @@ public sealed class MainViewModel : ObservableObject
         {
             UndoRedo.Record(new CanvasMoveMultipleItemsCommand(moves));
             MarkDirty();
-            StatusText = $"精密間距校正完成 (含畫布 Padding)：調整了 {moves.Count} 個元件";
+            StatusText = $"精密校正完成：調整了 {moves.Count} 個元件 (保護內部排版)";
         }
     }
 

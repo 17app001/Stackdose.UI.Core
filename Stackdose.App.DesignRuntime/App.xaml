@@ -7,6 +7,9 @@
             <ResourceDictionary.MergedDictionaries>
                 <!-- UI.Core 完整主題（PlcLabel / SecuredButton / PlcStatus 樣式） -->
                 <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Core;component/Themes/Theme.xaml"/>
+                
+                <!-- UI.Templates 基本資源（SystemClock 需要的 Template.PanelCard 等樣式） -->
+                <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Templates;component/Resources/CommonColors.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

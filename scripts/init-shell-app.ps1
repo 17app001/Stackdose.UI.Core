@@ -595,6 +595,7 @@ using Stackdose.Tools.MachinePageDesigner.Models;
 using Stackdose.UI.Core.Controls;
 using Stackdose.UI.Core.Helpers;
 using Stackdose.UI.Core.Models;
+using Stackdose.UI.Templates.Controls;
 
 namespace NAMESPACE_PLACEHOLDER;
 
@@ -602,24 +603,50 @@ public static class RuntimeControlFactory
 {
     public static UIElement Create(DesignerItemDefinition def)
     {
-        var control = def.Type switch
+        string type = def.Type?.Trim() ?? "";
+        var control = type switch
         {
-            "PlcLabel"           => CreatePlcLabel(def),
-            "PlcText"            => CreatePlcText(def),
-            "PlcStatusIndicator" => CreateBitIndicator(def),
-            "SecuredButton"      => CreateSecuredButton(def),
-            "Spacer"             => CreateGroupBox(def),
-            "LiveLog"            => new LiveLogViewer(),
-            "AlarmViewer"        => CreateAlarmViewer(def),
-            "SensorViewer"       => CreateSensorViewer(def),
-            "StaticLabel"        => CreateStaticLabel(def),
-            "PrintHeadStatus"     => CreatePrintHeadStatus(def),
-            "PrintHeadController" => new PrintHeadController(),
-            "TabPanel"            => CreateTabPanel(def),
-            _                   => MakeUnknownPlaceholder(def.Type),
+            "PlcLabel"               => CreatePlcLabel(def),
+            "PlcText"                => CreatePlcText(def),
+            "PlcStatusIndicator"     => CreateBitIndicator(def),
+            "SecuredButton"          => CreateSecuredButton(def),
+            "Spacer"                 => CreateGroupBox(def),
+            "LiveLog"                => new LiveLogViewer(),
+            "AlarmViewer"            => CreateAlarmViewer(def),
+            "SensorViewer"           => CreateSensorViewer(def),
+            "StaticLabel"            => CreateStaticLabel(def),
+            "PrintHeadStatus"        => CreatePrintHeadStatus(def),
+            "PrintHeadController"    => new PrintHeadController(),
+            "TabPanel"               => CreateTabPanel(def),
+            "SystemClock"            => new SystemClock(),
+            "ProcessStatusIndicator" => CreateProcessStatusIndicator(def),
+            "PlcDeviceEditor"        => CreatePlcDeviceEditor(def),
+            _ => MakeUnknownPlaceholder(type),
         };
         AttachBehaviorTag(def, control);
         return control;
+    }
+
+    private static UIElement CreateProcessStatusIndicator(DesignerItemDefinition def)
+    {
+        var p = def.Props;
+        var indicator = new ProcessStatusIndicator
+        {
+            BatchNumber = p.GetString("label", ""),
+        };
+        if (Enum.TryParse<ProcessState>(p.GetString("processState", "Running"), true, out var state))
+            indicator.ProcessState = state;
+        return indicator;
+    }
+
+    private static UIElement CreatePlcDeviceEditor(DesignerItemDefinition def)
+    {
+        var p = def.Props;
+        return new PlcDeviceEditor
+        {
+            Label   = p.GetString("label", "Device"),
+            Address = p.GetString("address", "D100")
+        };
     }
 
     private static UIElement CreatePrintHeadStatus(DesignerItemDefinition def)

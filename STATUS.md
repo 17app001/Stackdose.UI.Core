@@ -7,10 +7,8 @@
 - **日期：** 2026-05-06
 - **分支：** `master`（UI.Core + Platform 皆已推送至 origin）
 - **上次做了什麼：**
-    - **PrintHeadController UI 重排：** 讀取/載入/取消三按鈕移至第二排（Grid `*` 等寬），`已連線` 狀態 Badge 移至 Header 右側；左側面板移除舊的圖片操作區塊。
-    - **FeiyangWrapper 整合：** 將 WinForms 版 FeiyangWrapper.vcxproj 複製至 `D:\工作區\Project\Sdk\FeiyangWrapper\`；更新 `Stackdose.PrintHead.csproj` 為混合式（VS ProjectReference 建置順序 + DLL Reference 型別解析），修正 `dotnet build` 與 VS 兩種建置環境皆可通過的問題。
-    - **Platform waveform 路徑：** `FeiyangPrintHead.cs` 新增 `ResolveWaveformPath()` 多路徑搜尋（Resources/ / Config/waves/ / Config/）。
-    - **兩個 Repo 皆 commit + push（Platform: develop→master merge 完成）。**
+    - **Direction gap 修正：** `ConfigurePrintModeAsync` 補 `direction` 參數，ComboBox 擴充至 6 個方向選項（含 CarAtRight 系列），StartX/CaliMM 補入 log
+    - **Dashboard 適螢幕：** scaffold 模板加 `□/❐` 放大/還原按鈕，`ViewBox Stretch=Uniform` 等比縮放，Window `Background="#1E1E32"` 修正 letterbox 白底；MyPrintApp 同步更新
 - **下一步（明日上工順序）：**
     1. **ModelE 實機驗證** — 噴頭啟動接線與 M-bit 事件連動測試（direction + D512 flag 待實機確認）。
     2. **D512 PLC flag** — ModelE 傳圖前寫 D512 層旗標，確認新控件是否需要補上。
@@ -34,13 +32,11 @@
 ## 最近 Commits
 
 ```
+06c1726 merge: Dashboard proportional maximize button  [2026-05-06]
+892b600 feat: direction gap fix + devlog/status update  [2026-05-06]
 feed0c8 chore: update FeiyangWrapper GUID and add MyPrintApp to solution  [2026-05-06]
 4fb3519 refactor: SystemClock 搬移、Precision Gap 容器感知、PrintHeadController UI 重排  [2026-05-06]
-338acdb merge: Platform develop→master (FeiyangWrapper ProjectReference + waveform fix)  [2026-05-06]
-b7a07f8 docs: update STATUS.md and PROGRESS.md before session end  [2026-05-05]
 ```
-
-> 今日未 commit：`PrintHeadController` direction gap fix（`IPrintHead` + `FeiyangPrintHead` + XAML 6 選項）
 
 ## 功能完成狀態快照
 

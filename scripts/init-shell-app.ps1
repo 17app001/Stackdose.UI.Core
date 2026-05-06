@@ -233,7 +233,8 @@ public partial class App : Application
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="$AppName"
         WindowStyle="None" ResizeMode="NoResize"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Background="#1E1E32">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="28"/>

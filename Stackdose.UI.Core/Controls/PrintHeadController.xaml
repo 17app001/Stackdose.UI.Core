@@ -294,27 +294,27 @@
 
 						<Button Grid.Column="0"
 						        Content="讀取圖片"
-						        Background="#42A5F5"
+						        Background="#00B0FF"
 						        Foreground="White"
-						        BorderBrush="#1976D2"
+						        BorderBrush="#0081CB"
 						        x:Name="BrowseImageButton"
 						        Click="BrowseImageButton_Click"
 						        Style="{StaticResource ModernButtonStyle}"/>
 
 						<Button Grid.Column="2"
 						        Content="載入任務"
-						        Background="#FFA726"
+						        Background="#FF9100"
 						        Foreground="White"
-						        BorderBrush="#E65100"
+						        BorderBrush="#C56200"
 						        x:Name="LoadImageButton"
 						        Click="LoadImageButton_Click"
 						        Style="{StaticResource ModernButtonStyle}"/>
 
 						<Button Grid.Column="4"
 						        Content="取消任務"
-						        Background="#EF5350"
+						        Background="#FF1744"
 						        Foreground="White"
-						        BorderBrush="#C62828"
+						        BorderBrush="#C4001D"
 						        x:Name="CancelTaskButton"
 						        Click="CancelTaskButton_Click"
 						        Style="{StaticResource ModernButtonStyle}"/>

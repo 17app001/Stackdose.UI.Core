@@ -68,9 +68,9 @@
     <SolidColorBrush x:Key="PrintHead.Accent.PrintIndex" Color="#8A1D6B"/>
 
     <!-- ========== Semantic Alias Tokens (Sync with Colors.xaml) ========== -->
-    <SolidColorBrush x:Key="Surface.Bg.Page"        Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="Surface.Bg.Panel"       Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="Surface.Bg.Card"        Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Surface.Bg.Page"        Color="#EBEBEB"/>
+    <SolidColorBrush x:Key="Surface.Bg.Panel"       Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="Surface.Bg.Card"        Color="#FAFAFA"/>
     <SolidColorBrush x:Key="Surface.Bg.Control"     Color="#FFFFFF"/>
     <SolidColorBrush x:Key="Surface.Border.Default" Color="#D1D9E0"/>
     <SolidColorBrush x:Key="Surface.Border.Strong"  Color="#AAB4C0"/>

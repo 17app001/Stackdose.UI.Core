@@ -124,19 +124,9 @@ namespace Stackdose.UI.Core.Controls
         {
             if (FrameBorder == null) return;
 
-            // 只有 DarkBlue 主題才需要動態切換
             if (FrameBackground == PlcLabelColorTheme.DarkBlue)
             {
-                bool isLightMode = IsLightTheme();
-                
-                FrameBorder.Background = new SolidColorBrush(
-                    isLightMode 
-                        ? Color.FromRgb(0xF5, 0xF5, 0xF5)  // Light: #F5F5F5 淺灰
-                        : Color.FromRgb(0x1E, 0x1E, 0x2E)); // Dark: #1E1E2E 深藍
-                
-                #if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[PlcLabel] 底框顏色已更新為 {(isLightMode ? "Light" : "Dark")} 模式");
-                #endif
+                FrameBorder.SetResourceReference(Border.BackgroundProperty, "Plc.Bg.Main");
             }
         }
 

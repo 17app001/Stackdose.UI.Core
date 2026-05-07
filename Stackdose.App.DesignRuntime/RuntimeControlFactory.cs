@@ -278,14 +278,15 @@ public static class RuntimeControlFactory
         var showTitle   = def.Props.GetBool("showTitle", true);
         var root        = new Grid();
 
-        root.Children.Add(new Border
+        var bodyBorder = new Border
         {
             BorderBrush      = new SolidColorBrush(Color.FromRgb(headerColor.R, headerColor.G, headerColor.B)),
             BorderThickness   = new Thickness(1.5),
-            Background       = new SolidColorBrush(Color.FromArgb(0x18, headerColor.R, headerColor.G, headerColor.B)),
             CornerRadius     = new CornerRadius(4),
             IsHitTestVisible  = false,
-        });
+        };
+        bodyBorder.SetResourceReference(Border.BackgroundProperty, "Surface.Bg.Card");
+        root.Children.Add(bodyBorder);
 
         var header = new Border
         {

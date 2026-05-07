@@ -7,18 +7,11 @@
               d:DesignWidth="240"
               d:DesignHeight="72">
 
-    <UserControl.Resources>
-        <!-- 獨立的卡片樣式，不依賴 UI.Templates -->
-        <Style x:Key="SystemClock.Card" TargetType="Border">
-            <Setter Property="Background" Value="#1A1A2E"/>
-            <Setter Property="BorderBrush" Value="#33334C"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="4"/>
-            <Setter Property="Padding" Value="12,8"/>
-        </Style>
-    </UserControl.Resources>
-
-    <Border Style="{StaticResource SystemClock.Card}">
+    <Border Background="{DynamicResource Surface.Bg.Card}"
+            BorderBrush="{DynamicResource Surface.Border.Default}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Padding="12,8">
         <StackPanel>
             <TextBlock x:Name="TimeText"
                        Text="00:00:00"
@@ -26,12 +19,12 @@
                        FontWeight="Bold"
                        HorizontalAlignment="Right"
                        FontFamily="Consolas"
-                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                       Foreground="{DynamicResource Text.Primary}"/>
             <TextBlock x:Name="DateText"
                        Text="2000-01-01"
                        FontSize="{Binding DateFontSize, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        HorizontalAlignment="Right"
-                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       Foreground="{DynamicResource Text.Secondary}"
                        Margin="0,4,0,0"/>
         </StackPanel>
     </Border>

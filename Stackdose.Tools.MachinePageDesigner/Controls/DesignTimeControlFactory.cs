@@ -31,9 +31,9 @@ public static class DesignTimeControlFactory
             "PrintHeadStatus"        => CreatePrintHeadStatus(def),
             "PrintHeadController"    => new PrintHeadController { IsHitTestVisible = false },
             "TabPanel"               => CreateTabPanelPlaceholder(def),
-            "LiveLog"                => CreateViewerPlaceholder("System Log",    "\u2637", Color.FromRgb(0x1A, 0x1A, 0x30)),
-            "AlarmViewer"            => CreateViewerPlaceholder("Alarm Viewer",  "\u26A0", Color.FromRgb(0x30, 0x18, 0x18)),
-            "SensorViewer"           => CreateViewerPlaceholder("Sensor Viewer", "\u26A1", Color.FromRgb(0x18, 0x28, 0x30)),
+            "LiveLog"                => CreateViewerPlaceholder("System Log",    "\u2637"),
+            "AlarmViewer"            => CreateViewerPlaceholder("Alarm Viewer",  "\u26A0"),
+            "SensorViewer"           => CreateViewerPlaceholder("Sensor Viewer", "\u26A1"),
             _ => new TextBlock
             {
                 Text = $"未知類型: {type}",
@@ -346,15 +346,13 @@ public static class DesignTimeControlFactory
         }
         if (tabs.Count == 0) { tabs.Add(("Tab 1", 0)); tabs.Add(("Tab 2", 0)); }
 
-        var root = new DockPanel { Background = new SolidColorBrush(Color.FromRgb(0x1A, 0x1E, 0x2A)) };
+        var root = new DockPanel();
+        root.SetResourceReference(DockPanel.BackgroundProperty, "Log.Bg.Main");
 
         // Header strip
-        var header = new Border
-        {
-            Background = new SolidColorBrush(Color.FromRgb(0x12, 0x14, 0x20)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x5A)),
-            BorderThickness = new Thickness(0, 0, 0, 1),
-        };
+        var header = new Border { BorderThickness = new Thickness(0, 0, 0, 1) };
+        header.SetResourceReference(Border.BackgroundProperty, "Log.Bg.Header");
+        header.SetResourceReference(Border.BorderBrushProperty, "Log.Border");
         DockPanel.SetDock(header, Dock.Top);
 
         var tabStrip = new StackPanel { Orientation = Orientation.Horizontal };
@@ -362,24 +360,27 @@ public static class DesignTimeControlFactory
         {
             var isFirst = i == 0;
             var label = tabs[i].Count > 0 ? $"{tabs[i].Title}  ({tabs[i].Count})" : tabs[i].Title;
-            tabStrip.Children.Add(new Border
+
+            var tabBorder = new Border
             {
-                Background = isFirst
-                    ? new SolidColorBrush(Color.FromRgb(0x1A, 0x1E, 0x2A))
-                    : Brushes.Transparent,
-                BorderBrush = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x5A)),
                 BorderThickness = new Thickness(0, 0, 1, 0),
                 Padding = new Thickness(16, 6, 16, 6),
-                Child = new TextBlock
-                {
-                    Text = label,
-                    Foreground = isFirst
-                        ? new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0))
-                        : new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0xAA)),
-                    FontWeight = isFirst ? FontWeights.SemiBold : FontWeights.Normal,
-                    FontSize = 13,
-                }
-            });
+            };
+            if (isFirst)
+                tabBorder.SetResourceReference(Border.BackgroundProperty, "Log.Bg.Main");
+            tabBorder.SetResourceReference(Border.BorderBrushProperty, "Log.Border");
+
+            var tabText = new TextBlock
+            {
+                Text = label,
+                FontWeight = isFirst ? FontWeights.SemiBold : FontWeights.Normal,
+                FontSize = 13,
+            };
+            tabText.SetResourceReference(TextBlock.ForegroundProperty,
+                isFirst ? "Text.Primary" : "Text.Secondary");
+
+            tabBorder.Child = tabText;
+            tabStrip.Children.Add(tabBorder);
         }
         header.Child = tabStrip;
         root.Children.Add(header);
@@ -390,68 +391,78 @@ public static class DesignTimeControlFactory
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         };
-        hint.Children.Add(new TextBlock
+        var hintIcon = new TextBlock
         {
             Text = "✎",
             FontSize = 22,
-            Foreground = new SolidColorBrush(Color.FromRgb(0x55, 0x66, 0x99)),
             HorizontalAlignment = HorizontalAlignment.Center,
-        });
-        hint.Children.Add(new TextBlock
+        };
+        hintIcon.SetResourceReference(TextBlock.ForegroundProperty, "Text.Tertiary");
+
+        var hintLabel = new TextBlock
         {
             Text = "雙擊開啟 Tab 編輯器",
             FontSize = 11,
-            Foreground = new SolidColorBrush(Color.FromRgb(0x66, 0x77, 0xAA)),
             HorizontalAlignment = HorizontalAlignment.Center,
             Margin = new Thickness(0, 4, 0, 0),
-        });
+        };
+        hintLabel.SetResourceReference(TextBlock.ForegroundProperty, "Text.Tertiary");
+
+        hint.Children.Add(hintIcon);
+        hint.Children.Add(hintLabel);
 
         var content = new Border
         {
             Background = Brushes.Transparent,
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x33, 0x38, 0x55)),
             BorderThickness = new Thickness(1),
             Margin = new Thickness(8),
             Child = hint,
         };
+        content.SetResourceReference(Border.BorderBrushProperty, "Surface.Border.Default");
         root.Children.Add(content);
 
         return root;
     }
 
-    private static UIElement CreateViewerPlaceholder(string title, string icon, Color bgColor)
+    private static UIElement CreateViewerPlaceholder(string title, string icon)
     {
         var border = new Border
         {
-            Background = new SolidColorBrush(bgColor),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x5A)),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(6),
         };
+        border.SetResourceReference(Border.BackgroundProperty, "Log.Bg.Main");
+        border.SetResourceReference(Border.BorderBrushProperty, "Log.Border");
+
         var stack = new StackPanel
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(12),
         };
-        stack.Children.Add(new TextBlock
+
+        var iconText = new TextBlock
         {
             Text = icon,
             FontSize = 28,
             HorizontalAlignment = HorizontalAlignment.Center,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xDD)),
             Margin = new Thickness(0, 0, 0, 6),
             VerticalAlignment = VerticalAlignment.Center,
-        });
-        stack.Children.Add(new TextBlock
+        };
+        iconText.SetResourceReference(TextBlock.ForegroundProperty, "Text.Secondary");
+
+        var titleText = new TextBlock
         {
             Text = title,
             FontSize = 13,
             FontWeight = FontWeights.SemiBold,
             HorizontalAlignment = HorizontalAlignment.Center,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)),
             VerticalAlignment = VerticalAlignment.Center,
-        });
+        };
+        titleText.SetResourceReference(TextBlock.ForegroundProperty, "Text.Primary");
+
+        stack.Children.Add(iconText);
+        stack.Children.Add(titleText);
         border.Child = stack;
         return border;
     }

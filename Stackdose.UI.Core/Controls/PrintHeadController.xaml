@@ -64,9 +64,9 @@
 
 		<!-- Dropdown style -->
 		<Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
-			<Setter Property="Foreground" Value="White"/>
-			<Setter Property="Background" Value="#2C3E50"/>
-			<Setter Property="BorderBrush" Value="#34495E"/>
+			<Setter Property="Foreground" Value="{DynamicResource Text.Primary}"/>
+			<Setter Property="Background" Value="{DynamicResource Surface.Bg.Card}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource Plc.Border}"/>
 			<Setter Property="Padding" Value="8,4"/>
 			<Setter Property="Template">
 				<Setter.Value>
@@ -95,7 +95,7 @@
                                                       HorizontalAlignment="Center"
                                                       VerticalAlignment="Center"
                                                       Data="M 0 0 L 4 4 L 8 0 Z"
-                                                      Fill="White"/>
+                                                      Fill="{DynamicResource Text.Primary}"/>
 											</Grid>
 										</Border>
 									</ControlTemplate>
@@ -111,7 +111,7 @@
                                               HorizontalAlignment="Left">
 								<ContentPresenter.Resources>
 									<Style TargetType="{x:Type TextBlock}">
-										<Setter Property="Foreground" Value="White"/>
+										<Setter Property="Foreground" Value="{DynamicResource Text.Primary}"/>
 									</Style>
 								</ContentPresenter.Resources>
 							</ContentPresenter>
@@ -126,8 +126,8 @@
                                       MinWidth="{TemplateBinding ActualWidth}"
                                       MaxHeight="{TemplateBinding MaxDropDownHeight}">
 									<Border x:Name="DropDownBorder"
-                                            Background="#2C3E50"
-                                            BorderBrush="#34495E"
+                                            Background="{DynamicResource Surface.Bg.Card}"
+                                            BorderBrush="{DynamicResource Plc.Border}"
                                             BorderThickness="1"
                                             CornerRadius="3">
 										<ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
@@ -157,10 +157,10 @@
 									</Border>
 									<ControlTemplate.Triggers>
 										<Trigger Property="IsHighlighted" Value="True">
-											<Setter TargetName="Border" Property="Background" Value="#3498DB"/>
+											<Setter TargetName="Border" Property="Background" Value="{DynamicResource Overlay.Highlight.Info}"/>
 										</Trigger>
 										<Trigger Property="IsSelected" Value="True">
-											<Setter TargetName="Border" Property="Background" Value="#34495E"/>
+											<Setter TargetName="Border" Property="Background" Value="{DynamicResource Surface.Bg.Panel}"/>
 											<Setter Property="FontWeight" Value="Bold"/>
 										</Trigger>
 									</ControlTemplate.Triggers>
@@ -205,8 +205,8 @@
                            VerticalAlignment="Center"
                            Margin="2,0"/>
                 <Border Grid.Column="1"
-                        Background="#1E1E1E"
-                        BorderBrush="#34495E"
+                        Background="{DynamicResource Surface.Bg.Control}"
+                        BorderBrush="{DynamicResource Plc.Border}"
                         BorderThickness="1"
                         CornerRadius="3"
                         Padding="6,3">
@@ -218,7 +218,7 @@
                         <TextBlock x:Name="ConnectedCountText"
                                    Text="0 已連線"
                                    FontSize="9"
-                                   Foreground="#AAAAAA"
+                                   Foreground="{DynamicResource Text.Secondary}"
                                    VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
@@ -294,27 +294,27 @@
 
 						<Button Grid.Column="0"
 						        Content="讀取圖片"
-						        Background="#3498DB"
+						        Background="#42A5F5"
 						        Foreground="White"
-						        BorderBrush="#2980B9"
+						        BorderBrush="#1976D2"
 						        x:Name="BrowseImageButton"
 						        Click="BrowseImageButton_Click"
 						        Style="{StaticResource ModernButtonStyle}"/>
 
 						<Button Grid.Column="2"
 						        Content="載入任務"
-						        Background="#E67E22"
+						        Background="#FFA726"
 						        Foreground="White"
-						        BorderBrush="#D35400"
+						        BorderBrush="#E65100"
 						        x:Name="LoadImageButton"
 						        Click="LoadImageButton_Click"
 						        Style="{StaticResource ModernButtonStyle}"/>
 
 						<Button Grid.Column="4"
 						        Content="取消任務"
-						        Background="#E22424"
+						        Background="#EF5350"
 						        Foreground="White"
-						        BorderBrush="#C0392B"
+						        BorderBrush="#C62828"
 						        x:Name="CancelTaskButton"
 						        Click="CancelTaskButton_Click"
 						        Style="{StaticResource ModernButtonStyle}"/>
@@ -337,7 +337,7 @@
 						<TextBlock Text="列印方向"
                                    FontSize="9"
                                    FontWeight="Bold"
-                                   Foreground="#ECF0F1"
+                                   Foreground="{DynamicResource Cyber.Text.Main}"
                                    Margin="0,0,0,6"/>
 
 						<ComboBox x:Name="DirectionCombo"
@@ -358,7 +358,7 @@
 						<TextBlock Text="列印參數"
                                    FontSize="9"
                                    FontWeight="Bold"
-                                   Foreground="#ECF0F1"
+                                   Foreground="{DynamicResource Cyber.Text.Main}"
                                    Margin="0,0,0,6"/>
 
 						<Grid>
@@ -375,7 +375,7 @@
 							<TextBlock Grid.Row="0" Grid.Column="0"
                                        Text="起點X："
                                        FontSize="8"
-                                       Foreground="#BDC3C7"
+                                       Foreground="{DynamicResource Plc.Text.Default}"
                                        VerticalAlignment="Center"/>
                             <TextBox Grid.Row="0" Grid.Column="1"
                                      x:Name="StartXBox"
@@ -388,7 +388,7 @@
 							<TextBlock Grid.Row="2" Grid.Column="0"
                                        Text="校正值："
                                        FontSize="8"
-                                       Foreground="#BDC3C7"
+                                       Foreground="{DynamicResource Plc.Text.Default}"
                                        VerticalAlignment="Center"/>
                             <TextBox Grid.Row="2" Grid.Column="1"
                                      x:Name="CaliMMBox"
@@ -403,8 +403,8 @@
 
 				<!-- Image preview -->
 				<Border Grid.Column="2"
-                        Background="#1E1E1E"
-                        BorderBrush="#34495E"
+                        Background="{DynamicResource Surface.Bg.Control}"
+                        BorderBrush="{DynamicResource Plc.Border}"
                         BorderThickness="1"
                         CornerRadius="3">
 					<Grid>
@@ -415,7 +415,7 @@
 						<TextBlock x:Name="ImageInfoText"
                                    Text="尚未載入圖片"
                                    FontSize="10"
-                                   Foreground="#7F8C8D"
+                                   Foreground="{DynamicResource Text.Tertiary}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    Visibility="Visible"/>
@@ -425,20 +425,20 @@
 
 			<!-- Transfer Progress Bar -->
 			<Grid Grid.Row="5" x:Name="ProgressPanel" Visibility="Collapsed" Margin="2,0">
-				<ProgressBar x:Name="TransferProgressBar" 
-                             Height="4" 
-                             Value="0" 
-                             Minimum="0" 
+				<ProgressBar x:Name="TransferProgressBar"
+                             Height="4"
+                             Value="0"
+                             Minimum="0"
                              Maximum="100"
-                             Foreground="#3498DB"
-                             Background="#1E1E1E"
+                             Foreground="{DynamicResource Accent.Primary}"
+                             Background="{DynamicResource Surface.Bg.Control}"
                              BorderThickness="0"/>
 			</Grid>
 
 			<!-- Footer status -->
 			<Border Grid.Row="7"
-                    Background="#2C3E50"
-                    BorderBrush="#34495E"
+                    Background="{DynamicResource Plc.Bg.Dark}"
+                    BorderBrush="{DynamicResource Plc.Border}"
                     BorderThickness="1"
                     CornerRadius="3"
                     Padding="6,4">
@@ -459,14 +459,14 @@
 					<TextBlock Grid.Column="0"
                                Text="檔案："
                                FontSize="8"
-                               Foreground="#BDC3C7"
+                               Foreground="{DynamicResource Plc.Text.Default}"
                                VerticalAlignment="Center"/>
 
 					<TextBlock Grid.Column="1"
                                x:Name="FilePathText"
                                Text="尚未選擇檔案"
                                FontSize="8"
-                               Foreground="#ECF0F1"
+                               Foreground="{DynamicResource Cyber.Text.Main}"
                                VerticalAlignment="Center"
                                Margin="3,0,0,0"
                                TextTrimming="CharacterEllipsis"/>
@@ -475,13 +475,13 @@
 					<StackPanel Grid.Column="2" Orientation="Horizontal">
 						<TextBlock Text="寬度："
                                    FontSize="8"
-                                   Foreground="#BDC3C7"
+                                   Foreground="{DynamicResource Plc.Text.Default}"
                                    VerticalAlignment="Center"/>
 						<TextBlock x:Name="ImageWidthText"
                                    Text="-"
                                    FontSize="8"
                                    FontWeight="Bold"
-                                   Foreground="#3498DB"
+                                   Foreground="{DynamicResource Accent.Primary}"
                                    VerticalAlignment="Center"
                                    Margin="3,0,0,0"/>
 					</StackPanel>
@@ -490,13 +490,13 @@
 					<StackPanel Grid.Column="4" Orientation="Horizontal">
 						<TextBlock Text="高度："
                                    FontSize="8"
-                                   Foreground="#BDC3C7"
+                                   Foreground="{DynamicResource Plc.Text.Default}"
                                    VerticalAlignment="Center"/>
 						<TextBlock x:Name="ImageHeightText"
                                    Text="-"
                                    FontSize="8"
                                    FontWeight="Bold"
-                                   Foreground="#3498DB"
+                                   Foreground="{DynamicResource Accent.Primary}"
                                    VerticalAlignment="Center"
                                    Margin="3,0,0,0"/>
 					</StackPanel>
@@ -505,13 +505,13 @@
 					<StackPanel Grid.Column="6" Orientation="Horizontal">
 						<TextBlock Text="水平DPI："
                                    FontSize="8"
-                                   Foreground="#BDC3C7"
+                                   Foreground="{DynamicResource Plc.Text.Default}"
                                    VerticalAlignment="Center"/>
 						<TextBlock x:Name="XDpiText"
                                    Text="-"
                                    FontSize="8"
                                    FontWeight="Bold"
-                                   Foreground="#3498DB"
+                                   Foreground="{DynamicResource Accent.Primary}"
                                    VerticalAlignment="Center"
                                    Margin="3,0,0,0"/>
 					</StackPanel>
@@ -520,13 +520,13 @@
 					<StackPanel Grid.Column="8" Orientation="Horizontal">
 						<TextBlock Text="垂直DPI："
                                    FontSize="8"
-                                   Foreground="#BDC3C7"
+                                   Foreground="{DynamicResource Plc.Text.Default}"
                                    VerticalAlignment="Center"/>
 						<TextBlock x:Name="YDpiText"
                                    Text="-"
                                    FontSize="8"
                                    FontWeight="Bold"
-                                   Foreground="#3498DB"
+                                   Foreground="{DynamicResource Accent.Primary}"
                                    VerticalAlignment="Center"
                                    Margin="3,0,0,0"/>
 					</StackPanel>

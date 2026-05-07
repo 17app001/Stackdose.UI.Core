@@ -2,14 +2,6 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- ===================================================== -->
-    <!-- ================ Common Brushes ===================== -->
-    <!-- ===================================================== -->
-    <SolidColorBrush x:Key="BackgroundBrush" Color="{Binding Source={StaticResource Cyber.Bg.Panel}, Path=Color}"/>
-    <SolidColorBrush x:Key="BorderBrush" Color="{Binding Source={StaticResource Cyber.Border}, Path=Color}"/>
-    <SolidColorBrush x:Key="InputBackgroundBrush" Color="{Binding Source={StaticResource Cyber.Bg.Card}, Path=Color}"/>
-    <SolidColorBrush x:Key="CardBackgroundBrush" Color="{Binding Source={StaticResource Cyber.Bg.Card}, Path=Color}"/>
-
-    <!-- ===================================================== -->
     <!-- ================ Toggle Chip ======================== -->
     <!-- ===================================================== -->
     <Style x:Key="ChipToggleStyle" TargetType="ToggleButton">
@@ -18,7 +10,7 @@
         <Setter Property="Padding" Value="16,0"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{StaticResource Button.Text}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Button.Text}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -66,7 +58,7 @@
         <Setter Property="Padding" Value="20,0"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{StaticResource Button.Text}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Button.Text}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -102,8 +94,8 @@
     <!-- =================== Card ============================ -->
     <!-- ===================================================== -->
     <Style x:Key="CardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource Cyber.Bg.Card}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource Cyber.Border.Strong}"/>
+        <Setter Property="Background" Value="{DynamicResource Cyber.Bg.Card}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Cyber.Border.Strong}"/>
         <Setter Property="BorderThickness" Value="1.5"/>
         <Setter Property="CornerRadius" Value="12"/>
         <Setter Property="Padding" Value="18"/>
@@ -115,13 +107,13 @@
     <!-- ============== Key / Value Text ===================== -->
     <!-- ===================================================== -->
     <Style x:Key="KvKeyStyle" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource Cyber.Text.Muted}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Cyber.Text.Muted}"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
     </Style>
 
     <Style x:Key="KvValueStyle" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource Cyber.Text.Main}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Cyber.Text.Main}"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="TextWrapping" Value="Wrap"/>

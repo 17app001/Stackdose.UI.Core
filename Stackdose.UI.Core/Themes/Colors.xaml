@@ -69,28 +69,34 @@
 
     <!-- ========== Semantic Alias Tokens (v1) ========== -->
     <!-- Surface -->
-    <SolidColorBrush x:Key="Surface.Bg.Page" Color="{Binding Source={StaticResource Cyber.Bg.Dark}, Path=Color}"/>
-    <SolidColorBrush x:Key="Surface.Bg.Panel" Color="{Binding Source={StaticResource Cyber.Bg.Panel}, Path=Color}"/>
-    <SolidColorBrush x:Key="Surface.Bg.Card" Color="{Binding Source={StaticResource Cyber.Bg.Card}, Path=Color}"/>
-    <SolidColorBrush x:Key="Surface.Bg.Control" Color="{Binding Source={StaticResource Plc.Bg.Main}, Path=Color}"/>
+    <SolidColorBrush x:Key="Surface.Bg.Page"        Color="#0D0D16"/>
+    <SolidColorBrush x:Key="Surface.Bg.Panel"       Color="#1C1C2E"/>
+    <SolidColorBrush x:Key="Surface.Bg.Card"        Color="#262640"/>
+    <SolidColorBrush x:Key="Surface.Bg.Control"     Color="#1F1F32"/>
 
     <!-- Border -->
-    <SolidColorBrush x:Key="Surface.Border.Default" Color="{Binding Source={StaticResource Cyber.Border}, Path=Color}"/>
-    <SolidColorBrush x:Key="Surface.Border.Strong" Color="{Binding Source={StaticResource Cyber.Border.Strong}, Path=Color}"/>
+    <SolidColorBrush x:Key="Surface.Border.Default" Color="#4A6078"/>
+    <SolidColorBrush x:Key="Surface.Border.Strong"  Color="#5A8AB0"/>
 
     <!-- Text -->
-    <SolidColorBrush x:Key="Text.Primary" Color="{Binding Source={StaticResource Cyber.Text.Main}, Path=Color}"/>
-    <SolidColorBrush x:Key="Text.Secondary" Color="{Binding Source={StaticResource Cyber.Text.Muted}, Path=Color}"/>
-    <SolidColorBrush x:Key="Text.Tertiary" Color="{Binding Source={StaticResource Plc.Text.Default}, Path=Color}"/>
+    <SolidColorBrush x:Key="Text.Primary"           Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Text.Secondary"         Color="#B8C5D0"/>
+    <SolidColorBrush x:Key="Text.Tertiary"          Color="#A8A8A8"/>
 
     <!-- Accent / Action -->
-    <SolidColorBrush x:Key="Accent.Primary" Color="{Binding Source={StaticResource Cyber.NeonBlue}, Path=Color}"/>
-    <SolidColorBrush x:Key="Action.Primary" Color="{Binding Source={StaticResource Button.Bg.Primary}, Path=Color}"/>
-    <SolidColorBrush x:Key="Action.Success" Color="{Binding Source={StaticResource Button.Bg.Success}, Path=Color}"/>
-    <SolidColorBrush x:Key="Action.Warning" Color="{Binding Source={StaticResource Button.Bg.Warning}, Path=Color}"/>
-    <SolidColorBrush x:Key="Action.Error" Color="{Binding Source={StaticResource Button.Bg.Error}, Path=Color}"/>
-    <SolidColorBrush x:Key="Action.Info" Color="{Binding Source={StaticResource Button.Bg.Info}, Path=Color}"/>
-    <SolidColorBrush x:Key="Action Info" Color="#00CED1"/> <!-- Direct definition for "Action Info" -->
+    <SolidColorBrush x:Key="Accent.Primary"         Color="#00E5FF"/>
+    <SolidColorBrush x:Key="Action.Primary"         Color="#0088D4"/>
+    <SolidColorBrush x:Key="Action.Success"         Color="#00B876"/>
+    <SolidColorBrush x:Key="Action.Warning"         Color="#FFB03A"/>
+    <SolidColorBrush x:Key="Action.Error"           Color="#FF5F5F"/>
+    <SolidColorBrush x:Key="Action.Info"            Color="#00CED1"/>
+    <SolidColorBrush x:Key="Action Info" Color="#00CED1"/>
+
+    <!-- ========== Common Brush Aliases (UI.Templates compatibility) ========== -->
+    <SolidColorBrush x:Key="BackgroundBrush"     Color="#1C1C2E"/>
+    <SolidColorBrush x:Key="BorderBrush"         Color="#4A6078"/>
+    <SolidColorBrush x:Key="InputBackgroundBrush" Color="#262640"/>
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#262640"/>
 
     <!-- ================================================================ -->
     <!-- BACKWARD COMPATIBILITY ALIASES (v2 - Complete Mapping)          -->

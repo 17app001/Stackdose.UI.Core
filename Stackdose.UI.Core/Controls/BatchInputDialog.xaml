@@ -57,8 +57,8 @@
         </Style>
     </Window.Resources>
 
-    <Border Background="#1E1E2E"
-            BorderBrush="#00BCD4"
+    <Border Background="{DynamicResource Surface.Bg.Panel}"
+            BorderBrush="{DynamicResource Accent.Primary}"
             BorderThickness="2"
             CornerRadius="10">
         <Border.Effect>
@@ -84,7 +84,7 @@
                        Text="START PRODUCTION PROCESS"
                        FontSize="20"
                        FontWeight="Bold"
-                       Foreground="#00BCD4"
+                       Foreground="{DynamicResource Accent.Primary}"
                        HorizontalAlignment="Center"
                        FontFamily="Consolas"/>
 
@@ -92,15 +92,15 @@
             <TextBlock Grid.Row="2"
                        Text="Please enter the batch number to start the production process."
                        FontSize="13"
-                       Foreground="#B0BEC5"
+                       Foreground="{DynamicResource Text.Secondary}"
                        TextWrapping="Wrap"
                        HorizontalAlignment="Center"
                        TextAlignment="Center"/>
 
             <!-- Input Field -->
             <Border Grid.Row="4"
-                    Background="#2C2C3E"
-                    BorderBrush="#00BCD4"
+                    Background="{DynamicResource Surface.Bg.Card}"
+                    BorderBrush="{DynamicResource Accent.Primary}"
                     BorderThickness="2"
                     CornerRadius="5"
                     Padding="12">
@@ -113,7 +113,7 @@
                     <TextBlock Grid.Column="0"
                                Text="Batch No:"
                                FontSize="14"
-                               Foreground="#00BCD4"
+                               Foreground="{DynamicResource Accent.Primary}"
                                FontWeight="Medium"
                                VerticalAlignment="Center"
                                Margin="0,0,10,0"/>
@@ -122,13 +122,13 @@
                              Grid.Column="1"
                              FontSize="16"
                              FontFamily="Consolas"
-                             Foreground="White"
+                             Foreground="{DynamicResource Text.Primary}"
                              Background="Transparent"
                              BorderThickness="0"
                              VerticalAlignment="Center"
                              Text="BATCH-"
-                             CaretBrush="#00BCD4"
-                             SelectionBrush="#00BCD4"
+                             CaretBrush="{DynamicResource Accent.Primary}"
+                             SelectionBrush="{DynamicResource Accent.Primary}"
                              KeyDown="BatchNumberTextBox_KeyDown"/>
                 </Grid>
             </Border>

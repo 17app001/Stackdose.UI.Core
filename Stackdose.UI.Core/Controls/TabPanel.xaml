@@ -40,7 +40,7 @@
                                 <Button.Style>
                                     <Style TargetType="Button">
                                         <Setter Property="Background" Value="Transparent"/>
-                                        <Setter Property="Foreground" Value="#9090B0"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}"/>
                                         <Setter Property="FontWeight" Value="SemiBold"/>
                                         <Setter Property="Template">
                                             <Setter.Value>

@@ -10,7 +10,7 @@
              Foreground="{DynamicResource Plc.Text.Value}">
 
     <FrameworkElement.ToolTip>
-        <ToolTip Background="#1A1E2A"
+        <ToolTip Background="{DynamicResource Surface.Bg.Panel}"
                  BorderBrush="{DynamicResource Plc.Border}"
                  BorderThickness="1"
                  Padding="8,6"
@@ -18,11 +18,11 @@
                  HasDropShadow="True">
             <StackPanel>
                 <TextBlock Text="PLC Address"
-                           Foreground="#B9C7E6"
+                           Foreground="{DynamicResource Text.Secondary}"
                            FontSize="10"
                            FontFamily="Consolas" />
                 <TextBlock Text="{Binding PlacementTarget.Address, RelativeSource={RelativeSource AncestorType=ToolTip}}"
-                           Foreground="#5DE2FF"
+                           Foreground="{DynamicResource Accent.Primary}"
                            FontSize="12"
                            FontWeight="SemiBold"
                            FontFamily="Consolas" />

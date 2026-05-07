@@ -53,11 +53,11 @@
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsHighlighted" Value="True">
-                                        <Setter TargetName="ItemBd" Property="Background" Value="#2A3D52"/>
+                                        <Setter TargetName="ItemBd" Property="Background" Value="{DynamicResource Surface.Bg.Panel}"/>
                                         <Setter Property="Foreground" Value="{DynamicResource Cyber.NeonBlue}"/>
                                     </Trigger>
                                     <Trigger Property="IsSelected" Value="True">
-                                        <Setter TargetName="ItemBd" Property="Background" Value="#1A3A50"/>
+                                        <Setter TargetName="ItemBd" Property="Background" Value="{DynamicResource Surface.Bg.Control}"/>
                                         <Setter Property="Foreground" Value="{DynamicResource Cyber.NeonBlue}"/>
                                     </Trigger>
                                 </ControlTemplate.Triggers>
@@ -221,7 +221,7 @@
     </Style>
 
     <Style TargetType="{x:Type Thumb}" x:Key="ScrollBarThumbStyle">
-        <Setter Property="Background" Value="#3A5A70"/>
+        <Setter Property="Background" Value="{DynamicResource Surface.Border.Default}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Thumb}">
@@ -233,7 +233,7 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#5A8AB0"/>
+                <Setter Property="Background" Value="{DynamicResource Surface.Border.Strong}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -346,12 +346,12 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Foreground" Value="{DynamicResource Cyber.Text.Main}"/>
-                            <Setter TargetName="Bd" Property="Background" Value="#15FFFFFF"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Overlay.Bg.Panel}"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter Property="Foreground" Value="{DynamicResource Cyber.NeonBlue}"/>
                             <Setter TargetName="ActiveBar" Property="Background" Value="{DynamicResource Cyber.NeonBlue}"/>
-                            <Setter TargetName="Bd" Property="Background" Value="#10FFFFFF"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Overlay.Bg.Light}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -368,10 +368,10 @@
         <Setter Property="BorderBrush" Value="{DynamicResource Cyber.Border}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="RowBackground" Value="Transparent"/>
-        <Setter Property="AlternatingRowBackground" Value="#08FFFFFF"/>
+        <Setter Property="AlternatingRowBackground" Value="{DynamicResource Overlay.Bg.Light}"/>
         <Setter Property="GridLinesVisibility" Value="Horizontal"/>
-        <Setter Property="HorizontalGridLinesBrush" Value="#1AFFFFFF"/>
-        <Setter Property="VerticalGridLinesBrush" Value="#1AFFFFFF"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource Surface.Border.Default}"/>
+        <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource Surface.Border.Default}"/>
         <Setter Property="HeadersVisibility" Value="Column"/>
         <Setter Property="SelectionMode" Value="Single"/>
         <Setter Property="CanUserResizeRows" Value="False"/>
@@ -397,10 +397,10 @@
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#15FFFFFF"/>
+                <Setter Property="Background" Value="{DynamicResource Overlay.Bg.Panel}"/>
             </Trigger>
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="#2000E5FF"/>
+                <Setter Property="Background" Value="{DynamicResource Overlay.Highlight.Info}"/>
                 <Setter Property="Foreground" Value="{DynamicResource Cyber.NeonBlue}"/>
             </Trigger>
         </Style.Triggers>

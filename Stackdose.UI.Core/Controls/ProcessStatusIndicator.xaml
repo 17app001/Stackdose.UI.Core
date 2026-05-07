@@ -37,8 +37,8 @@
     </UserControl.Resources>
 
     <Border x:Name="RootBorder"
-            Background="#1E1E2E"
-            BorderBrush="#00BCD4"
+            Background="{DynamicResource Surface.Bg.Panel}"
+            BorderBrush="{DynamicResource Accent.Primary}"
             BorderThickness="2"
             CornerRadius="8"
             Padding="12,8"
@@ -66,7 +66,7 @@
                 <Ellipse x:Name="SpinnerOuter"
                          Width="32"
                          Height="32"
-                         Stroke="#00BCD4"
+                         Stroke="{DynamicResource Accent.Primary}"
                          StrokeThickness="3"
                          StrokeDashArray="8 4"
                          RenderTransformOrigin="0.5,0.5">
@@ -78,7 +78,7 @@
                 <!-- Inner Circle -->
                 <Ellipse Width="12"
                          Height="12"
-                         Fill="#00BCD4"
+                         Fill="{DynamicResource Accent.Primary}"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center"/>
             </Grid>
@@ -89,14 +89,14 @@
                            Text="Processing..."
                            FontSize="16"
                            FontWeight="Bold"
-                           Foreground="#00BCD4"
+                           Foreground="{DynamicResource Accent.Primary}"
                            FontFamily="Consolas"
                            VerticalAlignment="Center"/>
 
                 <TextBlock x:Name="BatchNumberText"
                            Text="Batch: BATCH-001"
                            FontSize="12"
-                           Foreground="#B0BEC5"
+                           Foreground="{DynamicResource Text.Secondary}"
                            FontFamily="Consolas"
                            Margin="0,4,0,0"
                            VerticalAlignment="Center"/>

@@ -6,14 +6,16 @@
 
 - **日期：** 2026-05-07
 - **分支：** `master`
-- **上次做了什麼：** Light 主題三項修復（完成）
-  - **PlcLabel 底框不切換：** `UpdateFrameBackground()` 改為 `FrameBorder.SetResourceReference(Border.BackgroundProperty, "Plc.Bg.Main")`，DynamicResource 語意自動跟隨主題
-  - **Light 模式全白問題：** `LightTheme.xaml` + `LightColors.xaml` 的 Surface tokens 改為分層灰色（Page `#EBEBEB` / Panel `#F5F5F5` / Card `#FAFAFA` / Control `#FFFFFF`），與深色模式層次對應
-  - **RuntimeControlFactory Spacer 透明：** `CreateGroupBox()` body border 改為 `SetResourceReference(Border.BackgroundProperty, "Surface.Bg.Card")`，固態背景不再透空
+- **上次做了什麼：** JSON 驅動主題切換與 Light 模式優化（進度中）
+  - **自動化：** 實現由 `machinedesign.json` 定義主題，Runtime 自動呼叫 `ThemeManager` 切換，並更新 `new-app.ps1` 模板支援動態資源。
+  - **資源重構：** 統一 `LightColors.xaml` 資源 Key，解決多項組件在淺色模式下的慘白問題。
+- **⚠️ 待解決 UI 問題：**
+  - **AlarmViewer 背景異常：** 在 Light 模式下仍顯示深色背景，需檢查資源引用鏈。
+  - **按鈕文字顏色：** 彩色按鈕（Primary/Success等）文字在 Light 模式下未正確維持白色，對比度不足。
 - **下一步：**
-    1. **PlcConfirmationHandler 實作** — 帶倒數功能的確認對話框，與 Events 系統接軌
-    2. **ModelE 實機驗證** — 噴頭啟動接線與 M-bit 事件連動測試
-    3. **JSON 熱更新** — DesignRuntime 修改 JSON 後自動重新載入畫布
+    1. **修復 Alarm/Sensor Viewer 視覺一致性** — 確保背景與文字 100% 隨主題切換
+    2. **修正按鈕 Foreground 邏輯** — 強制彩色背景按鈕使用白色文字
+    3. **PlcConfirmationHandler 實作** — 帶倒數功能的確認對話框
 
 ## 進行中
 

@@ -25,19 +25,20 @@
             <Style TargetType="Button">
                 <Setter Property="Background" Value="{Binding BackgroundBrush, ElementName=root}"/>
                 <Setter Property="Foreground" Value="White"/>
-                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource Surface.Border.Default}"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
                             <Border Background="{TemplateBinding Background}"
-                                    BorderBrush="Transparent"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
                                     CornerRadius="5"
-                                    BorderThickness="1">
+                                    BorderThickness="{TemplateBinding BorderThickness}">
                                 <Border.Effect>
-                                    <DropShadowEffect Color="Black" 
-                                                      BlurRadius="10" 
-                                                      ShadowDepth="2" 
-                                                      Opacity="0.3"/>
+                                    <DropShadowEffect Color="#40000000" 
+                                                      BlurRadius="8" 
+                                                      ShadowDepth="1" 
+                                                      Opacity="0.2"/>
                                 </Border.Effect>
                                 <ContentPresenter HorizontalAlignment="Center" 
                                                   VerticalAlignment="Center"
@@ -49,21 +50,23 @@
                 
                 <Style.Triggers>
                     <Trigger Property="IsKeyboardFocused" Value="True">
-                        <Setter Property="BorderBrush" Value="#80FFFFFF"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource Accent.Primary}"/>
                     </Trigger>
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="Background" Value="{Binding HoverBrush, ElementName=root}"/>
+                        <Setter Property="Opacity" Value="0.9"/>
                     </Trigger>
 
                     <Trigger Property="IsPressed" Value="True">
-                        <Setter Property="Opacity" Value="0.9"/>
+                        <Setter Property="Opacity" Value="0.8"/>
                     </Trigger>
                     
                     <Trigger Property="IsEnabled" Value="False">
-                        <Setter Property="Background" Value="#424242"/>
-                        <Setter Property="Foreground" Value="#757575"/>
-                        <Setter Property="Cursor" Value="No"/>
-                        <Setter Property="Opacity" Value="0.6"/>
+                        <Setter Property="Background" Value="{DynamicResource Surface.Bg.Panel}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource Text.Tertiary}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource Surface.Border.Default}"/>
+                        <Setter Property="Cursor" Value="Arrow"/>
+                        <Setter Property="Opacity" Value="1.0"/>
                     </Trigger>
                 </Style.Triggers>
             </Style>

@@ -14,24 +14,27 @@
 			<Setter Property="Template">
 				<Setter.Value>
 					<ControlTemplate TargetType="Button">
-						<Border Background="{TemplateBinding Background}"
+						<Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="1"
-                                CornerRadius="5"
-                                Opacity="0.95">
-							<ContentPresenter HorizontalAlignment="Center" 
+                                CornerRadius="5">
+							<ContentPresenter x:Name="Content"
+                                              HorizontalAlignment="Center" 
 						                       VerticalAlignment="Center"
 						                       Margin="8,3"/>
 						</Border>
 						<ControlTemplate.Triggers>
 							<Trigger Property="IsMouseOver" Value="True">
-								<Setter Property="Opacity" Value="0.9"/>
+								<Setter TargetName="Border" Property="Opacity" Value="0.85"/>
 							</Trigger>
 							<Trigger Property="IsPressed" Value="True">
-								<Setter Property="Opacity" Value="0.8"/>
+								<Setter TargetName="Border" Property="Opacity" Value="0.7"/>
 							</Trigger>
 							<Trigger Property="IsEnabled" Value="False">
-								<Setter Property="Opacity" Value="0.65"/>
+								<Setter TargetName="Border" Property="Background" Value="{DynamicResource Surface.Bg.Control}"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource Surface.Border.Default}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource Text.Tertiary}"/>
 							</Trigger>
 						</ControlTemplate.Triggers>
 					</ControlTemplate>
@@ -266,16 +269,16 @@
 						<Button Content="執行閃噴"
 						        Width="76"
 						        FontWeight="SemiBold"
-						        Background="#27AE60"
+						        Background="{DynamicResource Action.Success}"
 						        Foreground="White"
-						        BorderBrush="#229954"
+						        BorderBrush="{DynamicResource Action.Success}"
 						        Margin="0,0,8,0"
 						        Click="SpitButton_Click"
 						        Style="{StaticResource ModernButtonStyle}"/>
 
 						<Button Content="編碼器重置"
 						        Width="92"
-						        Background="#C228CA"
+						        Background="#9B59B6"
 						        Foreground="White"
 						        BorderBrush="#8E44AD"
 						        Click="EncoderReset_Click"
@@ -294,27 +297,27 @@
 
 						<Button Grid.Column="0"
 						        Content="讀取圖片"
-						        Background="#00B0FF"
+						        Background="{DynamicResource Action.Primary}"
 						        Foreground="White"
-						        BorderBrush="#0081CB"
+						        BorderBrush="{DynamicResource Action.Primary}"
 						        x:Name="BrowseImageButton"
 						        Click="BrowseImageButton_Click"
 						        Style="{StaticResource ModernButtonStyle}"/>
 
 						<Button Grid.Column="2"
 						        Content="載入任務"
-						        Background="#FF9100"
+						        Background="{DynamicResource Action.Warning}"
 						        Foreground="White"
-						        BorderBrush="#C56200"
+						        BorderBrush="{DynamicResource Action.Warning}"
 						        x:Name="LoadImageButton"
 						        Click="LoadImageButton_Click"
 						        Style="{StaticResource ModernButtonStyle}"/>
 
 						<Button Grid.Column="4"
 						        Content="取消任務"
-						        Background="#FF1744"
+						        Background="{DynamicResource Action.Error}"
 						        Foreground="White"
-						        BorderBrush="#C4001D"
+						        BorderBrush="{DynamicResource Action.Error}"
 						        x:Name="CancelTaskButton"
 						        Click="CancelTaskButton_Click"
 						        Style="{StaticResource ModernButtonStyle}"/>

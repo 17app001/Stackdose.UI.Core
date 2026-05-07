@@ -281,15 +281,17 @@ namespace Stackdose.UI.Core.Controls
         {
             try
             {
+                bool isLight = ThemeManager.IsLightTheme();
+
                 var (background, hover) = Theme switch
                 {
-                    ButtonTheme.Normal => ("#607D8B", "#455A64"),
-                    ButtonTheme.Primary => ("#2196F3", "#1976D2"),
-                    ButtonTheme.Success => ("#4CAF50", "#388E3C"),
-                    ButtonTheme.Warning => ("#FF9800", "#F57C00"),
-                    ButtonTheme.Error => ("#F44336", "#D32F2F"),
-                    ButtonTheme.Info => ("#00BCD4", "#0097A7"),
-                    _ => ("#607D8B", "#455A64")
+                    ButtonTheme.Normal => isLight ? ("#78909C", "#546E7A") : ("#607D8B", "#455A64"),
+                    ButtonTheme.Primary => isLight ? ("#1976D2", "#1565C0") : ("#2196F3", "#1976D2"),
+                    ButtonTheme.Success => isLight ? ("#388E3C", "#2E7D32") : ("#4CAF50", "#388E3C"),
+                    ButtonTheme.Warning => isLight ? ("#F57C00", "#EF6C00") : ("#FF9800", "#F57C00"),
+                    ButtonTheme.Error => isLight ? ("#D32F2F", "#C62828") : ("#F44336", "#D32F2F"),
+                    ButtonTheme.Info => isLight ? ("#0097A7", "#00838F") : ("#00BCD4", "#0097A7"),
+                    _ => isLight ? ("#78909C", "#546E7A") : ("#607D8B", "#455A64")
                 };
 
                 SetValue(BackgroundBrushProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString(background)));

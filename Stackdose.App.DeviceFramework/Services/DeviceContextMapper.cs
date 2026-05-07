@@ -7,7 +7,7 @@ namespace Stackdose.App.DeviceFramework.Services;
 /// </summary>
 public static class DeviceContextMapper
 {
-    public static DeviceContext CreateDeviceContext(MachineConfig config, IRuntimeMappingAdapter adapter)
+    public static DeviceContext CreateDeviceContext(MachineConfig config, IRuntimeMappingAdapter adapter, string? configDirectory = null)
     {
         var runningAddress = !string.IsNullOrWhiteSpace(config.ProcessMonitor.IsRunning)
             ? config.ProcessMonitor.IsRunning
@@ -94,8 +94,9 @@ public static class DeviceContextMapper
         // If MachineDesignFile is specified, override Labels/StatusLabels from design file
         if (!string.IsNullOrWhiteSpace(config.MachineDesignFile))
         {
+            var baseDir = configDirectory ?? AppContext.BaseDirectory;
             var designPath = DesignRenderService.ResolveDesignFilePath(
-                config.MachineDesignFile, AppContext.BaseDirectory);
+                config.MachineDesignFile, baseDir);
             DesignRenderService.ApplyDesignFile(context, designPath);
         }
 

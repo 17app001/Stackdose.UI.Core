@@ -34,6 +34,7 @@ public class RuntimeHost
             return null;
 
         var configDir = ResolveConfigDirectory();
+        _runtimeMapper.ConfigDirectory = configDir; // <--- 設定目錄供後續解析設計檔使用
         var meta = ConfigLoader.LoadMeta(Path.Combine(configDir, "app-meta.json"));
         _runtimeMapper.ApplyMeta(overviewPage, meta);
 

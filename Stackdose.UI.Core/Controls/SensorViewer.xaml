@@ -110,10 +110,10 @@
         </Style>
     </FrameworkElement.Resources>
 
-    <Border BorderBrush="{DynamicResource Log.Border}"
+    <Border BorderBrush="{DynamicResource Sensor.Border}"
             BorderThickness="1"
             CornerRadius="6"
-            Background="{DynamicResource Log.Bg.Main}">
+            Background="{DynamicResource Sensor.Bg.Main}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

@@ -69,7 +69,9 @@
       "PowerShell(Get-ChildItem \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\\\\Stackdose.Tools.MachinePageDesigner\" -Recurse -Force | ForEach-Object { $_.FullName })",
       "Bash(Find \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\" -type f -name \"*.xaml\")",
       "Bash(Find \"D:\\\\工作區\\\\Project\\\\Stackdose.UI.Core\" -type f -name \"*.cs\")",
-      "PowerShell(Get-ChildItem \"D:\\\\工作區\\\\Project\\\\Sdk\\\\FeiyangWrapper\" -Recurse -Depth 3 | Where-Object { $_.Name -match '\\\\.\\(vcxproj|csproj|dll|sln\\)$' } | Select-Object FullName)"
+      "PowerShell(Get-ChildItem \"D:\\\\工作區\\\\Project\\\\Sdk\\\\FeiyangWrapper\" -Recurse -Depth 3 | Where-Object { $_.Name -match '\\\\.\\(vcxproj|csproj|dll|sln\\)$' } | Select-Object FullName)",
+      "Bash(sed -n '515,530p' Stackdose.UI.Core/Controls/CyberFrame.xaml.cs)",
+      "Bash(sed -n '710,740p' Stackdose.UI.Core/Controls/CyberFrame.xaml.cs)"
     ]
   }
 }

@@ -245,10 +245,12 @@ public partial class MainWindow : Window
         // 套用主題
         if (doc.Layout != null)
         {
-            var theme = doc.Layout.Theme == "Light"
-                ? Stackdose.UI.Core.Services.ThemeManager.ThemeType.Light
-                : Stackdose.UI.Core.Services.ThemeManager.ThemeType.Dark;
-            Stackdose.UI.Core.Services.ThemeManager.ApplyTheme(Application.Current, theme);
+            var themeType = doc.Layout.Theme == "Light"
+                ? Stackdose.UI.Core.Models.ThemeType.Light
+                : Stackdose.UI.Core.Models.ThemeType.Dark;
+            
+            // 使用 Helpers.ThemeManager 以確保通知所有 IThemeAware 控制項 (如 PlcLabel)
+            Stackdose.UI.Core.Helpers.ThemeManager.SwitchTheme(themeType);
         }
 
         // 清除舊有元件

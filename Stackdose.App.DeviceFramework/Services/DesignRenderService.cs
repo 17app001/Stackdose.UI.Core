@@ -44,8 +44,22 @@ public static class DesignRenderService
             return false;
         }
 
-        if (doc?.Zones is null || doc.Zones.Count == 0)
+        if (doc is null)
             return false;
+
+        // Apply UI Theme if specified in layout
+        if (doc.Layout is not null && !string.IsNullOrWhiteSpace(doc.Layout.Theme))
+        {
+            var themeType = doc.Layout.Theme.Equals("Light", StringComparison.OrdinalIgnoreCase)
+                ? Stackdose.UI.Core.Models.ThemeType.Light
+                : Stackdose.UI.Core.Models.ThemeType.Dark;
+            
+            // Use unified ThemeManager to ensure all controls are notified
+            Stackdose.UI.Core.Helpers.ThemeManager.SwitchTheme(themeType);
+        }
+
+        if (doc.Zones is null || doc.Zones.Count == 0)
+            return true; // Still return true if theme was applied but no zones found
 
         // liveData zone → context.Labels
         if (doc.Zones.TryGetValue("liveData", out var liveDataZone) && liveDataZone.Items.Count > 0)
@@ -155,7 +169,14 @@ public static class DesignRenderService
     private sealed class DesignDocumentDto
     {
         public string Version { get; set; } = "1.0";
+        public DesignLayoutDto? Layout { get; set; }
         public Dictionary<string, DesignZoneDto> Zones { get; set; } = new();
+    }
+
+    private sealed class DesignLayoutDto
+    {
+        public string Theme { get; set; } = "Dark";
+        public string Mode { get; set; } = "Standard";
     }
 
     private sealed class DesignZoneDto

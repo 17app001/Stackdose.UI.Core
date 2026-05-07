@@ -234,13 +234,13 @@ public partial class App : Application
         Title="$AppName"
         WindowStyle="None" ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
-        Background="#1E1E32">
+        Background="{DynamicResource Surface.Bg.Page}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="28"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Border Grid.Row="0" Background="#12121E" MouseLeftButtonDown="OnBarDrag">
+        <Border Grid.Row="0" Background="{DynamicResource Surface.Bg.Panel}" MouseLeftButtonDown="OnBarDrag">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -428,12 +428,24 @@ public partial class MainWindow : Window
         _designWidth  = doc.CanvasWidth;
         _designHeight = doc.CanvasHeight;
 
+        // 套用主題
+        if (doc.Layout != null)
+        {
+            var themeType = doc.Layout.Theme == "Light"
+                ? Stackdose.UI.Core.Models.ThemeType.Light
+                : Stackdose.UI.Core.Models.ThemeType.Dark;
+            
+            // 使用 Helpers.ThemeManager 以確保通知所有 IThemeAware 控制項 (如 PlcLabel)
+            Stackdose.UI.Core.Helpers.ThemeManager.SwitchTheme(themeType);
+        }
+
         var canvas = new Canvas
         {
             Width        = doc.CanvasWidth,
             Height       = doc.CanvasHeight,
             ClipToBounds = true,
-            Background   = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x32)),
+            // 使用動態資源背景，確保主題切換生效
+            Background   = (Brush)Application.Current.FindResource("Surface.Bg.Page"),
         };
 
         var controlMap = new List<KeyValuePair<string, FrameworkElement>>();
@@ -568,10 +580,22 @@ public partial class MainWindow : Window
             sp.HeaderDeviceName = string.IsNullOrWhiteSpace(doc.Meta.MachineId) ? "DEVICE" : doc.Meta.MachineId;
         }
 
+        // 套用主題
+        if (doc.Layout != null)
+        {
+            var themeType = doc.Layout.Theme == "Light"
+                ? Stackdose.UI.Core.Models.ThemeType.Light
+                : Stackdose.UI.Core.Models.ThemeType.Dark;
+            
+            // 使用 Helpers.ThemeManager 以確保通知所有 IThemeAware 控制項 (如 PlcLabel)
+            Stackdose.UI.Core.Helpers.ThemeManager.SwitchTheme(themeType);
+        }
+
         var canvas = new Canvas
         {
             Width = doc.CanvasWidth, Height = doc.CanvasHeight, ClipToBounds = true,
-            Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x32)),
+            // 使用動態資源背景，確保主題切換生效
+            Background = (Brush)Application.Current.FindResource("Surface.Bg.Page"),
         };
 
         var controlMap = new List<KeyValuePair<string, FrameworkElement>>();

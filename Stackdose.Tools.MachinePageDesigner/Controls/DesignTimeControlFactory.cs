@@ -282,15 +282,16 @@ public static class DesignTimeControlFactory
         // 根容器（無背景 → 不攔截 hit-test，讓 Body 區點擊穿透到 Canvas）
         var root = new Grid();
 
-        // ── 第一層：純視覺（邊框 + 半透明底）IsHitTestVisible=false ──────
-        root.Children.Add(new Border
+        // ── 第一層：純視覺（邊框 + 實色底）IsHitTestVisible=false ──────
+        var bodyBorder = new Border
         {
             BorderBrush     = new SolidColorBrush(Color.FromRgb(headerColor.R, headerColor.G, headerColor.B)),
             BorderThickness  = new Thickness(1.5),
-            Background      = new SolidColorBrush(Color.FromArgb(0x18, headerColor.R, headerColor.G, headerColor.B)),
             CornerRadius    = new CornerRadius(4),
-            IsHitTestVisible = false,   // 只是外觀，不攔截滑鼠
-        });
+            IsHitTestVisible = false,
+        };
+        bodyBorder.SetResourceReference(Border.BackgroundProperty, "Surface.Bg.Card");
+        root.Children.Add(bodyBorder);
 
         // ── 第二層：互動（只有 Header 有背景 → 只有 Header 可 hit-test）─
         var headerBorder = new Border

@@ -6,15 +6,20 @@
 
 - **日期：** 2026-05-08
 - **分支：** `master`
-- **上次做了什麼：** Light 模式視覺一致性第三輪修正（截圖回饋後）
-  - `PrintHeadController.xaml` — 移除 local `Theme.xaml` merge（WPF scope 遮蔽 Light override 的根因），ComboBoxItem `Foreground="White"` → `Text.Primary`
-  - `DesignTimeControlFactory.cs` — TabPanel placeholder 加外層 Border（`Log.Border` + `CornerRadius=6`）；Spacer 預設 headerColor 改 `"Normal"`（灰）
-  - `RuntimeControlFactory.cs` — Spacer 預設 headerColor 同步改 `"Normal"`
-  - `LightColors.xaml` — `Plc.Bg.Main` `#FFFFFF` → `#F5F7F9`（PlcLabel 預設背景改 card level 灰）
+- **上次做了什麼：** Light 模式 runtime 完整修正（2026-05-08）
+  - `AlarmViewer.xaml` / `LogManagementPanel.xaml` / `UserManagementPanel.xaml` — 移除 local `Theme.xaml` merge（WPF 資源範圍遮蔽根因）
+  - `PrintHeadController.xaml` / `SecuredButton.xaml` — ContentPresenter.Resources local implicit TextBlock Style，修正 Light 模式按鈕文字被 global implicit Style 覆蓋為深色的問題
+  - `PrintHeadStatus.xaml` — Padding "8"→"4"、ClipToBounds="True"、Row1 Height="4"→"*"（StatusDataPanel 貼底，兩張卡視覺一致）
+  - `DesignTimeControlFactory.cs` — StaticLabel / PlcStatusIndicator 改 SetResourceReference（主題動態響應）
+  - `RuntimeControlFactory.cs`（DesignRuntime）— Spacer body 改 SetResourceReference("Surface.Bg.Card")、StaticLabel dynamic foreground、ColorThemeToResourceKey helper
+  - `scripts/init-shell-app.ps1` — 同步以上三項修正 + Spacer headerColor 預設 "Primary"→"Normal"
+  - `PropertyPanel.xaml` — StaticLabel 顏色改 ComboBox（配色系統）
+  - `LightColors.xaml` — 補齊 Surface.* / Text.* / Action.* / Status.* token
 - **下一步：**
-    1. 在 PageDesigner 重新截圖確認 Light 模式一致性
-    2. **PlcConfirmationHandler 實作** — 帶倒數功能的確認對話框
-    3. **JSON 熱更新** — DesignRuntime 修改 JSON 後自動重載畫布
+    1. ⚠ 確認 MyPrintApp2 單獨重建後 Spacer header 灰色是否正確（需 rebuild MyPrintApp2.csproj，不是 Stackdose.UI.Core.sln）
+    2. ⚠ 確認 PrintHead 2 高度在新佈局（Row1="*"）下視覺一致
+    3. **PlcConfirmationHandler 實作** — 帶倒數功能的確認對話框
+    4. **JSON 熱更新** — DesignRuntime 修改 JSON 後自動重載畫布
 
 ## 進行中
 
@@ -28,16 +33,19 @@
 
 | 問題 | 優先度 | 備註 |
 |---|---|---|
+| **Spacer headerColor runtime 仍為 Primary 藍** | 高 | MyPrintApp2 有獨立 RuntimeControlFactory.cs 副本，需單獨 rebuild MyPrintApp2.csproj（非 Stackdose.UI.Core.sln）；代碼修正已完成 |
+| **PrintHead 2 高度視覺問題** | 高 | Row1 改 Height="*" 後理論上 StatusDataPanel 貼底，需重建確認；config 載入失敗時無電壓行導致空白較多 |
 | **D512 PLC flag 缺失** | 中 | ModelE 傳圖前寫 D512 作為層旗標，待實機確認是否需要補 |
 | JSON 熱更新 | 中 | DesignRuntime 尚未實作 |
 
 ## 最近 Commits
 
 ```
-[本次] fix: PlcLabel theme + Light surface gray + RuntimeFactory Spacer solid bg
-[前次] fix: Light/Dark theme complete — Freezable Binding + ThemeManager top-level override + white bg + PrintHead buttons
-dacae6b fix: ThemeManager NotifyOwners + FreeCanvas hardcoded bg
-3a5593b fix: Dashboard letterbox background + devlog/status update
+[本次] fix: Light mode runtime — SecuredButton text, PrintHeadStatus layout, Spacer theme, AlarmViewer/Log/UserMgmt scope
+[前次] fix: PlcLabel theme + Light surface gray + RuntimeFactory Spacer solid bg
+aefd366 light模式處理未完成，PrintHeadStatus 跑版
+6a456f6 fix: PrintHead disabled opacity + DesignTimeFactory Spacer solid bg
+af218b9 fix: complete Light/Dark theme switching
 ```
 
 ## 功能完成狀態快照

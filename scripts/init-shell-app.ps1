@@ -796,18 +796,19 @@ public static class RuntimeControlFactory
     private static UIElement CreateGroupBox(DesignerItemDefinition def)
     {
         var title       = def.Props.GetString("title", "Group");
-        var headerColor = GroupBoxHeaderColor(def.Props.GetString("headerColor", "Primary"));
+        var headerColor = GroupBoxHeaderColor(def.Props.GetString("headerColor", "Normal"));
         var showTitle   = def.Props.GetBool("showTitle", true);
         var root        = new Grid();
 
-        root.Children.Add(new Border
+        var bodyBorder = new Border
         {
             BorderBrush      = new SolidColorBrush(Color.FromRgb(headerColor.R, headerColor.G, headerColor.B)),
             BorderThickness   = new Thickness(1.5),
-            Background       = new SolidColorBrush(Color.FromArgb(0x18, headerColor.R, headerColor.G, headerColor.B)),
             CornerRadius     = new CornerRadius(4),
             IsHitTestVisible  = false,
-        });
+        };
+        bodyBorder.SetResourceReference(Border.BackgroundProperty, "Surface.Bg.Card");
+        root.Children.Add(bodyBorder);
 
         var header = new Border
         {
@@ -859,9 +860,32 @@ public static class RuntimeControlFactory
 
     private static UIElement CreateStaticLabel(DesignerItemDefinition def)
     {
-        var p = def.Props;
-        return new TextBlock { Text = p.GetString("staticText", "Label"), FontSize = p.GetDouble("staticFontSize", 14), Foreground = Brushes.White };
+        var p          = def.Props;
+        var colorTheme = p.GetString("staticForeground", "Default");
+        var tb = new TextBlock
+        {
+            Text         = p.GetString("staticText", "Label"),
+            FontSize     = p.GetDouble("staticFontSize", 14),
+            TextWrapping = TextWrapping.Wrap,
+        };
+        tb.SetResourceReference(TextBlock.ForegroundProperty, ColorThemeToResourceKey(colorTheme));
+        return tb;
     }
+
+    private static string ColorThemeToResourceKey(string theme) => theme.ToLowerInvariant() switch
+    {
+        "primary"   => "Action.Primary",
+        "success"   => "Action.Success",
+        "warning"   => "Action.Warning",
+        "error"     => "Action.Error",
+        "info"      => "Action.Info",
+        "neonblue"  => "Cyber.NeonBlue",
+        "neonred"   => "Cyber.NeonRed",
+        "neongreen" => "Cyber.NeonGreen",
+        "white"     => "Cyber.Text.Bright",
+        "gray"      => "Text.Tertiary",
+        _           => "Text.Primary",
+    };
 
     private static UIElement CreateTabPanel(DesignerItemDefinition def)
     {

@@ -11,9 +11,6 @@
     
     <FrameworkElement.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Core;component/Themes/Theme.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             
             <DataTemplate x:Key="AlarmItemTemplate">

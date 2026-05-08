@@ -12,12 +12,13 @@
             BorderBrush="{DynamicResource Plc.Border}"
             BorderThickness="1"
             CornerRadius="8"
-            Padding="8"
+            Padding="4"
+            ClipToBounds="True"
             HorizontalAlignment="Stretch">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="4"/>
+                <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 

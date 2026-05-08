@@ -40,9 +40,16 @@
                                                       ShadowDepth="1" 
                                                       Opacity="0.2"/>
                                 </Border.Effect>
-                                <ContentPresenter HorizontalAlignment="Center" 
+                                <ContentPresenter HorizontalAlignment="Center"
                                                   VerticalAlignment="Center"
-                                                  Margin="{TemplateBinding Padding}"/>
+                                                  Margin="{TemplateBinding Padding}"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}">
+                                    <ContentPresenter.Resources>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                        </Style>
+                                    </ContentPresenter.Resources>
+                                </ContentPresenter>
                             </Border>
                         </ControlTemplate>
                     </Setter.Value>

@@ -10,10 +10,6 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Stackdose.UI.Core;component/Themes/Theme.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-            
             <converters:BoolToActiveStatusConverter x:Key="BoolToActiveStatusConverter"/>
             
             <!-- Modern Card Style -->

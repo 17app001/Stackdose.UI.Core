@@ -274,7 +274,7 @@ public static class RuntimeControlFactory
     private static UIElement CreateGroupBox(DesignerItemDefinition def)
     {
         var title       = def.Props.GetString("title", "Group");
-        var headerColor = GroupBoxHeaderColor(def.Props.GetString("headerColor", "Primary"));
+        var headerColor = GroupBoxHeaderColor(def.Props.GetString("headerColor", "Normal"));
         var showTitle   = def.Props.GetBool("showTitle", true);
         var root        = new Grid();
 
@@ -357,11 +357,7 @@ public static class RuntimeControlFactory
         var fontSize   = p.GetDouble("staticFontSize",   p.GetDouble("fontSize", 13));
         var fontWeight = p.GetString("staticFontWeight", "Normal");
         var textAlign  = p.GetString("staticTextAlign",  p.GetString("textAlign", "Left"));
-        var color      = p.GetString("staticForeground", p.GetString("foreground", "#E2E2F0"));
-
-        SolidColorBrush brush;
-        try { brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color)); }
-        catch { brush = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)); }
+        var colorTheme = p.GetString("staticForeground", p.GetString("foreground", "Default"));
 
         var weight = fontWeight.ToLowerInvariant() switch
         {
@@ -378,18 +374,34 @@ public static class RuntimeControlFactory
             _        => TextAlignment.Left,
         };
 
-        return new TextBlock
+        var tb = new TextBlock
         {
             Text              = text,
             FontSize          = fontSize,
             FontWeight        = weight,
             TextAlignment     = align,
-            Foreground        = brush,
             FontFamily        = new System.Windows.Media.FontFamily("Microsoft JhengHei"),
             VerticalAlignment = VerticalAlignment.Center,
             TextWrapping      = TextWrapping.Wrap,
         };
+        tb.SetResourceReference(TextBlock.ForegroundProperty, ColorThemeToResourceKey(colorTheme));
+        return tb;
     }
+
+    private static string ColorThemeToResourceKey(string theme) => theme.ToLowerInvariant() switch
+    {
+        "primary"   => "Action.Primary",
+        "success"   => "Action.Success",
+        "warning"   => "Action.Warning",
+        "error"     => "Action.Error",
+        "info"      => "Action.Info",
+        "neonblue"  => "Cyber.NeonBlue",
+        "neonred"   => "Cyber.NeonRed",
+        "neongreen" => "Cyber.NeonGreen",
+        "white"     => "Cyber.Text.Bright",
+        "gray"      => "Text.Tertiary",
+        _           => "Text.Primary",
+    };
 
     // ── ProcessStatusIndicator ───────────────────────────────────────────
 

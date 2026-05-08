@@ -32,14 +32,10 @@
                      Width="20"
                      Height="20"
                      Fill="{DynamicResource Status.Offline}"
-                     Stroke="White"
+                     Stroke="{DynamicResource Surface.Border.Default}"
                      StrokeThickness="1"
                      Margin="0,0,12,0"
-                     VerticalAlignment="Center">
-                <Ellipse.Effect>
-                    <DropShadowEffect Color="White" BlurRadius="6" ShadowDepth="0" Opacity="0.5"/>
-                </Ellipse.Effect>
-            </Ellipse>
+                     VerticalAlignment="Center"/>
 
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                 <Grid Margin="0,0,0,2">

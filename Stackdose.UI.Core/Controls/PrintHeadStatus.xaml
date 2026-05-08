@@ -125,8 +125,8 @@
                                             <Trigger Property="IsChecked" Value="True">
                                                 <Setter TargetName="CircleBackground" Property="Fill" Value="{DynamicResource Status.Success}"/>
                                                 <Setter TargetName="CircleBackground" Property="Stroke" Value="{DynamicResource Status.Success}"/>
-                                                <Setter TargetName="PowerLine" Property="Stroke" Value="White"/>
-                                                <Setter TargetName="PowerArc" Property="Stroke" Value="White"/>
+                                                <Setter TargetName="PowerLine" Property="Stroke" Value="{DynamicResource Text.Inverse}"/>
+                                                <Setter TargetName="PowerArc" Property="Stroke" Value="{DynamicResource Text.Inverse}"/>
                                             </Trigger>
                                             <Trigger Property="IsMouseOver" Value="True">
                                                 <Setter TargetName="CircleBackground" Property="Opacity" Value="0.85"/>

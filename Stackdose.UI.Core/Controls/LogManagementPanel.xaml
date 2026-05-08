@@ -47,7 +47,7 @@
             </Style>
 
             <Style x:Key="FilterToggleStyle" TargetType="ToggleButton">
-                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Foreground" Value="{DynamicResource Text.Inverse}"/>
                 <Setter Property="FontWeight" Value="Bold"/>
                 <Setter Property="FontSize" Value="12"/>
                 <Setter Property="FontFamily" Value="Consolas"/>
@@ -86,7 +86,7 @@
             </Style>
 
             <Style x:Key="QueryButtonStyle" TargetType="Button">
-                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Foreground" Value="{DynamicResource Text.Inverse}"/>
                 <Setter Property="Width" Value="100"/>
                 <Setter Property="Height" Value="34"/>
                 <Setter Property="FontWeight" Value="Bold"/>
@@ -148,25 +148,25 @@
                 <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <ToggleButton Content="AUDIT TRAIL"
                                   Style="{StaticResource FilterToggleStyle}"
-                                  Background="#E85B4A"
+                                  Background="{DynamicResource Status.Error}"
                                   IsChecked="{Binding IsAuditTrailMode}"
                                   Click="AuditTrailButton_Click"/>
                     
                     <ToggleButton Content="OPERATION"
                                   Style="{StaticResource FilterToggleStyle}"
-                                  Background="#3AA0FF"
+                                  Background="{DynamicResource Action.Primary}"
                                   IsChecked="{Binding IsOperationMode}"
                                   Click="OperationButton_Click"/>
                     
                     <ToggleButton Content="EVENT"
                                   Style="{StaticResource FilterToggleStyle}"
-                                  Background="#FFB020"
+                                  Background="{DynamicResource Action.Warning}"
                                   IsChecked="{Binding IsEventMode}"
                                   Click="EventButton_Click"/>
                     
                     <ToggleButton Content="PERIODIC DATA"
                                   Style="{StaticResource FilterToggleStyle}"
-                                  Background="#3AC977"
+                                  Background="{DynamicResource Action.Success}"
                                   IsChecked="{Binding IsPeriodicDataMode}"
                                   Click="PeriodicDataButton_Click"
                                   Margin="0,0,24,0"/>
@@ -231,7 +231,7 @@
                                   x:Name="SeverityAllBtn"
                                   IsChecked="{Binding IsSeverityAll, Mode=TwoWay}"
                                   Click="SeverityAll_Click"
-                                  Background="#6B7280"/>
+                                  Background="{DynamicResource Status.Offline}"/>
                     
                     <ToggleButton Content="CRITICAL"
                                   Style="{StaticResource CompactToggleStyle}"
@@ -239,28 +239,28 @@
                                   IsChecked="{Binding IsSeverityCritical, Mode=TwoWay}"
                                   Click="SeverityCritical_Click"
                                   Width="80"
-                                  Background="#DC2626"/>
+                                  Background="{DynamicResource Status.Error}"/>
                     
                     <ToggleButton Content="MAJOR"
                                   Style="{StaticResource CompactToggleStyle}"
                                   x:Name="SeverityMajorBtn"
                                   IsChecked="{Binding IsSeverityMajor, Mode=TwoWay}"
                                   Click="SeverityMajor_Click"
-                                  Background="#EA580C"/>
+                                  Background="{DynamicResource Action.Warning}"/>
                     
                     <ToggleButton Content="MINOR"
                                   Style="{StaticResource CompactToggleStyle}"
                                   x:Name="SeverityMinorBtn"
                                   IsChecked="{Binding IsSeverityMinor, Mode=TwoWay}"
                                   Click="SeverityMinor_Click"
-                                  Background="#CA8A04"/>
+                                  Background="{DynamicResource Status.Warning}"/>
                     
                     <ToggleButton Content="INFO"
                                   Style="{StaticResource CompactToggleStyle}"
                                   x:Name="SeverityInfoBtn"
                                   IsChecked="{Binding IsSeverityInfo, Mode=TwoWay}"
                                   Click="SeverityInfo_Click"
-                                  Background="#2563EB"/>
+                                  Background="{DynamicResource Action.Primary}"/>
 
                     <TextBlock Text="|"
                                Foreground="{DynamicResource Plc.Border}"
@@ -281,7 +281,7 @@
                                   x:Name="EventTypeAlarmBtn"
                                   IsChecked="{Binding IsEventTypeAlarm, Mode=TwoWay}"
                                   Click="EventTypeAlarm_Click"
-                                  Background="#EF4444"/>
+                                  Background="{DynamicResource Status.Error}"/>
 
                     <ToggleButton Content="Warning"
                                   Style="{StaticResource CompactToggleStyle}"
@@ -289,14 +289,14 @@
                                   IsChecked="{Binding IsEventTypeWarning, Mode=TwoWay}"
                                   Click="EventTypeWarning_Click"
                                   Width="75"
-                                  Background="#F59E0B"/>
+                                  Background="{DynamicResource Status.Warning}"/>
 
                     <ToggleButton Content="System"
                                   Style="{StaticResource CompactToggleStyle}"
                                   x:Name="EventTypeSystemBtn"
                                   IsChecked="{Binding IsEventTypeSystem, Mode=TwoWay}"
                                   Click="EventTypeSystem_Click"
-                                  Background="#3B82F6"/>
+                                  Background="{DynamicResource Action.Primary}"/>
 
                     <ToggleButton Content="Safety"
                                   Style="{StaticResource CompactToggleStyle}"
@@ -490,7 +490,7 @@
                                                         Background="{DynamicResource Button.Bg.Warning}"
                                                         Margin="0,8,0,0">
                                                     <TextBlock Text="{Binding Action}"
-                                                               Foreground="White"
+                                                               Foreground="{DynamicResource Text.Inverse}"
                                                                FontSize="14"
                                                                FontWeight="Bold"
                                                                FontFamily="Consolas"/>
@@ -624,7 +624,7 @@
                                                             Margin="0,0,12,0"
                                                             VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding CommandName}"
-                                                                   Foreground="White"
+                                                                   Foreground="{DynamicResource Text.Inverse}"
                                                                    FontSize="12"
                                                                    FontWeight="Bold"
                                                                    FontFamily="Consolas"/>
@@ -730,7 +730,7 @@
                                                             HorizontalAlignment="Left">
                                                         <Border.Style>
                                                             <Style TargetType="Border">
-                                                                <Setter Property="Background" Value="#3B82F6"/>
+                                                                <Setter Property="Background" Value="{DynamicResource Action.Primary}"/>
                                                                 <Style.Triggers>
                                                                     <DataTrigger Binding="{Binding EventType}" Value="Alarm">
                                                                         <Setter Property="Background" Value="#EF4444"/>
@@ -748,7 +748,7 @@
                                                             </Style>
                                                         </Border.Style>
                                                         <TextBlock Text="{Binding EventType}"
-                                                                   Foreground="White"
+                                                                   Foreground="{DynamicResource Text.Inverse}"
                                                                    FontSize="11"
                                                                    FontWeight="Bold"
                                                                    FontFamily="Consolas"
@@ -764,7 +764,7 @@
                                                             HorizontalAlignment="Left">
                                                         <Border.Style>
                                                             <Style TargetType="Border">
-                                                                <Setter Property="Background" Value="#6B7280"/>
+                                                                <Setter Property="Background" Value="{DynamicResource Status.Offline}"/>
                                                                 <Style.Triggers>
                                                                     <DataTrigger Binding="{Binding Severity}" Value="Critical">
                                                                         <Setter Property="Background" Value="#DC2626"/>
@@ -782,7 +782,7 @@
                                                             </Style>
                                                         </Border.Style>
                                                         <TextBlock Text="{Binding Severity}"
-                                                                   Foreground="White"
+                                                                   Foreground="{DynamicResource Text.Inverse}"
                                                                    FontSize="11"
                                                                    FontWeight="Bold"
                                                                    FontFamily="Consolas"
@@ -937,7 +937,7 @@
 
                     <Border Grid.Row="1"
                             IsHitTestVisible="False"
-                            Background="#28000000"
+                            Background="{DynamicResource Overlay.Bg.Panel}"
                             CornerRadius="8"
                             Padding="16,10"
                             HorizontalAlignment="Center"

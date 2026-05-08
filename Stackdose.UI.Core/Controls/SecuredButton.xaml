@@ -24,7 +24,7 @@
         <Button.Style>
             <Style TargetType="Button">
                 <Setter Property="Background" Value="{Binding BackgroundBrush, ElementName=root}"/>
-                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Foreground" Value="{DynamicResource Text.Inverse}"/>
                 <Setter Property="BorderThickness" Value="1"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource Surface.Border.Default}"/>
                 <Setter Property="Template">

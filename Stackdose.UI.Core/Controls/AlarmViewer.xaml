@@ -68,9 +68,9 @@
                                     </Style.Triggers>
                                 </Style>
                             </Border.Style>
-                            <TextBlock HorizontalAlignment="Center" 
+                            <TextBlock HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
-                                       Foreground="White"
+                                       Foreground="{DynamicResource Text.Inverse}"
                                        FontSize="15"
                                        FontWeight="Bold">
                                 <TextBlock.Style>
@@ -211,33 +211,33 @@
                             Padding="8,4" 
                             Margin="0,0,8,0">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Active: " 
-                                       Foreground="White" 
-                                       FontSize="11" 
+                                <TextBlock Text="Active: "
+                                       Foreground="{DynamicResource Text.Inverse}"
+                                       FontSize="11"
                                        FontWeight="Bold"
                                        FontFamily="Consolas"/>
-                                <TextBlock x:Name="TxtAlarmCount" 
-                                       Text="0" 
-                                       Foreground="White" 
-                                       FontSize="11" 
+                                <TextBlock x:Name="TxtAlarmCount"
+                                       Text="0"
+                                       Foreground="{DynamicResource Text.Inverse}"
+                                       FontSize="11"
                                        FontWeight="Bold"
                                        FontFamily="Consolas"/>
                             </StackPanel>
                         </Border>
 
-                        <Border Background="{DynamicResource Status.Info}" 
-                            CornerRadius="4" 
+                        <Border Background="{DynamicResource Status.Info}"
+                            CornerRadius="4"
                             Padding="8,4">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Total: " 
-                                       Foreground="White" 
-                                       FontSize="11" 
+                                <TextBlock Text="Total: "
+                                       Foreground="{DynamicResource Text.Inverse}"
+                                       FontSize="11"
                                        FontWeight="Bold"
                                        FontFamily="Consolas"/>
-                                <TextBlock x:Name="TxtTotalCount" 
-                                       Text="0" 
-                                       Foreground="White" 
-                                       FontSize="11" 
+                                <TextBlock x:Name="TxtTotalCount"
+                                       Text="0"
+                                       Foreground="{DynamicResource Text.Inverse}"
+                                       FontSize="11"
                                        FontWeight="Bold"
                                        FontFamily="Consolas"/>
                             </StackPanel>

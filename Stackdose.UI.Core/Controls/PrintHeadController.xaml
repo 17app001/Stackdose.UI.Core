@@ -6,6 +6,8 @@
              mc:Ignorable="d" d:DesignWidth="550" MinHeight="200">
 
 	<UserControl.Resources>
+		<ResourceDictionary>
+
 		<!-- Modern button style -->
 		<Style x:Key="ModernButtonStyle" TargetType="Button">
 			<Setter Property="Cursor" Value="Hand"/>
@@ -20,9 +22,16 @@
                                 BorderThickness="1"
                                 CornerRadius="5">
 							<ContentPresenter x:Name="Content"
-                                              HorizontalAlignment="Center" 
+                                              HorizontalAlignment="Center"
 						                       VerticalAlignment="Center"
-						                       Margin="8,3"/>
+						                       Margin="8,3"
+						                       TextElement.Foreground="{TemplateBinding Foreground}">
+							<ContentPresenter.Resources>
+								<Style TargetType="TextBlock">
+									<Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+								</Style>
+							</ContentPresenter.Resources>
+						</ContentPresenter>
 						</Border>
 						<ControlTemplate.Triggers>
 							<Trigger Property="IsMouseOver" Value="True">
@@ -32,9 +41,8 @@
 								<Setter TargetName="Border" Property="Opacity" Value="0.7"/>
 							</Trigger>
 							<Trigger Property="IsEnabled" Value="False">
-								<Setter TargetName="Border" Property="Background" Value="{DynamicResource Surface.Bg.Control}"/>
-                                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource Surface.Border.Default}"/>
-                                <Setter Property="Foreground" Value="{DynamicResource Text.Tertiary}"/>
+								<Setter TargetName="Border" Property="Opacity" Value="0.45"/>
+								<Setter Property="Foreground" Value="{DynamicResource Text.Secondary}"/>
 							</Trigger>
 						</ControlTemplate.Triggers>
 					</ControlTemplate>
@@ -146,7 +154,7 @@
 			<Setter Property="ItemContainerStyle">
 				<Setter.Value>
 					<Style TargetType="ComboBoxItem">
-						<Setter Property="Foreground" Value="White"/>
+						<Setter Property="Foreground" Value="{DynamicResource Text.Primary}"/>
 						<Setter Property="Background" Value="Transparent"/>
 						<Setter Property="Padding" Value="8,4"/>
 						<Setter Property="Template">
@@ -174,6 +182,7 @@
 				</Setter.Value>
 			</Setter>
 		</Style>
+		</ResourceDictionary>
 	</UserControl.Resources>
 
 	<Border Background="{DynamicResource Plc.Bg.Dark}" 
@@ -215,7 +224,7 @@
                         Padding="6,3">
                     <StackPanel Orientation="Horizontal">
                         <Ellipse Width="6" Height="6"
-                                 Fill="#2ECC71"
+                                 Fill="{DynamicResource Status.Success}"
                                  Margin="0,0,4,0"
                                  VerticalAlignment="Center"/>
                         <TextBlock x:Name="ConnectedCountText"
@@ -270,7 +279,7 @@
 						        Width="76"
 						        FontWeight="SemiBold"
 						        Background="{DynamicResource Action.Success}"
-						        Foreground="White"
+						        Foreground="{DynamicResource Text.Inverse}"
 						        BorderBrush="{DynamicResource Action.Success}"
 						        Margin="0,0,8,0"
 						        Click="SpitButton_Click"
@@ -278,9 +287,9 @@
 
 						<Button Content="編碼器重置"
 						        Width="92"
-						        Background="#9B59B6"
-						        Foreground="White"
-						        BorderBrush="#8E44AD"
+						        Background="{DynamicResource Action.Info}"
+						        Foreground="{DynamicResource Text.Inverse}"
+						        BorderBrush="{DynamicResource Action.Info}"
 						        Click="EncoderReset_Click"
 						        Style="{StaticResource ModernButtonStyle}"/>
 					</StackPanel>
@@ -298,7 +307,7 @@
 						<Button Grid.Column="0"
 						        Content="讀取圖片"
 						        Background="{DynamicResource Action.Primary}"
-						        Foreground="White"
+						        Foreground="{DynamicResource Text.Inverse}"
 						        BorderBrush="{DynamicResource Action.Primary}"
 						        x:Name="BrowseImageButton"
 						        Click="BrowseImageButton_Click"
@@ -307,7 +316,7 @@
 						<Button Grid.Column="2"
 						        Content="載入任務"
 						        Background="{DynamicResource Action.Warning}"
-						        Foreground="White"
+						        Foreground="{DynamicResource Text.Inverse}"
 						        BorderBrush="{DynamicResource Action.Warning}"
 						        x:Name="LoadImageButton"
 						        Click="LoadImageButton_Click"
@@ -316,7 +325,7 @@
 						<Button Grid.Column="4"
 						        Content="取消任務"
 						        Background="{DynamicResource Action.Error}"
-						        Foreground="White"
+						        Foreground="{DynamicResource Text.Inverse}"
 						        BorderBrush="{DynamicResource Action.Error}"
 						        x:Name="CancelTaskButton"
 						        Click="CancelTaskButton_Click"

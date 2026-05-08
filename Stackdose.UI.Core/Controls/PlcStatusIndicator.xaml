@@ -19,20 +19,20 @@
             </Grid.ColumnDefinitions>
 
             <!-- Status Light -->
-            <Ellipse x:Name="StatusLight" 
+            <Ellipse x:Name="StatusLight"
                      Grid.Column="0"
-                     Width="24" Height="24" 
-                     Fill="Red" 
+                     Width="24" Height="24"
+                     Fill="{DynamicResource Status.Error}"
                      VerticalAlignment="Center"
                      Margin="0,0,10,0"/>
 
             <!-- Status Info -->
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                <TextBlock x:Name="StatusText" 
-                           Text="DISCONNECTED" 
-                           FontSize="14" 
+                <TextBlock x:Name="StatusText"
+                           Text="DISCONNECTED"
+                           FontSize="14"
                            FontWeight="Bold"
-                           Foreground="Red"/>
+                           Foreground="{DynamicResource Status.Error}"/>
                 <TextBlock x:Name="IpDisplay" 
                            Text="192.168.22.39:3000" 
                            FontSize="10" 

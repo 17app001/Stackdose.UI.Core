@@ -68,8 +68,8 @@
         </ScrollViewer>
 
         <!-- Flash Control Area -->
-        <Border Grid.Row="1" 
-                BorderBrush="#FFA726" 
+        <Border Grid.Row="1"
+                BorderBrush="{DynamicResource Status.Warning}"
                 BorderThickness="2" 
                 CornerRadius="6" 
                 Padding="10" 

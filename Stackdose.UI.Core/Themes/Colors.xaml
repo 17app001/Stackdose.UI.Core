@@ -92,6 +92,8 @@
     <SolidColorBrush x:Key="Action.Info"            Color="#00CED1"/>
     <SolidColorBrush x:Key="Action Info" Color="#00CED1"/>
 
+    <SolidColorBrush x:Key="Text.Inverse"            Color="#FFFFFF"/>
+
     <!-- ========== Common Brush Aliases (UI.Templates compatibility) ========== -->
     <SolidColorBrush x:Key="BackgroundBrush"     Color="#1C1C2E"/>
     <SolidColorBrush x:Key="BorderBrush"         Color="#4A6078"/>

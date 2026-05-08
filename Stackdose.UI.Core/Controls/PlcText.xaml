@@ -51,13 +51,13 @@
                          ToolTip="{Binding Address, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
             </Border>
 
-            <!-- Apply Button - Use OK text instead of checkmark symbol -->
+            <!-- Apply Button -->
             <Button Grid.Column="2"
                     x:Name="ApplyButton"
                     Content="OK"
                     Click="ApplyButton_Click"
-                    Background="#FF00C853"
-                    Foreground="White"
+                    Background="{DynamicResource Action.Success}"
+                    Foreground="{DynamicResource Text.Inverse}"
                     FontSize="12"
                     FontWeight="Bold"
                     Width="40"
@@ -68,7 +68,8 @@
                     ToolTip="Apply changes">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4"
@@ -78,10 +79,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#FF00E676"/>
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.82"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#FF00A846"/>
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.65"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>

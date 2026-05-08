@@ -152,7 +152,7 @@ public static class DesignTimeControlFactory
         var fontSize = p.GetDouble("staticFontSize", 16);
         var fontWeightStr = p.GetString("staticFontWeight", "Normal");
         var textAlignStr = p.GetString("staticTextAlign", "Left");
-        var foregroundStr = p.GetString("staticForeground", "#E2E2F0");
+        var colorTheme = p.GetString("staticForeground", "Default");
 
         var fontWeight = fontWeightStr.Equals("Bold", StringComparison.OrdinalIgnoreCase)
             ? FontWeights.Bold : FontWeights.Normal;
@@ -164,22 +164,34 @@ public static class DesignTimeControlFactory
             _        => TextAlignment.Left,
         };
 
-        Brush foreground;
-        try { foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(foregroundStr)); }
-        catch { foreground = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)); }
-
-        return new TextBlock
+        var tb = new TextBlock
         {
             Text = text,
             FontSize = fontSize,
             FontWeight = fontWeight,
             TextAlignment = textAlign,
-            Foreground = foreground,
             TextWrapping = TextWrapping.Wrap,
             VerticalAlignment = VerticalAlignment.Center,
             IsHitTestVisible = false,
         };
+        tb.SetResourceReference(TextBlock.ForegroundProperty, ColorThemeToResourceKey(colorTheme));
+        return tb;
     }
+
+    private static string ColorThemeToResourceKey(string theme) => theme.ToLowerInvariant() switch
+    {
+        "primary"   => "Action.Primary",
+        "success"   => "Action.Success",
+        "warning"   => "Action.Warning",
+        "error"     => "Action.Error",
+        "info"      => "Action.Info",
+        "neonblue"  => "Cyber.NeonBlue",
+        "neonred"   => "Cyber.NeonRed",
+        "neongreen" => "Cyber.NeonGreen",
+        "white"     => "Cyber.Text.Bright",
+        "gray"      => "Text.Tertiary",
+        _           => "Text.Primary",
+    };
 
     private static UIElement CreatePlcStatusIndicator(DesignerItemDefinition def)
     {
@@ -189,8 +201,6 @@ public static class DesignTimeControlFactory
 
         var border = new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(0x31, 0x31, 0x45)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x44, 0x44, 0x5A)),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(4),
             Padding = new Thickness(8),
@@ -198,8 +208,11 @@ public static class DesignTimeControlFactory
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
         };
-        var stack = new StackPanel 
-        { 
+        border.SetResourceReference(Border.BackgroundProperty, "Surface.Bg.Control");
+        border.SetResourceReference(Border.BorderBrushProperty, "Surface.Border.Default");
+
+        var stack = new StackPanel
+        {
             Orientation = Orientation.Horizontal,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
@@ -212,12 +225,13 @@ public static class DesignTimeControlFactory
             Margin = new Thickness(0, 0, 8, 0),
             VerticalAlignment = VerticalAlignment.Center
         });
-        stack.Children.Add(new TextBlock
+        var label = new TextBlock
         {
             Text = $"StatusIndicator [{addr}]",
-            Foreground = new SolidColorBrush(Color.FromRgb(0xE2, 0xE2, 0xF0)),
             VerticalAlignment = VerticalAlignment.Center
-        });
+        };
+        label.SetResourceReference(TextBlock.ForegroundProperty, "Text.Primary");
+        stack.Children.Add(label);
         border.Child = stack;
         return border;
     }
@@ -276,7 +290,7 @@ public static class DesignTimeControlFactory
     private static UIElement CreateGroupBox(DesignerItemDefinition def)
     {
         var title       = def.Props.GetString("title", "Group");
-        var headerColor = GroupBoxHeaderColor(def.Props.GetString("headerColor", "Primary"));
+        var headerColor = GroupBoxHeaderColor(def.Props.GetString("headerColor", "Normal"));
         var showTitle   = def.Props.GetBool("showTitle", true);
 
         // 根容器（無背景 → 不攔截 hit-test，讓 Body 區點擊穿透到 Canvas）
@@ -347,11 +361,30 @@ public static class DesignTimeControlFactory
         }
         if (tabs.Count == 0) { tabs.Add(("Tab 1", 0)); tabs.Add(("Tab 2", 0)); }
 
-        var root = new DockPanel();
-        root.SetResourceReference(DockPanel.BackgroundProperty, "Log.Bg.Main");
+        // Three-layer Grid: bg → content → stroke-on-top
+        // Reason: WPF Border.OnRender draws stroke BEFORE children, so child backgrounds
+        // cover the stroke at rounded corners. Putting the stroke border as the top layer
+        // guarantees it is never obscured by header or tab button backgrounds.
+        var root = new Grid();
 
-        // Header strip
-        var header = new Border { BorderThickness = new Thickness(0, 0, 0, 1) };
+        // Layer 0 — background only (no stroke)
+        var bgBorder = new Border
+        {
+            CornerRadius = new CornerRadius(6),
+            IsHitTestVisible = false,
+        };
+        bgBorder.SetResourceReference(Border.BackgroundProperty, "Log.Bg.Main");
+        root.Children.Add(bgBorder);
+
+        // Layer 1 — content (header strip + hint body)
+        var dock = new DockPanel();
+
+        var header = new Border
+        {
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            CornerRadius = new CornerRadius(6, 6, 0, 0),
+            ClipToBounds = true,
+        };
         header.SetResourceReference(Border.BackgroundProperty, "Log.Bg.Header");
         header.SetResourceReference(Border.BorderBrushProperty, "Log.Border");
         DockPanel.SetDock(header, Dock.Top);
@@ -384,22 +417,15 @@ public static class DesignTimeControlFactory
             tabStrip.Children.Add(tabBorder);
         }
         header.Child = tabStrip;
-        root.Children.Add(header);
+        dock.Children.Add(header);
 
-        // Content area — "double-click to edit" hint
         var hint = new StackPanel
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
         };
-        var hintIcon = new TextBlock
-        {
-            Text = "✎",
-            FontSize = 22,
-            HorizontalAlignment = HorizontalAlignment.Center,
-        };
+        var hintIcon = new TextBlock { Text = "✎", FontSize = 22, HorizontalAlignment = HorizontalAlignment.Center };
         hintIcon.SetResourceReference(TextBlock.ForegroundProperty, "Text.Tertiary");
-
         var hintLabel = new TextBlock
         {
             Text = "雙擊開啟 Tab 編輯器",
@@ -408,19 +434,30 @@ public static class DesignTimeControlFactory
             Margin = new Thickness(0, 4, 0, 0),
         };
         hintLabel.SetResourceReference(TextBlock.ForegroundProperty, "Text.Tertiary");
-
         hint.Children.Add(hintIcon);
         hint.Children.Add(hintLabel);
 
-        var content = new Border
+        var contentArea = new Border
         {
             Background = Brushes.Transparent,
             BorderThickness = new Thickness(1),
             Margin = new Thickness(8),
             Child = hint,
         };
-        content.SetResourceReference(Border.BorderBrushProperty, "Surface.Border.Default");
-        root.Children.Add(content);
+        contentArea.SetResourceReference(Border.BorderBrushProperty, "Surface.Border.Default");
+        dock.Children.Add(contentArea);
+        root.Children.Add(dock);
+
+        // Layer 2 — stroke only, on top of all content (never obscured)
+        var strokeBorder = new Border
+        {
+            CornerRadius = new CornerRadius(6),
+            BorderThickness = new Thickness(1),
+            Background = null,
+            IsHitTestVisible = false,
+        };
+        strokeBorder.SetResourceReference(Border.BorderBrushProperty, "Log.Border");
+        root.Children.Add(strokeBorder);
 
         return root;
     }

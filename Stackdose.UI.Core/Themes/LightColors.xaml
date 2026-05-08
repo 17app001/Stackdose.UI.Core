@@ -1,78 +1,89 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Light Theme Colors - Modern Unified Version -->
-    
+    <!-- Light Theme Colors
+         背景層次：Page(#DEE1E6) → Shell(#E8EAED) → Panel(#ECEFF1) → Card(#F5F7F9) → Control(#FFFFFF)
+         Border 策略：Default=#90A4AE / Strong=#546E7A / Weak=#CFD8DC
+    -->
+
     <!-- ========== CyberFramework Specific Colors (Light) ========== -->
     <SolidColorBrush x:Key="Cyber.Bg.Dark"         Color="#DEE1E6"/>
     <SolidColorBrush x:Key="Cyber.Bg.Page"         Color="#DEE1E6"/>
     <SolidColorBrush x:Key="Cyber.Bg.Panel"        Color="#ECEFF1"/>
     <SolidColorBrush x:Key="Cyber.Bg.Card"         Color="#F5F7F9"/>
-    <SolidColorBrush x:Key="Cyber.Border"          Color="#CFD8DC"/>
-    <SolidColorBrush x:Key="Cyber.Border.Strong"   Color="#90A4AE"/>
+    <SolidColorBrush x:Key="Cyber.Border"          Color="#90A4AE"/>
+    <SolidColorBrush x:Key="Cyber.Border.Strong"   Color="#546E7A"/>
     <SolidColorBrush x:Key="Cyber.Text.Main"       Color="#263238"/>
     <SolidColorBrush x:Key="Cyber.Text.Muted"      Color="#546E7A"/>
-    <SolidColorBrush x:Key="Cyber.Text.Bright"     Color="#000000"/>
-    <SolidColorBrush x:Key="Cyber.NeonBlue"       Color="#1976D2"/>
-    <SolidColorBrush x:Key="Cyber.NeonGreen"      Color="#388E3C"/>
-    <SolidColorBrush x:Key="Cyber.NeonRed"        Color="#D32F2F"/>
+    <SolidColorBrush x:Key="Cyber.Text.Bright"     Color="#1A2327"/>
+    <SolidColorBrush x:Key="Cyber.NeonBlue"        Color="#1976D2"/>
+    <SolidColorBrush x:Key="Cyber.NeonGreen"       Color="#388E3C"/>
+    <SolidColorBrush x:Key="Cyber.NeonRed"         Color="#D32F2F"/>
 
     <!-- ========== PLC / Hardware Specific (Light) ========== -->
-    <SolidColorBrush x:Key="Plc.Bg.Dark"           Color="#DEE1E6"/>
-    <SolidColorBrush x:Key="Plc.Bg.Main"           Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Plc.Bg.Dark"           Color="#F0F2F4"/>
+    <SolidColorBrush x:Key="Plc.Bg.Main"           Color="#F5F7F9"/>
     <SolidColorBrush x:Key="Plc.Bg"                Color="#F5F7F9"/>
-    <SolidColorBrush x:Key="Plc.Border"            Color="#CFD8DC"/>
+    <SolidColorBrush x:Key="Plc.Border"            Color="#90A4AE"/>
     <SolidColorBrush x:Key="Plc.Text.Label"        Color="#546E7A"/>
-    <SolidColorBrush x:Key="Plc.Text.Value"        Color="#1976D2"/>
-    <SolidColorBrush x:Key="Plc.Text.Default"      Color="#263238"/>
-    <SolidColorBrush x:Key="Plc.Text.Gray"         Color="#90A4AE"/>
+    <SolidColorBrush x:Key="Plc.Text.Value"        Color="#1565C0"/>
+    <SolidColorBrush x:Key="Plc.Text.Default"      Color="#37474F"/>
+    <SolidColorBrush x:Key="Plc.Text.Gray"         Color="#78909C"/>
 
     <!-- ========== Sensor / Alarm Viewer (Light) ========== -->
     <SolidColorBrush x:Key="Sensor.Bg.Main"        Color="#FFFFFF"/>
     <SolidColorBrush x:Key="Sensor.Bg.Header"      Color="#ECEFF1"/>
-    <SolidColorBrush x:Key="Sensor.Border"          Color="#CFD8DC"/>
-    <SolidColorBrush x:Key="Sensor.Text.Title"      Color="#263238"/>
-    <SolidColorBrush x:Key="Sensor.Text.Label"      Color="#455A64"/>
-    <SolidColorBrush x:Key="Sensor.Text.Group"      Color="#1976D2"/>
+    <SolidColorBrush x:Key="Sensor.Border"         Color="#90A4AE"/>
+    <SolidColorBrush x:Key="Sensor.Text.Title"     Color="#263238"/>
+    <SolidColorBrush x:Key="Sensor.Text.Label"     Color="#455A64"/>
+    <SolidColorBrush x:Key="Sensor.Text.Group"     Color="#1565C0"/>
+    <SolidColorBrush x:Key="Sensor.Text.Value"     Color="#1565C0"/>
 
     <!-- ========== Log Viewer (Light) ========== -->
     <SolidColorBrush x:Key="Log.Bg.Main"           Color="#FFFFFF"/>
     <SolidColorBrush x:Key="Log.Bg.Header"         Color="#ECEFF1"/>
-    <SolidColorBrush x:Key="Log.Border"            Color="#CFD8DC"/>
+    <SolidColorBrush x:Key="Log.Border"            Color="#90A4AE"/>
     <SolidColorBrush x:Key="Log.Text.Normal"       Color="#263238"/>
     <SolidColorBrush x:Key="Log.Text.Time"         Color="#78909C"/>
     <SolidColorBrush x:Key="Log.Text.System"       Color="#1976D2"/>
 
     <!-- ========== Overlay / Interactive (Light) ========== -->
     <SolidColorBrush x:Key="Overlay.Bg.Panel"      Color="#10000000"/>
-    <SolidColorBrush x:Key="Overlay.Bg.Light"      Color="#05000000"/>
+    <SolidColorBrush x:Key="Overlay.Bg.Medium"     Color="#18000000"/>
+    <SolidColorBrush x:Key="Overlay.Bg.Light"      Color="#08000000"/>
     <SolidColorBrush x:Key="Overlay.Highlight.Info" Color="#201976D2"/>
     <SolidColorBrush x:Key="Overlay.Bg.Scrim"      Color="#60000000"/>
 
-    <!-- ========== Semantic Alias Tokens (v1) ========== -->
+    <!-- ========== Semantic Alias Tokens ========== -->
     <!-- Surface -->
     <SolidColorBrush x:Key="Surface.Bg.Page"        Color="#DEE1E6"/>
     <SolidColorBrush x:Key="Surface.Bg.Panel"       Color="#ECEFF1"/>
     <SolidColorBrush x:Key="Surface.Bg.Card"        Color="#F5F7F9"/>
     <SolidColorBrush x:Key="Surface.Bg.Control"     Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Surface.Bg.Elevated"    Color="#FFFFFF"/>
 
-    <!-- Border -->
-    <SolidColorBrush x:Key="Surface.Border.Default" Color="#CFD8DC"/>
-    <SolidColorBrush x:Key="Surface.Border.Strong"  Color="#90A4AE"/>
+    <!-- Border — unified across all control families -->
+    <SolidColorBrush x:Key="Surface.Border.Default" Color="#90A4AE"/>
+    <SolidColorBrush x:Key="Surface.Border.Strong"  Color="#546E7A"/>
+    <SolidColorBrush x:Key="Surface.Border.Weak"    Color="#CFD8DC"/>
+    <SolidColorBrush x:Key="Surface.Border.Accent"  Color="#1976D2"/>
 
     <!-- Text -->
     <SolidColorBrush x:Key="Text.Primary"           Color="#263238"/>
     <SolidColorBrush x:Key="Text.Secondary"         Color="#546E7A"/>
     <SolidColorBrush x:Key="Text.Tertiary"          Color="#78909C"/>
+    <SolidColorBrush x:Key="Text.Disabled"          Color="#B0BEC5"/>
+    <SolidColorBrush x:Key="Text.Inverse"           Color="#FFFFFF"/>
 
     <!-- Accent / Action -->
     <SolidColorBrush x:Key="Accent.Primary"         Color="#1976D2"/>
+    <SolidColorBrush x:Key="Accent.Secondary"       Color="#00ACC1"/>
+    <SolidColorBrush x:Key="Accent.Tertiary"        Color="#1565C0"/>
     <SolidColorBrush x:Key="Action.Primary"         Color="#2196F3"/>
     <SolidColorBrush x:Key="Action.Success"         Color="#4CAF50"/>
     <SolidColorBrush x:Key="Action.Warning"         Color="#FF9800"/>
     <SolidColorBrush x:Key="Action.Error"           Color="#F44336"/>
     <SolidColorBrush x:Key="Action.Info"            Color="#00BCD4"/>
-    <SolidColorBrush x:Key="Button.Text"            Color="#FFFFFF"/>
 
     <!-- Status Colors -->
     <SolidColorBrush x:Key="Status.Success"         Color="#388E3C"/>
@@ -80,5 +91,28 @@
     <SolidColorBrush x:Key="Status.Error"           Color="#D32F2F"/>
     <SolidColorBrush x:Key="Status.Info"            Color="#1976D2"/>
     <SolidColorBrush x:Key="Status.Offline"         Color="#78909C"/>
+    <SolidColorBrush x:Key="Status.Running"         Color="#388E3C"/>
+    <SolidColorBrush x:Key="Status.Standby"         Color="#F57C00"/>
+
+    <!-- Button Backgrounds -->
+    <SolidColorBrush x:Key="Button.Bg.Primary"      Color="#2196F3"/>
+    <SolidColorBrush x:Key="Button.Bg.Success"      Color="#4CAF50"/>
+    <SolidColorBrush x:Key="Button.Bg.Warning"      Color="#FF9800"/>
+    <SolidColorBrush x:Key="Button.Bg.Error"        Color="#F44336"/>
+    <SolidColorBrush x:Key="Button.Bg.Info"         Color="#00BCD4"/>
+    <SolidColorBrush x:Key="Button.Text"            Color="#FFFFFF"/>
+
+    <!-- ========== Component-Specific (Light) ========== -->
+    <!-- PrintHead accent colors: muted down for light backgrounds -->
+    <SolidColorBrush x:Key="PrintHead.Accent.Voltage"    Color="#B8860B"/>
+    <SolidColorBrush x:Key="PrintHead.Accent.Encoder"    Color="#2E7D32"/>
+    <SolidColorBrush x:Key="PrintHead.Accent.PrintIndex" Color="#AD1457"/>
+
+    <!-- PlcLabel component colors (mirrors Component.PlcLabel.* from LightTheme.xaml) -->
+    <SolidColorBrush x:Key="Component.PlcLabel.Default"  Color="#546E7A"/>
+    <SolidColorBrush x:Key="Component.PlcLabel.NeonBlue" Color="#1976D2"/>
+    <SolidColorBrush x:Key="Component.PlcLabel.Warning"  Color="#F57C00"/>
+    <SolidColorBrush x:Key="Component.PlcLabel.Success"  Color="#388E3C"/>
+    <SolidColorBrush x:Key="Component.PlcLabel.Error"    Color="#D32F2F"/>
 
 </ResourceDictionary>

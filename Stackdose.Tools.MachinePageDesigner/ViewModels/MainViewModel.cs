@@ -35,7 +35,7 @@ public sealed class MainViewModel : ObservableObject
     private bool _showAlarmViewer;
     private bool _showSensorViewer;
     private double _globalSpacing = 8.0;
-    private double _canvasPadding = 20.0;
+    private double _canvasPadding = 8.0;
     private string _uiTheme = "Dark";
 
     // ── Meta ─────────────────────────────────────────────────────────

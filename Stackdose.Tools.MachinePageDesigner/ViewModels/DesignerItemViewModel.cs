@@ -321,8 +321,8 @@ public sealed class DesignerItemViewModel : ObservableObject
 
     public string StaticForeground
     {
-        get => GetProp("staticForeground", "#E2E2F0");
-        set { var old = GetProp("staticForeground", "#E2E2F0"); if (old == value) return; SetPropDirect("staticForeground", value); PropCommitted?.Invoke("staticForeground", old, value); }
+        get => GetProp("staticForeground", "Default");
+        set { var old = GetProp("staticForeground", "Default"); if (old == value) return; SetPropDirect("staticForeground", value); PropCommitted?.Invoke("staticForeground", old, value); }
     }
 
     public bool EnableLiveRecord

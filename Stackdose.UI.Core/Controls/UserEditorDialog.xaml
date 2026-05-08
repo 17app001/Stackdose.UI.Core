@@ -257,15 +257,15 @@
                           Width="100"
                           Height="35"
                           Background="{DynamicResource Cyber.NeonBlue}"
-                          Foreground="White"
+                          Foreground="{DynamicResource Text.Inverse}"
                           FontWeight="Medium"
                           Click="OkButton_Click"
                           Margin="0,0,10,0"/>
                     <Button Content="Cancel"
                           Width="100"
                           Height="35"
-                          Background="#607D8B"
-                          Foreground="White"
+                          Background="{DynamicResource Surface.Border.Strong}"
+                          Foreground="{DynamicResource Text.Inverse}"
                           FontWeight="Medium"
                           Click="CancelButton_Click"/>
                 </StackPanel>

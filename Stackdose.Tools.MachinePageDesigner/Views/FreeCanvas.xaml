@@ -18,7 +18,7 @@
                 Height="{Binding CanvasHeight}"
                 BorderBrush="{DynamicResource Surface.Border.Default}"
                 BorderThickness="1"
-                Background="{DynamicResource Surface.Bg.Card}"
+                Background="{DynamicResource Surface.Bg.Panel}"
                 SnapsToDevicePixels="True">
 
             <Border.LayoutTransform>

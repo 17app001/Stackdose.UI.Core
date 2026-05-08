@@ -103,13 +103,13 @@
                             Margin="16,0,0,0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Total: "
-                                       Foreground="White"
+                                       Foreground="{DynamicResource Text.Inverse}"
                                        FontSize="12"
                                        FontWeight="Bold"
                                        FontFamily="Consolas"/>
                             <TextBlock x:Name="TotalUsersText"
                                        Text="0"
-                                       Foreground="White"
+                                       Foreground="{DynamicResource Text.Inverse}"
                                        FontSize="12"
                                        FontWeight="Bold"
                                        FontFamily="Consolas"/>
@@ -122,13 +122,13 @@
                             Margin="8,0,0,0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Active: "
-                                       Foreground="White"
+                                       Foreground="{DynamicResource Text.Inverse}"
                                        FontSize="12"
                                        FontWeight="Bold"
                                        FontFamily="Consolas"/>
                             <TextBlock x:Name="ActiveUsersText"
                                        Text="0"
-                                       Foreground="White"
+                                       Foreground="{DynamicResource Text.Inverse}"
                                        FontSize="12"
                                        FontWeight="Bold"
                                        FontFamily="Consolas"/>
@@ -254,7 +254,7 @@
                                             </Style>
                                         </Border.Style>
                                         <TextBlock Text="{Binding AccessLevel}"
-                                                   Foreground="White"
+                                                   Foreground="{DynamicResource Text.Inverse}"
                                                    FontSize="14"
                                                    FontWeight="Bold"
                                                    FontFamily="Consolas"/>
@@ -384,7 +384,7 @@
             </ScrollViewer>
 
             <Border IsHitTestVisible="False"
-                    Background="#33000000"
+                    Background="{DynamicResource Overlay.Bg.Medium}"
                     CornerRadius="8"
                     Padding="16"
                     HorizontalAlignment="Center"

@@ -1,6 +1,16 @@
-# 接手指引 — 2026-04-24 噴頭整合交接
+---
+classification: Internal
+ai_usage: Local RAG allowed (historical reference only)
+last_updated: 2026-04-24
+source_of_truth: false
+---
 
-> 如果你剛接手這個分支，從這份開始讀。
+> ⚠️ **歷史文件（2026-04-24）** — 此文件內容已過期。`feature/printhead-robustness` 分支已合入 `master`。
+> 目前最新狀態請見 `STATUS.md`；靜態接手規則請見 `CLAUDE.md`。
+
+# 接手指引 — 2026-04-24 噴頭整合交接（歷史紀錄）
+
+> 此文件僅作為歷史參考，不再更新。
 
 ---
 

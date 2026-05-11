@@ -1,6 +1,16 @@
-# 專案進度簡報
+---
+classification: Internal
+ai_usage: Local RAG allowed (historical reference only)
+last_updated: 2026-04-15
+source_of_truth: false
+---
 
-> 適用對象：技術主管快速了解現況
+> ⚠️ **已過期（2026-04-15）** — 此簡報內容停留在 4月初開發狀態，缺少 4月下旬～5月的重構完成、PrintHead 整合、主題切換等重大功能。
+> 最新狀態請見 `STATUS.md`；完整功能說明請見 `docs/kb/` 知識庫。
+
+# 專案進度簡報（歷史版本 — 2026-04-15）
+
+> 適用對象：技術主管快速了解現況（此版本已過期，僅作歷史參考）
 > 更新日期：2026-04-15
 
 ---

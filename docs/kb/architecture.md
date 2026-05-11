@@ -1,3 +1,10 @@
+---
+classification: Internal
+ai_usage: Claude CLI allowed / Local RAG allowed
+last_updated: 2026-04-21
+source_of_truth: false
+---
+
 # 架構設計知識庫
 
 > 記錄 Stackdose.UI.Core 核心架構設計決策、Pattern 與資料流。

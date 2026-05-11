@@ -1,16 +1,35 @@
-# CLAUDE.md — Stackdose.UI.Core 快速上下文
+---
+classification: Internal
+ai_usage: Claude CLI allowed / Local RAG allowed
+owner: Jerry
+last_updated: 2026-05-11
+source_of_truth: false
+---
 
-> 每次對話開始時讀這份文件。讀完即可掌握全局狀況。
+# CLAUDE.md — Stackdose.UI.Core AI 開發入口
+
+> 每次對話開始時讀這份文件，再讀 `STATUS.md`。
+> **目前最新狀態以 `STATUS.md` 為唯一真相。**
+> `docs/refactor/PROGRESS.md` 僅作為重構階段（B0–B10）的歷史紀錄，不再更新。
 
 ---
 
-## 現狀三行摘要
+## 文件閱讀順序
 
-- **分支：** `master`（feature/printhead-robustness 已合入）｜PrintHead 整合完成（2026-04-29）
-- **主力工作：** PrintHead 實機驗證完成，FeiyangWrapper Release/Debug 選擇已修正
-- **未解問題：** 
-  - Sensor/Alarm Viewer 在 new-app 產出專案後路徑對應失效（待修復）
-  - 傳圖進度條已實作，但尚未進行大檔案壓力測試
+| 順序 | 文件 | 目的 |
+|---|---|---|
+| 1 | `CLAUDE.md`（本文件） | 架構背景、規則、索引 |
+| 2 | `STATUS.md` | 今日最新狀態、進行中、未解問題 |
+| 3 | `docs/kb/architecture.md` | 深入架構細節 |
+| 4 | `docs/kb/designer-system.md` | 設計器 / DesignRuntime 細節 |
+| 5 | `SECURITY_RULES.md` | AI 使用資安限制（接手前必讀） |
+
+---
+
+## 專案定位
+
+企業級 WPF 工業設備 UI 框架（.NET 8 Windows-only，x64），目標讓設備廠商快速建立符合 **FDA 21 CFR Part 11** 稽核要求的操作介面。
+這是**框架產品**，不是單一應用。Core / Templates 是基礎庫，DeviceFramework 是組裝框架，App.* 是範例，Tools.* 是開發工具。
 
 ---
 
@@ -33,15 +52,8 @@ dotnet build Stackdose.UI.Core.sln
 # 執行設計器
 # 開啟 Stackdose.Designer.sln 並執行 MachinePageDesigner 專案
 ```
-- **未解問題：** 見 `docs/refactor/PROGRESS.md` 底部 ⚠️ 區塊；分支尚未合併至 master
 
----
-
-## 開發狀態快速確認
-
-> 當前進度以 `docs/refactor/PROGRESS.md` 為唯一真相。AI 接手必讀 `docs/refactor/HANDOFF.md`（含鐵律與用戶偏好）。
-
-**常用方案 / Startup 對照**
+### 3. 常用方案 / Startup 對照
 
 | 工作內容 | 開啟方案 | Startup Project |
 |---|---|---|
@@ -49,13 +61,6 @@ dotnet build Stackdose.UI.Core.sln
 | 框架核心 / DeviceFramework | `Stackdose.UI.Core.sln` | `Stackdose.App.UbiDemo` |
 | 專案產生器 | `Stackdose.UI.Core.sln` | `Stackdose.Tools.ProjectGeneratorUI` |
 | 全局修改 / 跨多個專案 | `Stackdose.UI.Core.sln` | — |
-
----
-
-## 專案定位
-
-企業級 WPF 工業設備 UI 框架（.NET 8 Windows-only，x64），目標讓設備廠商快速建立符合 **FDA 21 CFR Part 11** 稽核要求的操作介面。
-這是**框架產品**，不是單一應用。Core / Templates 是基礎庫，DeviceFramework 是組裝框架，App.* 是範例，Tools.* 是開發工具。
 
 ---
 
@@ -72,7 +77,7 @@ dotnet build Stackdose.UI.Core.sln
 | 專案 | 路徑 | 說明 | 狀態 |
 |---|---|---|---|
 | `Stackdose.App.DeviceFramework` | `./Stackdose.App.DeviceFramework/` | JSON驅動設備App組裝框架 | 穩定 |
-| `Stackdose.App.UbiDemo` | `./Stackdose.App.UbiDemo/` | UBI工業烤箱參考實作（已遷移至DeviceFramework架構） | 維護 |
+| `Stackdose.App.UbiDemo` | `./Stackdose.App.UbiDemo/` | UBI工業烤箱參考實作 | 維護 |
 | `Stackdose.App.DesignRuntime` | `./Stackdose.App.DesignRuntime/` | 真實PLC連線 + JSON載入執行專案 | **開發中** |
 
 ### 工具
@@ -116,15 +121,6 @@ dotnet build Stackdose.UI.Core.sln
 
 ---
 
-## 目前主力開發方向
-
-1. **MachinePageDesigner（自由畫布設計器）** — 已完成 FreeCanvas 模式、Snap、Z-Order、框選、鎖定、複製貼上、GroupBox、對齊分配、方向鍵微調、Dashboard PLC 欄位設定
-2. **DesignRuntime** — 真實 PLC 連線執行環境，支援 FreeCanvas / SinglePage / Standard / **Dashboard** 四種 Shell 策略
-3. **Shell 模式體系** — `DashboardShellStrategy`（精簡生產模式，畫布全螢幕貼合，自動連線 PLC）完成；`scripts/new-app.ps1 -Mode Dashboard` 可一鍵 scaffold
-4. **DesignViewer** — 拖入 JSON 即時預覽工具
-
----
-
 ## AI 行為規則
 
 ### 優先順序（衝突時依此裁決）
@@ -144,24 +140,34 @@ dotnet build Stackdose.UI.Core.sln
 **下一步：** 建議的後續動作
 ```
 
-### 核心架構規則（勿違反）
+### 核心架構規則（絕對禁止）
 1. 不在 `Controls/*.xaml` 寫硬編碼色碼，用語意 Token（`Surface.*`、`Text.*`、`Action.*`）
 2. 不繞過 `ComplianceContext` 散落寫日誌，關閉前必須呼叫 `ComplianceContext.Shutdown()`
 3. App 特屬邏輯不耦合進 `UI.Core`
 4. 編譯失敗先確認 `../Stackdose.Platform/` 各專案與 `FeiyangWrapper.dll` 是否存在
+5. 改動 `IPlcManager` / `IPlcMonitor` / `IPrintHead` 簽名前必須讀 `docs/kb/platform-contracts.md`
+
+### 資安規則
+詳見 `SECURITY_RULES.md`。AI 工具分級使用規則見 `AI_USAGE_POLICY.md`。
 
 ---
 
 ## 知識庫與文件索引
 
-| 文件 | 說明 |
-|---|---|
-| `docs/PROJECT_MAP.md` | 完整專案依賴圖（含版本與路徑） |
-| `docs/kb/architecture.md` | 架構設計、Context 系統、資料流 |
-| `docs/kb/designer-system.md` | MachinePageDesigner + DesignViewer + DesignRuntime |
-| `docs/kb/platform-contracts.md` | Platform 跨 Repo 契約文件（危險介面清單） |
-| `docs/kb/controls-reference.md` | 控制項快速參考 |
-| `docs/kb/quickstart.md` | 新 App 快速建立指南（CLI 指令說明） |
-| `docs/devlog/2026-04.md` | 2026年4月開發日誌 |
-| `docs/devlog/2026-05.md` | 2026年5月開發日誌 |
-| `docs/eval/modele-vs-framework.md` | ModelE WinForms vs WPF框架功能對照、差距分析、未來實作方向 |
+| 文件 | classification | 說明 |
+|---|---|---|
+| `STATUS.md` | Internal | **唯一動態狀態來源**，每次任務後更新 |
+| `SECURITY_RULES.md` | Internal | AI 使用資安限制、高風險操作清單 |
+| `AI_USAGE_POLICY.md` | Internal | AI 工具分級使用政策 |
+| `docs/PROJECT_MAP.md` | Internal | 完整專案依賴圖（含版本與路徑） |
+| `docs/kb/architecture.md` | Internal | 架構設計、Context 系統、資料流 |
+| `docs/kb/designer-system.md` | Internal | MachinePageDesigner + DesignViewer + DesignRuntime |
+| `docs/kb/platform-contracts.md` | Internal | Platform 跨 Repo 契約文件（危險介面清單） |
+| `docs/kb/controls-reference.md` | Internal | 控制項快速參考 |
+| `docs/kb/quickstart.md` | Internal | 新 App 快速建立指南（CLI 指令說明） |
+| `docs/devlog/2026-04.md` | Internal | 2026年4月開發日誌 |
+| `docs/devlog/2026-05.md` | Internal | 2026年5月開發日誌 |
+| `docs/eval/modele-vs-framework.md` | Internal | ModelE WinForms vs WPF框架功能對照與差距分析 |
+| `docs/refactor/PROGRESS.md` | Internal | B0–B10 重構歷史紀錄（已完成，不再更新） |
+| `docs/refactor/HANDOFF.md` | Internal | ⚠️ 歷史交接文件（2026-04-24），已過期 |
+| `docs/MANAGER_BRIEF.md` | Internal | ⚠️ 已過期（2026-04-15），參考用 |

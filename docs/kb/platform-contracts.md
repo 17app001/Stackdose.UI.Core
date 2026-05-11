@@ -1,3 +1,10 @@
+---
+classification: Internal
+ai_usage: Claude CLI allowed (no real IPs/credentials) / Local RAG allowed
+last_updated: 2026-04-21
+source_of_truth: false
+---
+
 # Platform 跨 Repo 契約文件
 
 > 記錄 UI.Core 對 Stackdose.Platform 的依賴契約。

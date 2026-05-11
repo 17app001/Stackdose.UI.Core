@@ -1,6 +1,14 @@
-# 重構進度追蹤
+---
+classification: Internal
+ai_usage: Local RAG allowed (historical record)
+last_updated: 2026-05-05
+source_of_truth: false
+---
+
+# 重構進度追蹤（B0–B10 歷史紀錄）
 
 > 每完成一階段打勾 + 補日期 + 補 commit SHA。
+> ⚠️ 重構已全部完成（B0–B10），此文件不再更新。目前狀態見 `STATUS.md`。
 > 接手 AI：先看最下面「當前焦點 / 下一步」區塊。
 
 ---

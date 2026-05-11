@@ -91,10 +91,10 @@ namespace Stackdose.UI.Core.Controls
 
         private async void OnControlLoaded(object sender, RoutedEventArgs e)
         {
+            ResetStatusDisplay();
+
             if (!LoadConfiguration())
                 return;
-
-            ResetStatusDisplay();
 
             if (AutoConnect && !_isConnected && _printHead == null)
             {

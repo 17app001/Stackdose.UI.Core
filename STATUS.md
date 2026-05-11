@@ -17,16 +17,15 @@
   - `LightColors.xaml` — 補齊 Surface.* / Text.* / Action.* / Status.* token
 - **下一步：**
     1. ⚠ 確認 MyPrintApp2 單獨重建後 Spacer header 灰色是否正確（需 rebuild MyPrintApp2.csproj，不是 Stackdose.UI.Core.sln）
-    2. ⚠ 確認 PrintHead 2 高度在新佈局（Row1="*"）下視覺一致
-    3. **PlcConfirmationHandler 實作** — 帶倒數功能的確認對話框
-    4. **JSON 熱更新** — DesignRuntime 修改 JSON 後自動重載畫布
+    2. **PlcConfirmationHandler 實作** — 帶倒數功能的確認對話框
+    3. **JSON 熱更新** — DesignRuntime 修改 JSON 後自動重載畫布
 
 ## 進行中
 
 | # | 任務 | 檔案 | 備註 |
 |---|---|---|---|
 | 1 | PlcConfirmationHandler | `UI.Core/Shell/Handlers` | 帶倒數與 Event 接軌的確認框 |
-| 2 | 實機驗證與 wiring | — | 噴頭 init 與 Dashboard 反饋、direction + D512 flag 確認 |
+| 2 | 實機驗證與 wiring | — | 噴頭 init 與 Dashboard 反饋、D512 flag 確認 |
 | 3 | JSON 熱更新 | `DesignRuntime` | 修改 JSON 後自動重載畫布 |
 
 ## ⚠️ 未解問題
@@ -34,7 +33,6 @@
 | 問題 | 優先度 | 備註 |
 |---|---|---|
 | **Spacer headerColor runtime 仍為 Primary 藍** | 高 | MyPrintApp2 有獨立 RuntimeControlFactory.cs 副本，需單獨 rebuild MyPrintApp2.csproj（非 Stackdose.UI.Core.sln）；代碼修正已完成 |
-| **PrintHead 2 高度視覺問題** | 高 | Row1 改 Height="*" 後理論上 StatusDataPanel 貼底，需重建確認；config 載入失敗時無電壓行導致空白較多 |
 | **D512 PLC flag 缺失** | 中 | ModelE 傳圖前寫 D512 作為層旗標，待實機確認是否需要補 |
 | JSON 熱更新 | 中 | DesignRuntime 尚未實作 |
 

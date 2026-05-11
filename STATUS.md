@@ -17,11 +17,19 @@ source_of_truth: true
 
 - **日期：** 2026-05-11
 - **分支：** `master`
-- **上次做了什麼：** 修正 PrintHeadStatus 高度跑版根因（2026-05-11）
-  - `PrintHeadStatus.xaml.cs` — `ResetStatusDisplay()` 移到 `LoadConfiguration()` 之前，確保 config 找不到時 VoltagesPanel 仍有佔位資料，防止 Row1=* 異常膨脹
+- **上次做了什麼：** RAG 文件系列全部完成（2026-05-11）
+  - `docs/RAG_INDEX.md` — 12 個場景導航地圖（含場景 12 AI 驗證）
+  - `docs/kb/DECISION_LOG.md` — 12 個 ADR 架構決策紀錄
+  - `docs/kb/GLOSSARY.md` — 42 個術語 + 能力邊界
+  - `docs/kb/AI_REPRODUCTION_GUIDE.md` — 無實機驗證指南 + 7 點 checklist
+  - `docs/specs/DATA_DICTIONARY.md` — PLC Tag 字典骨架（Confidential）
+  - CLAUDE.md + RAG_INDEX.md + 快速對照表 同步更新
+- **Open WebUI RAG 測試** — 待重開機後進行
+  - 需確認：是否有 Ollama / Claude API Key / Docker Desktop
+  - 測試計畫：建立 4 個知識庫集合，上傳文件，驗證 12 個查詢場景
 - **下一步：**
-    1. ⚠ 確認 MyPrintApp2 單獨重建後 Spacer header 灰色是否正確（需 rebuild MyPrintApp2.csproj，不是 Stackdose.UI.Core.sln）
-    2. **PlcConfirmationHandler 實作** — 帶倒數功能的確認對話框
+    1. ⚠ rebuild MyPrintApp3 / DashboardTest1 / ModelE 確認 Spacer headerColor 修正生效
+    2. **Open WebUI 環境確認** — 確認有哪些工具後決定安裝方式
     3. **JSON 熱更新** — DesignRuntime 修改 JSON 後自動重載畫布
 
 ---
@@ -30,9 +38,18 @@ source_of_truth: true
 
 | # | 任務 | 檔案 | 備註 |
 |---|---|---|---|
-| 1 | PlcConfirmationHandler | `UI.Core/Shell/Handlers` | 帶倒數與 Event 接軌的確認框 |
-| 2 | 實機驗證與 wiring | — | 噴頭 init 與 Dashboard 反饋、D512 flag 確認 |
-| 3 | JSON 熱更新 | `DesignRuntime` | 修改 JSON 後自動重載畫布 |
+| 1 | 實機驗證與 wiring | — | 噴頭 init 與 Dashboard 反饋、D512 flag 確認 |
+| 2 | JSON 熱更新 | `DesignRuntime` | 修改 JSON 後自動重載畫布 |
+| 3 | DATA_DICTIONARY 填入 | `docs/specs/DATA_DICTIONARY.md` | Confidential，填入實際 PLC Tag |
+
+---
+
+## 未來規劃 (Icebox)
+
+| 任務 | 優先度 | 備註 |
+|---|---|---|
+| **PlcConfirmationHandler** | 低 | 帶倒數與 Event 接軌的確認框。**決策：不整合在 machinedesign.json**，待架構穩定後再議。 |
+| 自動化測試套件 | 低 | 建立 UI.Core.Tests 的基礎架構 |
 
 ---
 
@@ -96,7 +113,7 @@ aefd366 light模式處理未完成，PrintHeadStatus 跑版
 
 ## 交接備註
 
-- **給下一位 AI 接手**：先讀 `CLAUDE.md`，再讀本文件，再讀 `SECURITY_RULES.md`。
+- **給下一位 AI 接手**：依序讀 `CLAUDE.md` → 本文件 → `SECURITY_RULES.md` → `docs/RAG_INDEX.md` → `docs/kb/DECISION_LOG.md`，讀完這五份就能開始工作。有「能不能做 X」的問題查 DECISION_LOG，找不到文件查 RAG_INDEX。
 - **MyPrintApp2 是獨立副本**：scaffold 修正需要額外 rebuild `MyPrintApp2.csproj`，不是 `Stackdose.UI.Core.sln`。
 - **含中文的 `.ps1` 必須存 UTF-8 with BOM**，否則 PS5 zh-TW Windows 環境下中文亂碼。
 - **不自動 commit/push**，等使用者明確說才執行。

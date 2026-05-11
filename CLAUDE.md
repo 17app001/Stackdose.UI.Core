@@ -16,13 +16,20 @@ source_of_truth: false
 
 ## 文件閱讀順序
 
-| 順序 | 文件 | 目的 |
-|---|---|---|
-| 1 | `CLAUDE.md`（本文件） | 架構背景、規則、索引 |
-| 2 | `STATUS.md` | 今日最新狀態、進行中、未解問題 |
-| 3 | `docs/kb/architecture.md` | 深入架構細節 |
-| 4 | `docs/kb/designer-system.md` | 設計器 / DesignRuntime 細節 |
-| 5 | `SECURITY_RULES.md` | AI 使用資安限制（接手前必讀） |
+> 新 AI 接手時的最小必讀集合（依序）：
+
+| 順序 | 文件 | 目的 | 必讀？ |
+|---|---|---|---|
+| 1 | `CLAUDE.md`（本文件） | 架構背景、規則、索引 | ★ 必讀 |
+| 2 | `STATUS.md` | 今日最新狀態、進行中、未解問題 | ★ 必讀 |
+| 3 | `SECURITY_RULES.md` | AI 使用資安限制、哪些不能動 | ★ 必讀 |
+| 4 | `docs/RAG_INDEX.md` | 場景→文件導航地圖，找任何答案先看這裡 | ★ 必讀 |
+| 5 | `docs/kb/DECISION_LOG.md` | 「能/不能做 X」架構決策速查（ADR） | ★ 必讀 |
+| 6 | `docs/kb/GLOSSARY.md` | 術語定義 + 每個術語的能力邊界 | 按需查閱 |
+| 7 | `docs/kb/architecture.md` | 深入架構細節（Context 系統、資料流） | 按需查閱 |
+| 8 | `docs/kb/designer-system.md` | 設計器 / DesignRuntime 細節 | 按需查閱 |
+
+**原則：** 讀完前 5 份就能開始工作。後 3 份在被問到特定問題時再查。
 
 ---
 
@@ -159,6 +166,11 @@ dotnet build Stackdose.UI.Core.sln
 | `STATUS.md` | Internal | **唯一動態狀態來源**，每次任務後更新 |
 | `SECURITY_RULES.md` | Internal | AI 使用資安限制、高風險操作清單 |
 | `AI_USAGE_POLICY.md` | Internal | AI 工具分級使用政策 |
+| `docs/RAG_INDEX.md` | Internal | **RAG 導航地圖** — 場景→文件映射，AI 找路必讀 |
+| `docs/kb/DECISION_LOG.md` | Internal | 架構決策紀錄（ADR）— 能/不能做 X 的根據 |
+| `docs/kb/GLOSSARY.md` | Internal | 技術術語表 — 專有名詞定義與能力邊界 |
+| `docs/kb/AI_REPRODUCTION_GUIDE.md` | Internal | AI 驗證指南 — 無實機環境下可驗證的項目與步驟 |
+| `docs/specs/DATA_DICTIONARY.md` | **Confidential** | PLC Tag 字典 — Local RAG only，不可外傳 |
 | `docs/PROJECT_MAP.md` | Internal | 完整專案依賴圖（含版本與路徑） |
 | `docs/kb/architecture.md` | Internal | 架構設計、Context 系統、資料流 |
 | `docs/kb/designer-system.md` | Internal | MachinePageDesigner + DesignViewer + DesignRuntime |

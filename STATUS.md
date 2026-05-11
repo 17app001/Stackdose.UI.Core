@@ -17,20 +17,19 @@ source_of_truth: true
 
 - **日期：** 2026-05-11
 - **分支：** `master`
-- **上次做了什麼：** RAG 文件系列全部完成（2026-05-11）
-  - `docs/RAG_INDEX.md` — 12 個場景導航地圖（含場景 12 AI 驗證）
-  - `docs/kb/DECISION_LOG.md` — 12 個 ADR 架構決策紀錄
-  - `docs/kb/GLOSSARY.md` — 42 個術語 + 能力邊界
-  - `docs/kb/AI_REPRODUCTION_GUIDE.md` — 無實機驗證指南 + 7 點 checklist
-  - `docs/specs/DATA_DICTIONARY.md` — PLC Tag 字典骨架（Confidential）
-  - CLAUDE.md + RAG_INDEX.md + 快速對照表 同步更新
-- **Open WebUI RAG 測試** — 待重開機後進行
-  - 需確認：是否有 Ollama / Claude API Key / Docker Desktop
-  - 測試計畫：建立 4 個知識庫集合，上傳文件，驗證 12 個查詢場景
+- **上次做了什麼：** LLM Wiki 第二版強化完成（2026-05-11）
+  - `docs/AI_KNOWLEDGE_TEST.md` — 全新，20 個 RAG 驗證問題 + 評分表 + 常見失敗模式
+  - `docs/RAG_INDEX.md` — 加入 3 張 Mermaid 知識關係圖（AI 流程圖 / 文件關係圖 / 資料分級流程圖）
+  - `docs/kb/GLOSSARY.md` — 補齊 14 個術語（HMI / PLC / ModelE / Migration / Feiyang SDK / Platform Contracts / Tolerance Merging / FDA 21 CFR Part 11 / Confidential / Local RAG only / External AI / STATUS.md / RAG_INDEX.md / 主題 Token）
+  - `docs/kb/DECISION_LOG.md` — 補 ADR-014 至 ADR-020（7 個新架構決策，含 STATUS.md 唯一真相、資料分級、AI 行為規則）
+  - `docs/kb/AI_REPRODUCTION_GUIDE.md` — 加入第 7 節「AI 標準回報格式」（5 段結構化輸出）
+  - 12 個文件補齊資料等級 frontmatter（classification / ai_usage / last_updated）
+  - `index.html` — 補 RAG_INDEX / GLOSSARY / DECISION_LOG / AI_REPRODUCTION_GUIDE / AI_KNOWLEDGE_TEST 卡片連結
 - **下一步：**
     1. ⚠ rebuild MyPrintApp3 / DashboardTest1 / ModelE 確認 Spacer headerColor 修正生效
-    2. **Open WebUI 環境確認** — 確認有哪些工具後決定安裝方式
-    3. **JSON 熱更新** — DesignRuntime 修改 JSON 後自動重載畫布
+    2. **ModelE 移植 — PrintWorkflowService** — 撰寫 App 層列印工作流狀態機（見下方移植備忘）
+    3. **Open WebUI 環境確認** — 確認有哪些工具後決定安裝方式
+    4. **JSON 熱更新** — DesignRuntime 修改 JSON 後自動重載畫布
 
 ---
 
@@ -41,6 +40,7 @@ source_of_truth: true
 | 1 | 實機驗證與 wiring | — | 噴頭 init 與 Dashboard 反饋、D512 flag 確認 |
 | 2 | JSON 熱更新 | `DesignRuntime` | 修改 JSON 後自動重載畫布 |
 | 3 | DATA_DICTIONARY 填入 | `docs/specs/DATA_DICTIONARY.md` | Confidential，填入實際 PLC Tag |
+| 4 | **ModelE 移植** | `ModelE/Services/PrintWorkflowService.cs` | 見下方移植備忘，明天繼續 |
 
 ---
 
@@ -108,6 +108,35 @@ aefd366 light模式處理未完成，PrintHeadStatus 跑版
 | 排版輔助系統 | ✅ 完成（含容器感知、全方位 Padding） |
 | Light/Dark 主題切換 | ✅ 完成（Designer + DesignRuntime + 實機 App） |
 | 重構 B0–B10 | ✅ 全部完成 |
+
+---
+
+## ModelE 移植備忘（2026-05-11 討論）
+
+### 架構決策
+- **BehaviorEngine（JSON）** 只處理 UI 反應（按鈕→寫 PLC、值變化→改顏色）
+- **複雜序列流程**（啟動列印→等 PLC 旗標→傳圖→等 D512→換圖→下一層）必須寫在 App 層 C# Service
+
+### 要建的檔案
+```
+ModelE/Services/PrintWorkflowService.cs
+```
+狀態機：`Idle → WaitingForReady → SendingImage → WaitingForLayerFlag → NextLayer → Done`
+
+### 介面對應
+| 動作 | 使用介面 |
+|---|---|
+| 等待 PLC 旗標 | `PlcStatus.ScanUpdated` + `IPlcManager.GetBit()` |
+| 傳圖給噴頭 | `IPrintHead.SendAsync()` |
+| 等 D512 layer flag | `IPlcManager.GetWord("D512")` — 待實機確認 |
+| 記錄稽核 | `ComplianceContext.LogOperation()` |
+| 更新 UI 進度 | `BehaviorEventBus.RaiseControlEventFired()` |
+
+### 已知缺口（移植前需確認）
+- D512 是否確實為 layer flag（STATUS.md 已標記待確認）
+- D65/D67/D69/D71 軸位址現場確認
+- D2000 供墨超時暫存器疑似原始錯誤，需確認
+- 軸控 UI 控件尚未實作（需要位置輸入 + 寫 PLC）
 
 ---
 

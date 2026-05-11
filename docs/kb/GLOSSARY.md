@@ -549,3 +549,191 @@ source_of_truth: false
 **使用規則：**
 - XAML 裡一律用 `{StaticResource Token.Name}`，禁止 `#RRGGBB`（ADR-007）
 - 新增或改名 Token 必須同步 `DarkColors.xaml` + `LightColors.xaml`（ADR-012）
+
+---
+
+## 專案特有概念
+
+### HMI
+
+**全名：** Human-Machine Interface（人機介面）
+
+**是什麼：** 操作員與設備互動的軟體介面。本框架以 WPF 實作工業設備 HMI，包含狀態監控、參數設定、警報顯示等功能。
+
+**在本專案中指：** 由 `MachinePageDesigner` 設計、`DesignRuntime` 執行的頁面 UI。
+
+**❌ 不能：**
+- 不可把「HMI」等同於「一般 CRUD 應用」，HMI 的核心是 PLC 資料即時顯示與安全寫入，不是資料庫 CRUD
+
+---
+
+### PLC
+
+**全名：** Programmable Logic Controller（可程式化邏輯控制器）
+
+**是什麼：** 工業自動化控制器，本框架透過 Mitsubishi FX3U 系列 PLC 控制設備。AI 不可直接操作。
+
+**在本專案中：**
+- 透過 `IPlcManager` / `IPlcMonitor` 介面存取（定義在 `../Stackdose.Platform/`）
+- PLC 位址格式：`D100`（Word）、`M10`（Bit）
+- PLC 位址是 **Confidential** 資料，不可提供給外部 AI
+
+**❌ 不能：**
+- AI 不可連接或操作真實 PLC
+- PLC 位址、真實設備參數不可提供給外部 AI
+- 不可在沒有實機的情況下宣稱已驗證 PLC 行為
+
+---
+
+### ModelE
+
+**是什麼：** 內部代號，指公司現有的 WinForms 版本設備控制軟體，正在移植至本 WPF 框架。
+
+**資料等級：Confidential**
+
+**相關文件：**
+- `docs/ModelE_Migration_Brief.md` — Local RAG only
+- `docs/eval/modele-vs-framework.md` — Local RAG only
+
+**❌ 不能：**
+- ModelE 的設備邏輯、PLC 位址、製程參數不可提供給外部 AI
+- 任何涉及 ModelE 的討論必須先確認是否在 Local RAG 環境
+
+---
+
+### Migration（移植）
+
+**是什麼：** 將 ModelE WinForms 功能移植至 Stackdose WPF 框架的工程專案。
+
+**資料等級：Confidential**
+
+**特性：**
+- 移植策略含設備型號、PLC 位址、製程參數
+- 差距分析（WinForms 功能 vs WPF 框架）見 `docs/eval/modele-vs-framework.md`
+
+**❌ 不能：**
+- 移植策略與細節不可提供給外部 AI
+- AI 不可自行決定移植優先順序，需人工確認
+
+---
+
+### Feiyang SDK
+
+**全名：** Feiyang PrintHead Control SDK（飛洋噴頭控制 SDK）
+
+**是什麼：** 控制噴頭的 C++ 原生 SDK，版本 2.3.1，以 `FeiyangWrapper.dll` 橋接至 .NET。
+
+**路徑：**
+- DLL：`../../Sdk/FeiyangWrapper/x64/[Debug|Release]/FeiyangWrapper.dll`
+- SDK：`../../Sdk/FeiyangSDK-2.3.1/lib/`
+
+**資料等級：Internal（SDK 橋接邏輯），但噴頭控制參數屬 Confidential**
+
+**❌ 不能：**
+- DLL 缺失時功能沉默失效（不報錯），不可假設一定存在
+- 真實噴頭控制邏輯與參數不可提供給外部 AI
+
+---
+
+### Platform Contracts
+
+**是什麼：** 跨 Repo 介面契約，指 `IPlcManager`、`IPlcMonitor`、`IPrintHead` 這三個定義在 `../Stackdose.Platform/` 的介面。
+
+**危險性：** 簽名任何變動會導致 UI.Core 多處編譯失敗（ADR-002）。
+
+**相關文件：** `docs/kb/platform-contracts.md`
+
+**❌ 不能：**
+- AI 不可擅自修改這三個介面的簽名
+- 修改前必須讀 `docs/kb/platform-contracts.md` 確認影響範圍
+
+---
+
+### Tolerance Merging（公差合併）
+
+**是什麼：** MachinePageDesigner 中的對齊功能，將位置接近的控件位置「合併」至相同座標，用於精密對齊。
+
+**在本框架中：** 設計器精密校正功能的一部分（已完成）。
+
+---
+
+### FDA 21 CFR Part 11
+
+**是什麼：** 美國 FDA 電子記錄與電子簽名法規。本框架的稽核日誌系統（`ComplianceContext` + `SqliteLogger`）設計符合此法規要求。
+
+**要求：**
+- 操作必須有完整稽核軌跡（timestamp、user、action、detail）
+- 電子簽名需要身份驗證（`SecurityContext`）
+- 日誌不可竄改、不可省略
+
+**❌ 不能：**
+- 不可省略 `ComplianceContext.Shutdown()`（ADR-010）
+- 不可繞過 `ComplianceContext` 直接寫日誌（ADR-005）
+
+---
+
+## 資料分級術語
+
+### Confidential（機密）
+
+**是什麼：** 本專案最高資料等級。含此等級的文件只能在本機 RAG 系統（Open WebUI）內使用。
+
+**包含：**
+- PLC 真實位址與 Tag（`docs/specs/DATA_DICTIONARY.md`）
+- ModelE 移植策略（`docs/ModelE_Migration_Brief.md`、`docs/eval/modele-vs-framework.md`）
+- 噴頭實際控制邏輯與參數
+- 客戶資料、製程參數、Production 設定
+
+**❌ 不能：**
+- Confidential 文件不可直接提供給外部 AI（Claude API / ChatGPT / Gemini）
+- 若需要外部 AI 協助，只能提供去識別化摘要
+
+---
+
+### Local RAG only
+
+**是什麼：** AI 使用限制標示，表示此文件只能在本機部署的 RAG 系統（如 Open WebUI）中使用，不可上傳至外部 AI 服務。
+
+**適用文件：** 所有 `classification: Confidential` 的文件
+
+**對應工具：** Open WebUI（本機部署）+ 本機 Ollama 或 Local API
+
+---
+
+### External AI
+
+**是什麼：** 指雲端 AI 服務，包含 Claude API（claude.ai）、ChatGPT、Gemini。
+
+**使用限制：**
+- External AI 只能處理 `Internal` 等級以下的資料
+- `Confidential` 資料必須先去識別化才能提交給 External AI
+- 禁止提供：PLC 位址、設備 IP、客戶資料、製程參數、移植策略
+
+---
+
+### STATUS.md
+
+**是什麼：** 本專案的唯一動態狀態來源（`source_of_truth: true`），記錄當前進度、進行中任務、未解問題、高風險區域。
+
+**規則：**
+- 每次任務結束後必須更新
+- 若與其他文件衝突，以 STATUS.md 為準
+- devlog、PROGRESS、HANDOFF 只能作為歷史參考
+
+**❌ 不能：**
+- 不可用 devlog 或 PROGRESS.md 回答「現在狀態是什麼」
+- 不可讓 index.html 或其他文件取代 STATUS.md 的動態狀態角色
+
+---
+
+### RAG_INDEX.md
+
+**是什麼：** AI 任務導航地圖，記錄「哪類問題應查哪份文件」的場景→文件映射。
+
+**位置：** `docs/RAG_INDEX.md`
+
+**用途：** RAG 系統檢索到此文件後，可引導 AI 找到正確的知識來源，而不是盲目搜尋所有文件。
+
+**❌ 不能：**
+- RAG_INDEX 本身不是知識來源，不應回答具體技術問題
+- 不可讓 RAG_INDEX 的場景描述取代各 kb/*.md 的詳細說明

@@ -1,3 +1,10 @@
+---
+classification: Internal
+ai_usage: Claude CLI allowed / Local RAG allowed
+last_updated: 2026-05-11
+source_of_truth: false
+---
+
 # 專案依賴地圖
 
 > 本文件記錄 Stackdose.UI.Core.sln 所有專案的依賴關係，包含跨 Repo 的外部引用。

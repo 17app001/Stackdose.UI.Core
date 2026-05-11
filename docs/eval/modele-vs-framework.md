@@ -1,3 +1,11 @@
+---
+classification: Confidential
+ai_usage: Local RAG only — 不可提供給外部 AI（Claude API / ChatGPT / Gemini）
+last_updated: 2026-04-30
+source_of_truth: false
+note: 含設備移植評估與 WinForms 實作細節，外部 AI 只能接收去識別化摘要
+---
+
 # ModelE WinForms vs Stackdose.UI.Core WPF 功能對照
 
 > 產出日期：2026-04-30

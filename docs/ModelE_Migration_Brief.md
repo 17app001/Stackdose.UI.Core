@@ -1,3 +1,11 @@
+---
+classification: Confidential
+ai_usage: Local RAG only — 不可提供給外部 AI（Claude API / ChatGPT / Gemini）
+last_updated: 2026-05-11
+source_of_truth: false
+note: 含設備移植策略與 PLC 控制邏輯，外部 AI 只能接收去識別化摘要
+---
+
 # ModelE → Stackdose UI.Core 移植簡報
 
 > **目的：** 讓 AI 或工程師能從零自動重建 ModelE WinForms 專案為 WPF Dashboard 應用。

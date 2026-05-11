@@ -1,3 +1,11 @@
+---
+classification: Internal
+ai_usage: Claude CLI allowed / Local RAG allowed
+last_updated: 2026-05-11
+source_of_truth: false
+note: B0–B10 重構歷史計畫，已全部完成，不再更新
+---
+
 # 重構完整計畫（B0 → B8）
 
 > 每階段：獨立 commit、獨立可驗收、可單獨回滾。

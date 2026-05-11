@@ -245,6 +245,72 @@ AI 行為規則完整版見 `SECURITY_RULES.md`，分級政策見 `AI_USAGE_POLI
 
 ---
 
+---
+
+## 知識關係圖（Mermaid）
+
+### 圖一：AI 開發流程圖
+
+```mermaid
+flowchart TD
+    Start([AI 接到任務]) --> ReadStatus[讀 STATUS.md\n確認現況]
+    ReadStatus --> ReadSecurity[讀 SECURITY_RULES.md\n確認限制]
+    ReadSecurity --> CheckConfidential{涉及 Confidential？\nPLC / ModelE / eval}
+    CheckConfidential -->|是| LocalRAG[只用 Local RAG\n不提交外部 AI]
+    CheckConfidential -->|否| CheckHighRisk{涉及高風險區域？\nIPlcManager / ComplianceContext\nIPrintHead / scaffold}
+    CheckHighRisk -->|是| NeedConfirm[列出影響範圍\n等待人工確認]
+    CheckHighRisk -->|否| ReadDecision[查 DECISION_LOG.md\n有無相關 ADR？]
+    ReadDecision --> Execute[執行修改]
+    Execute --> Verify[依 AI_REPRODUCTION_GUIDE.md\n驗證修改]
+    Verify --> UpdateStatus[更新 STATUS.md]
+    LocalRAG --> Anonymize[去識別化後\n才能提交外部 AI]
+    NeedConfirm --> Execute
+```
+
+---
+
+### 圖二：RAG 文件關係圖
+
+```mermaid
+flowchart LR
+    Q([使用者問題]) --> RAG[RAG_INDEX.md\n導航地圖]
+    RAG --> S[STATUS.md\n現況唯一真相]
+    RAG --> KB[docs/kb/*.md\n知識庫]
+    RAG --> SEC[SECURITY_RULES.md\nAI_USAGE_POLICY.md\n資安規則]
+
+    KB --> GLOSS[GLOSSARY.md\n術語邊界]
+    KB --> ADR[DECISION_LOG.md\n架構決策]
+    KB --> REPRO[AI_REPRODUCTION_GUIDE.md\n無實機驗證]
+    KB --> CTRL[controls-reference.md\n控件速查]
+    KB --> DESIGN[designer-system.md\n設計器說明]
+
+    SEC --> CONF[Confidential 文件\nLocal RAG Only]
+    CONF --> DD[specs/DATA_DICTIONARY.md\nPLC Tag 字典]
+    CONF --> ME[ModelE_Migration_Brief.md]
+    CONF --> EVAL[eval/modele-vs-framework.md]
+```
+
+---
+
+### 圖三：資料分級與工具使用流程圖
+
+```mermaid
+flowchart TD
+    Data([資料] ) --> L1{等級判斷}
+    L1 -->|Public\n通用技術說明| AnyAI[任意 AI 工具\nClaude / ChatGPT / Gemini]
+    L1 -->|Internal\n專案架構 / 開發流程| ClaudeOK[Claude CLI\nGemini CLI\n去識別化後可用外部 AI]
+    L1 -->|Confidential\nPLC / ModelE / 客戶資料| LocalOnly[Local RAG Only\nOpen WebUI 本機部署]
+
+    LocalOnly --> NeedExternal{需要外部 AI 協助？}
+    NeedExternal -->|是| Anonymize[去識別化\n替換 PLC 位址 / 設備型號\n移除客戶資訊]
+    Anonymize --> ClaudeOK
+    NeedExternal -->|否| Done([完成])
+    ClaudeOK --> Done
+    AnyAI --> Done
+```
+
+---
+
 ## 快速場景對照表
 
 | 你的問題類型 | 優先讀 |

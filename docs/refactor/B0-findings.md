@@ -1,3 +1,11 @@
+---
+classification: Internal
+ai_usage: Claude CLI allowed / Local RAG allowed
+last_updated: 2026-04-21
+source_of_truth: false
+note: B0 重構歷史紀錄，已完成不再更新
+---
+
 # B0 文件 vs 實際差異表
 
 > 產出時間：2026-04-21

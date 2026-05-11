@@ -271,6 +271,183 @@ source_of_truth: false
 
 ---
 
+## ADR-014：核心控制項修改之「先問後動」準則
+
+**決策：** 凡涉及 `Stackdose.UI.Core\Controls` 目錄下的現有控制項修改、屬性增減、或是新增任何控制項，AI 必須先行提問並獲得明確授權。
+
+**原因：**
+- **相容性風險：** `UI.Core` 是多專案共用的基石，隨意修改屬性會導致其他相依專案（如其他 App）編譯失敗。
+- **架構純潔性：** 為了保持「JSON 驅動」的主旨，應避免為了單一 App 的特殊需求而污染全域控制項。
+- **團隊協作：** 確保 UI 控件的演進符合專案整體風格與技術規範。
+
+**AI 應做的事：**
+- 修改控制項前，先列出變更影響範圍與理由。
+- 提供 XAML/C# 的修改預覽供審核。
+
+**狀態：** Active (Mandatory)
+
+---
+
+## ADR-014：STATUS.md 是唯一動態狀態來源
+
+**決策：** 專案現況（進行中任務、未解問題、下一步）只由 `STATUS.md` 記錄，任何其他文件（devlog、PROGRESS、HANDOFF、index.html）不得取代其角色。
+
+**原因：**
+- 多份文件記錄狀態會造成不一致，AI 無法判斷哪份最新
+- STATUS.md 每次任務後強制更新，是唯一有時效保證的文件
+- RAG 系統若從 devlog 抽取「現況」很容易讀到過期資訊
+
+**AI 不應做的事：**
+- 不要用 devlog 的最新條目回答「現在狀態是什麼」
+- 不要用 PROGRESS.md 判斷任務完成度
+- 若 STATUS.md 與其他文件衝突，以 STATUS.md 為準
+
+**狀態：** Active（文件系統設計決策）
+
+---
+
+## ADR-015：Migration / eval 文件只能 Local RAG
+
+**決策：** `docs/ModelE_Migration_Brief.md` 和 `docs/eval/modele-vs-framework.md` 標示為 Confidential，只能在本機 RAG 系統使用，不可提供給外部 AI。
+
+**原因：**
+- 這兩份文件含設備移植策略、WinForms 控制邏輯、設備型號等商業機密
+- 若提交給外部 AI（Claude API / ChatGPT），等同對雲端服務揭露競爭優勢與設備細節
+- PLC 位址與製程參數若外洩，可能造成安全風險
+
+**AI 不應做的事：**
+- 不要把 ModelE 或 Migration 相關問題直接提交給外部 AI
+- 若需要外部 AI 協助分析，只能提供去識別化摘要（使用 `docs/specs/DATA_DICTIONARY.md` 底部的模板）
+
+**狀態：** Active（資安政策）
+
+---
+
+## ADR-016：AI 修改前必須列出影響範圍
+
+**決策：** AI 在修改任何程式碼前，必須先列出：需求理解、影響檔案清單、風險區域、驗證方式。
+
+**原因：**
+- 工業設備 UI 的控件修改往往有跨 App 副本影響（ADR-009）
+- 跨 Repo 介面修改影響 Platform（ADR-002）
+- 提前列出影響範圍讓使用者能在執行前發現盲點，防止造成意外破壞
+
+**AI 不應做的事：**
+- 不要在列出影響分析前直接開始修改程式碼
+- 不要假設「只改了一個地方，其他都沒影響」
+
+**狀態：** Active（AI 行為規則）
+
+---
+
+## ADR-017：高風險區域修改需要人工確認
+
+**決策：** 涉及 `IPlcManager / IPlcMonitor / IPrintHead`、`ComplianceContext`、`PlcStatus`、scaffold 腳本的修改，AI 必須在執行前獲得使用者明確確認。
+
+**原因：**
+- 這些區域的錯誤可能導致：稽核日誌遺失（FDA 違規）、PLC 連線異常（設備停機）、所有 App 編譯失敗
+- 修復成本遠高於「先確認後執行」的一次對話
+
+**高風險區域清單：**
+- `IPlcManager / IPlcMonitor / IPrintHead` — 跨 Repo 契約
+- `ComplianceContext / SqliteLogger` — 稽核軌跡
+- `IPrintHead / FeiyangPrintHead` — C++ SDK 橋接
+- `scripts/init-shell-app.ps1` — 影響所有 scaffold 產出
+- `DarkColors.xaml / LightColors.xaml` — 全域主題
+
+**AI 不應做的事：**
+- 不要在未獲確認的情況下修改高風險區域
+- 不要把高風險修改與一般修改混在同一個 commit
+
+**狀態：** Active
+
+---
+
+## ADR-018：index.html 只作為文件導覽首頁
+
+**決策：** `index.html` 定位為靜態文件導覽頁，不承擔動態狀態管理功能，不作為 RAG 主知識來源，不存放機密資料。
+
+**原因：**
+- HTML 文件不易被 RAG 系統正確分段索引
+- 狀態資訊若寫入 HTML，每次更新需要同時改 HTML 與 STATUS.md，容易造成不一致
+- index.html 可能被靜態伺服器公開，不應含機密資訊
+
+**規則：**
+- index.html 的狀態摘要必須標注「以 STATUS.md 為準」
+- index.html 可連結到各文件，但文件內容不應複製到 HTML 中
+
+**狀態：** Active
+
+---
+
+## ADR-019：外部 AI 不可直接讀取完整機密文件
+
+**決策：** 外部 AI（Claude API / ChatGPT / Gemini）只能接收去識別化摘要，不可直接接收 Confidential 等級文件的完整內容。
+
+**原因：**
+- 雲端 AI 服務的輸入可能被用於模型訓練或日誌記錄（各服務政策不同，風險不確定）
+- Confidential 文件含商業機密、設備細節、客戶資料，外洩風險不可接受
+- 去識別化摘要能保留分析所需的結構，同時移除可辨識資訊
+
+**去識別化原則：**
+- 替換 PLC 位址（D100 → REG_TEMP）
+- 替換設備型號（ModelE → DEVICE_A）
+- 移除客戶名稱與地址
+- 保留功能邏輯描述
+
+**狀態：** Active（資安政策）
+
+---
+
+## ADR-020：devlog / PROGRESS / HANDOFF 只作為歷史紀錄
+
+**決策：** `docs/devlog/*.md`、`docs/refactor/PROGRESS.md`、`docs/refactor/HANDOFF.md` 是歷史紀錄文件，不反映現況。
+
+**原因：**
+- devlog 是日記格式，隨著時間累積，最新的條目不一定代表現況（可能有後續修正）
+- PROGRESS.md 記錄 B0–B10 重構歷史，所有任務已完成，不再更新
+- HANDOFF.md（2026-04-24）已明確標示過期
+
+**AI 不應做的事：**
+- 不要根據 devlog 最新條目判斷「現在進行中的任務」
+- 不要把 PROGRESS.md 的完成狀態當作「可以修改那個模組」的依據
+- 若 devlog 與 STATUS.md 衝突，以 STATUS.md 為準
+
+**狀態：** Active
+
+---
+
+## ADR-021：找不到答案時 AI 的標準回答方式
+
+**決策：** 當 AI 查遍 RAG_INDEX、DECISION_LOG、GLOSSARY 仍找不到明確答案時，必須依以下格式回應，不可沉默、不可捏造、不可直接跳過。
+
+**標準回答語句範本：**
+
+```
+找不到對應的 ADR 或文件依據。
+
+我的推斷（基於 [architecture.md / GLOSSARY.md / 現有程式碼]）：
+[推斷內容，1–3 句]
+
+建議：
+- 若此推斷正確，可補記到 docs/kb/DECISION_LOG.md（ADR-XXX）
+- 若需要確認，請提供更多背景或指向相關文件
+```
+
+**原因：**
+- 沒有明確依據的回答容易讓 AI 自行「優化」架構決策，造成破壞
+- 明確說出「找不到依據」讓使用者知道這是推斷，而非事實
+- 推斷後建議補記 ADR，能逐步完善知識庫
+
+**AI 不應做的事：**
+- 不要在找不到依據時直接給出確定性回答（「可以這樣做」）
+- 不要跳過問題或回答「我不知道」而不附推斷
+- 不要用 devlog 或 PROGRESS 的片段替代正式 ADR
+
+**狀態：** Active（AI 行為規則）
+
+---
+
 ## 補充記錄指引
 
 若發現新的「為什麼不那樣做」決策，請用以下格式補記：

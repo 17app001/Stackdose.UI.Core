@@ -1,3 +1,10 @@
+---
+classification: Internal
+ai_usage: Claude CLI allowed / Local RAG allowed
+last_updated: 2026-05-11
+source_of_truth: false
+---
+
 # 🤖 Stackdose AI 專案製作指南 (Scaffolding Spec)
 
 > **核心哲學：** JSON 驅動、腳本先行、零硬編碼。

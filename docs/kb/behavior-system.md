@@ -1,3 +1,10 @@
+---
+classification: Internal
+ai_usage: Claude CLI allowed / Local RAG allowed
+last_updated: 2026-05-11
+source_of_truth: false
+---
+
 # Behavior Engine 系統
 
 > B4/B5 產出。讓設計師在不寫 C# 的前提下，透過 JSON 設定控件的觸發反應邏輯。

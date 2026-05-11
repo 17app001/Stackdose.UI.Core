@@ -1,3 +1,11 @@
+---
+classification: Internal
+ai_usage: Claude CLI allowed / Local RAG allowed
+last_updated: 2026-05-11
+source_of_truth: false
+note: 重構歷史總覽，已完成不再更新
+---
+
 # 基礎層 + Behavior 重構 — 總覽
 
 > 分支：`refactor/foundation-and-behavior`

@@ -186,7 +186,36 @@ dotnet build Stackdose.App.DesignRuntime/Stackdose.App.DesignRuntime.csproj
 
 ---
 
-## 7. AI 修改後的標準檢查清單
+## 7. AI 完成分析後的標準回報格式
+
+每次 AI 完成修改或分析後，必須輸出以下結構：
+
+```
+**執行了哪些驗證：**
+- [ ] dotnet build — 通過 / 失敗（附錯誤摘要）
+- [ ] DesignRuntime 離線啟動 — 通過 / 未執行
+- [ ] Dark/Light 主題切換目視 — 通過 / 未執行
+- [ ] 相關單元測試 — 通過 / 無自動化測試
+
+**哪些部分未能驗證（及原因）：**
+- [列出無法在無實機環境驗證的項目]
+
+**哪些需要人工確認：**
+- [列出需要使用者實機或目視確認的項目]
+
+**是否涉及高風險區域：**
+- [ ] IPlcManager / IPlcMonitor / IPrintHead
+- [ ] ComplianceContext / SqliteLogger
+- [ ] RuntimeControlFactory 副本同步
+- [ ] scaffold 腳本
+
+**建議下一步：**
+- [具體下一個行動項]
+```
+
+---
+
+## 8. AI 修改後的標準檢查清單
 
 每次修改完成後，AI 應確認以下項目（可在回應中附上這個清單）：
 

@@ -217,21 +217,32 @@ public partial class MainWindow : Window
 
     private void OnFileWatcherChanged(object sender, FileSystemEventArgs e)
     {
+        // 為了避免多重觸發與檔案鎖定，使用 DispatcherTimer 進行防抖處理
         Dispatcher.BeginInvoke(() =>
         {
             if (_reloadDebounce == null)
             {
                 _reloadDebounce = new DispatcherTimer
                 {
-                    Interval = TimeSpan.FromMilliseconds(300),
+                    Interval = TimeSpan.FromMilliseconds(500), // 稍微延長防抖時間，確保磁碟寫入完成
                 };
                 _reloadDebounce.Tick += (_, _) =>
                 {
                     _reloadDebounce.Stop();
-                    if (_loadedFilePath != null)
+                    if (_loadedFilePath != null && File.Exists(_loadedFilePath))
                     {
-                        LoadFile(_loadedFilePath);
-                        ShowStatus($"🔄 已自動重載：{Path.GetFileName(_loadedFilePath)}");
+                        try
+                        {
+                            LoadFile(_loadedFilePath);
+                            ShowStatus($"🔄 已偵測到變動並自動重載：{Path.GetFileName(_loadedFilePath)}");
+                            
+                            // 關鍵：重新整理 PLC 監控位址，讓新加入的地址生效
+                            _plcStatus?.RefreshMonitors();
+                        }
+                        catch (Exception ex)
+                        {
+                            ShowStatus($"❌ 自動重載失敗：{ex.Message}", error: true);
+                        }
                     }
                 };
             }

@@ -1,3 +1,10 @@
+---
+classification: Internal
+ai_usage: Claude CLI allowed / Local RAG allowed
+last_updated: 2026-05-11
+source_of_truth: false
+---
+
 # 控件基類體系（B1 產出）
 
 > B1 重構結果：所有 Plc* 控件已從各自實作改為繼承統一基類，消除重複訂閱邏輯。

@@ -1,3 +1,10 @@
+---
+classification: Internal
+ai_usage: Claude CLI allowed / Local RAG allowed
+last_updated: 2026-05-05
+source_of_truth: false
+---
+
 # 設計器系統知識庫
 
 > 涵蓋 MachinePageDesigner、DesignViewer、DesignRuntime 三個工具的架構與使用方式。

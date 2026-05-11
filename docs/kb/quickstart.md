@@ -1,3 +1,10 @@
+---
+classification: Internal
+ai_usage: Claude CLI allowed / Local RAG allowed
+last_updated: 2026-05-05
+source_of_truth: false
+---
+
 # Shell App 快速上手（3 步驟）
 
 當你需要快速建立新的機台型 App 時，請先用這份文件。

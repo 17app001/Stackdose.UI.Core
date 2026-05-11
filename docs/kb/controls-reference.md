@@ -1,3 +1,10 @@
+---
+classification: Internal
+ai_usage: Claude CLI allowed / Local RAG allowed
+last_updated: 2026-04-21
+source_of_truth: false
+---
+
 # 控制項快速參考
 
 > Stackdose.UI.Core + Stackdose.UI.Templates 所有 WPF 元件的職責與使用摘要。

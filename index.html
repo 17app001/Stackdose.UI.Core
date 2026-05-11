@@ -484,6 +484,8 @@
     .badge-kb     { color: #1d4ed8; border-color: #2563eb33; background: #eff6ff; }
     .badge-manual { color: #15803d; border-color: #16a34a33; background: #f0fdf4; }
     .badge-devlog { color: #b45309; border-color: #d9770633; background: #fffbeb; }
+    .badge-ai     { color: #6d28d9; border-color: #7c3aed33; background: #f5f3ff; }
+    .badge-rag    { color: #0e7490; border-color: #0891b233; background: #ecfeff; }
 
     /* ── Keyboard Hint Bar ── */
     .kbd-hint-bar {
@@ -551,7 +553,7 @@
             <div class="stat"><div class="stat-num">12</div><div class="stat-label">專案</div></div>
             <div class="stat"><div class="stat-num">26</div><div class="stat-label">自訂控制項</div></div>
             <div class="stat"><div class="stat-num">5</div><div class="stat-label">Context 服務</div></div>
-            <div class="stat"><div class="stat-num">65+</div><div class="stat-label">Commits</div></div>
+            <div class="stat"><div class="stat-num">373</div><div class="stat-label">Commits</div></div>
             <div class="stat"><div class="stat-num">4</div><div class="stat-label">設計器工具</div></div>
           </div>
           <p style="color:var(--text-secondary); font-size:13px; max-width:680px; margin-bottom:32px;">
@@ -686,6 +688,38 @@
       </div><!-- /overview-grid -->
     </div><!-- /container -->
   </section>
+<!-- AI 開發入口 + 狀態提示 -->
+<section class="section">
+  <div class="container">
+    <div style="background:#fffbeb; border:1px solid #ca8a0433; border-radius:8px; padding:12px 16px; margin-bottom:20px; display:flex; align-items:center; gap:10px;">
+      <span style="font-size:16px;">📌</span>
+      <span style="font-size:13px; color:var(--text-secondary);">目前最新狀態請以 <a href="STATUS.md" style="font-weight:600; color:var(--orange);">STATUS.md</a> 為準。本頁面為文件導覽，不承擔動態狀態管理功能。</span>
+    </div>
+    <div class="section-title">AI 開發入口</div>
+    <div class="docs-grid">
+      <a class="doc-card" data-href="CLAUDE.md" href="CLAUDE.md" target="_blank">
+        <div class="doc-icon">🤖</div><span class="doc-group-badge badge-ai">AI</span>
+        <div><div class="doc-title">CLAUDE.md</div><div class="doc-desc">Claude CLI 入口文件 — 專案定位、AI 行為規則、文件閱讀順序</div></div>
+      </a>
+      <a class="doc-card" data-href="GEMINI.md" href="GEMINI.md" target="_blank">
+        <div class="doc-icon">🔵</div><span class="doc-group-badge badge-ai">AI</span>
+        <div><div class="doc-title">GEMINI.md <span style="font-size:10px;color:var(--text-muted);font-weight:400;">尚未建立</span></div><div class="doc-desc">Gemini CLI 入口文件（若使用 Gemini CLI 工具鏈）</div></div>
+      </a>
+      <a class="doc-card" data-href="STATUS.md" href="STATUS.md" target="_blank">
+        <div class="doc-icon">📍</div><span class="doc-group-badge badge-ai">AI</span>
+        <div><div class="doc-title">STATUS.md <span style="color:var(--green);font-size:11px;">★ 唯一真相</span></div><div class="doc-desc">當前進度、進行中任務、未解問題、高風險區域</div></div>
+      </a>
+      <a class="doc-card" data-href="SECURITY_RULES.md" href="SECURITY_RULES.md" target="_blank">
+        <div class="doc-icon">🔐</div><span class="doc-group-badge badge-ai">AI</span>
+        <div><div class="doc-title">SECURITY_RULES.md</div><div class="doc-desc">AI 工具資安規則 — 禁止外傳資料、允許項目、高風險介面清單</div></div>
+      </a>
+      <a class="doc-card" data-href="AI_USAGE_POLICY.md" href="AI_USAGE_POLICY.md" target="_blank">
+        <div class="doc-icon">📋</div><span class="doc-group-badge badge-ai">AI</span>
+        <div><div class="doc-title">AI_USAGE_POLICY.md</div><div class="doc-desc">AI 工具分級政策 — L1/L2/L3 資料分級、工具選用對照表</div></div>
+      </a>
+    </div>
+  </div>
+</section>
 </div><!-- /tab-overview -->
 
 <!-- ══ TAB 2: 專案 ══ -->
@@ -902,6 +936,40 @@
 <div id="tab-docs" class="tab-pane">
   <section class="section">
     <div class="container">
+      <!-- 資料分級提示 -->
+      <div style="background:#f0f9ff; border:1px solid #0891b233; border-radius:8px; padding:12px 16px; margin-bottom:20px; font-size:13px; color:var(--text-secondary); display:flex; align-items:center; flex-wrap:wrap; gap:12px;">
+        <strong style="color:var(--text-primary);">資料分級：</strong>
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--green);vertical-align:middle;margin-right:4px;"></span>Public — 任意 AI 工具</span>
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--blue);vertical-align:middle;margin-right:4px;"></span>Internal — 去識別化後可用 Claude CLI</span>
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--red);vertical-align:middle;margin-right:4px;"></span>Confidential — 僅限 Local RAG</span>
+        <a href="AI_USAGE_POLICY.md" style="font-size:12px;">→ 完整政策</a>
+      </div>
+
+      <!-- AI 開發入口 -->
+      <div class="section-title">AI 開發入口</div>
+      <div class="docs-grid" style="margin-bottom:32px;">
+        <a class="doc-card" data-href="CLAUDE.md" href="CLAUDE.md" target="_blank">
+          <div class="doc-icon">🤖</div><span class="doc-group-badge badge-ai">AI</span>
+          <div><div class="doc-title">CLAUDE.md</div><div class="doc-desc">Claude CLI 入口 — 專案定位、AI 行為規則、文件閱讀順序</div></div>
+        </a>
+        <a class="doc-card" data-href="GEMINI.md" href="GEMINI.md" target="_blank">
+          <div class="doc-icon">🔵</div><span class="doc-group-badge badge-ai">AI</span>
+          <div><div class="doc-title">GEMINI.md</div><div class="doc-desc">Gemini CLI 入口文件（若使用 Gemini CLI 工具鏈）</div></div>
+        </a>
+        <a class="doc-card" data-href="STATUS.md" href="STATUS.md" target="_blank">
+          <div class="doc-icon">📍</div><span class="doc-group-badge badge-ai">AI</span>
+          <div><div class="doc-title">STATUS.md <span style="color:var(--green);font-size:11px;">★ 唯一真相</span></div><div class="doc-desc">當前進度、進行中任務、高風險區域 — 每次任務後更新</div></div>
+        </a>
+        <a class="doc-card" data-href="SECURITY_RULES.md" href="SECURITY_RULES.md" target="_blank">
+          <div class="doc-icon">🔐</div><span class="doc-group-badge badge-ai">AI</span>
+          <div><div class="doc-title">SECURITY_RULES.md</div><div class="doc-desc">AI 工具資安規則 — 禁止外傳資料、高風險介面清單</div></div>
+        </a>
+        <a class="doc-card" data-href="AI_USAGE_POLICY.md" href="AI_USAGE_POLICY.md" target="_blank">
+          <div class="doc-icon">📋</div><span class="doc-group-badge badge-ai">AI</span>
+          <div><div class="doc-title">AI_USAGE_POLICY.md</div><div class="doc-desc">AI 工具分級政策 — L1/L2/L3 分級、工具選用對照表</div></div>
+        </a>
+      </div>
+
       <div class="section-title">知識庫文件</div>
       <div class="docs-search-row">
         <input class="docs-search-input" id="docs-search"
@@ -958,13 +1026,17 @@
           <div class="doc-icon">🌗</div><span class="doc-group-badge badge-kb">KB</span>
           <div><div class="doc-title">主題 Token 收斂規範</div><div class="doc-desc">硬編碼色碼替換計畫、建議新增 Token 清單，三階段改善路線</div></div>
         </a>
-        <a class="doc-card" data-href="docs/MANAGER_BRIEF.md" href="docs/MANAGER_BRIEF.md" target="_blank">
-          <div class="doc-icon">📋</div><span class="doc-group-badge badge-kb">KB</span>
-          <div><div class="doc-title">主管進度簡報</div><div class="doc-desc">非技術摘要：架構圖、功能完成表、開發時間軸、現況數字</div></div>
+        <a class="doc-card" data-href="docs/MANAGER_BRIEF.md" href="docs/MANAGER_BRIEF.md" target="_blank" style="opacity:0.55;">
+          <div class="doc-icon">📋</div><span class="doc-group-badge badge-kb" style="text-decoration:line-through;">KB</span>
+          <div><div class="doc-title" style="text-decoration:line-through; color:var(--text-muted);">主管進度簡報</div><div class="doc-desc">⚠️ 已過期（2026-04-15）— 非技術摘要：架構圖、功能完成表、開發時間軸</div></div>
         </a>
         <a class="doc-card" data-href="docs/devlog/2026-04.md" href="docs/devlog/2026-04.md" target="_blank">
           <div class="doc-icon">📝</div><span class="doc-group-badge badge-devlog">Devlog</span>
           <div><div class="doc-title">開發日誌 2026-04</div><div class="doc-desc">每日 commit 記錄（feat / fix / refactor / chore），主管呈報用</div></div>
+        </a>
+        <a class="doc-card" data-href="docs/devlog/2026-05.md" href="docs/devlog/2026-05.md" target="_blank">
+          <div class="doc-icon">📝</div><span class="doc-group-badge badge-devlog">Devlog</span>
+          <div><div class="doc-title">開發日誌 2026-05</div><div class="doc-desc">每日 commit 記錄（feat / fix / refactor / chore），主管呈報用</div></div>
         </a>
 
       </div>
@@ -1005,6 +1077,49 @@
           <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">工程師部署指南：系統需求、目錄結構、app-config.json 設定、PLC 連線、登入管控、首次啟動驗證清單、升版流程。</div>
           <div style="margin-top:auto;font-size:11px;color:var(--blue);">點擊閱讀 →</div>
         </a>
+
+      </div>
+    </div>
+  </section>
+  <section class="section">
+    <div class="container">
+      <div class="section-title">Private RAG / Open WebUI Knowledge</div>
+      <p style="font-size:13px; color:var(--text-secondary); margin-bottom:24px; max-width:720px;">
+        Open WebUI 本地 RAG 知識庫分組（<span style="color:var(--red); font-weight:600;">Confidential</span>，僅限本機使用，不可上傳至外部 AI 服務）。
+      </p>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px;">
+
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:20px;">🧠</span>
+            <div><div style="font-weight:700; font-size:14px;">Stackdose_Core_Knowledge</div><span class="doc-group-badge badge-rag">RAG</span></div>
+          </div>
+          <div style="font-size:12px; color:var(--text-secondary); line-height:1.7;">架構設計、控制項參考、設計器系統、Platform 契約、主題 Token、Behavior Engine — 框架基礎知識。</div>
+        </div>
+
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:20px;">📍</span>
+            <div><div style="font-weight:700; font-size:14px;">Stackdose_Current_Status</div><span class="doc-group-badge badge-rag">RAG</span></div>
+          </div>
+          <div style="font-size:12px; color:var(--text-secondary); line-height:1.7;">STATUS.md — 當前進度、未解問題、高風險區域。頻繁更新，需定期同步至 RAG。</div>
+        </div>
+
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:20px;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:20px;">📝</span>
+            <div><div style="font-weight:700; font-size:14px;">Stackdose_Devlog</div><span class="doc-group-badge badge-rag">RAG</span></div>
+          </div>
+          <div style="font-size:12px; color:var(--text-secondary); line-height:1.7;">開發日誌（docs/devlog/）— 每日決策脈絡、已修復的問題、設計選擇理由。</div>
+        </div>
+
+        <div style="background:var(--bg-card); border:1px solid #dc262633; border-radius:10px; padding:20px;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:20px;">🔒</span>
+            <div><div style="font-weight:700; font-size:14px;">Stackdose_Migration_Confidential</div><span class="doc-group-badge badge-rag">RAG</span></div>
+          </div>
+          <div style="font-size:12px; color:var(--text-secondary); line-height:1.7;">機密資料 — PLC IP、客戶設備規格、製程參數。<strong style="color:var(--red);">僅限本機 RAG，禁止上傳任何外部服務。</strong></div>
+        </div>
 
       </div>
     </div>
@@ -1081,6 +1196,10 @@
 
   <section class="section">
     <div class="container">
+      <div style="background:#fefce8; border:1px solid #ca8a0433; border-radius:8px; padding:12px 16px; margin-bottom:20px; display:flex; align-items:center; gap:10px;">
+        <span style="font-size:16px;">📌</span>
+        <span style="font-size:13px; color:var(--text-secondary);">本頁進度為歷史記錄，不保證即時更新。<strong>目前最新任務狀態請以 <a href="STATUS.md">STATUS.md</a> 為準。</strong></span>
+      </div>
       <div class="section-title">開發進度</div>
       <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap:16px;">
 
@@ -1357,7 +1476,7 @@
     <div class="container">
       <div class="section-title">功能完成狀態</div>
       <p style="font-size:13px; color:var(--text-secondary); margin-bottom:24px; max-width:720px;">
-        所有主要功能與缺口補強均已完成。詳細規格與 JSON 格式見 <code>docs/STATUS.md</code>。
+        所有主要功能與缺口補強均已完成。詳細規格與 JSON 格式見 <a href="STATUS.md"><code>STATUS.md</code></a>（Repo 根目錄）。
       </p>
       <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; margin-bottom:24px;">
         <div style="background:var(--bg-card); border:1px solid #2da44e33; border-radius:8px; padding:14px 16px; display:flex; align-items:center; gap:10px;">
@@ -1427,7 +1546,7 @@
 <footer class="site-footer">
   <div class="container" style="display:flex; align-items:center; justify-content:space-between; width:100%;">
     <span>Stackdose.UI.Core · .NET 8 WPF · Windows x64</span>
-    <span>更新：2026-04-30</span>
+    <span>更新：2026-05-11</span>
   </div>
 </footer>
 
@@ -1940,23 +2059,6 @@ document.addEventListener('keydown', function(e) {
   var today = new Date().toISOString().slice(0, 10);
   var saved = localStorage.getItem(DATE_KEY);
   if (saved && saved !== today) {
-    var old = localStorage.getItem('stackdose_daily_plan');
-    if (old) localStorage.setItem('stackdose_daily_plan_archived_' + saved, old);
-    localStorage.setItem('stackdose_daily_plan', JSON.stringify({ tasks: [], notes: '' }));
-  }
-  localStorage.setItem(DATE_KEY, today);
-})();
-
-</script>
-
-
-<div class="kbd-hint-bar">
-  <span class="kbd-hint"><span class="kbd">1</span>&ndash;<span class="kbd">5</span>&nbsp;切換分頁</span>
-  <span class="kbd-hint"><span class="kbd">/</span>&nbsp;搜尋文件</span>
-</div>
-</body>
-</html>
-& saved !== today) {
     var old = localStorage.getItem('stackdose_daily_plan');
     if (old) localStorage.setItem('stackdose_daily_plan_archived_' + saved, old);
     localStorage.setItem('stackdose_daily_plan', JSON.stringify({ tasks: [], notes: '' }));
